@@ -53,6 +53,7 @@ export interface PrintOrder {
   stripe_session_id: string | null
   status: OrderStatus
   notes: string | null
+  tracking_number: string | null
   created_at: string
   updated_at: string
 }
