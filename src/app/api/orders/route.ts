@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Stripe Checkout 세션 생성
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'http://localhost:3000'
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     line_items: lineItems,
