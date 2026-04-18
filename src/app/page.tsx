@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import {
   ArrowRight,
   Printer,
@@ -13,6 +14,7 @@ import {
   Zap,
   Package,
 } from 'lucide-react'
+import { createServerClient } from '@/lib/supabase'
 
 const PRODUCTS = [
   {
@@ -130,7 +132,24 @@ const GUARANTEES = [
   { icon: Package, text: 'Secure Packaging' },
 ]
 
-export default function HomePage() {
+async function getFeaturedPortfolio() {
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('print_portfolio')
+      .select('id, title, category, image_url, thumbnail_url')
+      .eq('is_published', true)
+      .eq('is_featured', true)
+      .order('sort_order', { ascending: true })
+      .limit(6)
+    return data ?? []
+  } catch {
+    return []
+  }
+}
+
+export default async function HomePage() {
+  const featuredPortfolio = await getFeaturedPortfolio()
   return (
     <>
       {/* 히어로 섹션 */}
@@ -292,6 +311,49 @@ export default function HomePage() {
           ))}
         </div>
       </section>
+
+      {/* 포트폴리오 미리보기 섹션 */}
+      {featuredPortfolio.length > 0 && (
+        <section className="py-20 px-4 bg-gray-50">
+          <div className="max-w-7xl mx-auto">
+            <div className="text-center mb-12">
+              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Our Work</p>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Recent Print Projects</h2>
+              <p className="text-gray-500 text-lg max-w-xl mx-auto">
+                See what we&apos;ve printed for customers around the world.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+              {featuredPortfolio.map((item) => (
+                <Link
+                  key={item.id}
+                  href="/portfolio"
+                  className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-200 shadow-sm hover:shadow-xl transition-all duration-300"
+                >
+                  <Image
+                    src={item.thumbnail_url ?? item.image_url}
+                    alt={item.title}
+                    fill
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
+                    sizes="(max-width: 768px) 50vw, 33vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <p className="text-white text-sm font-medium leading-snug line-clamp-2">{item.title}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <div className="text-center">
+              <Link
+                href="/portfolio"
+                className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:border-gray-400 hover:bg-white transition-all text-sm"
+              >
+                View Full Portfolio <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* 후기 섹션 */}
       <section className="py-20 px-4 bg-gray-900">

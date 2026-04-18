@@ -14,6 +14,7 @@ const PRODUCTS = [
 ]
 
 const NAV_LINKS = [
+  { href: '/portfolio', label: 'Portfolio' },
   { href: '/about', label: 'About' },
   { href: '/faq', label: 'FAQ' },
   { href: '/contact', label: 'Contact' },
