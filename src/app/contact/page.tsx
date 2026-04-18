@@ -30,8 +30,8 @@ export default function ContactPage() {
           <Clock className="w-6 h-6 text-blue-600 mt-0.5 shrink-0" />
           <div>
             <h2 className="font-semibold text-gray-900 mb-1">Business Hours</h2>
-            <p className="text-sm text-gray-600">Monday - Friday, 9:00 AM - 6:00 PM (KST)</p>
-            <p className="text-sm text-gray-500 mt-1">Closed on Korean national holidays.</p>
+            <p className="text-sm text-gray-600">Monday - Friday, 9:00 AM - 6:00 PM (PT)</p>
+            <p className="text-sm text-gray-500 mt-1">Closed on US federal holidays.</p>
           </div>
         </div>
       </div>

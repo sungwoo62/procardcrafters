@@ -34,26 +34,38 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 const PRODUCT_EMOJI: Record<string, string> = {
   business_cards: '🪪',
+  premium_business_cards: '💎',
   stickers: '⭐',
+  die_cut_stickers: '✂️',
   flyers: '📄',
+  brochures: '📖',
   postcards: '💌',
   posters: '🖼️',
+  banners: '🏳️',
 }
 
 const PRODUCT_GRADIENT: Record<string, string> = {
   business_cards: 'from-blue-100 via-indigo-50 to-blue-50',
+  premium_business_cards: 'from-indigo-100 via-slate-50 to-indigo-50',
   stickers: 'from-yellow-100 via-orange-50 to-yellow-50',
+  die_cut_stickers: 'from-amber-100 via-yellow-50 to-amber-50',
   flyers: 'from-green-100 via-emerald-50 to-green-50',
+  brochures: 'from-teal-100 via-cyan-50 to-teal-50',
   postcards: 'from-pink-100 via-rose-50 to-pink-50',
   posters: 'from-purple-100 via-violet-50 to-purple-50',
+  banners: 'from-red-100 via-orange-50 to-red-50',
 }
 
 const PRODUCT_FEATURES: Record<string, string[]> = {
   business_cards: ['Premium 350gsm cardstock', 'Matte or gloss lamination', 'Standard & custom sizes', 'UV spot finishing available'],
+  premium_business_cards: ['Linen 350gsm or Pearl 300gsm stock', 'Luxury texture and finish', 'Embossing & foil options', 'Premium uncoated feel'],
   stickers: ['Weatherproof vinyl material', 'Custom die-cut shapes', 'Outdoor durable (3+ years)', 'Removable or permanent adhesive'],
+  die_cut_stickers: ['Custom shape cutting', 'Contour-cut to your design', 'Durable adhesive vinyl', 'Indoor & outdoor use'],
   flyers: ['100–170gsm coated paper', 'Single or double-sided', 'A4, A5, DL sizes', 'Full-bleed printing available'],
+  brochures: ['Folded A4 or A5 formats', 'Tri-fold & saddle-stitch binding', 'Premium coated paper', 'Full-color both sides'],
   postcards: ['300gsm premium stock', 'Gloss or soft-touch finish', 'Perfect for direct mail', 'Standard & large formats'],
   posters: ['170gsm satin poster paper', 'Large format up to A0', 'Vivid color reproduction', 'Rolled or flat delivery'],
+  banners: ['Mini banner 60×160cm or 80×200cm', 'Durable PVC material', 'Indoor & outdoor use', 'Retractable stand available'],
 }
 
 const TRUST_ITEMS = [
@@ -134,8 +146,8 @@ export default async function ProductDetailPage({ params }: Props) {
             {/* 파트너십 하이라이트 */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <div className="font-semibold text-blue-800 text-sm mb-1">Korean Production</div>
-                <div className="text-blue-600 text-xs leading-relaxed">Sungwon Adpia — Korea's #1 commercial printer</div>
+                <div className="font-semibold text-blue-800 text-sm mb-1">LA Distribution</div>
+                <div className="text-blue-600 text-xs leading-relaxed">Fast fulfillment from our Los Angeles distribution center</div>
               </div>
               <div className="bg-green-50 border border-green-100 rounded-xl p-4">
                 <div className="font-semibold text-green-800 text-sm mb-1">Global Delivery</div>

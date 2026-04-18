@@ -62,10 +62,14 @@ export interface SwadpiaCategoryData {
 /** 우리 상품 slug → 성원 category_code */
 const CATEGORY_MAP: Record<string, string> = {
   'business-cards': 'CNC1000',
+  'premium-business-cards': 'CNC2000',
   'stickers': 'CST1000',
+  'die-cut-stickers': 'CST2000',
   'flyers': 'CLF1000',
+  'brochures': 'CLF2000',
   'postcards': 'CDP3000',
   'posters': 'CPR2000',
+  'banners': 'CPR5000',
 }
 
 // ─── 캐시 (메모리, 1시간 TTL) ────────────────────────────────

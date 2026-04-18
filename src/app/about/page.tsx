@@ -4,14 +4,14 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — Procardcrafters',
-  description: 'Learn about Procardcrafters — premium printing from South Korea delivered worldwide.',
+  description: 'Learn about Procardcrafters — premium printing distributed from Los Angeles and delivered worldwide.',
 }
 
 const VALUES = [
   {
     icon: Package,
-    title: 'Korean Craftsmanship',
-    desc: "We partner with South Korea's top printing facilities — the same production lines used by global brands. Every product meets exacting quality standards.",
+    title: 'Quality Craftsmanship',
+    desc: "We partner with top printing facilities — the same production lines used by global brands. Every product meets exacting quality standards.",
   },
   {
     icon: Globe,
@@ -47,11 +47,11 @@ export default function AboutPage() {
             <Package className="w-7 h-7 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Premium Print, Shipped From Korea
+            Premium Print, Distributed from LA
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed">
-            Procardcrafters was built to give businesses everywhere access to the high-quality
-            printing that Korean manufacturers are known for — at fair prices, with no guesswork.
+            Procardcrafters was built to give businesses everywhere access to high-quality
+            printing — at fair prices, with no guesswork. Distributed from our Los Angeles facility.
           </p>
         </div>
       </section>
@@ -73,14 +73,13 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-600 leading-relaxed">
           <p>
-            South Korea is one of the world's great printing powerhouses. Precision equipment,
-            premium substrates, and craftspeople who take pride in every sheet — yet this
-            quality has historically been hard to access if you don't happen to be located in Seoul.
+            We use professional-grade printing equipment and premium materials. Our LA distribution
+            center ensures fast delivery across the United States and worldwide.
           </p>
           <p>
-            We changed that. Procardcrafters connects you directly to these facilities, handles all
-            the logistics, and delivers your finished prints wherever you are in the world. Our
-            online configurator gives you instant pricing so there are no surprises at checkout.
+            Procardcrafters handles all the logistics and delivers your finished prints wherever
+            you are in the world. Our online configurator gives you instant pricing so there are
+            no surprises at checkout.
           </p>
           <p>
             Whether you're a solo designer ordering 50 business cards or a brand needing thousands

@@ -45,7 +45,7 @@ async function SuccessContent({ searchParams }: PageProps) {
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold shrink-0">2.</span>
-            인쇄 진행 — 파일 승인 후 한국 성원애드피아에서 인쇄를 시작합니다
+            Production — printing begins after file approval
           </li>
           <li className="flex items-start gap-2">
             <span className="font-bold shrink-0">3.</span>

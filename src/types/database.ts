@@ -1,4 +1,4 @@
-export type ProductCategory = 'business_cards' | 'stickers' | 'flyers' | 'postcards' | 'posters'
+export type ProductCategory = 'business_cards' | 'premium_business_cards' | 'stickers' | 'die_cut_stickers' | 'flyers' | 'brochures' | 'postcards' | 'posters' | 'banners'
 export type OptionType = 'quantity' | 'paper' | 'coating' | 'size' | 'finish'
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 export type FileStatus = 'uploaded' | 'approved' | 'rejected' | 'processing'

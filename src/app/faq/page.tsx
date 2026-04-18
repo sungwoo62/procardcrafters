@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 const FAQS = [
   {
     q: 'Where are your products printed?',
-    a: 'All products are printed in South Korea using professional-grade equipment and premium materials.',
+    a: 'All products are printed using professional-grade equipment and premium materials, and distributed from our Los Angeles facility.',
   },
   {
     q: 'What file formats do you accept?',

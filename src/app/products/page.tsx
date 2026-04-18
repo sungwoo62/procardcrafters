@@ -9,39 +9,55 @@ import type { PrintProduct } from '@/types/database'
 
 const PRODUCT_EMOJI: Record<string, string> = {
   business_cards: '🪪',
+  premium_business_cards: '💎',
   stickers: '⭐',
+  die_cut_stickers: '✂️',
   flyers: '📄',
+  brochures: '📖',
   postcards: '💌',
   posters: '🖼️',
+  banners: '🏳️',
 }
 
 const PRODUCT_GRADIENT: Record<string, string> = {
   business_cards: 'from-blue-50 to-indigo-100',
+  premium_business_cards: 'from-indigo-50 to-slate-100',
   stickers: 'from-yellow-50 to-orange-50',
+  die_cut_stickers: 'from-amber-50 to-yellow-100',
   flyers: 'from-green-50 to-emerald-100',
+  brochures: 'from-teal-50 to-cyan-100',
   postcards: 'from-pink-50 to-rose-100',
   posters: 'from-purple-50 to-violet-100',
+  banners: 'from-red-50 to-orange-100',
 }
 
 const PRODUCT_ACCENT: Record<string, string> = {
   business_cards: 'border-blue-200',
+  premium_business_cards: 'border-indigo-200',
   stickers: 'border-yellow-200',
+  die_cut_stickers: 'border-amber-200',
   flyers: 'border-green-200',
+  brochures: 'border-teal-200',
   postcards: 'border-pink-200',
   posters: 'border-purple-200',
+  banners: 'border-red-200',
 }
 
 const PRODUCT_TAG: Record<string, { label: string; color: string } | null> = {
   business_cards: { label: 'Most Popular', color: 'bg-blue-100 text-blue-700' },
+  premium_business_cards: { label: 'Premium', color: 'bg-indigo-100 text-indigo-700' },
   stickers: { label: 'Fast Turnaround', color: 'bg-yellow-100 text-yellow-700' },
+  die_cut_stickers: null,
   flyers: null,
+  brochures: null,
   postcards: null,
   posters: { label: 'Best Value', color: 'bg-purple-100 text-purple-700' },
+  banners: null,
 }
 
 export const metadata = {
   title: 'Products — Procardcrafters',
-  description: 'Custom printing services: business cards, stickers, flyers, postcards, and posters — printed in Korea, delivered worldwide.',
+  description: 'Custom printing services: business cards, stickers, flyers, postcards, and posters — distributed from LA, delivered worldwide.',
 }
 
 export default async function ProductsPage() {

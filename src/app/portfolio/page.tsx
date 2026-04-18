@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
   title: 'Portfolio — Print Work Gallery',
-  description: 'Browse our portfolio of premium print work — business cards, stickers, flyers, postcards, and posters printed with Korean precision.',
+  description: 'Browse our portfolio of premium print work — business cards, stickers, flyers, postcards, and posters printed with precision.',
   openGraph: {
     title: 'Portfolio — Procardcrafters',
     description: 'Browse our portfolio of premium print work.',

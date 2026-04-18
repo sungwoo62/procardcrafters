@@ -18,19 +18,19 @@ export const metadata: Metadata = {
     default: 'Procardcrafters — Premium Print On Demand',
     template: '%s | Procardcrafters',
   },
-  description: 'High-quality business cards, stickers, flyers, postcards, and posters printed in Korea and delivered worldwide.',
-  keywords: ['business cards', 'stickers', 'flyers', 'postcards', 'posters', 'print on demand', 'Korean printing'],
+  description: 'High-quality business cards, stickers, flyers, postcards, and posters distributed from Los Angeles and delivered worldwide.',
+  keywords: ['business cards', 'stickers', 'flyers', 'postcards', 'posters', 'print on demand'],
   openGraph: {
     type: 'website',
     siteName: 'Procardcrafters',
     title: 'Procardcrafters — Premium Print On Demand',
-    description: 'Business cards, stickers, flyers, postcards, and posters — printed with Korean precision and delivered worldwide.',
+    description: 'Business cards, stickers, flyers, postcards, and posters — distributed from LA and delivered worldwide.',
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Procardcrafters — Premium Print On Demand',
-    description: 'Business cards, stickers, flyers, postcards, and posters — printed with Korean precision and delivered worldwide.',
+    description: 'Business cards, stickers, flyers, postcards, and posters — distributed from LA and delivered worldwide.',
   },
   robots: { index: true, follow: true },
 }

@@ -9,10 +9,14 @@ import { fetchSwadpiaCategoryData, fetchAllSwadpiaData, type SwadpiaCategoryData
 
 const CATEGORY_TO_SLUG: Record<string, string> = {
   'CNC1000': 'business-cards',
+  'CNC2000': 'premium-business-cards',
   'CST1000': 'stickers',
+  'CST2000': 'die-cut-stickers',
   'CLF1000': 'flyers',
+  'CLF2000': 'brochures',
   'CDP3000': 'postcards',
   'CPR2000': 'posters',
+  'CPR5000': 'banners',
 }
 
 function extractBasePrice(data: SwadpiaCategoryData): number {

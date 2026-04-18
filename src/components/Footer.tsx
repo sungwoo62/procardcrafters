@@ -13,7 +13,7 @@ export default function Footer() {
               <span>Procardcrafters</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed mb-4">
-              Premium print products made in Korea,
+              Premium print products distributed from Los Angeles,
               delivered worldwide with FedEx.
             </p>
             <div className="flex flex-col gap-2 text-sm text-gray-500">
@@ -69,7 +69,7 @@ export default function Footer() {
         <div className="mt-12 pt-6 border-t border-gray-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm text-gray-500">
           <span>© {new Date().getFullYear()} Procardcrafters. All rights reserved.</span>
           <div className="flex items-center gap-6">
-            <span>Printed in Korea</span>
+            <span>Distributed from LA</span>
             <span>·</span>
             <span>Delivered Worldwide</span>
           </div>

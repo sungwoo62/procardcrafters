@@ -28,6 +28,16 @@ const PRODUCTS = [
     accent: 'border-blue-200',
   },
   {
+    slug: 'premium-business-cards',
+    name: 'Premium Business Cards',
+    emoji: '💎',
+    desc: 'Luxury cards on linen, pearl, and specialty paper.',
+    tag: 'Premium',
+    tagColor: 'bg-indigo-100 text-indigo-700',
+    gradient: 'from-indigo-50 to-slate-100',
+    accent: 'border-indigo-200',
+  },
+  {
     slug: 'stickers',
     name: 'Stickers',
     emoji: '⭐',
@@ -38,6 +48,16 @@ const PRODUCTS = [
     accent: 'border-yellow-200',
   },
   {
+    slug: 'die-cut-stickers',
+    name: 'Die-Cut Stickers',
+    emoji: '✂️',
+    desc: 'Custom-shaped stickers cut to your exact design.',
+    tag: null,
+    tagColor: '',
+    gradient: 'from-amber-50 to-yellow-100',
+    accent: 'border-amber-200',
+  },
+  {
     slug: 'flyers',
     name: 'Flyers',
     emoji: '📄',
@@ -46,6 +66,16 @@ const PRODUCTS = [
     tagColor: '',
     gradient: 'from-green-50 to-emerald-100',
     accent: 'border-green-200',
+  },
+  {
+    slug: 'brochures',
+    name: 'Brochures',
+    emoji: '📖',
+    desc: 'Folded brochures and leaflets for professional presentations.',
+    tag: null,
+    tagColor: '',
+    gradient: 'from-teal-50 to-cyan-100',
+    accent: 'border-teal-200',
   },
   {
     slug: 'postcards',
@@ -67,6 +97,16 @@ const PRODUCTS = [
     gradient: 'from-purple-50 to-violet-100',
     accent: 'border-purple-200',
   },
+  {
+    slug: 'banners',
+    name: 'Banners',
+    emoji: '🏳️',
+    desc: 'Mini banners and signage for events and retail.',
+    tag: null,
+    tagColor: '',
+    gradient: 'from-red-50 to-orange-100',
+    accent: 'border-red-200',
+  },
 ]
 
 const STATS = [
@@ -79,13 +119,13 @@ const STATS = [
 const FEATURES = [
   {
     icon: Printer,
-    title: 'Korean Print Quality',
-    desc: 'Partnered with Sungwon Adpia, Korea\'s leading commercial printer. Offset and digital press with CMYK+1 color options.',
+    title: 'Print Quality',
+    desc: 'Professional offset and digital press printing with CMYK+1 color options. Distributed from Los Angeles.',
   },
   {
     icon: Truck,
     title: 'Global FedEx Delivery',
-    desc: 'Express international shipping from Seoul. Most destinations receive orders in 7–12 business days door-to-door.',
+    desc: 'Express shipping from Los Angeles. Most destinations receive orders in 7–12 business days door-to-door.',
   },
   {
     icon: Star,
@@ -98,7 +138,7 @@ const HOW_IT_WORKS = [
   { icon: Settings, step: '1', title: 'Configure', desc: 'Choose product, size, quantity, and finish options. Price updates in real time.' },
   { icon: Upload, step: '2', title: 'Upload', desc: 'Upload your design file (PDF, AI, or PSD). We verify print-readiness.' },
   { icon: CreditCard, step: '3', title: 'Pay', desc: 'Secure Stripe checkout. Production begins as soon as payment clears.' },
-  { icon: CheckCircle, step: '4', title: 'Receive', desc: 'Printed in Korea and delivered worldwide in 7–12 business days.' },
+  { icon: CheckCircle, step: '4', title: 'Receive', desc: 'Printed and delivered worldwide in 7–12 business days.' },
 ]
 
 const TESTIMONIALS = [
@@ -165,14 +205,14 @@ export default async function HomePage() {
             <Star className="w-3.5 h-3.5 fill-blue-300 text-blue-300" /> Trusted by 10,000+ customers in 40+ countries
           </div>
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-            Premium Korean Print,{' '}
+            Premium Print,{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-300 to-cyan-300">
               Delivered Worldwide
             </span>
           </h1>
           <p className="text-lg sm:text-xl text-blue-100/80 mb-10 max-w-2xl mx-auto leading-relaxed">
             Business cards, stickers, flyers, postcards, and posters —
-            printed with Korean precision. Real-time pricing, no surprises.
+            printed with precision. Real-time pricing, no surprises.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
@@ -283,7 +323,7 @@ export default async function HomePage() {
           <div className="text-center mb-14">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Procardcrafters?</h2>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              We combine Korean manufacturing excellence with global logistics expertise.
+              We combine manufacturing excellence with LA-based distribution.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">

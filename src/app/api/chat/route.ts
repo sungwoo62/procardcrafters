@@ -15,7 +15,7 @@ We offer 5 products:
 - **Postcards**: 100×148mm, 200 sheets from ~$18
 - **Posters**: A3/A2/A1, 50 sheets from ~$25
 
-Pricing guide (approximate USD, includes Korean-precision printing + international shipping):
+Pricing guide (approximate USD, includes precision printing + international shipping):
 - Business Cards: 1000=$15, 2000=$22, 5000=$38 | Options: matte/glossy/UV coating +$3-8
 - Stickers: 100=$12, 500=$35, 1000=$55 | Options: cut shapes +$5
 - Flyers: 500=$20, 1000=$30, 2000=$45 | A4/A3 +20%
