@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { createAuthServerClient } from '@/lib/supabase'
+import { createAuthServerClient } from '@/lib/supabase-server'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, FileText, User } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import LogoutButton from './LogoutButton'

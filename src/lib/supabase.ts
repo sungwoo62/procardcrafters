@@ -1,8 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
-import { createClientComponentClient, createServerComponentClient, createRouteHandlerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
+import { createBrowserClient as createSsrBrowserClient } from '@supabase/auth-helpers-nextjs'
 
-// 클라이언트 사이드 클라이언트 (lazy 생성)
+// 범용 클라이언트 사이드 클라이언트 (anon key)
 export function createBrowserClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -10,7 +9,7 @@ export function createBrowserClient() {
   )
 }
 
-// 서버 전용 클라이언트 (service_role key 사용)
+// 서버 전용 클라이언트 (service_role key — RLS 우회)
 export function createServerClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -20,17 +19,11 @@ export function createServerClient() {
 
 // 인증 포함 클라이언트 컴포넌트용 (쿠키 기반 세션)
 export function createAuthBrowserClient() {
-  return createClientComponentClient()
-}
-
-// 인증 포함 서버 컴포넌트용 (쿠키 기반 세션)
-export async function createAuthServerClient() {
-  const cookieStore = await cookies()
-  return createServerComponentClient({ cookies: () => cookieStore })
-}
-
-// 인증 포함 Route Handler용 (쿠키 기반 세션)
-export async function createAuthRouteClient() {
-  const cookieStore = await cookies()
-  return createRouteHandlerClient({ cookies: () => cookieStore })
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) {
+    // 빌드 시 환경변수 미설정 — 사용 전 초기화됨
+    return createClient('https://placeholder.supabase.co', 'placeholder-key')
+  }
+  return createSsrBrowserClient(url, key)
 }
