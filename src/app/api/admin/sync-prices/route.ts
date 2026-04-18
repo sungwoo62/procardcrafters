@@ -1,11 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { fetchSwadpiaProductPrice, fetchAllSwadpiaPrices } from '@/lib/swadpia'
+import { fetchSwadpiaCategoryData, fetchAllSwadpiaData, type SwadpiaCategoryData } from '@/lib/swadpia'
 
 // 관리자 수동 가격 동기화 API
 // POST /api/admin/sync-prices           → 전체 상품 동기화
 // POST /api/admin/sync-prices?slug=xxx  → 특정 상품만 동기화
 // GET  /api/admin/sync-prices           → 최근 가격 이력 조회
+
+const CATEGORY_TO_SLUG: Record<string, string> = {
+  'CNC1000': 'business-cards',
+  'CST1000': 'stickers',
+  'CLF1000': 'flyers',
+  'CDP3000': 'postcards',
+  'CPR2000': 'posters',
+}
+
+function extractBasePrice(data: SwadpiaCategoryData): number {
+  if (data.printEntries.length > 0) {
+    const sorted = [...data.printEntries].sort((a, b) => a.quantity - b.quantity)
+    return sorted[0].print_unit2
+  }
+  if (data.papers.length > 0) {
+    const paper = data.papers[0]
+    return Math.round(paper.price_unit1 * paper.price_sale_rate)
+  }
+  return 0
+}
 
 export async function GET(req: NextRequest) {
   const adminKey = req.headers.get('x-admin-key')
@@ -57,7 +77,7 @@ export async function POST(req: NextRequest) {
   const { searchParams } = new URL(req.url)
   const targetSlug = searchParams.get('slug')
 
-  // 수동 가격 입력 지원 (body에 manualPrice 포함 시)
+  // 수동 가격 입력 지원
   let manualPrices: Record<string, number> | null = null
   try {
     const body = await req.json()
@@ -65,10 +85,9 @@ export async function POST(req: NextRequest) {
       manualPrices = body.manualPrices
     }
   } catch {
-    // body 없음 또는 JSON이 아닌 경우 → 스크래핑 모드
+    // body 없음 → 성원 스크래핑 모드
   }
 
-  // 대상 상품 목록 조회
   let productQuery = supabase
     .from('print_products')
     .select('id, slug, base_price_krw')
@@ -89,7 +108,6 @@ export async function POST(req: NextRequest) {
   const results = []
 
   if (manualPrices) {
-    // 수동 가격 입력 모드
     for (const product of products) {
       const newPrice = manualPrices[product.slug]
       if (newPrice === undefined) continue
@@ -114,90 +132,67 @@ export async function POST(req: NextRequest) {
       }
 
       if (priceChanged) {
-        const { error: updateError } = await supabase
+        await supabase
           .from('print_products')
           .update({ base_price_krw: newPrice })
           .eq('id', product.id)
-
-        if (updateError) {
-          results.push({ slug: product.slug, success: false, error: updateError.message })
-          continue
-        }
       }
 
       results.push({ slug: product.slug, success: true, priceChanged, prevPrice, newPrice })
     }
   } else {
-    // 성원애드피아 스크래핑 모드
-    const swadpiaSlugs = targetSlug ? [targetSlug] : products.map(p => p.slug)
+    // 성원 스크래핑 모드
     const swadpiaResults = targetSlug
-      ? [await fetchSwadpiaProductPrice(targetSlug)]
-      : await fetchAllSwadpiaPrices()
+      ? [await fetchSwadpiaCategoryData(targetSlug)]
+      : await fetchAllSwadpiaData()
 
-    for (const swadpiaData of swadpiaResults) {
-      const product = products.find(p => p.slug === swadpiaData.slug)
+    for (const swData of swadpiaResults) {
+      const slug = CATEGORY_TO_SLUG[swData.categoryCode]
+      if (!slug) continue
+      const product = products.find(p => p.slug === slug)
       if (!product) continue
 
       const prevPrice = Number(product.base_price_krw)
-      const newPrice = swadpiaData.basePriceKrw
-      const priceChanged = Math.abs(prevPrice - newPrice) > 0.01
+      const newPrice = extractBasePrice(swData)
+      const priceChanged = newPrice > 0 && Math.abs(prevPrice - newPrice) > 0.01
 
-      const { data: historyRow, error: historyError } = await supabase
-        .from('print_price_history')
-        .insert({
-          product_id: product.id,
-          product_slug: swadpiaData.slug,
-          prev_price_krw: prevPrice,
-          new_price_krw: newPrice,
-          price_changed: priceChanged,
-          source_data: swadpiaData.sourceData,
-          fetch_success: swadpiaData.fetchSuccess,
-          error_message: swadpiaData.errorMessage ?? null,
-          source: 'manual',
-        })
-        .select('id')
-        .single()
+      const { error: historyError } = await supabase.from('print_price_history').insert({
+        product_id: product.id,
+        product_slug: slug,
+        prev_price_krw: prevPrice,
+        new_price_krw: newPrice,
+        price_changed: priceChanged,
+        source_data: {
+          papers: swData.papers.length,
+          printEntries: swData.printEntries.length,
+          sizes: swData.sizes.length,
+        },
+        fetch_success: swData.fetchSuccess,
+        error_message: swData.errorMessage ?? null,
+        source: 'manual',
+      })
 
       if (historyError) {
-        results.push({ slug: swadpiaData.slug, success: false, error: historyError.message })
+        results.push({ slug, success: false, error: historyError.message })
         continue
       }
 
-      if (swadpiaData.optionPrices.length > 0 && historyRow) {
-        await supabase.from('print_option_price_history').insert(
-          swadpiaData.optionPrices.map(op => ({
-            price_history_id: historyRow.id,
-            product_id: product.id,
-            option_key: op.optionKey,
-            price_krw: op.priceKrw,
-            swadpia_goods_code: op.goodsCode,
-          }))
-        )
-      }
-
-      if (priceChanged && swadpiaData.fetchSuccess) {
-        const { error: updateError } = await supabase
+      if (priceChanged && swData.fetchSuccess) {
+        await supabase
           .from('print_products')
           .update({ base_price_krw: newPrice })
           .eq('id', product.id)
-
-        if (updateError) {
-          results.push({ slug: swadpiaData.slug, success: false, error: updateError.message })
-          continue
-        }
       }
 
       results.push({
-        slug: swadpiaData.slug,
+        slug,
         success: true,
         priceChanged,
         prevPrice,
         newPrice,
-        fetchSuccess: swadpiaData.fetchSuccess,
-        error: swadpiaData.errorMessage,
+        fetchSuccess: swData.fetchSuccess,
+        error: swData.errorMessage,
       })
-
-      void swadpiaSlugs // suppress unused warning
     }
   }
 

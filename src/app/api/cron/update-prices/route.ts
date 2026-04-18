@@ -1,13 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { fetchAllSwadpiaPrices } from '@/lib/swadpia'
+import { fetchAllSwadpiaData, type SwadpiaCategoryData } from '@/lib/swadpia'
 
 // Vercel Cron: 매일 오전 2시 KST (오후 5시 UTC)
-// vercel.json에 설정: "0 17 * * *"
-export const maxDuration = 60 // 최대 60초
+export const maxDuration = 60
+
+/** 성원 데이터에서 기본 단가 (최소 수량의 양면 인쇄비) 추출 */
+function extractBasePrice(data: SwadpiaCategoryData): number {
+  if (data.printEntries.length > 0) {
+    const sorted = [...data.printEntries].sort((a, b) => a.quantity - b.quantity)
+    return sorted[0].print_unit2
+  }
+  // printEntries가 없으면 paper_info에서 폴백
+  if (data.papers.length > 0) {
+    const paper = data.papers[0]
+    return Math.round(paper.price_unit1 * paper.price_sale_rate)
+  }
+  return 0
+}
 
 export async function GET(req: NextRequest) {
-  // Cron 보안: Vercel이 보내는 Authorization 헤더 검증
   const authHeader = req.headers.get('authorization')
   const cronSecret = process.env.CRON_SECRET
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
@@ -25,7 +37,6 @@ export async function GET(req: NextRequest) {
   }[] = []
 
   try {
-    // 1. 모든 상품 현재 가격 조회
     const { data: products, error: productsError } = await supabase
       .from('print_products')
       .select('id, slug, base_price_krw')
@@ -36,73 +47,69 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: '활성 상품 없음', results: [] })
     }
 
-    // 2. 성원애드피아에서 가격 조회
-    const swadpiaResults = await fetchAllSwadpiaPrices()
+    const swadpiaResults = await fetchAllSwadpiaData()
 
-    // 3. 상품별 가격 업데이트
-    for (const swadpiaData of swadpiaResults) {
-      const product = products.find(p => p.slug === swadpiaData.slug)
+    for (const swData of swadpiaResults) {
+      // slug 역매핑: categoryCode → slug
+      const slug = Object.entries({
+        'CNC1000': 'business-cards',
+        'CST1000': 'stickers',
+        'CLF1000': 'flyers',
+        'CDP3000': 'postcards',
+        'CPR2000': 'posters',
+      }).find(([code]) => code === swData.categoryCode)?.[1]
+
+      if (!slug) continue
+      const product = products.find(p => p.slug === slug)
       if (!product) continue
 
       const prevPrice = Number(product.base_price_krw)
-      const newPrice = swadpiaData.basePriceKrw
-      const priceChanged = Math.abs(prevPrice - newPrice) > 0.01
+      const newPrice = extractBasePrice(swData)
+      const priceChanged = newPrice > 0 && Math.abs(prevPrice - newPrice) > 0.01
 
       // 가격 이력 기록
-      const { data: historyRow, error: historyError } = await supabase
+      const { error: historyError } = await supabase
         .from('print_price_history')
         .insert({
           product_id: product.id,
-          product_slug: swadpiaData.slug,
+          product_slug: slug,
           prev_price_krw: prevPrice,
           new_price_krw: newPrice,
           price_changed: priceChanged,
-          source_data: swadpiaData.sourceData,
-          fetch_success: swadpiaData.fetchSuccess,
-          error_message: swadpiaData.errorMessage ?? null,
+          source_data: {
+            papers: swData.papers.length,
+            printEntries: swData.printEntries.length,
+            sizes: swData.sizes.length,
+          },
+          fetch_success: swData.fetchSuccess,
+          error_message: swData.errorMessage ?? null,
           source: 'cron',
         })
-        .select('id')
-        .single()
 
       if (historyError) {
-        results.push({ slug: swadpiaData.slug, success: false, priceChanged: false, error: historyError.message })
+        results.push({ slug, success: false, priceChanged: false, error: historyError.message })
         continue
       }
 
-      // 옵션별 가격 이력 기록
-      if (swadpiaData.optionPrices.length > 0 && historyRow) {
-        await supabase.from('print_option_price_history').insert(
-          swadpiaData.optionPrices.map(op => ({
-            price_history_id: historyRow.id,
-            product_id: product.id,
-            option_key: op.optionKey,
-            price_krw: op.priceKrw,
-            swadpia_goods_code: op.goodsCode,
-          }))
-        )
-      }
-
-      // 가격이 변경된 경우에만 print_products 업데이트
-      if (priceChanged && swadpiaData.fetchSuccess) {
+      if (priceChanged && swData.fetchSuccess) {
         const { error: updateError } = await supabase
           .from('print_products')
           .update({ base_price_krw: newPrice })
           .eq('id', product.id)
 
         if (updateError) {
-          results.push({ slug: swadpiaData.slug, success: false, priceChanged, error: updateError.message })
+          results.push({ slug, success: false, priceChanged, error: updateError.message })
           continue
         }
       }
 
       results.push({
-        slug: swadpiaData.slug,
+        slug,
         success: true,
         priceChanged,
         prevPrice,
         newPrice,
-        error: swadpiaData.errorMessage,
+        error: swData.errorMessage,
       })
     }
 

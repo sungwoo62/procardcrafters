@@ -6,6 +6,7 @@ import { CheckCircle, Clock, Globe, Shield, Star } from 'lucide-react'
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
+import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -66,7 +67,7 @@ export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params
   const supabase = createServerClient()
 
-  const [{ data: productData }, exchangeRate] = await Promise.all([
+  const [{ data: productData }, exchangeRate, swadpiaData] = await Promise.all([
     supabase
       .from('print_products')
       .select('*')
@@ -74,6 +75,7 @@ export default async function ProductDetailPage({ params }: Props) {
       .eq('is_active', true)
       .single(),
     getKrwToUsdRate(),
+    fetchSwadpiaCategoryData(slug),
   ])
 
   if (!productData) notFound()
@@ -151,6 +153,11 @@ export default async function ProductDetailPage({ params }: Props) {
                 options={options}
                 exchangeRate={exchangeRate}
                 shippingUsd={shippingUsd}
+                swadpiaData={swadpiaData.fetchSuccess ? {
+                  papers: swadpiaData.papers,
+                  printEntries: swadpiaData.printEntries,
+                  sizes: swadpiaData.sizes,
+                } : undefined}
               />
             ) : (
               <div className="text-gray-500 text-sm py-8 text-center">
