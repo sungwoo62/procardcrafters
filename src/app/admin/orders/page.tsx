@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { OrderStatus } from '@/types/database'
+import { Download } from 'lucide-react'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pending',
@@ -27,6 +28,10 @@ const ALL_STATUSES: OrderStatus[] = [
   'pending', 'paid', 'processing', 'shipped', 'delivered', 'cancelled', 'refunded',
 ]
 
+const BULK_TARGET_STATUSES: OrderStatus[] = [
+  'paid', 'processing', 'shipped', 'delivered', 'cancelled',
+]
+
 interface Order {
   id: string
   order_number: string
@@ -46,6 +51,12 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | ''>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  // 벌크 선택 상태
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [bulkStatus, setBulkStatus] = useState<OrderStatus>('processing')
+  const [bulkLoading, setBulkLoading] = useState(false)
+  const [bulkMessage, setBulkMessage] = useState('')
 
   const fetchOrders = useCallback(async () => {
     setLoading(true)
@@ -67,6 +78,7 @@ export default function AdminOrdersPage() {
     const data = await res.json()
     setOrders(data.orders ?? [])
     setTotal(data.total ?? 0)
+    setSelectedIds(new Set())
     setLoading(false)
   }, [secret, page, statusFilter])
 
@@ -77,6 +89,71 @@ export default function AdminOrdersPage() {
   function handleLogin(e: React.FormEvent) {
     e.preventDefault()
     setAuthenticated(true)
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleSelectAll() {
+    if (selectedIds.size === orders.length) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(orders.map((o) => o.id)))
+    }
+  }
+
+  async function handleBulkUpdate() {
+    if (selectedIds.size === 0) return
+    setBulkLoading(true)
+    setBulkMessage('')
+
+    const res = await fetch('/api/admin/orders/bulk', {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-admin-secret': secret,
+      },
+      body: JSON.stringify({ ids: Array.from(selectedIds), status: bulkStatus }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      setBulkMessage(`오류: ${data.error}`)
+    } else {
+      setBulkMessage(`${data.updated}건 상태가 업데이트되었습니다.`)
+      fetchOrders()
+    }
+    setBulkLoading(false)
+  }
+
+  function exportCSV() {
+    const header = ['주문번호', '고객명', '이메일', '금액(USD)', '상태', '주문일시']
+    const rows = orders.map((o) => [
+      o.order_number,
+      o.customer_name,
+      o.customer_email,
+      o.total_usd.toFixed(2),
+      STATUS_LABELS[o.status],
+      new Date(o.created_at).toLocaleString('ko-KR'),
+    ])
+
+    const csv = [header, ...rows]
+      .map((r) => r.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n')
+
+    const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = `orders_page${page}_${new Date().toISOString().slice(0, 10)}.csv`
+    a.click()
+    URL.revokeObjectURL(url)
   }
 
   if (!authenticated) {
@@ -109,11 +186,20 @@ export default function AdminOrdersPage() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-2xl font-bold">Orders Dashboard</h1>
-          <span className="text-sm text-gray-500">Total: {total}</span>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-500">Total: {total}</span>
+            <button
+              onClick={exportCSV}
+              className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+            >
+              <Download className="h-4 w-4" />
+              CSV 내보내기
+            </button>
+          </div>
         </div>
 
         {/* 상태 필터 */}
-        <div className="flex gap-2 flex-wrap mb-6">
+        <div className="flex gap-2 flex-wrap mb-4">
           <button
             onClick={() => { setStatusFilter(''); setPage(1) }}
             className={`px-3 py-1.5 rounded text-sm font-medium transition-colors ${
@@ -135,6 +221,32 @@ export default function AdminOrdersPage() {
           ))}
         </div>
 
+        {/* 벌크 업데이트 툴바 */}
+        {selectedIds.size > 0 && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
+            <span className="text-sm font-medium text-blue-800">{selectedIds.size}건 선택됨</span>
+            <select
+              value={bulkStatus}
+              onChange={(e) => setBulkStatus(e.target.value as OrderStatus)}
+              className="rounded-lg border border-blue-200 bg-white px-3 py-1.5 text-sm text-gray-800 focus:outline-none"
+            >
+              {BULK_TARGET_STATUSES.map((s) => (
+                <option key={s} value={s}>{STATUS_LABELS[s]}</option>
+              ))}
+            </select>
+            <button
+              onClick={handleBulkUpdate}
+              disabled={bulkLoading}
+              className="rounded-lg bg-blue-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
+            >
+              {bulkLoading ? '처리 중...' : '상태 변경'}
+            </button>
+            {bulkMessage && (
+              <span className="text-sm text-blue-700">{bulkMessage}</span>
+            )}
+          </div>
+        )}
+
         {loading ? (
           <div className="text-center py-12 text-gray-500">Loading...</div>
         ) : error ? (
@@ -146,6 +258,14 @@ export default function AdminOrdersPage() {
             <table className="w-full text-sm">
               <thead className="bg-gray-50 border-b">
                 <tr>
+                  <th className="px-4 py-3 w-10">
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.size === orders.length && orders.length > 0}
+                      onChange={toggleSelectAll}
+                      className="rounded border-gray-300"
+                    />
+                  </th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Order #</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Customer</th>
                   <th className="px-4 py-3 text-left font-medium text-gray-600">Total</th>
@@ -156,7 +276,18 @@ export default function AdminOrdersPage() {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {orders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50">
+                  <tr
+                    key={order.id}
+                    className={`hover:bg-gray-50 ${selectedIds.has(order.id) ? 'bg-blue-50' : ''}`}
+                  >
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(order.id)}
+                        onChange={() => toggleSelect(order.id)}
+                        className="rounded border-gray-300"
+                      />
+                    </td>
                     <td className="px-4 py-3 font-mono font-medium">{order.order_number}</td>
                     <td className="px-4 py-3">
                       <div>{order.customer_name}</div>
