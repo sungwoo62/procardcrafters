@@ -41,6 +41,18 @@ const INITIAL_FORM: FormState = {
 
 type UploadStatus = 'idle' | 'uploading' | 'done' | 'error'
 
+interface FileValidation {
+  isValid: boolean
+  warnings: string[]
+  details: {
+    pageCount?: number
+    widthMm?: number
+    heightMm?: number
+    colorSpace?: string
+    hasBleed?: boolean
+  }
+}
+
 export default function OrderForm({ product, selectedOptions, itemPriceUsd, shippingUsd, exchangeRate }: Props) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -50,6 +62,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
+  const [fileValidation, setFileValidation] = useState<FileValidation | null>(null)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
@@ -67,6 +80,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     setUploadStatus('uploading')
     setUploadError(null)
     setUploadedFileId(null)
+    setFileValidation(null)
 
     const formData = new FormData()
     formData.append('file', file)
@@ -77,12 +91,18 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     if (!res.ok) {
       setUploadStatus('error')
       setUploadError(data.error ?? '업로드 실패')
+      if (data.validation) {
+        setFileValidation(data.validation)
+      }
       return
     }
 
     setUploadStatus('done')
     setUploadedFileId(data.fileId)
     setUploadedFileName(file.name)
+    if (data.validation) {
+      setFileValidation(data.validation)
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -207,11 +227,53 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           className="hidden"
         />
 
-        {/* 파일 미리보기 (PDF의 경우 iframe, 이미지의 경우 img) */}
+        {/* 파일 미리보기 */}
         {uploadStatus === 'done' && uploadedFileName && (
           <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-3">
             <FileText className="w-4 h-4 text-blue-500 shrink-0" />
             <span className="truncate">{uploadedFileName}</span>
+          </div>
+        )}
+
+        {/* 파일 검증 결과 */}
+        {fileValidation && (
+          <div className="mt-3 space-y-2">
+            {/* 상세 정보 */}
+            {fileValidation.details && (
+              <div className="flex flex-wrap gap-2 text-xs">
+                {fileValidation.details.colorSpace && (
+                  <span className={`px-2 py-1 rounded-full font-medium ${fileValidation.details.colorSpace === 'CMYK' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    {fileValidation.details.colorSpace}
+                  </span>
+                )}
+                {fileValidation.details.pageCount !== undefined && (
+                  <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                    {fileValidation.details.pageCount}p
+                  </span>
+                )}
+                {fileValidation.details.widthMm !== undefined && (
+                  <span className="px-2 py-1 rounded-full bg-blue-100 text-blue-700 font-medium">
+                    {fileValidation.details.widthMm}×{fileValidation.details.heightMm}mm
+                  </span>
+                )}
+                {fileValidation.details.hasBleed !== undefined && (
+                  <span className={`px-2 py-1 rounded-full font-medium ${fileValidation.details.hasBleed ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                    Bleed: {fileValidation.details.hasBleed ? 'OK' : 'Missing'}
+                  </span>
+                )}
+              </div>
+            )}
+            {/* 경고 메시지 */}
+            {fileValidation.warnings.length > 0 && (
+              <div className="space-y-1">
+                {fileValidation.warnings.map((w, i) => (
+                  <div key={i} className="flex items-start gap-2 text-xs text-amber-700 bg-amber-50 rounded-lg px-3 py-2">
+                    <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    {w}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </section>

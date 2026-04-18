@@ -9,6 +9,7 @@ import {
   BarChart2,
   MessageCircle,
   Package,
+  FileText,
 } from 'lucide-react'
 
 interface TrendPoint {
@@ -141,6 +142,7 @@ export default function AdminDashboardPage() {
             {[
               { href: '/admin', label: '대시보드', icon: BarChart2 },
               { href: '/admin/orders', label: '주문 관리', icon: ShoppingBag },
+              { href: '/admin/files', label: '파일 검토', icon: FileText },
               { href: '/admin/chats', label: '챗봇 이력', icon: MessageCircle },
               { href: '/admin/portfolio', label: '포트폴리오', icon: Package },
             ].map(({ href, label, icon: Icon }) => (
