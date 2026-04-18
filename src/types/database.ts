@@ -35,6 +35,7 @@ export interface PrintProductOption {
 export interface PrintOrder {
   id: string
   order_number: string
+  user_id: string | null
   customer_email: string
   customer_name: string
   customer_phone: string | null

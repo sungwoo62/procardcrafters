@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Package, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
+import AuthButton from './AuthButton'
 
 const PRODUCTS = [
   { href: '/products/business-cards', label: 'Business Cards', emoji: '🪪' },
@@ -92,6 +93,7 @@ export default function Header() {
 
           {/* 액션 버튼 */}
           <div className="flex items-center gap-2">
+            <AuthButton />
             <Link
               href="/orders"
               className="hidden sm:inline-flex items-center text-sm text-gray-500 hover:text-gray-900 px-3 py-2 transition-colors"
@@ -153,6 +155,13 @@ export default function Header() {
                 onClick={() => setMobileOpen(false)}
               >
                 Order Status
+              </Link>
+              <Link
+                href="/mypage"
+                className="block px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                onClick={() => setMobileOpen(false)}
+              >
+                My Account
               </Link>
             </div>
           </nav>
