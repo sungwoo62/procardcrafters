@@ -10,6 +10,7 @@ import {
   MessageCircle,
   Package,
   FileText,
+  Users,
 } from 'lucide-react'
 
 interface TrendPoint {
@@ -145,6 +146,8 @@ export default function AdminDashboardPage() {
               { href: '/admin/files', label: '파일 검토', icon: FileText },
               { href: '/admin/chats', label: '챗봇 이력', icon: MessageCircle },
               { href: '/admin/portfolio', label: '포트폴리오', icon: Package },
+              { href: '/admin/files', label: '파일 검토', icon: FileText },
+              { href: '/admin/customers', label: '고객 관리', icon: Users },
             ].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}

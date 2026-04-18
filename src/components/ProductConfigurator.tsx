@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ShoppingCart, Truck, BadgeCheck } from 'lucide-react'
+import { ShoppingCart, Truck, BadgeCheck, Pencil } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption, OptionType } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
@@ -180,16 +180,27 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </p>
       </div>
 
-      {/* 주문 버튼 */}
-      <Link
-        href={`/order?product=${product.slug}&${new URLSearchParams(selections).toString()}`}
-        className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-      >
-        <span className="inline-flex items-center gap-2">
-          <ShoppingCart className="w-5 h-5" />
-          Upload File & Order
-        </span>
-      </Link>
+      {/* 주문 / 에디터 버튼 */}
+      <div className="space-y-2">
+        <Link
+          href={`/design/${product.slug}?${new URLSearchParams(selections).toString()}`}
+          className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+        >
+          <span className="inline-flex items-center gap-2">
+            <Pencil className="w-5 h-5" />
+            Design Online
+          </span>
+        </Link>
+        <Link
+          href={`/order?product=${product.slug}&${new URLSearchParams(selections).toString()}`}
+          className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+        >
+          <span className="inline-flex items-center gap-2">
+            <ShoppingCart className="w-5 h-5" />
+            Upload File & Order
+          </span>
+        </Link>
+      </div>
     </div>
   )
 }
