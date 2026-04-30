@@ -6,13 +6,34 @@ import { Package, ShoppingCart, Menu, X, ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import AuthButton from './AuthButton'
 
-const PRODUCTS = [
-  { href: '/products/business-cards', label: 'Business Cards', emoji: '🪪' },
-  { href: '/products/stickers', label: 'Stickers', emoji: '⭐' },
-  { href: '/products/flyers', label: 'Flyers', emoji: '📄' },
-  { href: '/products/postcards', label: 'Postcards', emoji: '💌' },
-  { href: '/products/posters', label: 'Posters', emoji: '🖼️' },
+const PRODUCT_GROUPS = [
+  {
+    title: 'Cards',
+    items: [
+      { href: '/products/business-cards', label: 'Business Cards' },
+      { href: '/products/premium-business-cards', label: 'Premium Business Cards' },
+      { href: '/products/postcards', label: 'Postcards' },
+    ],
+  },
+  {
+    title: 'Stickers',
+    items: [
+      { href: '/products/stickers', label: 'Stickers' },
+      { href: '/products/die-cut-stickers', label: 'Die-Cut Stickers' },
+    ],
+  },
+  {
+    title: 'Print',
+    items: [
+      { href: '/products/flyers', label: 'Flyers' },
+      { href: '/products/brochures', label: 'Brochures' },
+      { href: '/products/posters', label: 'Posters' },
+      { href: '/products/banners', label: 'Banners' },
+    ],
+  },
 ]
+
+const ALL_PRODUCTS = PRODUCT_GROUPS.flatMap((g) => g.items)
 
 const NAV_LINKS = [
   { href: '/portfolio', label: 'Portfolio' },
@@ -38,7 +59,7 @@ export default function Header() {
 
           {/* 데스크톱 네비게이션 */}
           <nav className="hidden md:flex items-center gap-1">
-            {/* 상품 드롭다운 */}
+            {/* 상품 메가 드롭다운 */}
             <div
               className="relative"
               onMouseEnter={() => setProductsOpen(true)}
@@ -51,27 +72,41 @@ export default function Header() {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
               >
-                Products <ChevronDown className="w-3.5 h-3.5" />
+                Products <ChevronDown className={`w-3.5 h-3.5 transition-transform ${productsOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {productsOpen && (
-                <div className="absolute top-full left-0 mt-1 w-52 bg-white border border-gray-200 rounded-xl shadow-lg py-1 z-50">
-                  <Link
-                    href="/products"
-                    className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-500 hover:bg-gray-50 font-medium hover:text-gray-900 transition-colors border-b border-gray-100"
-                  >
-                    All Products
-                  </Link>
-                  {PRODUCTS.map((product) => (
+                <div className="absolute top-full left-0 mt-1 bg-white border border-gray-200 rounded-xl shadow-xl py-4 px-2 z-50 w-[480px]">
+                  <div className="grid grid-cols-3 gap-1">
+                    {PRODUCT_GROUPS.map((group) => (
+                      <div key={group.title}>
+                        <div className="px-3 py-1.5 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                          {group.title}
+                        </div>
+                        {group.items.map((product) => (
+                          <Link
+                            key={product.href}
+                            href={product.href}
+                            className={`block px-3 py-2 text-sm rounded-lg transition-colors ${
+                              pathname === product.href
+                                ? 'text-blue-600 bg-blue-50 font-medium'
+                                : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                            }`}
+                          >
+                            {product.label}
+                          </Link>
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="mt-3 pt-3 border-t border-gray-100 px-3">
                     <Link
-                      key={product.href}
-                      href={product.href}
-                      className="flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-colors"
+                      href="/products"
+                      className="flex items-center justify-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 py-1.5 rounded-lg hover:bg-blue-50 transition-colors"
                     >
-                      <span>{product.emoji}</span>
-                      {product.label}
+                      View All Products
                     </Link>
-                  ))}
+                  </div>
                 </div>
               )}
             </div>
@@ -103,7 +138,7 @@ export default function Header() {
             <Link
               href="/cart"
               className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors"
-              aria-label="장바구니"
+              aria-label="Cart"
             >
               <ShoppingCart className="w-5 h-5" />
             </Link>
@@ -112,7 +147,7 @@ export default function Header() {
             <button
               className="md:hidden p-2 text-gray-600 hover:text-gray-900"
               onClick={() => setMobileOpen(!mobileOpen)}
-              aria-label="메뉴"
+              aria-label="Menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -122,22 +157,36 @@ export default function Header() {
 
       {/* 모바일 메뉴 */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-gray-200 bg-white">
+        <div className="md:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto">
           <nav className="flex flex-col py-2">
-            <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
-              Products
-            </div>
-            {PRODUCTS.map((product) => (
-              <Link
-                key={product.href}
-                href={product.href}
-                className="flex items-center gap-2 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
-                onClick={() => setMobileOpen(false)}
-              >
-                <span>{product.emoji}</span>
-                {product.label}
-              </Link>
+            {PRODUCT_GROUPS.map((group) => (
+              <div key={group.title}>
+                <div className="px-4 py-2 text-xs font-semibold text-gray-400 uppercase tracking-wide">
+                  {group.title}
+                </div>
+                {group.items.map((product) => (
+                  <Link
+                    key={product.href}
+                    href={product.href}
+                    className={`block px-6 py-2.5 text-sm font-medium transition-colors ${
+                      pathname === product.href
+                        ? 'text-blue-600 bg-blue-50'
+                        : 'text-gray-700 hover:bg-gray-50'
+                    }`}
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    {product.label}
+                  </Link>
+                ))}
+              </div>
             ))}
+            <Link
+              href="/products"
+              className="block px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors border-t border-gray-100 mt-1"
+              onClick={() => setMobileOpen(false)}
+            >
+              View All Products
+            </Link>
             <div className="border-t border-gray-100 mt-1 pt-1">
               {NAV_LINKS.map((link) => (
                 <Link

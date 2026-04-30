@@ -29,12 +29,16 @@ export default function Footer() {
           {/* 상품 */}
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Products</h3>
-            <ul className="space-y-2.5 text-sm text-gray-400">
+            <ul className="space-y-2 text-sm text-gray-400">
               <li><Link href="/products/business-cards" className="hover:text-white transition-colors">Business Cards</Link></li>
+              <li><Link href="/products/premium-business-cards" className="hover:text-white transition-colors">Premium Business Cards</Link></li>
               <li><Link href="/products/stickers" className="hover:text-white transition-colors">Stickers</Link></li>
+              <li><Link href="/products/die-cut-stickers" className="hover:text-white transition-colors">Die-Cut Stickers</Link></li>
               <li><Link href="/products/flyers" className="hover:text-white transition-colors">Flyers</Link></li>
+              <li><Link href="/products/brochures" className="hover:text-white transition-colors">Brochures</Link></li>
               <li><Link href="/products/postcards" className="hover:text-white transition-colors">Postcards</Link></li>
               <li><Link href="/products/posters" className="hover:text-white transition-colors">Posters</Link></li>
+              <li><Link href="/products/banners" className="hover:text-white transition-colors">Banners</Link></li>
             </ul>
           </div>
 
