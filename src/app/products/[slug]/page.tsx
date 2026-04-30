@@ -8,6 +8,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import ProductConfigurator from '@/components/ProductConfigurator'
+import ProductImage from '@/components/ProductImage'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 interface Props {
@@ -115,9 +116,9 @@ export default async function ProductDetailPage({ params }: Props) {
           <div>
             {/* 상품 비주얼 */}
             <div className={`h-80 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'} rounded-2xl flex items-center justify-center mb-6 border border-white shadow-sm`}>
-              <span className="text-9xl drop-shadow-sm">
-                {PRODUCT_EMOJI[product.category] ?? '📦'}
-              </span>
+              <div className="w-64 h-64">
+                <ProductImage category={product.category} />
+              </div>
             </div>
 
             {/* 상품 이름 */}

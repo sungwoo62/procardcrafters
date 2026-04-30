@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Star, Zap } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
+import ProductImage from '@/components/ProductImage'
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
@@ -123,9 +124,9 @@ export default async function ProductsPage() {
                 >
                   {/* 썸네일 */}
                   <div className={`h-44 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-gray-50 to-gray-100'} flex items-center justify-center relative`}>
-                    <span className="text-7xl group-hover:scale-110 transition-transform duration-300">
-                      {PRODUCT_EMOJI[product.category] ?? '📦'}
-                    </span>
+                    <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
+                      <ProductImage category={product.category} />
+                    </div>
                     {tag && (
                       <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${tag.color}`}>
                         {tag.label}

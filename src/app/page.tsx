@@ -15,98 +15,18 @@ import {
   Package,
 } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
+import ProductImage from '@/components/ProductImage'
 
 const PRODUCTS = [
-  {
-    slug: 'business-cards',
-    name: 'Business Cards',
-    emoji: '🪪',
-    desc: 'Professional cards that make a lasting impression.',
-    tag: 'Most Popular',
-    tagColor: 'bg-blue-100 text-blue-700',
-    gradient: 'from-blue-50 to-indigo-100',
-    accent: 'border-blue-200',
-  },
-  {
-    slug: 'premium-business-cards',
-    name: 'Premium Business Cards',
-    emoji: '💎',
-    desc: 'Luxury cards on linen, pearl, and specialty paper.',
-    tag: 'Premium',
-    tagColor: 'bg-indigo-100 text-indigo-700',
-    gradient: 'from-indigo-50 to-slate-100',
-    accent: 'border-indigo-200',
-  },
-  {
-    slug: 'stickers',
-    name: 'Stickers',
-    emoji: '⭐',
-    desc: 'Custom stickers in any shape or size.',
-    tag: 'Fast Turnaround',
-    tagColor: 'bg-yellow-100 text-yellow-700',
-    gradient: 'from-yellow-50 to-orange-50',
-    accent: 'border-yellow-200',
-  },
-  {
-    slug: 'die-cut-stickers',
-    name: 'Die-Cut Stickers',
-    emoji: '✂️',
-    desc: 'Custom-shaped stickers cut to your exact design.',
-    tag: null,
-    tagColor: '',
-    gradient: 'from-amber-50 to-yellow-100',
-    accent: 'border-amber-200',
-  },
-  {
-    slug: 'flyers',
-    name: 'Flyers',
-    emoji: '📄',
-    desc: 'Eye-catching flyers for promotions and events.',
-    tag: null,
-    tagColor: '',
-    gradient: 'from-green-50 to-emerald-100',
-    accent: 'border-green-200',
-  },
-  {
-    slug: 'brochures',
-    name: 'Brochures',
-    emoji: '📖',
-    desc: 'Folded brochures and leaflets for professional presentations.',
-    tag: null,
-    tagColor: '',
-    gradient: 'from-teal-50 to-cyan-100',
-    accent: 'border-teal-200',
-  },
-  {
-    slug: 'postcards',
-    name: 'Postcards',
-    emoji: '💌',
-    desc: 'Beautiful postcards for every occasion.',
-    tag: null,
-    tagColor: '',
-    gradient: 'from-pink-50 to-rose-100',
-    accent: 'border-pink-200',
-  },
-  {
-    slug: 'posters',
-    name: 'Posters',
-    emoji: '🖼️',
-    desc: 'Large-format posters with vibrant colors.',
-    tag: 'Best Value',
-    tagColor: 'bg-purple-100 text-purple-700',
-    gradient: 'from-purple-50 to-violet-100',
-    accent: 'border-purple-200',
-  },
-  {
-    slug: 'banners',
-    name: 'Banners',
-    emoji: '🏳️',
-    desc: 'Mini banners and signage for events and retail.',
-    tag: null,
-    tagColor: '',
-    gradient: 'from-red-50 to-orange-100',
-    accent: 'border-red-200',
-  },
+  { slug: 'business-cards', category: 'business_cards', name: 'Business Cards', desc: 'Professional cards that make a lasting impression.', tag: 'Most Popular', tagColor: 'bg-blue-100 text-blue-700', gradient: 'from-blue-50 to-indigo-100', accent: 'border-blue-200' },
+  { slug: 'premium-business-cards', category: 'premium_business_cards', name: 'Premium Business Cards', desc: 'Luxury cards on linen, pearl, and specialty paper.', tag: 'Premium', tagColor: 'bg-indigo-100 text-indigo-700', gradient: 'from-indigo-50 to-slate-100', accent: 'border-indigo-200' },
+  { slug: 'stickers', category: 'stickers', name: 'Stickers', desc: 'Custom stickers in any shape or size.', tag: 'Fast Turnaround', tagColor: 'bg-yellow-100 text-yellow-700', gradient: 'from-yellow-50 to-orange-50', accent: 'border-yellow-200' },
+  { slug: 'die-cut-stickers', category: 'die_cut_stickers', name: 'Die-Cut Stickers', desc: 'Custom-shaped stickers cut to your exact design.', tag: null, tagColor: '', gradient: 'from-amber-50 to-yellow-100', accent: 'border-amber-200' },
+  { slug: 'flyers', category: 'flyers', name: 'Flyers', desc: 'Eye-catching flyers for promotions and events.', tag: null, tagColor: '', gradient: 'from-green-50 to-emerald-100', accent: 'border-green-200' },
+  { slug: 'brochures', category: 'brochures', name: 'Brochures', desc: 'Folded brochures and leaflets for professional presentations.', tag: null, tagColor: '', gradient: 'from-teal-50 to-cyan-100', accent: 'border-teal-200' },
+  { slug: 'postcards', category: 'postcards', name: 'Postcards', desc: 'Beautiful postcards for every occasion.', tag: null, tagColor: '', gradient: 'from-pink-50 to-rose-100', accent: 'border-pink-200' },
+  { slug: 'posters', category: 'posters', name: 'Posters', desc: 'Large-format posters with vibrant colors.', tag: 'Best Value', tagColor: 'bg-purple-100 text-purple-700', gradient: 'from-purple-50 to-violet-100', accent: 'border-purple-200' },
+  { slug: 'banners', category: 'banners', name: 'Banners', desc: 'Mini banners and signage for events and retail.', tag: null, tagColor: '', gradient: 'from-red-50 to-orange-100', accent: 'border-red-200' },
 ]
 
 const STATS = [
@@ -260,9 +180,9 @@ export default async function HomePage() {
             >
               {/* 썸네일 */}
               <div className={`h-44 bg-gradient-to-br ${product.gradient} flex items-center justify-center relative`}>
-                <span className="text-7xl group-hover:scale-110 transition-transform duration-300">
-                  {product.emoji}
-                </span>
+                <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
+                  <ProductImage category={product.category} />
+                </div>
                 {product.tag && (
                   <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${product.tagColor}`}>
                     {product.tag}
