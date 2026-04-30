@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
+function getResend() {
+  return new Resend(process.env.RESEND_API_KEY ?? '')
+}
 
 function verifyAdmin(request: NextRequest): boolean {
   return request.headers.get('x-admin-secret') === process.env.ADMIN_SECRET
@@ -98,7 +100,7 @@ export async function PATCH(request: NextRequest) {
 
   if (customerEmail && process.env.RESEND_API_KEY) {
     if (status === 'approved') {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: 'Procardcrafters <noreply@procardcrafters.com>',
         to: customerEmail,
         subject: `파일 승인 완료 — ${orderNumber ?? '주문'}`,
@@ -111,7 +113,7 @@ export async function PATCH(request: NextRequest) {
         `,
       }).catch(() => null)  // 이메일 전송 실패 시 조용히 무시
     } else if (status === 'rejected') {
-      await resend.emails.send({
+      await getResend().emails.send({
         from: 'Procardcrafters <noreply@procardcrafters.com>',
         to: customerEmail,
         subject: `파일 검토 결과 안내 — ${orderNumber ?? '주문'}`,
