@@ -20,7 +20,7 @@ export default function LogoutButton() {
       className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 transition-colors px-3 py-2 rounded-lg hover:bg-gray-100"
     >
       <LogOut className="w-4 h-4" />
-      로그아웃
+      Log Out
     </button>
   )
 }

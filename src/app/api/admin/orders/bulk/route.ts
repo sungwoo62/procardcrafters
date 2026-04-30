@@ -7,31 +7,31 @@ function verifyAdmin(request: NextRequest): boolean {
   return secret === process.env.ADMIN_SECRET
 }
 
-// 허용되는 벌크 대상 상태 (진행 중인 주문만)
+// Allowed bulk target statuses
 const BULK_ALLOWED_TARGET: OrderStatus[] = [
   'paid', 'processing', 'shipped', 'delivered', 'cancelled',
 ]
 
 export async function PATCH(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   let body: { ids: string[]; status: OrderStatus }
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: '잘못된 요청 형식입니다' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
   const { ids, status } = body
 
   if (!Array.isArray(ids) || ids.length === 0) {
-    return NextResponse.json({ error: '주문 ID 목록이 필요합니다' }, { status: 400 })
+    return NextResponse.json({ error: 'Order ID list required' }, { status: 400 })
   }
 
   if (!BULK_ALLOWED_TARGET.includes(status)) {
-    return NextResponse.json({ error: `허용되지 않는 상태입니다: ${status}` }, { status: 400 })
+    return NextResponse.json({ error: `Invalid status: ${status}` }, { status: 400 })
   }
 
   const supabase = createServerClient()

@@ -45,10 +45,10 @@ interface FileRecord {
 }
 
 const STATUS_STYLE: Record<string, { label: string; color: string; icon: typeof CheckCircle }> = {
-  uploaded: { label: '검토 대기', color: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle },
-  approved: { label: '승인됨', color: 'bg-green-100 text-green-700', icon: CheckCircle },
-  rejected: { label: '거부됨', color: 'bg-red-100 text-red-700', icon: XCircle },
-  processing: { label: '처리중', color: 'bg-blue-100 text-blue-700', icon: Loader2 },
+  uploaded: { label: 'Pending Review', color: 'bg-yellow-100 text-yellow-700', icon: AlertTriangle },
+  approved: { label: 'Approved', color: 'bg-green-100 text-green-700', icon: CheckCircle },
+  rejected: { label: 'Rejected', color: 'bg-red-100 text-red-700', icon: XCircle },
+  processing: { label: 'Processing', color: 'bg-blue-100 text-blue-700', icon: Loader2 },
 }
 
 function formatFileSize(bytes: number | null): string {
@@ -59,7 +59,7 @@ function formatFileSize(bytes: number | null): string {
 }
 
 function formatDate(dateStr: string): string {
-  return new Date(dateStr).toLocaleDateString('ko-KR', {
+  return new Date(dateStr).toLocaleDateString('en-US', {
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
@@ -131,16 +131,16 @@ export default function AdminFilesPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
         <form onSubmit={handleLogin} className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-sm space-y-4">
-          <h1 className="text-xl font-bold text-gray-900">파일 관리</h1>
+          <h1 className="text-xl font-bold text-gray-900">File Management</h1>
           <input
             type="password"
             value={secret}
             onChange={(e) => setSecret(e.target.value)}
-            placeholder="관리자 비밀번호"
+            placeholder="Admin password"
             className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
           />
           <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium text-sm">
-            로그인
+            Log In
           </button>
         </form>
       </div>
@@ -150,29 +150,29 @@ export default function AdminFilesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* 헤더 */}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <Link href="/admin" className="text-gray-500 hover:text-gray-700">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">파일 검토</h1>
-              <p className="text-sm text-gray-500">총 {total}개 파일</p>
+              <h1 className="text-2xl font-bold text-gray-900">File Review</h1>
+              <p className="text-sm text-gray-500">{total} files total</p>
             </div>
           </div>
           <button onClick={fetchFiles} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
-            <RefreshCw className="w-4 h-4" /> 새로고침
+            <RefreshCw className="w-4 h-4" /> Refresh
           </button>
         </div>
 
-        {/* 필터 */}
+        {/* Filters */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => { setStatusFilter(''); setPage(1) }}
             className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${!statusFilter ? 'bg-gray-900 text-white' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'}`}
           >
-            전체
+            All
           </button>
           {Object.entries(STATUS_STYLE).map(([key, { label }]) => (
             <button
@@ -190,21 +190,21 @@ export default function AdminFilesPage() {
             <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
           </div>
         ) : files.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">파일이 없습니다</div>
+          <div className="text-center py-20 text-gray-400">No files found</div>
         ) : (
           <>
-            {/* 파일 리스트 */}
+            {/* File list */}
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-gray-100 bg-gray-50">
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">파일명</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">형식</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">크기</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">검증</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">상태</th>
-                    <th className="text-left px-4 py-3 font-medium text-gray-500">업로드</th>
-                    <th className="text-right px-4 py-3 font-medium text-gray-500">작업</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Filename</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Format</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Size</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Validation</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Status</th>
+                    <th className="text-left px-4 py-3 font-medium text-gray-500">Uploaded</th>
+                    <th className="text-right px-4 py-3 font-medium text-gray-500">Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -231,16 +231,16 @@ export default function AdminFilesPage() {
                             <div className="flex items-center gap-1">
                               {warningCount > 0 ? (
                                 <span className="flex items-center gap-1 text-amber-600 text-xs font-medium">
-                                  <AlertTriangle className="w-3.5 h-3.5" /> {warningCount}건 경고
+                                  <AlertTriangle className="w-3.5 h-3.5" /> {warningCount} warning(s)
                                 </span>
                               ) : (
                                 <span className="flex items-center gap-1 text-green-600 text-xs font-medium">
-                                  <CheckCircle className="w-3.5 h-3.5" /> 양호
+                                  <CheckCircle className="w-3.5 h-3.5" /> OK
                                 </span>
                               )}
                             </div>
                           ) : (
-                            <span className="text-gray-400 text-xs">미검증</span>
+                            <span className="text-gray-400 text-xs">Not validated</span>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -265,7 +265,7 @@ export default function AdminFilesPage() {
               </table>
             </div>
 
-            {/* 페이지네이션 */}
+            {/* Pagination */}
             {totalPages > 1 && (
               <div className="flex justify-center gap-2 mt-6">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
@@ -282,13 +282,13 @@ export default function AdminFilesPage() {
           </>
         )}
 
-        {/* 파일 상세 모달 */}
+        {/* File detail modal */}
         {selectedFile && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setSelectedFile(null)}>
             <div className="bg-white rounded-2xl max-w-lg w-full max-h-[80vh] overflow-y-auto p-6 space-y-5" onClick={(e) => e.stopPropagation()}>
               <div className="flex items-start justify-between">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">파일 상세</h2>
+                  <h2 className="text-lg font-bold text-gray-900">File Details</h2>
                   <p className="text-sm text-gray-500 truncate max-w-[300px]">{selectedFile.original_filename}</p>
                 </div>
                 <button onClick={() => setSelectedFile(null)} className="text-gray-400 hover:text-gray-600">
@@ -296,34 +296,34 @@ export default function AdminFilesPage() {
                 </button>
               </div>
 
-              {/* 기본 정보 */}
+              {/* Basic info */}
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-gray-400 text-xs mb-1">형식</div>
+                  <div className="text-gray-400 text-xs mb-1">Format</div>
                   <div className="font-medium">{selectedFile.mime_type?.split('/').pop()?.toUpperCase()}</div>
                 </div>
                 <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="text-gray-400 text-xs mb-1">크기</div>
+                  <div className="text-gray-400 text-xs mb-1">Size</div>
                   <div className="font-medium">{formatFileSize(selectedFile.file_size_bytes)}</div>
                 </div>
               </div>
 
-              {/* 검증 결과 */}
+              {/* Validation results */}
               {selectedFile.validation_result && (
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-gray-900 text-sm">검증 결과</h3>
+                  <h3 className="font-semibold text-gray-900 text-sm">Validation Results</h3>
 
-                  {/* 상세 정보 */}
+                  {/* Details */}
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     {selectedFile.validation_result.details.pageCount !== undefined && (
                       <div className="bg-blue-50 rounded-lg p-2">
-                        <span className="text-blue-500">페이지 수:</span>{' '}
+                        <span className="text-blue-500">Pages:</span>{' '}
                         <span className="font-medium text-blue-800">{selectedFile.validation_result.details.pageCount}</span>
                       </div>
                     )}
                     {selectedFile.validation_result.details.widthMm !== undefined && (
                       <div className="bg-blue-50 rounded-lg p-2">
-                        <span className="text-blue-500">크기:</span>{' '}
+                        <span className="text-blue-500">Dimensions:</span>{' '}
                         <span className="font-medium text-blue-800">
                           {selectedFile.validation_result.details.widthMm} × {selectedFile.validation_result.details.heightMm}mm
                         </span>
@@ -331,7 +331,7 @@ export default function AdminFilesPage() {
                     )}
                     {selectedFile.validation_result.details.colorSpace && (
                       <div className={`rounded-lg p-2 ${selectedFile.validation_result.details.colorSpace === 'CMYK' ? 'bg-green-50' : 'bg-amber-50'}`}>
-                        <span className={selectedFile.validation_result.details.colorSpace === 'CMYK' ? 'text-green-500' : 'text-amber-500'}>색상:</span>{' '}
+                        <span className={selectedFile.validation_result.details.colorSpace === 'CMYK' ? 'text-green-500' : 'text-amber-500'}>Colors:</span>{' '}
                         <span className={`font-medium ${selectedFile.validation_result.details.colorSpace === 'CMYK' ? 'text-green-800' : 'text-amber-800'}`}>
                           {selectedFile.validation_result.details.colorSpace}
                         </span>
@@ -339,15 +339,15 @@ export default function AdminFilesPage() {
                     )}
                     {selectedFile.validation_result.details.hasBleed !== undefined && (
                       <div className={`rounded-lg p-2 ${selectedFile.validation_result.details.hasBleed ? 'bg-green-50' : 'bg-amber-50'}`}>
-                        <span className={selectedFile.validation_result.details.hasBleed ? 'text-green-500' : 'text-amber-500'}>블리드:</span>{' '}
+                        <span className={selectedFile.validation_result.details.hasBleed ? 'text-green-500' : 'text-amber-500'}>Bleed:</span>{' '}
                         <span className={`font-medium ${selectedFile.validation_result.details.hasBleed ? 'text-green-800' : 'text-amber-800'}`}>
-                          {selectedFile.validation_result.details.hasBleed ? '있음' : '없음/부족'}
+                          {selectedFile.validation_result.details.hasBleed ? 'Yes' : 'No/Insufficient'}
                         </span>
                       </div>
                     )}
                   </div>
 
-                  {/* 경고 */}
+                  {/* Warnings */}
                   {selectedFile.validation_result.warnings.length > 0 && (
                     <div className="space-y-1.5">
                       {selectedFile.validation_result.warnings.map((w, i) => (
@@ -361,14 +361,14 @@ export default function AdminFilesPage() {
                 </div>
               )}
 
-              {/* 거부 사유 */}
+              {/* Rejection reason */}
               {selectedFile.status === 'rejected' && selectedFile.rejection_reason && (
                 <div className="bg-red-50 rounded-lg p-3 text-sm text-red-700">
-                  <span className="font-medium">거부 사유:</span> {selectedFile.rejection_reason}
+                  <span className="font-medium">Rejection reason:</span> {selectedFile.rejection_reason}
                 </div>
               )}
 
-              {/* 검토 액션 */}
+              {/* Review actions */}
               {selectedFile.status === 'uploaded' && (
                 <div className="space-y-3 border-t border-gray-100 pt-4">
                   <div className="flex gap-2">
@@ -377,7 +377,7 @@ export default function AdminFilesPage() {
                       disabled={updating}
                       className="flex-1 bg-green-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-green-700 disabled:opacity-50"
                     >
-                      {updating ? '처리중...' : '승인'}
+                      {updating ? 'Processing...' : 'Approve'}
                     </button>
                     <button
                       onClick={() => {
@@ -390,24 +390,24 @@ export default function AdminFilesPage() {
                       disabled={updating}
                       className="flex-1 bg-red-600 text-white py-2 rounded-lg font-medium text-sm hover:bg-red-700 disabled:opacity-50"
                     >
-                      거부
+                      Reject
                     </button>
                   </div>
                   {rejectionReason !== '' && (
                     <textarea
                       value={rejectionReason}
                       onChange={(e) => setRejectionReason(e.target.value)}
-                      placeholder="거부 사유를 입력하세요 (예: 해상도 부족, CMYK 변환 필요)"
+                      placeholder="Enter rejection reason (e.g., low resolution, CMYK conversion needed)"
                       className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm resize-none h-20"
                     />
                   )}
                 </div>
               )}
 
-              {/* 검토 정보 */}
+              {/* Review info */}
               {selectedFile.reviewed_at && (
                 <div className="text-xs text-gray-400 pt-2 border-t border-gray-100">
-                  검토: {selectedFile.reviewed_by} · {formatDate(selectedFile.reviewed_at)}
+                  Reviewed by: {selectedFile.reviewed_by} · {formatDate(selectedFile.reviewed_at)}
                 </div>
               )}
             </div>

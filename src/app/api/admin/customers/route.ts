@@ -7,7 +7,7 @@ function verifyAdmin(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '권한 없음' }, { status: 401 })
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient()
 
-  // 주문 테이블에서 고객 통계 집계
+  // Aggregate customer stats from orders table
   let query = supabase
     .from('print_orders')
     .select(
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // 고객별 집계 (email 기준 dedup)
+  // Aggregate per customer (dedup by email)
   const customerMap = new Map<
     string,
     {

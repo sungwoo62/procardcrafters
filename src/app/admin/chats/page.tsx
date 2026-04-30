@@ -43,7 +43,7 @@ export default function AdminChatsPage() {
 
     if (res.status === 401) {
       setAuthenticated(false)
-      setError('인증 실패. 비밀번호를 확인하세요.')
+      setError('Authentication failed. Check your password.')
       setLoading(false)
       return
     }
@@ -101,7 +101,7 @@ export default function AdminChatsPage() {
             type="submit"
             className="w-full rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
           >
-            로그인
+            Login
           </button>
         </form>
       </div>
@@ -113,15 +113,15 @@ export default function AdminChatsPage() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 flex items-center gap-3">
           <MessageCircle className="h-6 w-6 text-gray-700" />
-          <h1 className="text-2xl font-bold text-gray-900">AI 챗봇 대화 이력</h1>
+          <h1 className="text-2xl font-bold text-gray-900">AI Chat History</h1>
         </div>
 
         {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
         {loading ? (
-          <p className="text-sm text-gray-500">불러오는 중...</p>
+          <p className="text-sm text-gray-500">Loading...</p>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-gray-500">아직 채팅 세션이 없습니다.</p>
+          <p className="text-sm text-gray-500">No chat sessions yet.</p>
         ) : (
           <div className="space-y-3">
             {sessions.map((session) => {
@@ -143,7 +143,7 @@ export default function AdminChatsPage() {
                         {session.session_id.slice(0, 8)}…
                       </span>
                       <span className="text-sm text-gray-700">
-                        {new Date(session.created_at).toLocaleString('ko-KR')}
+                        {new Date(session.created_at).toLocaleString('en-US')}
                         {session.estimate_product && (
                           <span className="ml-3 inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700">
                             {session.estimate_product} — ${session.estimate_price_usd?.toFixed(2)}
@@ -161,9 +161,9 @@ export default function AdminChatsPage() {
                   {isExpanded && (
                     <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-gray-50">
                       {isLoadingMsgs ? (
-                        <p className="text-xs text-gray-400">불러오는 중...</p>
+                        <p className="text-xs text-gray-400">Loading...</p>
                       ) : msgs.length === 0 ? (
-                        <p className="text-xs text-gray-400">메시지 없음</p>
+                        <p className="text-xs text-gray-400">No messages</p>
                       ) : (
                         msgs.map((msg) => (
                           <div
@@ -180,7 +180,7 @@ export default function AdminChatsPage() {
                               {msg.content}
                               {msg.estimate_price_usd && (
                                 <div className="mt-1.5 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                                  견적: {msg.estimate_product} {msg.estimate_quantity}장 ({msg.estimate_size},{' '}
+                                  Quote: {msg.estimate_product} {msg.estimate_quantity} pcs ({msg.estimate_size},{' '}
                                   {msg.estimate_finish}) — ${msg.estimate_price_usd.toFixed(2)}
                                 </div>
                               )}
@@ -196,22 +196,22 @@ export default function AdminChatsPage() {
           </div>
         )}
 
-        {/* 페이지네이션 */}
+        {/* Pagination */}
         <div className="mt-6 flex items-center justify-between">
           <button
             disabled={page === 1}
             onClick={() => setPage((p) => p - 1)}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 hover:bg-gray-50 transition-colors"
           >
-            이전
+            Previous
           </button>
-          <span className="text-sm text-gray-500">페이지 {page}</span>
+          <span className="text-sm text-gray-500">Page {page}</span>
           <button
             disabled={sessions.length < 50}
             onClick={() => setPage((p) => p + 1)}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 hover:bg-gray-50 transition-colors"
           >
-            다음
+            Next
           </button>
         </div>
       </div>

@@ -30,7 +30,7 @@ function LoginForm() {
     })
 
     if (signInError) {
-      setError('이메일 또는 비밀번호가 올바르지 않습니다.')
+      setError('Invalid email or password.')
       setLoading(false)
       return
     }
@@ -48,7 +48,7 @@ function LoginForm() {
       },
     })
     if (oauthError) {
-      setError('Google 로그인에 실패했습니다. 다시 시도해주세요.')
+      setError('Google sign-in failed. Please try again.')
       setGoogleLoading(false)
     }
   }
@@ -56,17 +56,17 @@ function LoginForm() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-sm">
-        {/* 로고 */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-gray-900">
             <Package className="w-7 h-7 text-blue-600" />
             Procardcrafters
           </Link>
-          <p className="mt-2 text-sm text-gray-500">계정에 로그인하세요</p>
+          <p className="mt-2 text-sm text-gray-500">Sign in to your account</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          {/* Google 로그인 */}
+          {/* Google Login */}
           <button
             onClick={handleGoogle}
             disabled={googleLoading || loading}
@@ -78,7 +78,7 @@ function LoginForm() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {googleLoading ? 'Google로 이동 중...' : 'Google로 계속하기'}
+            {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
           </button>
 
           <div className="relative mb-6">
@@ -86,11 +86,11 @@ function LoginForm() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs text-gray-400">
-              <span className="bg-white px-3">또는 이메일로 로그인</span>
+              <span className="bg-white px-3">or log in with email</span>
             </div>
           </div>
 
-          {/* 이메일/비밀번호 폼 */}
+          {/* Email/Password Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             {error && (
               <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2.5">
@@ -101,7 +101,7 @@ function LoginForm() {
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                이메일
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -120,7 +120,7 @@ function LoginForm() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                비밀번호
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -142,15 +142,15 @@ function LoginForm() {
               disabled={loading || googleLoading}
               className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '로그인 중...' : '로그인'}
+              {loading ? 'Logging in...' : 'Log In'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          계정이 없으신가요?{' '}
+          Don't have an account?{' '}
           <Link href="/auth/signup" className="text-blue-600 font-medium hover:underline">
-            회원가입
+            Sign Up
           </Link>
         </p>
       </div>
@@ -160,7 +160,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-gray-400 text-sm">로딩 중...</div></div>}>
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center"><div className="text-gray-400 text-sm">Loading...</div></div>}>
       <LoginForm />
     </Suspense>
   )

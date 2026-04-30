@@ -8,7 +8,7 @@ function verifyAdmin(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient()
 
-  // 세션별로 그룹화: 각 세션의 마지막 메시지 시각 + 최종 견적 정보
+  // Group by session: last message time + latest estimate info
   const { data: sessions, error: sessErr } = await supabase
     .from('print_chat_logs')
     .select('session_id, created_at, estimate_product, estimate_price_usd')
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: sessErr.message }, { status: 500 })
   }
 
-  // 세션 ID별 중복 제거 (가장 최신 레코드만)
+  // Deduplicate by session ID (keep most recent record)
   const seen = new Set<string>()
   const uniqueSessions = (sessions ?? []).filter((row) => {
     if (seen.has(row.session_id)) return false

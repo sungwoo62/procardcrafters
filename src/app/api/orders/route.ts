@@ -36,20 +36,20 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json()
   } catch {
-    return NextResponse.json({ error: '잘못된 요청 형식입니다' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
   const { items, customer, shipping } = body
 
   if (!items?.length || !customer?.email || !shipping?.addressLine1) {
-    return NextResponse.json({ error: '필수 정보가 누락되었습니다' }, { status: 400 })
+    return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 })
   }
 
   const supabase = createServerClient()
   const exchangeRate = await getKrwToUsdRate()
   const shippingUsd = getShippingCost(shipping.country)
 
-  // 상품 정보 조회
+  // Fetch product info
   const productIds = items.map((i) => i.productId)
   const { data: products, error: productError } = await supabase
     .from('print_products')
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
     .eq('is_active', true)
 
   if (productError || !products?.length) {
-    return NextResponse.json({ error: '상품 정보를 찾을 수 없습니다' }, { status: 404 })
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
   interface StripeLineItem {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     quantity: number
   }
 
-  // 주문 항목별 가격 계산
+  // Calculate price per order item
   const lineItems: StripeLineItem[] = []
   const orderItemsData: {
     product_id: string
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
   for (const item of items) {
     const product = products.find((p) => p.id === item.productId)
     if (!product) {
-      return NextResponse.json({ error: `상품을 찾을 수 없습니다: ${item.productId}` }, { status: 404 })
+      return NextResponse.json({ error: `Product not found: ${item.productId}` }, { status: 404 })
     }
 
     const productOptions = (product.print_product_options ?? []) as {
@@ -126,7 +126,7 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // 배송비 line item
+  // Shipping line item
   lineItems.push({
     price_data: {
       currency: 'usd',
@@ -139,7 +139,7 @@ export async function POST(request: NextRequest) {
   const subtotalUsd = orderItemsData.reduce((sum, i) => sum + i.subtotal_usd, 0)
   const totalUsd = subtotalUsd + shippingUsd
 
-  // 주문 생성
+  // Create order
   const { data: order, error: orderError } = await supabase
     .from('print_orders')
     .insert({
@@ -163,19 +163,19 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (orderError || !order) {
-    return NextResponse.json({ error: `주문 생성 실패: ${orderError?.message}` }, { status: 500 })
+    return NextResponse.json({ error: `Failed to create order: ${orderError?.message}` }, { status: 500 })
   }
 
-  // 주문 항목 생성
+  // Create order items
   const { error: itemsError } = await supabase.from('print_order_items').insert(
     orderItemsData.map((i) => ({ ...i, order_id: order.id }))
   )
 
   if (itemsError) {
-    return NextResponse.json({ error: `주문 항목 저장 실패: ${itemsError.message}` }, { status: 500 })
+    return NextResponse.json({ error: `Failed to save order items: ${itemsError.message}` }, { status: 500 })
   }
 
-  // 파일 연결
+  // Link files to order
   for (let idx = 0; idx < items.length; idx++) {
     const fileId = items[idx].fileId
     if (fileId) {
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // Stripe Checkout 세션 생성
+  // Create Stripe Checkout session
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
@@ -201,7 +201,7 @@ export async function POST(request: NextRequest) {
     },
   })
 
-  // Stripe session ID 저장
+  // Save Stripe session ID
   await supabase
     .from('print_orders')
     .update({ stripe_session_id: session.id })

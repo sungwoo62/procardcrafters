@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="bg-gray-900 mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10">
-          {/* 브랜드 */}
+          {/* Brand */}
           <div className="sm:col-span-2 md:col-span-1">
             <Link href="/" className="inline-flex items-center gap-2 font-bold text-white mb-4">
               <Package className="w-5 h-5 text-blue-400" />
@@ -26,7 +26,7 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* 상품 */}
+          {/* Products */}
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Products</h3>
             <ul className="space-y-2 text-sm text-gray-400">
@@ -42,7 +42,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 회사 */}
+          {/* Company */}
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Company</h3>
             <ul className="space-y-2.5 text-sm text-gray-400">
@@ -52,7 +52,7 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* 고객지원 */}
+          {/* Support */}
           <div>
             <h3 className="text-sm font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-2.5 text-sm text-gray-400">

@@ -17,7 +17,7 @@ interface Estimate {
   priceUsd: number
 }
 
-// 세션 ID를 브라우저 스토리지에서 가져오거나 새로 생성
+// Get or create a session ID from browser storage
 function getSessionId(): string {
   if (typeof window === 'undefined') return ''
   const key = 'pccf_chat_session'
@@ -104,26 +104,26 @@ export default function ChatWidget() {
     setMessages([WELCOME_MESSAGE])
     setEstimate(null)
     setInput('')
-    // 새 세션 시작
+    // Start new session
     sessionStorage.removeItem('pccf_chat_session')
     sessionId.current = getSessionId()
   }
 
   return (
     <>
-      {/* 플로팅 버튼 */}
+      {/* Floating Button */}
       <button
         onClick={() => setIsOpen((v) => !v)}
-        aria-label="인쇄 견적 챗봇 열기"
+        aria-label="Open print quote chatbot"
         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-white shadow-lg transition-transform hover:scale-105 active:scale-95"
       >
         {isOpen ? <X className="h-6 w-6" /> : <MessageCircle className="h-6 w-6" />}
       </button>
 
-      {/* 채팅 패널 */}
+      {/* Chat Panel */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 z-50 flex w-80 flex-col rounded-2xl border border-gray-200 bg-white shadow-2xl sm:w-96">
-          {/* 헤더 */}
+          {/* Header */}
           <div className="flex items-center justify-between rounded-t-2xl bg-gray-900 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-white">Print Quote Assistant</p>
@@ -137,7 +137,7 @@ export default function ChatWidget() {
             </button>
           </div>
 
-          {/* 메시지 목록 */}
+          {/* Message List */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3 max-h-80">
             {messages.map((msg, i) => (
               <div
@@ -167,7 +167,7 @@ export default function ChatWidget() {
             <div ref={messagesEndRef} />
           </div>
 
-          {/* 견적 CTA */}
+          {/* Estimate CTA */}
           {estimate && (
             <div className="mx-4 mb-3 rounded-xl bg-gray-50 border border-gray-200 p-3">
               <p className="text-xs font-semibold text-gray-700 mb-1">Your Estimate</p>
@@ -186,7 +186,7 @@ export default function ChatWidget() {
             </div>
           )}
 
-          {/* 입력창 */}
+          {/* Input Field */}
           <div className="flex items-center gap-2 border-t border-gray-100 px-3 py-3">
             <input
               ref={inputRef}
@@ -201,7 +201,7 @@ export default function ChatWidget() {
             <button
               onClick={sendMessage}
               disabled={loading || !input.trim()}
-              aria-label="메시지 전송"
+              aria-label="Send message"
               className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl bg-gray-900 text-white transition-colors hover:bg-gray-700 disabled:opacity-40"
             >
               <Send className="h-4 w-4" />

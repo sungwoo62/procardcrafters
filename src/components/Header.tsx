@@ -51,15 +51,15 @@ export default function Header() {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* 로고 */}
+          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 shrink-0">
             <Package className="w-6 h-6 text-blue-600" />
             <span>Procardcrafters</span>
           </Link>
 
-          {/* 데스크톱 네비게이션 */}
+          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            {/* 상품 메가 드롭다운 */}
+            {/* Products Mega Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setProductsOpen(true)}
@@ -126,7 +126,7 @@ export default function Header() {
             ))}
           </nav>
 
-          {/* 액션 버튼 */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <AuthButton />
             <Link
@@ -143,7 +143,7 @@ export default function Header() {
               <ShoppingCart className="w-5 h-5" />
             </Link>
 
-            {/* 모바일 메뉴 버튼 */}
+            {/* Mobile Menu Button */}
             <button
               className="md:hidden p-2 text-gray-600 hover:text-gray-900"
               onClick={() => setMobileOpen(!mobileOpen)}
@@ -155,7 +155,7 @@ export default function Header() {
         </div>
       </div>
 
-      {/* 모바일 메뉴 */}
+      {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto">
           <nav className="flex flex-col py-2">

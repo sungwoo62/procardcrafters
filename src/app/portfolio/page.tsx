@@ -33,7 +33,7 @@ async function getPortfolioItems(): Promise<PortfolioItem[]> {
     .order('sort_order', { ascending: true })
 
   if (error) {
-    console.error('포트폴리오 로드 오류:', error)
+    console.error('Portfolio load error:', error)
     return []
   }
   return data ?? []
@@ -44,7 +44,7 @@ export default async function PortfolioPage() {
 
   return (
     <div className="min-h-screen">
-      {/* 헤더 */}
+      {/* Header */}
       <section className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 py-20 px-4 text-center">
         <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-4">Our Work</p>
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 leading-tight">
@@ -55,7 +55,7 @@ export default async function PortfolioPage() {
         </p>
       </section>
 
-      {/* 갤러리 (클라이언트 컴포넌트 — 필터 + 라이트박스) */}
+      {/* Gallery (client component — filter + lightbox) */}
       <PortfolioGallery items={items} />
     </div>
   )

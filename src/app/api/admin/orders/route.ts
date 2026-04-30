@@ -9,7 +9,7 @@ function verifyAdmin(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const { searchParams } = new URL(request.url)

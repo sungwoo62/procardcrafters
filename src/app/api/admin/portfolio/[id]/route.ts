@@ -11,13 +11,13 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const { id } = await params
   const body = await request.json()
 
-  // 허용된 필드만 업데이트
+  // Only update allowed fields
   const allowed = ['title', 'description', 'category', 'image_url', 'thumbnail_url', 'tags', 'is_featured', 'is_published', 'sort_order']
   const update: Record<string, unknown> = {}
   for (const key of allowed) {
@@ -25,7 +25,7 @@ export async function PATCH(
   }
 
   if (Object.keys(update).length === 0) {
-    return NextResponse.json({ error: '업데이트할 필드 없음' }, { status: 400 })
+    return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
   }
 
   const supabase = createServerClient()
@@ -47,7 +47,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const { id } = await params

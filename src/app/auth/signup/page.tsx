@@ -23,7 +23,7 @@ export default function SignupPage() {
     setError(null)
 
     if (password.length < 8) {
-      setError('비밀번호는 최소 8자 이상이어야 합니다.')
+      setError('Password must be at least 8 characters.')
       return
     }
 
@@ -40,9 +40,9 @@ export default function SignupPage() {
 
     if (signUpError) {
       if (signUpError.message.includes('already registered')) {
-        setError('이미 가입된 이메일입니다. 로그인해주세요.')
+        setError('This email is already registered. Please log in.')
       } else {
-        setError('회원가입에 실패했습니다. 다시 시도해주세요.')
+        setError('Sign up failed. Please try again.')
       }
       setLoading(false)
       return
@@ -61,7 +61,7 @@ export default function SignupPage() {
       },
     })
     if (oauthError) {
-      setError('Google 로그인에 실패했습니다. 다시 시도해주세요.')
+      setError('Google sign-in failed. Please try again.')
       setGoogleLoading(false)
     }
   }
@@ -72,16 +72,16 @@ export default function SignupPage() {
         <div className="w-full max-w-sm text-center">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
             <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
-            <h2 className="text-xl font-bold text-gray-900 mb-2">이메일을 확인해주세요</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-2">Check your email</h2>
             <p className="text-sm text-gray-500 mb-6">
-              <span className="font-medium text-gray-900">{email}</span>로 인증 링크를 보냈습니다.
-              이메일을 확인하고 링크를 클릭하면 가입이 완료됩니다.
+              We sent a verification link to <span className="font-medium text-gray-900">{email}</span>.
+              Please check your email and click the link to complete registration.
             </p>
             <Link
               href="/auth/login"
               className="inline-block text-sm text-blue-600 font-medium hover:underline"
             >
-              로그인 페이지로 이동
+              Go to Login
             </Link>
           </div>
         </div>
@@ -92,17 +92,17 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-gray-50">
       <div className="w-full max-w-sm">
-        {/* 로고 */}
+        {/* Logo */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 text-xl font-bold text-gray-900">
             <Package className="w-7 h-7 text-blue-600" />
             Procardcrafters
           </Link>
-          <p className="mt-2 text-sm text-gray-500">무료로 계정을 만들어보세요</p>
+          <p className="mt-2 text-sm text-gray-500">Create your free account</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          {/* Google 가입 */}
+          {/* Google Sign Up */}
           <button
             onClick={handleGoogle}
             disabled={googleLoading || loading}
@@ -114,7 +114,7 @@ export default function SignupPage() {
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
             </svg>
-            {googleLoading ? 'Google로 이동 중...' : 'Google로 계속하기'}
+            {googleLoading ? 'Redirecting to Google...' : 'Continue with Google'}
           </button>
 
           <div className="relative mb-6">
@@ -122,7 +122,7 @@ export default function SignupPage() {
               <div className="w-full border-t border-gray-200" />
             </div>
             <div className="relative flex justify-center text-xs text-gray-400">
-              <span className="bg-white px-3">또는 이메일로 가입</span>
+              <span className="bg-white px-3">or sign up with email</span>
             </div>
           </div>
 
@@ -136,7 +136,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
-                이름
+                Name
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -148,14 +148,14 @@ export default function SignupPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="홍길동"
+                  placeholder="John Doe"
                 />
               </div>
             </div>
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                이메일
+                Email
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -174,7 +174,7 @@ export default function SignupPage() {
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                비밀번호
+                Password
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -187,7 +187,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  placeholder="최소 8자"
+                  placeholder="Min 8 characters"
                 />
               </div>
             </div>
@@ -197,15 +197,15 @@ export default function SignupPage() {
               disabled={loading || googleLoading}
               className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? '가입 중...' : '회원가입'}
+              {loading ? 'Signing up...' : 'Sign Up'}
             </button>
           </form>
         </div>
 
         <p className="text-center text-sm text-gray-500 mt-6">
-          이미 계정이 있으신가요?{' '}
+          Already have an account?{' '}
           <Link href="/auth/login" className="text-blue-600 font-medium hover:underline">
-            로그인
+            Log In
           </Link>
         </p>
       </div>

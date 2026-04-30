@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { fetchSwadpiaCategoryData, fetchAllSwadpiaData, type SwadpiaCategoryData } from '@/lib/swadpia'
 
-// 관리자 수동 가격 동기화 API
-// POST /api/admin/sync-prices           → 전체 상품 동기화
-// POST /api/admin/sync-prices?slug=xxx  → 특정 상품만 동기화
-// GET  /api/admin/sync-prices           → 최근 가격 이력 조회
+// Admin manual price sync API
+// POST /api/admin/sync-prices           -> Sync all products
+// POST /api/admin/sync-prices?slug=xxx  -> Sync specific product
+// GET  /api/admin/sync-prices           -> Recent price history
 
 const CATEGORY_TO_SLUG: Record<string, string> = {
   'CNC1000': 'business-cards',
@@ -34,7 +34,7 @@ function extractBasePrice(data: SwadpiaCategoryData): number {
 export async function GET(req: NextRequest) {
   const adminKey = req.headers.get('x-admin-key')
   if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const supabase = createServerClient()
@@ -74,14 +74,14 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const adminKey = req.headers.get('x-admin-key')
   if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const supabase = createServerClient()
   const { searchParams } = new URL(req.url)
   const targetSlug = searchParams.get('slug')
 
-  // 수동 가격 입력 지원
+  // Support manual price input
   let manualPrices: Record<string, number> | null = null
   try {
     const body = await req.json()
@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
       manualPrices = body.manualPrices
     }
   } catch {
-    // body 없음 → 성원 스크래핑 모드
+    // No body -> Swadpia scraping mode
   }
 
   let productQuery = supabase
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: productsError.message }, { status: 500 })
   }
   if (!products || products.length === 0) {
-    return NextResponse.json({ error: '상품을 찾을 수 없음' }, { status: 404 })
+    return NextResponse.json({ error: 'Product not found' }, { status: 404 })
   }
 
   const results = []
@@ -145,7 +145,7 @@ export async function POST(req: NextRequest) {
       results.push({ slug: product.slug, success: true, priceChanged, prevPrice, newPrice })
     }
   } else {
-    // 성원 스크래핑 모드
+    // Swadpia scraping mode
     const swadpiaResults = targetSlug
       ? [await fetchSwadpiaCategoryData(targetSlug)]
       : await fetchAllSwadpiaData()
@@ -201,7 +201,7 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    message: `동기화 완료: ${results.filter(r => r.success).length}/${results.length}`,
+    message: `Sync complete: ${results.filter(r => r.success).length}/${results.length}`,
     results,
     timestamp: new Date().toISOString(),
   })

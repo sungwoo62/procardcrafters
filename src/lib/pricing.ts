@@ -1,13 +1,13 @@
 import { krwToUsd } from './exchange-rate'
 
 /**
- * 성원 기반 가격 계산 (KRW → USD)
+ * Swadpia-based price calculation (KRW to USD)
  *
- * 공식: (성원 인쇄비 KRW) × margin_multiplier × exchange_rate + 배송비
+ * Formula: (Swadpia print cost KRW) x margin_multiplier x exchange_rate + shipping
  *
- * - swadpiaPriceKrw: 성원 인쇄비 (수량별 조회값)
- * - marginMultiplier: 마진 배율 (기본 3.3)
- * - exchangeRate: KRW → USD 환율
+ * - swadpiaPriceKrw: Swadpia print cost (per-quantity lookup)
+ * - marginMultiplier: Margin multiplier (default 3.3)
+ * - exchangeRate: KRW to USD exchange rate
  */
 export function calculateItemPriceUsd(params: {
   basePriceKrw: number
@@ -24,11 +24,11 @@ export function calculateItemPriceUsd(params: {
 }
 
 /**
- * 성원 인쇄비 매트릭스 기반 가격 계산 (USD)
+ * Swadpia print cost matrix-based price calculation (USD)
  *
- * swadpiaCostKrw: 성원 도매가 (print_info1 조회 결과)
- * marginMultiplier: 마진 배율 (3.3)
- * exchangeRate: KRW → USD
+ * swadpiaCostKrw: Swadpia wholesale cost (print_info1 lookup result)
+ * marginMultiplier: Margin multiplier (3.3)
+ * exchangeRate: KRW to USD
  */
 export function calculatePriceFromSwadpia(params: {
   swadpiaCostKrw: number

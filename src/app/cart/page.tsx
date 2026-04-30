@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { ShoppingCart, ArrowRight } from 'lucide-react'
 
 export default function CartPage() {
-  // MVP: 장바구니는 개별 상품 → 주문 플로우로 대체
+  // MVP: cart replaced by direct product → order flow
   return (
     <div className="max-w-2xl mx-auto px-4 py-20 text-center">
       <ShoppingCart className="w-16 h-16 text-gray-300 mx-auto mb-6" />

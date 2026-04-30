@@ -14,25 +14,25 @@ const ALLOWED_MIME_TYPES = [
 
 const MAX_FILE_SIZE_BYTES = 200 * 1024 * 1024 // 200MB
 
-// Supabase Storage에 업로드 + 파일 검증
+// Upload to Supabase Storage + file validation
 export async function POST(request: NextRequest) {
   const formData = await request.formData()
   const file = formData.get('file') as File | null
 
   if (!file) {
-    return NextResponse.json({ error: '파일이 없습니다' }, { status: 400 })
+    return NextResponse.json({ error: 'No file provided' }, { status: 400 })
   }
 
   if (!ALLOWED_MIME_TYPES.includes(file.type)) {
     return NextResponse.json(
-      { error: 'PDF, AI, PSD, PNG, JPG, TIFF 파일만 지원합니다' },
+      { error: 'Only PDF, AI, PSD, PNG, JPG, TIFF files are supported' },
       { status: 400 }
     )
   }
 
   if (file.size > MAX_FILE_SIZE_BYTES) {
     return NextResponse.json(
-      { error: '파일 크기는 200MB 이하여야 합니다' },
+      { error: 'File size must be 200MB or less' },
       { status: 400 }
     )
   }
@@ -40,13 +40,13 @@ export async function POST(request: NextRequest) {
   const supabase = createServerClient()
   const arrayBuffer = await file.arrayBuffer()
 
-  // 파일 검증 실행
+  // Run file validation
   const validation = await validateFile(arrayBuffer, file.type)
 
-  // 치명적 오류가 있으면 업로드 차단
+  // Block upload if there are critical errors
   if (!validation.isValid) {
     return NextResponse.json({
-      error: '파일 검증 실패',
+      error: 'File validation failed',
       validation: {
         errors: validation.errors,
         warnings: validation.warnings,
@@ -67,10 +67,10 @@ export async function POST(request: NextRequest) {
     })
 
   if (error) {
-    return NextResponse.json({ error: `업로드 실패: ${error.message}` }, { status: 500 })
+    return NextResponse.json({ error: `Upload failed: ${error.message}` }, { status: 500 })
   }
 
-  // print_files 테이블에 기록 (검증 결과 포함)
+  // Record in print_files table (including validation result)
   const { data: fileRecord, error: dbError } = await supabase
     .from('print_files')
     .insert({
@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (dbError) {
-    return NextResponse.json({ error: `DB 기록 실패: ${dbError.message}` }, { status: 500 })
+    return NextResponse.json({ error: `Database error: ${dbError.message}` }, { status: 500 })
   }
 
   return NextResponse.json({

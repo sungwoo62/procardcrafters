@@ -9,14 +9,14 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature')
 
   if (!signature) {
-    return NextResponse.json({ error: 'stripe-signature 헤더 없음' }, { status: 400 })
+    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 })
   }
 
   let event: Stripe.Event
   try {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret)
   } catch (err) {
-    return NextResponse.json({ error: `웹훅 검증 실패: ${(err as Error).message}` }, { status: 400 })
+    return NextResponse.json({ error: `Webhook verification failed: ${(err as Error).message}` }, { status: 400 })
   }
 
   const supabase = createServerClient()

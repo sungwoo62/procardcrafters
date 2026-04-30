@@ -30,8 +30,8 @@ const OPTION_LABEL: Record<OptionType, string> = {
 }
 
 /**
- * 성원 인쇄비 매트릭스에서 가격을 조회합니다.
- * 정확한 수량이 없으면 가장 가까운 상위 수량을 사용합니다.
+ * Look up cost from the Swadpia print price matrix.
+ * If no exact quantity match, use the nearest higher quantity.
  */
 function lookupSwadpiaCost(
   printEntries: SwadpiaPrintEntry[],
@@ -54,7 +54,7 @@ function lookupSwadpiaCost(
 }
 
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
-  // 옵션 타입별 그룹화
+  // Group options by type
   const grouped = useMemo(() => {
     const map = new Map<OptionType, PrintProductOption[]>()
     for (const opt of options) {
@@ -64,7 +64,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return map
   }, [options])
 
-  // 기본값 초기화
+  // Initialize defaults
   const defaultSelections = useMemo(() => {
     const sel: Record<string, string> = {}
     grouped.forEach((opts, type) => {
@@ -76,20 +76,20 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
 
-  // 성원 데이터가 있으면 실시간 가격 계산, 없으면 기존 방식
+  // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
 
-  // 선택된 수량 (quantity 옵션에서)
+  // Selected quantity (from quantity option)
   const selectedQty = useMemo(() => {
     const qtyValue = selections['quantity']
     return qtyValue ? parseInt(qtyValue, 10) : 100
   }, [selections])
 
-  // 성원 인쇄비에서 사용할 paper_code 결정
-  // 선택된 paper 옵션 → 성원 paper_code 매핑
+  // Determine paper_code for Swadpia print cost lookup
+  // Map selected paper option to Swadpia paper_code
   const swadpiaPaperCode = useMemo(() => {
     if (!swadpiaData) return null
-    // print_info1에 있는 첫 번째 paper_code 사용 (기본 용지)
+    // Use the first paper_code from print_info1 (default paper)
     const allCodes = [...new Set(swadpiaData.printEntries.map(e => e.paper_code))]
     return allCodes[0] ?? null
   }, [swadpiaData])
@@ -106,7 +106,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       }
     }
 
-    // 폴백: 기존 DB 기반 계산
+    // Fallback: DB-based calculation
     const extraPricesKrw = Array.from(grouped.entries()).map(([type, opts]) => {
       const selected = opts.find((o) => o.value === selections[type])
       return selected?.extra_price_krw ?? 0
@@ -124,7 +124,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   return (
     <div className="space-y-6">
-      {/* 성원 실가격 연동 배지 */}
+      {/* Real-time wholesale pricing badge */}
       {useSwadpia && (
         <div className="flex items-center gap-2 text-xs text-green-700 bg-green-50 border border-green-200 rounded-lg px-3 py-2">
           <BadgeCheck className="w-4 h-4 shrink-0" />
@@ -132,7 +132,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </div>
       )}
 
-      {/* 옵션 선택 */}
+      {/* Option Selection */}
       {Array.from(grouped.entries()).map(([type, opts]) => (
         <div key={type}>
           <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -159,7 +159,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </div>
       ))}
 
-      {/* 가격 요약 */}
+      {/* Price Summary */}
       <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-3">
         <div className="flex justify-between text-sm text-gray-600">
           <span>Print Cost ({selectedQty} pcs)</span>
@@ -180,7 +180,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </p>
       </div>
 
-      {/* 주문 / 에디터 버튼 */}
+      {/* Order / Editor Buttons */}
       <div className="space-y-2">
         <Link
           href={`/design/${product.slug}?${new URLSearchParams(selections).toString()}`}

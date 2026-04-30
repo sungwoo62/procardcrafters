@@ -8,7 +8,7 @@ function verifyAdmin(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const supabase = createServerClient()
@@ -25,14 +25,14 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const body = await request.json()
   const { title, description, category, image_url, thumbnail_url, tags, is_featured, is_published, sort_order } = body
 
   if (!title || !category || !image_url) {
-    return NextResponse.json({ error: '필수 필드 누락' }, { status: 400 })
+    return NextResponse.json({ error: 'Required fields missing' }, { status: 400 })
   }
 
   const supabase = createServerClient()

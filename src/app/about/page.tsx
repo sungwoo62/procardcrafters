@@ -40,7 +40,7 @@ const STATS = [
 export default function AboutPage() {
   return (
     <>
-      {/* 히어로 */}
+      {/* Hero */}
       <section className="bg-gradient-to-br from-blue-50 to-white py-20 px-4">
         <div className="max-w-3xl mx-auto text-center">
           <div className="inline-flex items-center justify-center w-14 h-14 bg-blue-100 rounded-2xl mb-6">
@@ -56,7 +56,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 통계 */}
+      {/* Stats */}
       <section className="border-y border-gray-100 bg-white py-10 px-4">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6 text-center">
           {STATS.map((stat) => (
@@ -68,7 +68,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 스토리 */}
+      {/* Story */}
       <section className="max-w-3xl mx-auto px-4 py-16">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-600 leading-relaxed">
@@ -88,7 +88,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* 가치 */}
+      {/* Values */}
       <section className="bg-gray-50 py-16 px-4">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-2xl font-bold text-gray-900 mb-10 text-center">What We Stand For</h2>

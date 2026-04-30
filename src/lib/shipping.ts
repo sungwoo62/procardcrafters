@@ -1,5 +1,5 @@
-// FedEx/기쿠리어 기반 국가별 기본 배송비 (USD)
-// 실제 운영 시에는 무게/사이즈별 정밀 계산 필요
+// FedEx-based flat shipping rates by country (USD)
+// In production, precise weight/size-based calculation is needed
 
 export interface ShippingZone {
   name: string
@@ -9,17 +9,17 @@ export interface ShippingZone {
 
 const SHIPPING_ZONES: ShippingZone[] = [
   {
-    name: '미국/캐나다',
+    name: 'US/Canada',
     baseUsd: 15,
     countries: ['US', 'CA'],
   },
   {
-    name: '아시아태평양',
+    name: 'Asia Pacific',
     baseUsd: 18,
     countries: ['AU', 'NZ', 'JP', 'SG', 'HK', 'TW', 'CN', 'KR', 'TH', 'MY', 'PH', 'ID', 'VN'],
   },
   {
-    name: '유럽',
+    name: 'Europe',
     baseUsd: 25,
     countries: [
       'GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'SE', 'NO', 'DK', 'FI',
@@ -27,12 +27,12 @@ const SHIPPING_ZONES: ShippingZone[] = [
     ],
   },
   {
-    name: '중동/아프리카',
+    name: 'Middle East/Africa',
     baseUsd: 32,
     countries: ['AE', 'SA', 'QA', 'KW', 'BH', 'OM', 'ZA', 'EG', 'NG', 'KE'],
   },
   {
-    name: '기타',
+    name: 'Other',
     baseUsd: 35,
     countries: [],
   },

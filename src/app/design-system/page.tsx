@@ -7,7 +7,7 @@ export const metadata: Metadata = {
 }
 
 // ─────────────────────────────────────────────
-// 컬러 시스템 (20개)
+// Color System (20 colors)
 // ─────────────────────────────────────────────
 const BRAND_COLORS = [
   { name: 'Brand 50',  hex: '#eff6ff', bg: 'bg-blue-50',  text: 'text-gray-700', label: 'blue-50' },
@@ -34,12 +34,12 @@ const NEUTRAL_COLORS = [
 ]
 
 const SEMANTIC_COLORS = [
-  { name: 'Success', hex: '#22c55e', bg: 'bg-green-500', text: 'text-white',    label: 'green-500 — 완료/성공' },
-  { name: 'Warning', hex: '#eab308', bg: 'bg-yellow-500', text: 'text-white',   label: 'yellow-500 — 주의/별점' },
+  { name: 'Success', hex: '#22c55e', bg: 'bg-green-500', text: 'text-white',    label: 'green-500 — Success/Complete' },
+  { name: 'Warning', hex: '#eab308', bg: 'bg-yellow-500', text: 'text-white',   label: 'yellow-500 — Warning/Rating' },
 ]
 
 // ─────────────────────────────────────────────
-// 타이포그래피
+// Typography
 // ─────────────────────────────────────────────
 const TYPOGRAPHY = [
   { label: 'Display / H1', cls: 'text-5xl font-bold text-gray-900', sample: 'Premium Print' },
@@ -53,7 +53,7 @@ const TYPOGRAPHY = [
 ]
 
 // ─────────────────────────────────────────────
-// 컴포넌트 — 버튼
+// Components — Buttons
 // ─────────────────────────────────────────────
 const BUTTONS = [
   { label: 'Primary', cls: 'bg-blue-600 text-white hover:bg-blue-700 px-5 py-2.5 rounded-lg font-semibold text-sm' },
@@ -67,14 +67,14 @@ const BUTTONS = [
 export default function DesignSystemPage() {
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 헤더 */}
+      {/* Header */}
       <div className="bg-white border-b border-gray-200 px-6 py-10">
         <div className="max-w-7xl mx-auto">
           <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-4">
             Internal
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Procardcrafters Design System</h1>
-          <p className="text-gray-500 text-lg">컬러, 타이포, 컴포넌트, 레이아웃 — 한눈에 보기</p>
+          <p className="text-gray-500 text-lg">Colors, Typography, Components, Layout — at a glance</p>
         </div>
       </div>
 
@@ -82,7 +82,7 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 1. COLOR SYSTEM ══════════════ */}
         <section>
-          <SectionTitle number="01" title="Color System" subtitle="브랜드 10 + 뉴트럴 8 + 시맨틱 2 = 총 20 컬러" />
+          <SectionTitle number="01" title="Color System" subtitle="Brand 10 + Neutral 8 + Semantic 2 = 20 colors total" />
 
           <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Brand (Blue)</h3>
           <div className="grid grid-cols-5 sm:grid-cols-10 gap-2 mb-8">
@@ -108,7 +108,7 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 2. TYPOGRAPHY ══════════════ */}
         <section>
-          <SectionTitle number="02" title="Typography" subtitle="Geist Sans 기반 8단계 타이포 스케일" />
+          <SectionTitle number="02" title="Typography" subtitle="Geist Sans — 8-step type scale" />
           <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100">
             {TYPOGRAPHY.map((t) => (
               <div key={t.label} className="flex items-baseline gap-6 px-6 py-5">
@@ -121,7 +121,7 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 3. BUTTONS ══════════════ */}
         <section>
-          <SectionTitle number="03" title="Buttons" subtitle="6가지 버튼 변형" />
+          <SectionTitle number="03" title="Buttons" subtitle="6 button variants" />
           <div className="bg-white rounded-2xl border border-gray-200 p-8">
             <div className="flex flex-wrap gap-4 items-center">
               {BUTTONS.map((b) => (
@@ -135,7 +135,7 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 4. BADGES & TAGS ══════════════ */}
         <section>
-          <SectionTitle number="04" title="Badges & Tags" subtitle="상태 표시용 배지" />
+          <SectionTitle number="04" title="Badges & Tags" subtitle="Status indicator badges" />
           <div className="bg-white rounded-2xl border border-gray-200 p-8">
             <div className="flex flex-wrap gap-3">
               {[
@@ -158,9 +158,9 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 5. CARDS ══════════════ */}
         <section>
-          <SectionTitle number="05" title="Cards" subtitle="상품 카드 · 피처 카드 · 리뷰 카드" />
+          <SectionTitle number="05" title="Cards" subtitle="Product card · Feature card · Review card" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {/* 상품 카드 */}
+            {/* Product Card */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6 hover:border-blue-300 hover:shadow-lg transition-all cursor-pointer group">
               <div className="text-5xl mb-4">🪪</div>
               <div className="inline-flex items-center px-2 py-0.5 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full mb-2">Popular</div>
@@ -174,7 +174,7 @@ export default function DesignSystemPage() {
               </div>
             </div>
 
-            {/* 피처 카드 */}
+            {/* Feature Card */}
             <div className="bg-blue-600 rounded-2xl p-6 text-white">
               <div className="inline-flex items-center justify-center w-12 h-12 bg-white/20 rounded-xl mb-4">
                 <Printer className="w-6 h-6" />
@@ -185,7 +185,7 @@ export default function DesignSystemPage() {
               </p>
             </div>
 
-            {/* 리뷰 카드 */}
+            {/* Review Card */}
             <div className="bg-white border border-gray-200 rounded-2xl p-6">
               <div className="flex gap-0.5 mb-3">
                 {[...Array(5)].map((_, i) => (
@@ -205,51 +205,51 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 6. FORM ELEMENTS ══════════════ */}
         <section>
-          <SectionTitle number="06" title="Form Elements" subtitle="인풋 · 셀렉트 · 체크박스 · 라디오" />
+          <SectionTitle number="06" title="Form Elements" subtitle="Input · Select · Checkbox · Radio" />
           <div className="bg-white rounded-2xl border border-gray-200 p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-2xl">
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">이름</label>
+                <label className="text-sm font-medium text-gray-700">Name</label>
                 <input
                   type="text"
-                  placeholder="홍길동"
+                  placeholder="John Doe"
                   className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   readOnly
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">수량</label>
+                <label className="text-sm font-medium text-gray-700">Quantity</label>
                 <select className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500">
-                  <option>100장</option>
-                  <option>200장</option>
-                  <option>500장</option>
+                  <option>100 pcs</option>
+                  <option>200 pcs</option>
+                  <option>500 pcs</option>
                 </select>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">에러 상태</label>
+                <label className="text-sm font-medium text-gray-700">Error State</label>
                 <input
                   type="text"
-                  value="잘못된 값"
+                  value="Invalid value"
                   className="w-full border border-red-400 rounded-lg px-3 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-red-400 bg-red-50"
                   readOnly
                 />
-                <p className="text-xs text-red-500">올바른 값을 입력해주세요.</p>
+                <p className="text-xs text-red-500">Please enter a valid value.</p>
               </div>
               <div className="space-y-1">
-                <label className="text-sm font-medium text-gray-700">비활성화</label>
+                <label className="text-sm font-medium text-gray-700">Disabled</label>
                 <input
                   type="text"
-                  value="편집 불가"
+                  value="Not editable"
                   disabled
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-400 bg-gray-50 cursor-not-allowed"
                 />
               </div>
               <div className="flex items-center gap-3 pt-2">
                 <input type="checkbox" id="chk1" defaultChecked className="w-4 h-4 text-blue-600 rounded" />
-                <label htmlFor="chk1" className="text-sm text-gray-700">이용약관에 동의합니다</label>
+                <label htmlFor="chk1" className="text-sm text-gray-700">I agree to the Terms of Service</label>
               </div>
               <div className="flex items-center gap-6 pt-2">
-                {['표준 용지', '프리미엄 코팅', '매트 코팅'].map((opt) => (
+                {['Standard Paper', 'Premium Gloss', 'Matte Finish'].map((opt) => (
                   <label key={opt} className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                     <input type="radio" name="finish" className="w-4 h-4 text-blue-600" readOnly />
                     {opt}
@@ -262,15 +262,15 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 7. 3 LAYOUTS ══════════════ */}
         <section>
-          <SectionTitle number="07" title="3 Layout Variants" subtitle="마케팅 / 상품 상세 / 폼" />
+          <SectionTitle number="07" title="3 Layout Variants" subtitle="Marketing / Product Detail / Form" />
 
           {/* Layout A: Marketing (Hero + Grid) */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Layout A — Marketing (히어로 + 그리드)
+              Layout A — Marketing (Hero + Grid)
             </h3>
             <div className="border border-gray-200 rounded-2xl overflow-hidden">
-              {/* 미니 히어로 */}
+              {/* Mini Hero */}
               <div className="bg-gradient-to-br from-blue-50 via-white to-indigo-50 px-8 py-10 text-center">
                 <div className="inline-flex items-center gap-2 bg-blue-100 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full mb-4">
                   Trusted by 10,000+ customers
@@ -291,7 +291,7 @@ export default function DesignSystemPage() {
                   </button>
                 </div>
               </div>
-              {/* 그리드 */}
+              {/* Grid */}
               <div className="px-8 py-6 bg-white">
                 <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
                   {['🪪 Business Cards', '⭐ Stickers', '📄 Flyers', '💌 Postcards', '🖼️ Posters'].map((p) => (
@@ -308,11 +308,11 @@ export default function DesignSystemPage() {
           {/* Layout B: Product Detail (Sidebar + Main) */}
           <div className="mb-6">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Layout B — Product Detail (사이드바 + 메인 콘텐츠)
+              Layout B — Product Detail (Sidebar + Main Content)
             </h3>
             <div className="border border-gray-200 rounded-2xl overflow-hidden bg-white">
               <div className="flex">
-                {/* 사이드바 */}
+                {/* Sidebar */}
                 <div className="w-64 border-r border-gray-200 p-6 shrink-0">
                   <div className="text-5xl mb-4">🪪</div>
                   <h2 className="text-xl font-bold text-gray-900 mb-1">Business Cards</h2>
@@ -323,14 +323,14 @@ export default function DesignSystemPage() {
                     <ShoppingCart className="w-4 h-4" /> Add to Cart
                   </button>
                 </div>
-                {/* 메인 */}
+                {/* Main */}
                 <div className="flex-1 p-6">
                   <div className="space-y-4">
                     {[
-                      { label: '사이즈', options: ['표준 (90×55mm)', 'US (89×51mm)', '정사각형 (55×55mm)'] },
-                      { label: '수량', options: ['100장', '200장', '500장', '1000장'] },
-                      { label: '용지', options: ['350g 아트지', '400g 고급지', '500g 투명 PVC'] },
-                      { label: '코팅', options: ['무코팅', '유광 코팅', '무광 코팅', '스팟 UV'] },
+                      { label: 'Size', options: ['Standard (90×55mm)', 'US (89×51mm)', 'Square (55×55mm)'] },
+                      { label: 'Quantity', options: ['100 pcs', '200 pcs', '500 pcs', '1000 pcs'] },
+                      { label: 'Paper', options: ['350g Art Paper', '400g Premium Stock', '500g Clear PVC'] },
+                      { label: 'Coating', options: ['Uncoated', 'Gloss Coating', 'Matte Coating', 'Spot UV'] },
                     ].map((opt) => (
                       <div key={opt.label}>
                         <label className="text-sm font-semibold text-gray-700 mb-2 block">{opt.label}</label>
@@ -359,11 +359,11 @@ export default function DesignSystemPage() {
           {/* Layout C: Form (Centered) */}
           <div>
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">
-              Layout C — Form (중앙 정렬 폼)
+              Layout C — Form (Centered Layout)
             </h3>
             <div className="border border-gray-200 rounded-2xl overflow-hidden bg-gray-50">
               <div className="max-w-lg mx-auto py-10 px-8">
-                {/* 진행 스텝 */}
+                {/* Progress Steps */}
                 <div className="flex items-center justify-center gap-2 mb-8">
                   {['Cart', 'Shipping', 'Payment', 'Confirm'].map((step, i) => (
                     <div key={step} className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export default function DesignSystemPage() {
                 </div>
 
                 <div className="bg-white rounded-2xl border border-gray-200 p-6">
-                  <h3 className="font-bold text-gray-900 text-lg mb-6">배송 정보</h3>
+                  <h3 className="font-bold text-gray-900 text-lg mb-6">Shipping Information</h3>
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
@@ -421,10 +421,10 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 8. SAMPLE PAGES ══════════════ */}
         <section>
-          <SectionTitle number="08" title="Sample Pages — 미리보기" subtitle="실제 페이지 레이아웃 썸네일" />
+          <SectionTitle number="08" title="Sample Pages — Preview" subtitle="Actual page layout thumbnails" />
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             {/* Homepage */}
-            <PagePreview title="홈페이지" href="/" color="from-blue-50 to-indigo-50">
+            <PagePreview title="Homepage" href="/" color="from-blue-50 to-indigo-50">
               <div className="space-y-2 p-3">
                 <div className="h-8 bg-blue-600 rounded-lg w-3/4 mx-auto" />
                 <div className="h-2 bg-gray-200 rounded w-2/3 mx-auto" />
@@ -442,7 +442,7 @@ export default function DesignSystemPage() {
             </PagePreview>
 
             {/* Product Detail */}
-            <PagePreview title="상품 상세" href="/products/business-cards" color="from-white to-gray-50">
+            <PagePreview title="Product Detail" href="/products/business-cards" color="from-white to-gray-50">
               <div className="flex gap-2 p-3 h-full">
                 <div className="w-1/3 space-y-1.5">
                   <div className="h-10 w-10 bg-gray-100 rounded-lg" />
@@ -466,7 +466,7 @@ export default function DesignSystemPage() {
             </PagePreview>
 
             {/* Order Form */}
-            <PagePreview title="주문 폼" href="/order" color="from-gray-50 to-gray-100">
+            <PagePreview title="Order Form" href="/order" color="from-gray-50 to-gray-100">
               <div className="p-3 space-y-2">
                 <div className="flex justify-center gap-1 mb-3">
                   {[...Array(4)].map((_, i) => (
@@ -491,7 +491,7 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 9. SPACING & RADIUS ══════════════ */}
         <section>
-          <SectionTitle number="09" title="Spacing & Radius" subtitle="간격 + 테두리 반경 규칙" />
+          <SectionTitle number="09" title="Spacing & Radius" subtitle="Spacing scale + border radius rules" />
           <div className="bg-white rounded-2xl border border-gray-200 p-8">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {/* Spacing */}
@@ -499,14 +499,14 @@ export default function DesignSystemPage() {
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Spacing Scale</h3>
                 <div className="space-y-2">
                   {[
-                    { size: '4px', cls: 'w-1', label: 'p-1 — 아이콘 간격' },
-                    { size: '8px', cls: 'w-2', label: 'p-2 — 컴팩트 패딩' },
-                    { size: '12px', cls: 'w-3', label: 'p-3 — 소형 카드' },
-                    { size: '16px', cls: 'w-4', label: 'p-4 — 기본 패딩' },
-                    { size: '24px', cls: 'w-6', label: 'p-6 — 카드 패딩' },
-                    { size: '32px', cls: 'w-8', label: 'p-8 — 섹션 패딩' },
-                    { size: '48px', cls: 'w-12', label: 'py-12 — 섹션 갭' },
-                    { size: '80px', cls: 'w-20', label: 'py-20 — 섹션 블록' },
+                    { size: '4px', cls: 'w-1', label: 'p-1 — Icon gap' },
+                    { size: '8px', cls: 'w-2', label: 'p-2 — Compact padding' },
+                    { size: '12px', cls: 'w-3', label: 'p-3 — Small card' },
+                    { size: '16px', cls: 'w-4', label: 'p-4 — Default padding' },
+                    { size: '24px', cls: 'w-6', label: 'p-6 — Card padding' },
+                    { size: '32px', cls: 'w-8', label: 'p-8 — Section padding' },
+                    { size: '48px', cls: 'w-12', label: 'py-12 — Section gap' },
+                    { size: '80px', cls: 'w-20', label: 'py-20 — Section block' },
                   ].map((s) => (
                     <div key={s.size} className="flex items-center gap-3">
                       <div className={`h-3 bg-blue-400 rounded shrink-0 ${s.cls}`} />
@@ -522,12 +522,12 @@ export default function DesignSystemPage() {
                 <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">Border Radius</h3>
                 <div className="space-y-3">
                   {[
-                    { label: 'rounded (4px)', cls: 'rounded', usage: '체크박스, 라디오' },
-                    { label: 'rounded-md (6px)', cls: 'rounded-md', usage: '소형 버튼, 배지' },
-                    { label: 'rounded-lg (8px)', cls: 'rounded-lg', usage: '버튼, 인풋' },
-                    { label: 'rounded-xl (12px)', cls: 'rounded-xl', usage: 'CTA 버튼' },
-                    { label: 'rounded-2xl (16px)', cls: 'rounded-2xl', usage: '카드, 섹션' },
-                    { label: 'rounded-full', cls: 'rounded-full', usage: '배지, 아바타' },
+                    { label: 'rounded (4px)', cls: 'rounded', usage: 'Checkbox, Radio' },
+                    { label: 'rounded-md (6px)', cls: 'rounded-md', usage: 'Small buttons, Badges' },
+                    { label: 'rounded-lg (8px)', cls: 'rounded-lg', usage: 'Buttons, Inputs' },
+                    { label: 'rounded-xl (12px)', cls: 'rounded-xl', usage: 'CTA buttons' },
+                    { label: 'rounded-2xl (16px)', cls: 'rounded-2xl', usage: 'Cards, Sections' },
+                    { label: 'rounded-full', cls: 'rounded-full', usage: 'Badges, Avatars' },
                   ].map((r) => (
                     <div key={r.label} className="flex items-center gap-3">
                       <div className={`w-16 h-8 bg-blue-100 border-2 border-blue-300 shrink-0 ${r.cls}`} />
@@ -545,17 +545,17 @@ export default function DesignSystemPage() {
 
         {/* ══════════════ 10. ICON SET ══════════════ */}
         <section>
-          <SectionTitle number="10" title="Icon Set (lucide-react)" subtitle="주요 사용 아이콘 — 모두 24px 기준" />
+          <SectionTitle number="10" title="Icon Set (lucide-react)" subtitle="Key icons — all 24px base size" />
           <div className="bg-white rounded-2xl border border-gray-200 p-8">
             <div className="grid grid-cols-4 sm:grid-cols-8 gap-4">
               {[
-                { Icon: Package, label: '로고' },
-                { Icon: Printer, label: '인쇄' },
-                { Icon: ShoppingCart, label: '장바구니' },
-                { Icon: Upload, label: '업로드' },
-                { Icon: CheckCircle, label: '완료' },
-                { Icon: Star, label: '별점' },
-                { Icon: ArrowRight, label: '이동' },
+                { Icon: Package, label: 'Logo' },
+                { Icon: Printer, label: 'Print' },
+                { Icon: ShoppingCart, label: 'Cart' },
+                { Icon: Upload, label: 'Upload' },
+                { Icon: CheckCircle, label: 'Complete' },
+                { Icon: Star, label: 'Rating' },
+                { Icon: ArrowRight, label: 'Navigate' },
               ].map(({ Icon, label }) => (
                 <div key={label} className="flex flex-col items-center gap-2 p-3 rounded-xl border border-gray-100 hover:border-blue-200 hover:bg-blue-50 transition-colors">
                   <Icon className="w-6 h-6 text-gray-700" />
@@ -566,7 +566,7 @@ export default function DesignSystemPage() {
           </div>
         </section>
 
-        {/* 푸터 */}
+        {/* Footer */}
         <div className="text-center py-8 border-t border-gray-200">
           <p className="text-xs text-gray-400">Procardcrafters Design System — Internal Use Only</p>
         </div>
@@ -576,7 +576,7 @@ export default function DesignSystemPage() {
 }
 
 // ─────────────────────────────────────────────
-// 공통 컴포넌트
+// Shared Components
 // ─────────────────────────────────────────────
 function SectionTitle({ number, title, subtitle }: { number: string; title: string; subtitle: string }) {
   return (

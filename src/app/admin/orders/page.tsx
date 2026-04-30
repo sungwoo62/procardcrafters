@@ -52,7 +52,7 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  // 벌크 선택 상태
+  // Bulk selection state
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [bulkStatus, setBulkStatus] = useState<OrderStatus>('processing')
   const [bulkLoading, setBulkLoading] = useState(false)
@@ -70,7 +70,7 @@ export default function AdminOrdersPage() {
 
     if (res.status === 401) {
       setAuthenticated(false)
-      setError('인증 실패. 비밀번호를 확인하세요.')
+      setError('Authentication failed. Please check your password.')
       setLoading(false)
       return
     }
@@ -124,23 +124,23 @@ export default function AdminOrdersPage() {
 
     const data = await res.json()
     if (!res.ok) {
-      setBulkMessage(`오류: ${data.error}`)
+      setBulkMessage(`Error: ${data.error}`)
     } else {
-      setBulkMessage(`${data.updated}건 상태가 업데이트되었습니다.`)
+      setBulkMessage(`${data.updated} order(s) updated.`)
       fetchOrders()
     }
     setBulkLoading(false)
   }
 
   function exportCSV() {
-    const header = ['주문번호', '고객명', '이메일', '금액(USD)', '상태', '주문일시']
+    const header = ['Order #', 'Customer', 'Email', 'Amount (USD)', 'Status', 'Date']
     const rows = orders.map((o) => [
       o.order_number,
       o.customer_name,
       o.customer_email,
       o.total_usd.toFixed(2),
       STATUS_LABELS[o.status],
-      new Date(o.created_at).toLocaleString('ko-KR'),
+      new Date(o.created_at).toLocaleString('en-US'),
     ])
 
     const csv = [header, ...rows]
@@ -193,12 +193,12 @@ export default function AdminOrdersPage() {
               className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />
-              CSV 내보내기
+              Export CSV
             </button>
           </div>
         </div>
 
-        {/* 상태 필터 */}
+        {/* Status filter */}
         <div className="flex gap-2 flex-wrap mb-4">
           <button
             onClick={() => { setStatusFilter(''); setPage(1) }}
@@ -221,10 +221,10 @@ export default function AdminOrdersPage() {
           ))}
         </div>
 
-        {/* 벌크 업데이트 툴바 */}
+        {/* Bulk update toolbar */}
         {selectedIds.size > 0 && (
           <div className="mb-4 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
-            <span className="text-sm font-medium text-blue-800">{selectedIds.size}건 선택됨</span>
+            <span className="text-sm font-medium text-blue-800">{selectedIds.size} selected</span>
             <select
               value={bulkStatus}
               onChange={(e) => setBulkStatus(e.target.value as OrderStatus)}
@@ -239,7 +239,7 @@ export default function AdminOrdersPage() {
               disabled={bulkLoading}
               className="rounded-lg bg-blue-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
             >
-              {bulkLoading ? '처리 중...' : '상태 변경'}
+              {bulkLoading ? 'Processing...' : 'Update Status'}
             </button>
             {bulkMessage && (
               <span className="text-sm text-blue-700">{bulkMessage}</span>
@@ -315,7 +315,7 @@ export default function AdminOrdersPage() {
               </tbody>
             </table>
 
-            {/* 페이지네이션 */}
+            {/* Pagination */}
             <div className="flex items-center justify-between px-4 py-3 border-t">
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}

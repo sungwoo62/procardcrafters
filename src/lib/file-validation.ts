@@ -15,18 +15,18 @@ export interface FileValidationResult {
   }
 }
 
-// 인쇄용 최소 DPI
+// Minimum DPI for print
 const MIN_PRINT_DPI = 300
-// 최소 블리드 (mm)
+// Minimum bleed (mm)
 const MIN_BLEED_MM = 3
 
-// PDF 포인트를 mm로 변환 (1pt = 0.352778mm)
+// Convert PDF points to mm (1pt = 0.352778mm)
 function ptToMm(pt: number): number {
   return pt * 0.352778
 }
 
 /**
- * PDF 파일을 분석하여 인쇄 적합성 검증
+ * Analyze a PDF file and validate print suitability
  */
 export async function validatePdfFile(buffer: ArrayBuffer): Promise<FileValidationResult> {
   const warnings: string[] = []
@@ -39,7 +39,7 @@ export async function validatePdfFile(buffer: ArrayBuffer): Promise<FileValidati
     details.pageCount = pages.length
 
     if (pages.length === 0) {
-      errors.push('PDF에 페이지가 없습니다')
+      errors.push('PDF has no pages')
       return { isValid: false, warnings, errors, details }
     }
 
@@ -48,12 +48,12 @@ export async function validatePdfFile(buffer: ArrayBuffer): Promise<FileValidati
     details.widthMm = Math.round(ptToMm(width) * 10) / 10
     details.heightMm = Math.round(ptToMm(height) * 10) / 10
 
-    // TrimBox / BleedBox 체크
+    // TrimBox / BleedBox check
     const mediaBox = firstPage.getMediaBox()
     const trimBox = firstPage.getTrimBox()
     const bleedBox = firstPage.getBleedBox()
 
-    // 블리드 감지: BleedBox가 TrimBox보다 크면 블리드 있음
+    // Bleed detection: bleed exists if BleedBox is larger than TrimBox
     if (trimBox && bleedBox) {
       const bleedLeft = trimBox.x - bleedBox.x
       const bleedBottom = trimBox.y - bleedBox.y
@@ -64,26 +64,26 @@ export async function validatePdfFile(buffer: ArrayBuffer): Promise<FileValidati
 
       details.hasBleed = minBleedMm >= MIN_BLEED_MM
       if (!details.hasBleed) {
-        warnings.push(`블리드가 ${minBleedMm.toFixed(1)}mm입니다. 인쇄용은 최소 ${MIN_BLEED_MM}mm 블리드가 권장됩니다`)
+        warnings.push(`Bleed is ${minBleedMm.toFixed(1)}mm. A minimum of ${MIN_BLEED_MM}mm bleed is recommended for print`)
       }
     } else if (mediaBox) {
-      // TrimBox/BleedBox가 없으면 블리드 확인 불가
+      // Cannot verify bleed without TrimBox/BleedBox
       details.hasBleed = false
-      warnings.push('TrimBox/BleedBox가 설정되지 않았습니다. 재단 시 콘텐츠가 잘릴 수 있습니다')
+      warnings.push('TrimBox/BleedBox not set. Content may be cropped during trimming')
     }
 
-    // 색상 공간 감지 (PDF 리소스에서 /ColorSpace 확인)
+    // Color space detection (check /ColorSpace in PDF resources)
     details.colorSpace = detectPdfColorSpace(pdfDoc)
     if (details.colorSpace === 'RGB') {
-      warnings.push('파일이 RGB 색상 공간입니다. 인쇄용은 CMYK가 권장됩니다. 색상 차이가 발생할 수 있습니다')
+      warnings.push('File is in RGB color space. CMYK is recommended for print. Colors may shift')
     }
 
-    // 다중 페이지 경고
+    // Multi-page warning
     if (pages.length > 2) {
-      warnings.push(`${pages.length}페이지 PDF입니다. 인쇄 주문에 맞는 페이지 수인지 확인해 주세요`)
+      warnings.push(`PDF has ${pages.length} pages. Please verify the page count matches your print order`)
     }
   } catch {
-    errors.push('PDF 파일을 읽을 수 없습니다. 파일이 손상되었거나 보안 설정이 있을 수 있습니다')
+    errors.push('Unable to read PDF file. The file may be corrupted or have security restrictions')
     details.fileFormatValid = false
   }
 
@@ -96,7 +96,7 @@ export async function validatePdfFile(buffer: ArrayBuffer): Promise<FileValidati
 }
 
 /**
- * 이미지 파일 기본 검증 (PNG, JPEG, TIFF)
+ * Basic image file validation (PNG, JPEG, TIFF)
  */
 export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileValidationResult {
   const warnings: string[] = []
@@ -105,37 +105,37 @@ export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileVa
 
   const bytes = new Uint8Array(buffer)
 
-  // 매직 바이트 검증
+  // Magic bytes validation
   if (mimeType === 'image/png') {
     if (bytes[0] !== 0x89 || bytes[1] !== 0x50 || bytes[2] !== 0x4E || bytes[3] !== 0x47) {
-      errors.push('PNG 파일 헤더가 올바르지 않습니다')
+      errors.push('Invalid PNG file header')
       details.fileFormatValid = false
     } else {
-      // PNG IHDR 청크에서 크기 읽기
+      // Read dimensions from PNG IHDR chunk
       const w = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]
       const h = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23]
       if (w < 300 || h < 300) {
-        warnings.push(`이미지 해상도가 ${w}×${h}px로 인쇄용으로 낮을 수 있습니다`)
+        warnings.push(`Image resolution is ${w}×${h}px, which may be too low for print`)
       }
-      // PNG 비트뎁스, 컬러타입
+      // PNG bit depth, color type
       const colorType = bytes[25]
       details.colorSpace = colorType === 0 ? 'Grayscale' : 'RGB'
       if (colorType === 2 || colorType === 6) {
-        warnings.push('이미지가 RGB 색상 공간입니다. 인쇄 시 CMYK로 변환됩니다')
+        warnings.push('Image is in RGB color space. It will be converted to CMYK for printing')
       }
     }
   } else if (mimeType === 'image/jpeg') {
     if (bytes[0] !== 0xFF || bytes[1] !== 0xD8) {
-      errors.push('JPEG 파일 헤더가 올바르지 않습니다')
+      errors.push('Invalid JPEG file header')
       details.fileFormatValid = false
     } else {
       details.colorSpace = 'RGB'
-      warnings.push('JPEG 파일은 RGB 색상 공간입니다. 인쇄 시 CMYK로 변환됩니다')
+      warnings.push('JPEG files are in RGB color space. They will be converted to CMYK for printing')
     }
   } else if (mimeType === 'image/tiff') {
     const tiffMagic = (bytes[0] === 0x49 && bytes[1] === 0x49) || (bytes[0] === 0x4D && bytes[1] === 0x4D)
     if (!tiffMagic) {
-      errors.push('TIFF 파일 헤더가 올바르지 않습니다')
+      errors.push('Invalid TIFF file header')
       details.fileFormatValid = false
     }
   }
@@ -149,7 +149,7 @@ export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileVa
 }
 
 /**
- * AI/PSD 파일 기본 검증
+ * Basic AI/PSD file validation
  */
 export function validateDesignFile(buffer: ArrayBuffer, mimeType: string): FileValidationResult {
   const warnings: string[] = []
@@ -157,23 +157,23 @@ export function validateDesignFile(buffer: ArrayBuffer, mimeType: string): FileV
   const bytes = new Uint8Array(buffer)
 
   if (mimeType === 'image/vnd.adobe.photoshop' || mimeType === 'application/photoshop') {
-    // PSD 매직 바이트: "8BPS"
+    // PSD magic bytes: "8BPS"
     if (bytes[0] !== 0x38 || bytes[1] !== 0x42 || bytes[2] !== 0x50 || bytes[3] !== 0x53) {
-      return { isValid: false, warnings, errors: ['PSD 파일 헤더가 올바르지 않습니다'], details: { ...details, fileFormatValid: false } }
+      return { isValid: false, warnings, errors: ['Invalid PSD file header'], details: { ...details, fileFormatValid: false } }
     }
-    // PSD 색상 모드 (offset 25, 2 bytes): 0=Bitmap, 1=Grayscale, 3=RGB, 4=CMYK
+    // PSD color mode (offset 25, 2 bytes): 0=Bitmap, 1=Grayscale, 3=RGB, 4=CMYK
     const colorMode = (bytes[25] << 8) | bytes[26]
     details.colorSpace = colorMode === 4 ? 'CMYK' : colorMode === 3 ? 'RGB' : colorMode === 1 ? 'Grayscale' : 'unknown'
     if (details.colorSpace === 'RGB') {
-      warnings.push('PSD 파일이 RGB 모드입니다. 인쇄용은 CMYK 모드가 권장됩니다')
+      warnings.push('PSD file is in RGB mode. CMYK mode is recommended for print')
     }
   }
 
   if (mimeType === 'application/illustrator' || mimeType === 'application/postscript') {
-    // AI 파일은 PDF 기반인 경우가 많음
+    // AI files are often PDF-based
     const header = new TextDecoder().decode(bytes.slice(0, 5))
     if (header === '%PDF-') {
-      warnings.push('AI 파일이 PDF 호환 모드입니다. 분석이 정상적으로 진행됩니다')
+      warnings.push('AI file is in PDF-compatible mode. Analysis will proceed normally')
     }
   }
 
@@ -181,16 +181,16 @@ export function validateDesignFile(buffer: ArrayBuffer, mimeType: string): FileV
 }
 
 /**
- * PDF 내부 색상 공간 감지 (간단한 휴리스틱)
+ * Detect PDF color space (simple heuristic)
  */
 function detectPdfColorSpace(_pdfDoc: PDFDocument): 'CMYK' | 'RGB' | 'Grayscale' | 'unknown' {
   try {
-    // PDF 내부 바이너리에서 색상 공간 키워드 검색 (휴리스틱)
+    // Search for color space keywords in PDF binary (heuristic)
     const pages = _pdfDoc.getPages()
     if (pages.length === 0) return 'unknown'
 
-    // pdf-lib의 내부 구조를 직접 탐색하는 대신,
-    // 저장된 PDF 바이트에서 색상 공간 키워드를 검색
+    // Instead of traversing pdf-lib internals directly,
+    // search for color space keywords in saved PDF bytes
     const saved = _pdfDoc.context.enumerateIndirectObjects()
     for (const [, obj] of saved) {
       const str = String(obj)
@@ -199,13 +199,13 @@ function detectPdfColorSpace(_pdfDoc: PDFDocument): 'CMYK' | 'RGB' | 'Grayscale'
       if (str.includes('DeviceGray')) return 'Grayscale'
     }
   } catch {
-    // 색상 공간 감지 실패 시 unknown 반환
+    // Return unknown if color space detection fails
   }
   return 'unknown'
 }
 
 /**
- * 파일 타입에 따라 적절한 검증 함수 호출
+ * Route to the appropriate validation function based on file type
  */
 export async function validateFile(buffer: ArrayBuffer, mimeType: string): Promise<FileValidationResult> {
   if (mimeType === 'application/pdf') {
@@ -219,7 +219,7 @@ export async function validateFile(buffer: ArrayBuffer, mimeType: string): Promi
   }
   return {
     isValid: true,
-    warnings: ['이 파일 형식에 대한 상세 검증은 지원되지 않습니다'],
+    warnings: ['Detailed validation is not supported for this file format'],
     errors: [],
     details: { fileFormatValid: true },
   }

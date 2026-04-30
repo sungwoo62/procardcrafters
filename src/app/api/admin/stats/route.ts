@@ -8,34 +8,34 @@ function verifyAdmin(request: NextRequest): boolean {
 
 export async function GET(request: NextRequest) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const supabase = createServerClient()
   const now = new Date()
 
-  // 오늘 시작 (UTC)
+  // Start of today (UTC)
   const todayStart = new Date(now)
   todayStart.setUTCHours(0, 0, 0, 0)
 
-  // 이번 달 시작
+  // Start of current month
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
 
-  // 오늘 통계
+  // Today's stats
   const { data: todayOrders } = await supabase
     .from('print_orders')
     .select('total_usd, status')
     .gte('created_at', todayStart.toISOString())
     .not('status', 'in', '("cancelled","refunded")')
 
-  // 이번 달 통계
+  // This month's stats
   const { data: monthOrders } = await supabase
     .from('print_orders')
     .select('total_usd, status')
     .gte('created_at', monthStart.toISOString())
     .not('status', 'in', '("cancelled","refunded")')
 
-  // 최근 8주 주간 매출
+  // Weekly revenue for past 8 weeks
   const weeklyData: { week: string; revenue: number; orders: number }[] = []
   for (let i = 7; i >= 0; i--) {
     const weekEnd = new Date(now)
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 최근 6개월 월간 매출
+  // Monthly revenue for past 6 months
   const monthlyData: { month: string; revenue: number; orders: number }[] = []
   for (let i = 5; i >= 0; i--) {
     const d = new Date(now.getFullYear(), now.getMonth() - i, 1)
@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 상품별 분석 (print_order_items → product_slug 집계)
+  // Product analysis (aggregate by product_slug from print_order_items)
   const { data: itemsData } = await supabase
     .from('print_order_items')
     .select('product_slug, product_name_en, unit_price_usd, quantity')
@@ -101,7 +101,7 @@ export async function GET(request: NextRequest) {
     .map(([slug, v]) => ({ slug, ...v }))
     .sort((a, b) => b.revenue - a.revenue)
 
-  // 주문 상태별 분포
+  // Order status distribution
   const { data: allOrders } = await supabase
     .from('print_orders')
     .select('status')

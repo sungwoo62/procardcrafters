@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { fetchSwadpiaCategoryData, calculateSwadpiaPriceKrw } from '@/lib/swadpia'
 
 /**
- * 성원 실시간 가격 조회 API
+ * Swadpia real-time price lookup API
  *
  * GET /api/swadpia-price?slug=business-cards&paper=SNW250W00&qty=500&side=2
  *
- * 응답: { priceKrw, paperCode, quantity, doubleSided, fetchSuccess }
+ * Response: { priceKrw, paperCode, quantity, doubleSided, fetchSuccess }
  */
 export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl
@@ -16,20 +16,20 @@ export async function GET(request: NextRequest) {
   const doubleSided = searchParams.get('side') !== '1'
 
   if (!slug) {
-    return NextResponse.json({ error: 'slug 파라미터 필요' }, { status: 400 })
+    return NextResponse.json({ error: 'slug parameter required' }, { status: 400 })
   }
 
   const data = await fetchSwadpiaCategoryData(slug)
 
   if (!data.fetchSuccess) {
     return NextResponse.json({
-      error: '성원 데이터 조회 실패',
+      error: 'Data fetch failed',
       message: data.errorMessage,
       fetchSuccess: false,
     }, { status: 502 })
   }
 
-  // 특정 가격 조회
+  // Specific price lookup
   if (paperCode && qty > 0) {
     const priceKrw = calculateSwadpiaPriceKrw(data, paperCode, qty, doubleSided)
     return NextResponse.json({
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     })
   }
 
-  // 전체 데이터 반환
+  // Return full data
   return NextResponse.json({
     categoryCode: data.categoryCode,
     papers: data.papers,

@@ -47,11 +47,11 @@ export async function POST(req: NextRequest) {
   }
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json({ error: '메시지가 없습니다.' }, { status: 400 })
+    return NextResponse.json({ error: 'No messages provided.' }, { status: 400 })
   }
 
   if (!sessionId) {
-    return NextResponse.json({ error: 'sessionId가 없습니다.' }, { status: 400 })
+    return NextResponse.json({ error: 'sessionId is required.' }, { status: 400 })
   }
 
   const response = await anthropic.messages.create({
@@ -64,14 +64,14 @@ export async function POST(req: NextRequest) {
   const assistantText =
     response.content[0].type === 'text' ? response.content[0].text : ''
 
-  // 견적 정보 파싱
+  // Parse estimate info
   const estimateMatch = assistantText.match(
     /\[ESTIMATE_READY: product=([^,]+), quantity=(\d+), size=([^,]+), finish=([^,]+), price_usd=([\d.]+)\]/
   )
 
   const userMessage = messages[messages.length - 1]
 
-  // Supabase에 대화 로그 저장 (비동기, 실패해도 응답에 영향 없음)
+  // Save chat log to Supabase (async, does not affect response on failure)
   void (async () => {
     try {
       const supabase = createServerClient()
@@ -97,11 +97,11 @@ export async function POST(req: NextRequest) {
         },
       ])
     } catch {
-      // 로그 저장 실패해도 응답에 영향 없음
+      // Log save failure does not affect response
     }
   })()
 
-  // [ESTIMATE_READY: ...] 태그는 클라이언트에 전달하되, 표시 텍스트에서는 제거
+  // Pass [ESTIMATE_READY: ...] tag to client but strip from display text
   const displayText = assistantText
     .replace(/\[ESTIMATE_READY:[^\]]+\]/g, '')
     .trim()

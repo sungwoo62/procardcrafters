@@ -44,7 +44,7 @@ export default function PortfolioGallery({ items }: Props) {
 
   return (
     <>
-      {/* 카테고리 필터 */}
+      {/* Category Filter */}
       <section className="sticky top-0 z-10 bg-white border-b border-gray-100 shadow-sm py-4 px-4">
         <div className="max-w-7xl mx-auto flex gap-2 overflow-x-auto scrollbar-hide">
           {CATEGORIES.map((cat) => (
@@ -68,11 +68,11 @@ export default function PortfolioGallery({ items }: Props) {
         </div>
       </section>
 
-      {/* 갤러리 그리드 */}
+      {/* Gallery Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {filtered.length === 0 ? (
           <div className="text-center py-20 text-gray-400">
-            <p className="text-lg">이 카테고리의 작업이 아직 없습니다.</p>
+            <p className="text-lg">No items in this category yet.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -89,7 +89,7 @@ export default function PortfolioGallery({ items }: Props) {
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />
-                {/* 오버레이 */}
+                {/* Overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-4">
                   <ZoomIn className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 text-white/80" />
                   <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">
@@ -101,7 +101,7 @@ export default function PortfolioGallery({ items }: Props) {
                     </span>
                   ))}
                 </div>
-                {/* 추천 배지 */}
+                {/* Featured Badge */}
                 {item.is_featured && (
                   <div className="absolute top-2 left-2 flex items-center gap-1 bg-yellow-400/90 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full backdrop-blur-sm">
                     <Star className="w-3 h-3 fill-current" /> Featured
@@ -113,7 +113,7 @@ export default function PortfolioGallery({ items }: Props) {
         )}
       </section>
 
-      {/* 라이트박스 */}
+      {/* Lightbox */}
       <Lightbox
         items={lightboxItems}
         activeIndex={lightboxIndex}

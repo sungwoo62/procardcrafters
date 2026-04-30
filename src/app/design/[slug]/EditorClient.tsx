@@ -3,6 +3,7 @@
 import {
   useState, useRef, useEffect, useCallback, useMemo
 } from 'react'
+import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
   Type, Square, ImageIcon, Layers, Trash2,
@@ -91,32 +92,32 @@ function instantiateTemplate(t: Template): DesignLayer[] {
 
 const TEMPLATES: Template[] = [
   {
-    name: '빈 템플릿',
+    name: 'Blank',
     bgColor: '#ffffff',
     layers: [],
   },
   {
-    name: '클래식',
+    name: 'Classic',
     bgColor: '#ffffff',
     layers: [
       {
-        name: '이름', type: 'text', x: 5, y: 14, width: 75, height: 12,
+        name: 'Name', type: 'text', x: 5, y: 14, width: 75, height: 12,
         visible: true, locked: false,
-        content: '홍길동', fontFamily: 'Arial', fontSize: 22, fontBold: true, fontItalic: false,
+        content: 'John Doe', fontFamily: 'Arial', fontSize: 22, fontBold: true, fontItalic: false,
         color: '#111111', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
       },
       {
-        name: '직책', type: 'text', x: 5, y: 27, width: 65, height: 8,
+        name: 'Title', type: 'text', x: 5, y: 27, width: 65, height: 8,
         visible: true, locked: false,
         content: 'Senior Designer', fontFamily: 'Arial', fontSize: 11, fontBold: false, fontItalic: false,
         color: '#555555', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
       },
       {
-        name: '구분선', type: 'rect', x: 5, y: 36, width: 45, height: 0.5,
+        name: 'Divider', type: 'rect', x: 5, y: 36, width: 45, height: 0.5,
         visible: true, locked: false, fillColor: '#cccccc', strokeWidth: 0,
       },
       {
-        name: '연락처', type: 'text', x: 5, y: 40, width: 75, height: 10,
+        name: 'Contact', type: 'text', x: 5, y: 40, width: 75, height: 10,
         visible: true, locked: false,
         content: 'email@company.com\n+1 (555) 000-0000', fontFamily: 'Arial', fontSize: 9, fontBold: false, fontItalic: false,
         color: '#444444', textAlign: 'left', letterSpacing: 0, lineHeight: 1.5,
@@ -124,17 +125,17 @@ const TEMPLATES: Template[] = [
     ],
   },
   {
-    name: '미니멀',
+    name: 'Minimal',
     bgColor: '#ffffff',
     layers: [
       {
-        name: '이름', type: 'text', x: 7.5, y: 19, width: 70, height: 12,
+        name: 'Name', type: 'text', x: 7.5, y: 19, width: 70, height: 12,
         visible: true, locked: false,
-        content: '이름 Name', fontFamily: 'Helvetica', fontSize: 22, fontBold: false, fontItalic: false,
+        content: 'Your Name', fontFamily: 'Helvetica', fontSize: 22, fontBold: false, fontItalic: false,
         color: '#000000', textAlign: 'center', letterSpacing: 2, lineHeight: 1.3,
       },
       {
-        name: '회사', type: 'text', x: 7.5, y: 34, width: 70, height: 8,
+        name: 'Company', type: 'text', x: 7.5, y: 34, width: 70, height: 8,
         visible: true, locked: false,
         content: 'Company · Title', fontFamily: 'Helvetica', fontSize: 10, fontBold: false, fontItalic: false,
         color: '#888888', textAlign: 'center', letterSpacing: 1, lineHeight: 1.3,
@@ -142,27 +143,27 @@ const TEMPLATES: Template[] = [
     ],
   },
   {
-    name: '다크',
+    name: 'Dark',
     bgColor: '#1a1a1a',
     layers: [
       {
-        name: '배경 액센트', type: 'rect', x: 0, y: 0, width: 4, height: 55,
+        name: 'Accent Bar', type: 'rect', x: 0, y: 0, width: 4, height: 55,
         visible: true, locked: false, fillColor: '#4f46e5', strokeWidth: 0,
       },
       {
-        name: '이름', type: 'text', x: 10, y: 14, width: 70, height: 12,
+        name: 'Name', type: 'text', x: 10, y: 14, width: 70, height: 12,
         visible: true, locked: false,
         content: 'Your Name', fontFamily: 'Arial', fontSize: 20, fontBold: true, fontItalic: false,
         color: '#ffffff', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
       },
       {
-        name: '직책', type: 'text', x: 10, y: 27, width: 70, height: 8,
+        name: 'Title', type: 'text', x: 10, y: 27, width: 70, height: 8,
         visible: true, locked: false,
         content: 'Title • Company', fontFamily: 'Arial', fontSize: 10, fontBold: false, fontItalic: false,
         color: '#a5b4fc', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
       },
       {
-        name: '이메일', type: 'text', x: 10, y: 40, width: 70, height: 7,
+        name: 'Email', type: 'text', x: 10, y: 40, width: 70, height: 7,
         visible: true, locked: false,
         content: 'email@company.com', fontFamily: 'Arial', fontSize: 9, fontBold: false, fontItalic: false,
         color: '#9ca3af', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
@@ -289,6 +290,7 @@ interface Props {
 }
 
 export default function EditorClient({ product, options }: Props) {
+  const searchParams = useSearchParams()
   const dims = PRODUCT_DIMS[product.category] ?? DEFAULT_DIMS
   const scale = getScale(dims)
   const canvasW = Math.round(mmToPx(dims.widthMm + 2 * dims.bleedMm, scale))
@@ -469,11 +471,11 @@ export default function EditorClient({ product, options }: Props) {
     } else if (tool === 'text') {
       const id = makeId()
       const newLayer: DesignLayer = {
-        id, type: 'text', name: '텍스트',
+        id, type: 'text', name: 'Text',
         x: Math.max(0, xMm - 20), y: Math.max(0, yMm - 5),
         width: 50, height: 10,
         visible: true, locked: false,
-        content: '텍스트 입력',
+        content: 'Enter text',
         fontFamily: 'Arial', fontSize: 14, fontBold: false, fontItalic: false,
         color: '#000000', textAlign: 'left', letterSpacing: 0, lineHeight: 1.4,
       }
@@ -484,7 +486,7 @@ export default function EditorClient({ product, options }: Props) {
     } else if (tool === 'rect') {
       const id = makeId()
       const newLayer: DesignLayer = {
-        id, type: 'rect', name: '사각형',
+        id, type: 'rect', name: 'Rectangle',
         x: Math.max(0, xMm - 10), y: Math.max(0, yMm - 10),
         width: 20, height: 20,
         visible: true, locked: false,
@@ -599,17 +601,41 @@ export default function EditorClient({ product, options }: Props) {
     link.click()
   }
 
+  const [ordering, setOrdering] = useState(false)
+  const [orderError, setOrderError] = useState('')
+
   async function proceedToOrder() {
     const canvas = canvasRef.current
     if (!canvas) return
+    setOrdering(true)
+    setOrderError('')
     canvas.toBlob(async (blob) => {
-      if (!blob) return
-      const formData = new FormData()
-      formData.append('file', blob, `${product.slug}-design.png`)
-      const res = await fetch('/api/files/upload', { method: 'POST', body: formData })
-      const data = await res.json()
-      if (res.ok && data.fileId) {
-        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}`
+      if (!blob) {
+        setOrdering(false)
+        setOrderError('Failed to export design.')
+        return
+      }
+      try {
+        const formData = new FormData()
+        formData.append('file', blob, `${product.slug}-design.png`)
+        const res = await fetch('/api/files/upload', { method: 'POST', body: formData })
+        const data = await res.json()
+        if (res.ok && data.fileId) {
+          // Pass through selected options from URL
+          const optionParams = new URLSearchParams()
+          for (const opt of options) {
+            const val = searchParams.get(opt.option_type)
+            if (val) optionParams.set(opt.option_type, val)
+          }
+          const optStr = optionParams.toString()
+          window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}${optStr ? '&' + optStr : ''}`
+        } else {
+          setOrdering(false)
+          setOrderError(data.error || 'Upload failed. Please try again.')
+        }
+      } catch {
+        setOrdering(false)
+        setOrderError('Network error. Please try again.')
       }
     }, 'image/png')
   }
@@ -627,20 +653,20 @@ export default function EditorClient({ product, options }: Props) {
       {/* Top bar */}
       <div className="flex items-center gap-3 bg-white border-b border-gray-200 px-4 py-2.5 shrink-0">
         <Link href={`/products/${product.slug}`} className="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm">
-          <ArrowLeft className="w-4 h-4" /> 상품으로
+          <ArrowLeft className="w-4 h-4" /> Back
         </Link>
         <div className="h-4 border-r border-gray-200" />
-        <span className="text-sm font-semibold text-gray-800">{product.name_en} 에디터</span>
-        <span className="text-xs text-gray-400">{dims.widthMm}×{dims.heightMm}mm (블리드 {dims.bleedMm}mm)</span>
+        <span className="text-sm font-semibold text-gray-800">{product.name_en} Editor</span>
+        <span className="text-xs text-gray-400">{dims.widthMm}×{dims.heightMm}mm (bleed {dims.bleedMm}mm)</span>
 
         <div className="flex-1" />
 
         {/* Tools */}
         <div className="flex gap-1 bg-gray-100 rounded-lg p-1">
           {([
-            { id: 'select', icon: null, label: '선택 (V)' },
-            { id: 'text',   icon: Type,    label: '텍스트 (T)' },
-            { id: 'rect',   icon: Square,  label: '사각형 (R)' },
+            { id: 'select', icon: null, label: 'Select (V)' },
+            { id: 'text',   icon: Type,    label: 'Text (T)' },
+            { id: 'rect',   icon: Square,  label: 'Rectangle (R)' },
           ] as const).map(({ id, icon: Icon, label }) => (
             <button
               key={id}
@@ -653,7 +679,7 @@ export default function EditorClient({ product, options }: Props) {
           ))}
           <button
             onClick={() => imageInputRef.current?.click()}
-            title="이미지 추가 (I)"
+            title="Add Image (I)"
             className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors text-gray-500 hover:text-gray-800`}
           >
             <ImageIcon className="w-4 h-4" />
@@ -666,14 +692,16 @@ export default function EditorClient({ product, options }: Props) {
             onClick={exportPng}
             className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            <Download className="w-3.5 h-3.5" /> PNG 저장
+            <Download className="w-3.5 h-3.5" /> Save PNG
           </button>
           <button
             onClick={proceedToOrder}
-            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700"
+            disabled={ordering}
+            className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <ShoppingCart className="w-3.5 h-3.5" /> 주문하기
+            <ShoppingCart className="w-3.5 h-3.5" /> {ordering ? 'Uploading...' : 'Order'}
           </button>
+          {orderError && <span className="text-xs text-red-500">{orderError}</span>}
         </div>
       </div>
 
@@ -698,9 +726,9 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'templates', icon: LayoutTemplate, label: '템플릿' },
-              { key: 'layers',    icon: Layers,          label: '레이어' },
-              { key: 'properties', icon: null,           label: '속성' },
+              { key: 'templates', icon: LayoutTemplate, label: 'Templates' },
+              { key: 'layers',    icon: Layers,          label: 'Layers' },
+              { key: 'properties', icon: null,           label: 'Properties' },
             ] as const).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
@@ -717,7 +745,7 @@ export default function EditorClient({ product, options }: Props) {
           {activePanel === 'templates' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               <div className="mb-2">
-                <label className="block text-xs text-gray-500 mb-1">배경 색상</label>
+                <label className="block text-xs text-gray-500 mb-1">Background Color</label>
                 <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
               {TEMPLATES.map(t => (
@@ -727,7 +755,7 @@ export default function EditorClient({ product, options }: Props) {
                   className="w-full text-left rounded-lg border border-gray-200 p-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
                   <div className="text-sm font-medium text-gray-700">{t.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{t.layers.length}개 레이어</div>
+                  <div className="text-xs text-gray-400 mt-0.5">{t.layers.length} layer{t.layers.length !== 1 ? 's' : ''}</div>
                 </button>
               ))}
             </div>
@@ -739,7 +767,7 @@ export default function EditorClient({ product, options }: Props) {
               {layers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
                   <Layers className="w-6 h-6" />
-                  레이어가 없습니다
+                  No layers yet
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
@@ -776,13 +804,13 @@ export default function EditorClient({ product, options }: Props) {
                   onClick={() => setTool('text')}
                   className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400"
                 >
-                  <Plus className="w-3.5 h-3.5" /> 텍스트
+                  <Plus className="w-3.5 h-3.5" /> Text
                 </button>
                 <button
                   onClick={() => setTool('rect')}
                   className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400"
                 >
-                  <Plus className="w-3.5 h-3.5" /> 도형
+                  <Plus className="w-3.5 h-3.5" /> Shape
                 </button>
               </div>
             </div>
@@ -793,7 +821,7 @@ export default function EditorClient({ product, options }: Props) {
             <div className="flex-1 overflow-y-auto p-3 space-y-4 text-xs">
               {/* Name */}
               <div>
-                <label className="block text-gray-500 mb-1">레이어 이름</label>
+                <label className="block text-gray-500 mb-1">Layer Name</label>
                 <input
                   type="text"
                   value={selectedLayer.name}
@@ -804,7 +832,7 @@ export default function EditorClient({ product, options }: Props) {
 
               {/* Position */}
               <div>
-                <label className="block text-gray-500 mb-1">위치 / 크기 (mm)</label>
+                <label className="block text-gray-500 mb-1">Position / Size (mm)</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {([['x', 'X'], ['y', 'Y'], ['width', 'W'], ['height', 'H']] as const).map(([k, label]) => (
                     <div key={k} className="flex items-center gap-1">
@@ -825,7 +853,7 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'text' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">텍스트</label>
+                    <label className="block text-gray-500 mb-1">Text</label>
                     <textarea
                       value={selectedLayer.content ?? ''}
                       onChange={e => updateSelected({ content: e.target.value })}
@@ -834,7 +862,7 @@ export default function EditorClient({ product, options }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">폰트</label>
+                    <label className="block text-gray-500 mb-1">Font</label>
                     <select
                       value={selectedLayer.fontFamily ?? 'Arial'}
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
@@ -845,7 +873,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <label className="block text-gray-500 mb-1">크기 (pt)</label>
+                      <label className="block text-gray-500 mb-1">Size (pt)</label>
                       <input
                         type="number"
                         value={selectedLayer.fontSize ?? 12}
@@ -866,7 +894,7 @@ export default function EditorClient({ product, options }: Props) {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">색상</label>
+                    <label className="block text-gray-500 mb-1">Color</label>
                     <input
                       type="color"
                       value={selectedLayer.color ?? '#000000'}
@@ -875,7 +903,7 @@ export default function EditorClient({ product, options }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">정렬</label>
+                    <label className="block text-gray-500 mb-1">Align</label>
                     <div className="flex gap-1">
                       {([
                         { v: 'left', icon: AlignLeft },
@@ -894,7 +922,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">자간 (px)</label>
+                      <label className="block text-gray-500 mb-1">Letter Spacing (px)</label>
                       <input
                         type="number"
                         value={selectedLayer.letterSpacing ?? 0}
@@ -904,7 +932,7 @@ export default function EditorClient({ product, options }: Props) {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">행간 (배수)</label>
+                      <label className="block text-gray-500 mb-1">Line Height</label>
                       <input
                         type="number"
                         value={selectedLayer.lineHeight ?? 1.4}
@@ -921,7 +949,7 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'rect' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">채우기 색상</label>
+                    <label className="block text-gray-500 mb-1">Fill Color</label>
                     <input
                       type="color"
                       value={selectedLayer.fillColor ?? '#e5e7eb'}
@@ -931,7 +959,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">테두리 색상</label>
+                      <label className="block text-gray-500 mb-1">Border Color</label>
                       <input
                         type="color"
                         value={selectedLayer.strokeColor ?? '#000000'}
@@ -940,7 +968,7 @@ export default function EditorClient({ product, options }: Props) {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">테두리 두께</label>
+                      <label className="block text-gray-500 mb-1">Border Width</label>
                       <input
                         type="number"
                         value={selectedLayer.strokeWidth ?? 0}
@@ -957,14 +985,14 @@ export default function EditorClient({ product, options }: Props) {
                 onClick={() => { deleteLayer(selectedId!); setActivePanel('layers') }}
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2 text-xs text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3.5 h-3.5" /> 레이어 삭제
+                <Trash2 className="w-3.5 h-3.5" /> Delete Layer
               </button>
             </div>
           )}
 
           {activePanel === 'properties' && !selectedLayer && (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-xs">
-              레이어를 선택하세요
+              Select a layer
             </div>
           )}
         </div>

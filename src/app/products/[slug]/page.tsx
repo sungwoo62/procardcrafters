@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('is_active', true)
     .single()
 
-  if (!data) return { title: '상품 없음' }
+  if (!data) return { title: 'Product Not Found' }
 
   return {
     title: `${data.name_en} — Procardcrafters`,
@@ -109,19 +109,19 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* 상품 메인 섹션 */}
+      {/* Product Main Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-          {/* 좌측: 상품 정보 */}
+          {/* Left: Product Info */}
           <div>
-            {/* 상품 비주얼 */}
+            {/* Product Visual */}
             <div className={`h-80 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'} rounded-2xl flex items-center justify-center mb-6 border border-white shadow-sm`}>
               <div className="w-64 h-64">
                 <ProductImage category={product.category} />
               </div>
             </div>
 
-            {/* 상품 이름 */}
+            {/* Product Name */}
             <h1 className="text-3xl font-bold text-gray-900 mb-1">{product.name_en}</h1>
             <p className="text-base text-gray-400 mb-4 font-medium">{product.name_ko}</p>
 
@@ -129,7 +129,7 @@ export default async function ProductDetailPage({ params }: Props) {
               <p className="text-gray-600 leading-relaxed mb-6">{product.description_ko}</p>
             )}
 
-            {/* 상품 특징 리스트 */}
+            {/* Product Features List */}
             {features.length > 0 && (
               <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
                 <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Product Specs</h3>
@@ -144,7 +144,7 @@ export default async function ProductDetailPage({ params }: Props) {
               </div>
             )}
 
-            {/* 파트너십 하이라이트 */}
+            {/* Partnership Highlight */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
                 <div className="font-semibold text-blue-800 text-sm mb-1">LA Distribution</div>
@@ -157,7 +157,7 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           </div>
 
-          {/* 우측: 옵션 선택 + 가격 */}
+          {/* Right: Options + Price */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Configure Your Order</h2>
             {options.length > 0 ? (
@@ -174,14 +174,14 @@ export default async function ProductDetailPage({ params }: Props) {
               />
             ) : (
               <div className="text-gray-500 text-sm py-8 text-center">
-                옵션 정보를 불러오는 중입니다...
+                Loading options...
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* 하단 신뢰 배지 */}
+      {/* Bottom Trust Badges */}
       <div className="bg-white border-t border-gray-100 py-8 px-4 mt-6">
         <div className="max-w-3xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6">
           {TRUST_ITEMS.map((item) => (

@@ -43,7 +43,7 @@ async function OrderPageContent({ searchParams }: PageProps) {
 
   const options = (optionsData as PrintProductOption[] | null) ?? []
 
-  // URL 파라미터에서 선택된 옵션 복원
+  // Restore selected options from URL parameters
   const selectedOptions: Record<string, string> = {}
   for (const opt of options) {
     if (params[opt.option_type]) {
@@ -78,7 +78,7 @@ async function OrderPageContent({ searchParams }: PageProps) {
 export default function OrderPage(props: PageProps) {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <Suspense fallback={<div className="text-gray-400 text-sm">불러오는 중...</div>}>
+      <Suspense fallback={<div className="text-gray-400 text-sm">Loading...</div>}>
         <OrderPageContent {...props} />
       </Suspense>
     </div>

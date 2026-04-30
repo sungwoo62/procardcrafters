@@ -112,9 +112,9 @@ export default async function HomePage() {
   const featuredPortfolio = await getFeaturedPortfolio()
   return (
     <>
-      {/* 히어로 섹션 */}
+      {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 py-28 px-4">
-        {/* 배경 패턴 */}
+        {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
           <div className="absolute top-10 left-10 w-72 h-72 bg-blue-400 rounded-full blur-3xl" />
           <div className="absolute bottom-10 right-10 w-96 h-96 bg-indigo-400 rounded-full blur-3xl" />
@@ -151,7 +151,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 통계 배지 */}
+      {/* Stats Badges */}
       <section className="bg-white border-b border-gray-100 py-8 px-4">
         <div className="max-w-4xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-6">
           {STATS.map((stat) => (
@@ -163,7 +163,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 상품 그리드 */}
+      {/* Product Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-14">
           <h2 className="text-4xl font-bold text-gray-900 mb-4">Our Products</h2>
@@ -178,7 +178,7 @@ export default async function HomePage() {
               href={`/products/${product.slug}`}
               className={`group relative border ${product.accent} rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}
             >
-              {/* 썸네일 */}
+              {/* Thumbnail */}
               <div className={`h-44 bg-gradient-to-br ${product.gradient} flex items-center justify-center relative`}>
                 <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
                   <ProductImage category={product.category} />
@@ -217,7 +217,7 @@ export default async function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {HOW_IT_WORKS.map((step, idx) => (
               <div key={step.step} className="relative">
-                {/* 연결선 */}
+                {/* Connector */}
                 {idx < HOW_IT_WORKS.length - 1 && (
                   <div className="hidden lg:block absolute top-5 left-[calc(100%-0.75rem)] w-full h-0.5 bg-blue-100 z-0" />
                 )}
@@ -237,7 +237,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 특징 섹션 */}
+      {/* Features Section */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -260,7 +260,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 품질 보증 배지 */}
+      {/* Quality Guarantee Badges */}
       <section className="bg-blue-50 border-y border-blue-100 py-8 px-4">
         <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-x-12 gap-y-4">
           {GUARANTEES.map((g) => (
@@ -272,7 +272,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 포트폴리오 미리보기 섹션 */}
+      {/* Portfolio Preview Section */}
       {featuredPortfolio.length > 0 && (
         <section className="py-20 px-4 bg-gray-50">
           <div className="max-w-7xl mx-auto">
@@ -315,7 +315,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 후기 섹션 */}
+      {/* Testimonials Section */}
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
@@ -351,7 +351,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 하단 CTA */}
+      {/* Bottom CTA */}
       <section className="py-24 px-4 text-center bg-white">
         <div className="max-w-2xl mx-auto">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-blue-50 rounded-2xl mb-6">

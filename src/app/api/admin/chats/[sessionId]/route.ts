@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ sessionId: string }> }
 ) {
   if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: '인증 실패' }, { status: 401 })
+    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
   }
 
   const { sessionId } = await params

@@ -36,7 +36,7 @@ interface Stats {
   statusDistribution: Record<string, number>
 }
 
-// 순수 CSS 바 차트 컴포넌트
+// Pure CSS bar chart component
 function BarChart({ data, labelKey }: { data: TrendPoint[]; labelKey: 'week' | 'month' }) {
   const maxRevenue = Math.max(...data.map((d) => d.revenue), 1)
   return (
@@ -49,7 +49,7 @@ function BarChart({ data, labelKey }: { data: TrendPoint[]; labelKey: 'week' | '
             <div className="relative w-full group">
               {d.revenue > 0 && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block whitespace-nowrap rounded bg-gray-900 px-1.5 py-0.5 text-xs text-white z-10">
-                  ${d.revenue.toFixed(0)} ({d.orders}건)
+                  ${d.revenue.toFixed(0)} ({d.orders} orders)
                 </div>
               )}
               <div
@@ -66,13 +66,13 @@ function BarChart({ data, labelKey }: { data: TrendPoint[]; labelKey: 'week' | '
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: '대기',
-  paid: '결제완료',
-  processing: '제작중',
-  shipped: '배송중',
-  delivered: '배송완료',
-  cancelled: '취소',
-  refunded: '환불',
+  pending: 'Pending',
+  paid: 'Paid',
+  processing: 'Processing',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
+  refunded: 'Refunded',
 }
 
 export default function AdminDashboardPage() {
@@ -91,7 +91,7 @@ export default function AdminDashboardPage() {
     })
     if (res.status === 401) {
       setAuthenticated(false)
-      setError('인증 실패. 비밀번호를 확인하세요.')
+      setError('Authentication failed. Please check your password.')
       setLoading(false)
       return
     }
@@ -126,7 +126,7 @@ export default function AdminDashboardPage() {
             type="submit"
             className="w-full rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
           >
-            로그인
+            Log In
           </button>
         </form>
       </div>
@@ -136,18 +136,18 @@ export default function AdminDashboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="mx-auto max-w-6xl px-4 py-8">
-        {/* 헤더 + 내비게이션 */}
+        {/* Header + Navigation */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">관리자 대시보드</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
           <nav className="flex gap-2 flex-wrap">
             {[
-              { href: '/admin', label: '대시보드', icon: BarChart2 },
-              { href: '/admin/orders', label: '주문 관리', icon: ShoppingBag },
-              { href: '/admin/files', label: '파일 검토', icon: FileText },
-              { href: '/admin/chats', label: '챗봇 이력', icon: MessageCircle },
-              { href: '/admin/portfolio', label: '포트폴리오', icon: Package },
-              { href: '/admin/files', label: '파일 검토', icon: FileText },
-              { href: '/admin/customers', label: '고객 관리', icon: Users },
+              { href: '/admin', label: 'Dashboard', icon: BarChart2 },
+              { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+              { href: '/admin/files', label: 'File Review', icon: FileText },
+              { href: '/admin/chats', label: 'Chat Logs', icon: MessageCircle },
+              { href: '/admin/portfolio', label: 'Portfolio', icon: Package },
+              { href: '/admin/files', label: 'File Review', icon: FileText },
+              { href: '/admin/customers', label: 'Customers', icon: Users },
             ].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
@@ -162,36 +162,36 @@ export default function AdminDashboardPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">불러오는 중...</p>
+          <p className="text-sm text-gray-500">Loading...</p>
         ) : error ? (
           <p className="text-sm text-red-600">{error}</p>
         ) : stats ? (
           <div className="space-y-6">
-            {/* KPI 카드 */}
+            {/* KPI Cards */}
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
               {[
                 {
-                  label: '오늘 매출',
+                  label: "Today's Revenue",
                   value: `$${stats.today.revenue.toFixed(2)}`,
-                  sub: `${stats.today.orders}건`,
+                  sub: `${stats.today.orders} orders`,
                   icon: DollarSign,
                 },
                 {
-                  label: '이번 달 매출',
+                  label: 'Monthly Revenue',
                   value: `$${stats.month.revenue.toFixed(2)}`,
-                  sub: `${stats.month.orders}건`,
+                  sub: `${stats.month.orders} orders`,
                   icon: TrendingUp,
                 },
                 {
-                  label: '이번 달 주문',
-                  value: `${stats.month.orders}건`,
-                  sub: `평균 $${stats.month.orders > 0 ? (stats.month.revenue / stats.month.orders).toFixed(2) : '0'}`,
+                  label: 'Monthly Orders',
+                  value: `${stats.month.orders}`,
+                  sub: `Avg $${stats.month.orders > 0 ? (stats.month.revenue / stats.month.orders).toFixed(2) : '0'}`,
                   icon: ShoppingBag,
                 },
                 {
-                  label: '챗봇 견적',
-                  value: `${Object.values(stats.statusDistribution).reduce((a, b) => a + b, 0)}건`,
-                  sub: '전체 주문',
+                  label: 'Total Orders',
+                  value: `${Object.values(stats.statusDistribution).reduce((a, b) => a + b, 0)}`,
+                  sub: 'All orders',
                   icon: BarChart2,
                 },
               ].map(({ label, value, sub, icon: Icon }) => (
@@ -208,10 +208,10 @@ export default function AdminDashboardPage() {
               ))}
             </div>
 
-            {/* 매출 트렌드 차트 */}
+            {/* Revenue Trend Chart */}
             <div className="rounded-2xl bg-white border border-gray-200 p-5">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-gray-900">매출 트렌드</h2>
+                <h2 className="text-sm font-semibold text-gray-900">Revenue Trend</h2>
                 <div className="flex rounded-lg border border-gray-200 overflow-hidden">
                   {(['weekly', 'monthly'] as const).map((v) => (
                     <button
@@ -223,7 +223,7 @@ export default function AdminDashboardPage() {
                           : 'text-gray-600 hover:bg-gray-50'
                       }`}
                     >
-                      {v === 'weekly' ? '주간' : '월간'}
+                      {v === 'weekly' ? 'Weekly' : 'Monthly'}
                     </button>
                   ))}
                 </div>
@@ -236,11 +236,11 @@ export default function AdminDashboardPage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-              {/* 상품별 분석 */}
+              {/* Product Analysis */}
               <div className="rounded-2xl bg-white border border-gray-200 p-5">
-                <h2 className="mb-4 text-sm font-semibold text-gray-900">상품별 분석</h2>
+                <h2 className="mb-4 text-sm font-semibold text-gray-900">Product Analysis</h2>
                 {stats.productStats.length === 0 ? (
-                  <p className="text-sm text-gray-400">데이터 없음</p>
+                  <p className="text-sm text-gray-400">No data</p>
                 ) : (
                   <div className="space-y-3">
                     {stats.productStats.map((p) => {
@@ -251,7 +251,7 @@ export default function AdminDashboardPage() {
                           <div className="mb-1 flex items-center justify-between">
                             <span className="text-sm font-medium text-gray-700">{p.name}</span>
                             <span className="text-sm text-gray-500">
-                              ${p.revenue.toFixed(2)} ({p.orders}건)
+                              ${p.revenue.toFixed(2)} ({p.orders} orders)
                             </span>
                           </div>
                           <div className="h-1.5 w-full rounded-full bg-gray-100">
@@ -267,11 +267,11 @@ export default function AdminDashboardPage() {
                 )}
               </div>
 
-              {/* 주문 상태 분포 */}
+              {/* Order Status Distribution */}
               <div className="rounded-2xl bg-white border border-gray-200 p-5">
-                <h2 className="mb-4 text-sm font-semibold text-gray-900">주문 상태 분포</h2>
+                <h2 className="mb-4 text-sm font-semibold text-gray-900">Order Status Distribution</h2>
                 {Object.keys(stats.statusDistribution).length === 0 ? (
-                  <p className="text-sm text-gray-400">데이터 없음</p>
+                  <p className="text-sm text-gray-400">No data</p>
                 ) : (
                   <div className="space-y-2">
                     {Object.entries(stats.statusDistribution)

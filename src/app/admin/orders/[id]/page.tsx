@@ -85,7 +85,7 @@ export default function AdminOrderDetailPage() {
         headers: { 'x-admin-secret': secret },
       })
       if (!res.ok) {
-        setError('주문을 불러오지 못했습니다.')
+        setError('Failed to load order.')
         setLoading(false)
         return
       }
@@ -115,18 +115,18 @@ export default function AdminOrderDetailPage() {
 
     const updated = await res.json()
     if (!res.ok) {
-      setUpdateMsg(`오류: ${updated.error}`)
+      setUpdateMsg(`Error: ${updated.error}`)
     } else {
       setOrder((prev) => prev ? { ...prev, ...updated } : updated)
       setNewStatus('')
       setTrackingNumber('')
-      setUpdateMsg('업데이트 완료')
+      setUpdateMsg('Updated successfully')
     }
     setUpdating(false)
   }
 
   if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>
-  if (error || !order) return <div className="p-8 text-center text-red-500">{error || '주문 없음'}</div>
+  if (error || !order) return <div className="p-8 text-center text-red-500">{error || 'Order not found'}</div>
 
   const nextOptions = NEXT_STATUSES[order.status] ?? []
 
@@ -146,7 +146,7 @@ export default function AdminOrderDetailPage() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* 고객 정보 */}
+          {/* Customer info */}
           <div className="bg-white rounded-lg shadow p-5 space-y-2">
             <h2 className="font-semibold text-gray-700 mb-3">Customer</h2>
             <p className="font-medium">{order.customer_name}</p>
@@ -154,7 +154,7 @@ export default function AdminOrderDetailPage() {
             {order.customer_phone && <p className="text-sm text-gray-500">{order.customer_phone}</p>}
           </div>
 
-          {/* 배송 정보 */}
+          {/* Shipping info */}
           <div className="bg-white rounded-lg shadow p-5 space-y-2">
             <h2 className="font-semibold text-gray-700 mb-3">Shipping Address</h2>
             <p className="font-medium">{order.shipping_name}</p>
@@ -167,7 +167,7 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        {/* 주문 항목 */}
+        {/* Order items */}
         <div className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-700 mb-4">Order Items</h2>
           <div className="space-y-4">
@@ -210,7 +210,7 @@ export default function AdminOrderDetailPage() {
           </div>
         </div>
 
-        {/* 상태 변경 */}
+        {/* Status update */}
         {nextOptions.length > 0 && (
           <div className="bg-white rounded-lg shadow p-5 space-y-4">
             <h2 className="font-semibold text-gray-700">Update Status</h2>
@@ -252,7 +252,7 @@ export default function AdminOrderDetailPage() {
                 {updating ? 'Updating...' : 'Update'}
               </button>
               {updateMsg && (
-                <span className={`text-sm ${updateMsg.startsWith('오류') ? 'text-red-500' : 'text-green-600'}`}>
+                <span className={`text-sm ${updateMsg.startsWith('Error') ? 'text-red-500' : 'text-green-600'}`}>
                   {updateMsg}
                 </span>
               )}
@@ -260,7 +260,7 @@ export default function AdminOrderDetailPage() {
           </div>
         )}
 
-        {/* 결제 정보 */}
+        {/* Payment info */}
         {order.stripe_payment_intent_id && (
           <div className="bg-white rounded-lg shadow p-5">
             <h2 className="font-semibold text-gray-700 mb-2">Payment</h2>

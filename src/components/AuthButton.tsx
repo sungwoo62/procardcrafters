@@ -35,7 +35,7 @@ export default function AuthButton() {
       <Link
         href="/mypage"
         className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-gray-900 px-2 py-1.5 rounded-lg hover:bg-gray-50 transition-colors"
-        title="마이페이지"
+        title="My Page"
       >
         <User className="w-4 h-4" />
         <span className="hidden sm:inline text-xs font-medium truncate max-w-[80px]">
@@ -50,7 +50,7 @@ export default function AuthButton() {
       href="/auth/login"
       className="text-sm text-gray-600 hover:text-gray-900 px-3 py-1.5 rounded-lg hover:bg-gray-50 transition-colors font-medium"
     >
-      로그인
+      Log In
     </Link>
   )
 }

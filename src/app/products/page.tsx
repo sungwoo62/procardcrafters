@@ -75,7 +75,7 @@ export default async function ProductsPage() {
 
   return (
     <>
-      {/* 페이지 헤더 */}
+      {/* Page Header */}
       <section className="bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 py-16 px-4">
         <div className="max-w-4xl mx-auto text-center">
           <div className="inline-flex items-center gap-2 bg-blue-500/20 border border-blue-400/30 text-blue-200 text-sm font-medium px-4 py-1.5 rounded-full mb-6">
@@ -89,7 +89,7 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      {/* 신뢰 배지 */}
+      {/* Trust Badges */}
       <section className="bg-white border-b border-gray-100 py-4 px-4">
         <div className="max-w-5xl mx-auto flex flex-wrap justify-center gap-x-10 gap-y-2 text-sm text-gray-500 font-medium">
           <span className="flex items-center gap-1.5"><span className="text-green-500 font-bold">✓</span> 3–5 day production</span>
@@ -100,10 +100,10 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      {/* 상품 그리드 */}
+      {/* Product Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {items.length === 0 ? (
-          <div className="text-center py-20 text-gray-400">상품 정보를 불러오는 중...</div>
+          <div className="text-center py-20 text-gray-400">Loading products...</div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {items.map((product) => {
@@ -122,7 +122,7 @@ export default async function ProductsPage() {
                   href={`/products/${product.slug}`}
                   className={`group relative border ${PRODUCT_ACCENT[product.category] ?? 'border-gray-200'} rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}
                 >
-                  {/* 썸네일 */}
+                  {/* Thumbnail */}
                   <div className={`h-44 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-gray-50 to-gray-100'} flex items-center justify-center relative`}>
                     <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
                       <ProductImage category={product.category} />
@@ -162,7 +162,7 @@ export default async function ProductsPage() {
         )}
       </section>
 
-      {/* 하단 안내 */}
+      {/* Bottom Info */}
       <section className="bg-gray-50 border-t border-gray-100 py-12 px-4">
         <div className="max-w-2xl mx-auto text-center">
           <div className="flex items-center justify-center gap-1 mb-3">

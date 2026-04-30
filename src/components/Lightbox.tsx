@@ -57,43 +57,43 @@ export default function Lightbox({ items, activeIndex, onClose, onPrev, onNext }
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
       onClick={onClose}
     >
-      {/* 닫기 버튼 */}
+      {/* Close Button */}
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-        aria-label="닫기"
+        aria-label="Close"
       >
         <X className="w-6 h-6" />
       </button>
 
-      {/* 이전 버튼 */}
+      {/* Previous Button */}
       {items.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); onPrev() }}
           className="absolute left-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-          aria-label="이전"
+          aria-label="Previous"
         >
           <ChevronLeft className="w-8 h-8" />
         </button>
       )}
 
-      {/* 다음 버튼 */}
+      {/* Next Button */}
       {items.length > 1 && (
         <button
           onClick={(e) => { e.stopPropagation(); onNext() }}
           className="absolute right-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-          aria-label="다음"
+          aria-label="Next"
         >
           <ChevronRight className="w-8 h-8" />
         </button>
       )}
 
-      {/* 콘텐츠 */}
+      {/* Content */}
       <div
         className="relative max-w-5xl w-full mx-4 sm:mx-12 flex flex-col md:flex-row gap-4 items-start"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* 이미지 */}
+        {/* Image */}
         <div className="relative w-full md:flex-1 aspect-[4/3] rounded-xl overflow-hidden bg-gray-900 shrink-0">
           <Image
             src={item.image_url}
@@ -105,7 +105,7 @@ export default function Lightbox({ items, activeIndex, onClose, onPrev, onNext }
           />
         </div>
 
-        {/* 정보 패널 */}
+        {/* Info Panel */}
         <div className="md:w-64 shrink-0 text-white">
           <span className="inline-block text-xs font-semibold bg-blue-500/30 text-blue-200 px-2.5 py-1 rounded-full mb-3">
             {CATEGORY_LABELS[item.category] ?? item.category}
@@ -123,7 +123,7 @@ export default function Lightbox({ items, activeIndex, onClose, onPrev, onNext }
               ))}
             </div>
           )}
-          {/* 인덱스 표시 */}
+          {/* Index Display */}
           <p className="text-xs text-white/40 mt-6">
             {activeIndex + 1} / {items.length}
           </p>

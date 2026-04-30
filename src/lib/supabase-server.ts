@@ -1,7 +1,7 @@
 import { createServerClient as createSsrServerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
 
-// 인증 포함 서버 컴포넌트 / Route Handler용 (쿠키 기반 세션)
+// Auth-aware server component / Route Handler client (cookie-based session)
 export async function createAuthServerClient() {
   const cookieStore = await cookies()
   return createSsrServerClient(
@@ -18,7 +18,7 @@ export async function createAuthServerClient() {
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Server Components에서는 쿠키 설정 불가 — 무시
+            // Cannot set cookies in Server Components — ignore
           }
         },
       },
@@ -26,5 +26,5 @@ export async function createAuthServerClient() {
   )
 }
 
-// createAuthRouteClient는 createAuthServerClient와 동일 (하위 호환)
+// createAuthRouteClient is identical to createAuthServerClient (backward compat)
 export const createAuthRouteClient = createAuthServerClient
