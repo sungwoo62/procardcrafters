@@ -791,13 +791,20 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Export ────────────────────────────────────────────────────────────────
 
-  function getExportDataUrl(multiplier = 2): string {
+  // targetDpi: 원하는 출력 DPI. 300 = 인쇄 품질, 150 = 미리보기
+  function getExportDataUrl(targetDpi = 150): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
     const trimX = mmToPx(dims.bleedMm, scale)
     const trimY = mmToPx(dims.bleedMm, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
+
+    // 제품 크기에 따라 동적으로 multiplier 계산 (DPI 보장)
+    const MM_PER_INCH = 25.4
+    const needW = (dims.widthMm / MM_PER_INCH) * targetDpi
+    const needH = (dims.heightMm / MM_PER_INCH) * targetDpi
+    const multiplier = Math.max(1, Math.ceil(Math.max(needW / trimW, needH / trimH)))
 
     // Save viewport, reset for export
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -819,7 +826,7 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   function exportPng() {
-    const dataUrl = getExportDataUrl(2)
+    const dataUrl = getExportDataUrl(150)
     if (!dataUrl) return
     const link = document.createElement('a')
     link.download = `${product.slug}-design.png`
@@ -831,7 +838,7 @@ export default function EditorClient({ product, options }: Props) {
     setOrdering(true)
     setOrderError('')
     try {
-      const dataUrl = getExportDataUrl(3)
+      const dataUrl = getExportDataUrl(300)
       if (!dataUrl) throw new Error('Export failed')
       const res = await fetch(dataUrl)
       const blob = await res.blob()
