@@ -1,8 +1,6 @@
 'use client'
 
-import {
-  useState, useRef, useEffect, useCallback, useMemo
-} from 'react'
+import { useState, useRef, useEffect, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -10,46 +8,48 @@ import {
   ChevronUp, ChevronDown, Eye, EyeOff, Lock, Unlock,
   Download, ShoppingCart, Bold, Italic, AlignLeft,
   AlignCenter, AlignRight, ArrowLeft, Plus, LayoutTemplate,
+  RotateCcw, RotateCw,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type LayerType = 'text' | 'image' | 'rect'
-type TextAlign = 'left' | 'center' | 'right'
 
-interface DesignLayer {
+interface LayerInfo {
   id: string
+  name: string
   type: LayerType
-  x: number      // mm from trim-area left edge
-  y: number      // mm from trim-area top edge
-  width: number  // mm
-  height: number // mm
   visible: boolean
   locked: boolean
-  name: string
-  // text
-  content?: string
-  fontFamily?: string
-  fontSize?: number   // pt
-  fontBold?: boolean
-  fontItalic?: boolean
-  color?: string
-  textAlign?: TextAlign
-  letterSpacing?: number   // px extra per char on canvas
-  lineHeight?: number      // multiplier
-  // image
-  imageUrl?: string
-  // rect
-  fillColor?: string
-  strokeColor?: string
-  strokeWidth?: number
 }
 
 interface EditorDimensions {
   widthMm: number
   heightMm: number
   bleedMm: number
+}
+
+interface SelectedProps {
+  x: number
+  y: number
+  width: number
+  height: number
+  angle: number
+  // text
+  text?: string
+  fontFamily?: string
+  fontSize?: number
+  fontWeight?: string
+  fontStyle?: string
+  fill?: string
+  textAlign?: string
+  charSpacing?: number
+  lineHeight?: number
+  // rect
+  fillColor?: string
+  strokeColor?: string
+  strokeWidth?: number
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -67,112 +67,13 @@ const PRODUCT_DIMS: Record<string, EditorDimensions> = {
 }
 const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3 }
 
-const SNAP_THRESHOLD_MM = 2
-const HANDLE_SIZE_PX = 8
 const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
+const SNAP_THRESHOLD_MM = 2
 
 const FONTS = ['Arial', 'Georgia', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Trebuchet MS', 'Impact']
 
-// ─── Templates ────────────────────────────────────────────────────────────────
-
-type TemplateLayer = Omit<DesignLayer, 'id'>
-
-interface Template {
-  name: string
-  bgColor: string
-  layers: TemplateLayer[]
-}
-
-function makeId() { return Math.random().toString(36).slice(2) }
-
-function instantiateTemplate(t: Template): DesignLayer[] {
-  return t.layers.map(l => ({ ...l, id: makeId() }))
-}
-
-const TEMPLATES: Template[] = [
-  {
-    name: 'Blank',
-    bgColor: '#ffffff',
-    layers: [],
-  },
-  {
-    name: 'Classic',
-    bgColor: '#ffffff',
-    layers: [
-      {
-        name: 'Name', type: 'text', x: 5, y: 14, width: 75, height: 12,
-        visible: true, locked: false,
-        content: 'John Doe', fontFamily: 'Arial', fontSize: 22, fontBold: true, fontItalic: false,
-        color: '#111111', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
-      },
-      {
-        name: 'Title', type: 'text', x: 5, y: 27, width: 65, height: 8,
-        visible: true, locked: false,
-        content: 'Senior Designer', fontFamily: 'Arial', fontSize: 11, fontBold: false, fontItalic: false,
-        color: '#555555', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
-      },
-      {
-        name: 'Divider', type: 'rect', x: 5, y: 36, width: 45, height: 0.5,
-        visible: true, locked: false, fillColor: '#cccccc', strokeWidth: 0,
-      },
-      {
-        name: 'Contact', type: 'text', x: 5, y: 40, width: 75, height: 10,
-        visible: true, locked: false,
-        content: 'email@company.com\n+1 (555) 000-0000', fontFamily: 'Arial', fontSize: 9, fontBold: false, fontItalic: false,
-        color: '#444444', textAlign: 'left', letterSpacing: 0, lineHeight: 1.5,
-      },
-    ],
-  },
-  {
-    name: 'Minimal',
-    bgColor: '#ffffff',
-    layers: [
-      {
-        name: 'Name', type: 'text', x: 7.5, y: 19, width: 70, height: 12,
-        visible: true, locked: false,
-        content: 'Your Name', fontFamily: 'Helvetica', fontSize: 22, fontBold: false, fontItalic: false,
-        color: '#000000', textAlign: 'center', letterSpacing: 2, lineHeight: 1.3,
-      },
-      {
-        name: 'Company', type: 'text', x: 7.5, y: 34, width: 70, height: 8,
-        visible: true, locked: false,
-        content: 'Company · Title', fontFamily: 'Helvetica', fontSize: 10, fontBold: false, fontItalic: false,
-        color: '#888888', textAlign: 'center', letterSpacing: 1, lineHeight: 1.3,
-      },
-    ],
-  },
-  {
-    name: 'Dark',
-    bgColor: '#1a1a1a',
-    layers: [
-      {
-        name: 'Accent Bar', type: 'rect', x: 0, y: 0, width: 4, height: 55,
-        visible: true, locked: false, fillColor: '#4f46e5', strokeWidth: 0,
-      },
-      {
-        name: 'Name', type: 'text', x: 10, y: 14, width: 70, height: 12,
-        visible: true, locked: false,
-        content: 'Your Name', fontFamily: 'Arial', fontSize: 20, fontBold: true, fontItalic: false,
-        color: '#ffffff', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
-      },
-      {
-        name: 'Title', type: 'text', x: 10, y: 27, width: 70, height: 8,
-        visible: true, locked: false,
-        content: 'Title • Company', fontFamily: 'Arial', fontSize: 10, fontBold: false, fontItalic: false,
-        color: '#a5b4fc', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
-      },
-      {
-        name: 'Email', type: 'text', x: 10, y: 40, width: 70, height: 7,
-        visible: true, locked: false,
-        content: 'email@company.com', fontFamily: 'Arial', fontSize: 9, fontBold: false, fontItalic: false,
-        color: '#9ca3af', textAlign: 'left', letterSpacing: 0, lineHeight: 1.3,
-      },
-    ],
-  },
-]
-
-// ─── Canvas helpers ────────────────────────────────────────────────────────────
+// ─── Helpers ────────────────────────────────────────────────────────────────
 
 function getScale(dims: EditorDimensions): number {
   const totalW = dims.widthMm + 2 * dims.bleedMm
@@ -181,105 +82,11 @@ function getScale(dims: EditorDimensions): number {
 }
 
 function mmToPx(mm: number, scale: number) { return mm * scale }
-function pxToMm(px: number, scale: number) { return px / scale }
 
-function buildFont(layer: DesignLayer): string {
-  const style = layer.fontItalic ? 'italic ' : ''
-  const weight = layer.fontBold ? 'bold ' : ''
-  const size = (layer.fontSize ?? 12)
-  const family = layer.fontFamily ?? 'Arial'
-  return `${style}${weight}${size}pt ${family}`
-}
+function makeId() { return Math.random().toString(36).slice(2) }
 
-function drawLayer(ctx: CanvasRenderingContext2D, layer: DesignLayer, scale: number, bleedMm: number) {
-  if (!layer.visible) return
-
-  const ox = mmToPx(layer.x + bleedMm, scale)
-  const oy = mmToPx(layer.y + bleedMm, scale)
-  const ow = mmToPx(layer.width, scale)
-  const oh = mmToPx(layer.height, scale)
-
-  if (layer.type === 'rect') {
-    ctx.beginPath()
-    ctx.rect(ox, oy, ow, oh)
-    if (layer.fillColor) {
-      ctx.fillStyle = layer.fillColor
-      ctx.fill()
-    }
-    if (layer.strokeColor && (layer.strokeWidth ?? 0) > 0) {
-      ctx.strokeStyle = layer.strokeColor
-      ctx.lineWidth = mmToPx(layer.strokeWidth!, scale)
-      ctx.stroke()
-    }
-    return
-  }
-
-  if (layer.type === 'text' && layer.content) {
-    ctx.font = buildFont(layer)
-    ctx.fillStyle = layer.color ?? '#000000'
-    ctx.textAlign = layer.textAlign ?? 'left'
-    ctx.textBaseline = 'top'
-
-    const lines = layer.content.split('\n')
-    const lhMult = layer.lineHeight ?? 1.4
-    const ptToPx = scale * (1 / 0.352778) / (96 / 72) // approximate
-    const lineH = (layer.fontSize ?? 12) * ptToPx * lhMult
-
-    // letter spacing via manual char drawing
-    const ls = layer.letterSpacing ?? 0
-    const xAnchor = layer.textAlign === 'right' ? ox + ow : layer.textAlign === 'center' ? ox + ow / 2 : ox
-
-    lines.forEach((line, i) => {
-      const ly = oy + i * lineH
-      if (ls !== 0) {
-        // character-by-character for letter spacing
-        let xCursor = xAnchor
-        const metrics = ctx.measureText(line)
-        const totalW = metrics.width + ls * (line.length - 1)
-        if (layer.textAlign === 'center') xCursor = xAnchor - totalW / 2
-        else if (layer.textAlign === 'right') xCursor = xAnchor - totalW
-        else xCursor = xAnchor
-
-        for (const ch of line) {
-          ctx.fillText(ch, xCursor, ly)
-          xCursor += ctx.measureText(ch).width + ls
-        }
-      } else {
-        ctx.fillText(line, xAnchor, ly)
-      }
-    })
-    return
-  }
-
-  if (layer.type === 'image' && layer.imageUrl) {
-    // Image rendering is handled in the component via cached HTMLImageElement
-    // This function is called with pre-loaded images via a different path
-  }
-}
-
-function drawSelectionHandles(ctx: CanvasRenderingContext2D, layer: DesignLayer, scale: number, bleedMm: number) {
-  const ox = mmToPx(layer.x + bleedMm, scale)
-  const oy = mmToPx(layer.y + bleedMm, scale)
-  const ow = mmToPx(layer.width, scale)
-  const oh = mmToPx(layer.height, scale)
-
-  ctx.save()
-  ctx.strokeStyle = '#4f46e5'
-  ctx.lineWidth = 1
-  ctx.setLineDash([4, 2])
-  ctx.strokeRect(ox - 1, oy - 1, ow + 2, oh + 2)
-  ctx.setLineDash([])
-
-  const handles = [
-    [ox, oy], [ox + ow / 2, oy], [ox + ow, oy],
-    [ox, oy + oh / 2],              [ox + ow, oy + oh / 2],
-    [ox, oy + oh], [ox + ow / 2, oy + oh], [ox + ow, oy + oh],
-  ]
-  ctx.fillStyle = '#4f46e5'
-  for (const [hx, hy] of handles) {
-    ctx.fillRect(hx - HANDLE_SIZE_PX / 2, hy - HANDLE_SIZE_PX / 2, HANDLE_SIZE_PX, HANDLE_SIZE_PX)
-  }
-  ctx.restore()
+function isBackground(obj: { data?: { role?: string } }) {
+  return !!obj.data?.role
 }
 
 // ─── Main component ────────────────────────────────────────────────────────────
@@ -296,357 +103,763 @@ export default function EditorClient({ product, options }: Props) {
   const canvasW = Math.round(mmToPx(dims.widthMm + 2 * dims.bleedMm, scale))
   const canvasH = Math.round(mmToPx(dims.heightMm + 2 * dims.bleedMm, scale))
 
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const imageCache = useRef<Map<string, HTMLImageElement>>(new Map())
+  const canvasElRef = useRef<HTMLCanvasElement>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fabricRef = useRef<any>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const fabricModRef = useRef<typeof import('fabric') | null>(null)
+  const toolRef = useRef<'select' | 'text' | 'rect' | 'image'>('select')
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [layers, setLayers] = useState<DesignLayer[]>(() =>
-    instantiateTemplate(TEMPLATES[1])
-  )
-  const [bgColor, setBgColor] = useState('#ffffff')
+  // History for undo/redo
+  const historyStack = useRef<string[]>([])
+  const historyIndex = useRef(-1)
+  const isMutating = useRef(false)
+
+  // Clipboard for copy/paste
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const clipboardRef = useRef<any>(null)
+
+  // State
+  const [layers, setLayers] = useState<LayerInfo[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
   const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'properties'>('layers')
+  const [bgColor, setBgColor] = useState('#ffffff')
+  const [ordering, setOrdering] = useState(false)
+  const [orderError, setOrderError] = useState('')
 
-  const [guides, setGuides] = useState<{ x?: number; y?: number }[]>([])
+  // Keep ref in sync with state for canvas event handlers
+  useEffect(() => { toolRef.current = tool }, [tool])
+  const bgColorRef = useRef(bgColor)
+  useEffect(() => { bgColorRef.current = bgColor }, [bgColor])
 
-  // drag state (refs so canvas handler can read without stale closures)
-  const dragging = useRef(false)
-  const dragLayerId = useRef<string | null>(null)
-  const dragOffset = useRef({ x: 0, y: 0 })
-  const layersRef = useRef(layers)
-  useEffect(() => { layersRef.current = layers }, [layers])
+  // ── Sync helpers ──────────────────────────────────────────────────────────
 
-  // ── Selected layer ─────────────────────────────────────────────────────────
-  const selectedLayer = useMemo(() => layers.find(l => l.id === selectedId) ?? null, [layers, selectedId])
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function syncLayers(canvas: any) {
+    const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o))
+    const layerList: LayerInfo[] = [...objs].reverse().map((o: {
+      data?: { id?: string; name?: string; layerType?: LayerType }
+      visible?: boolean
+      selectable?: boolean
+    }) => ({
+      id: o.data?.id ?? '',
+      name: o.data?.name ?? 'Layer',
+      type: (o.data?.layerType ?? 'rect') as LayerType,
+      visible: o.visible ?? true,
+      locked: !(o.selectable ?? true),
+    }))
+    setLayers(layerList)
+  }
 
-  // ── Canvas draw ────────────────────────────────────────────────────────────
-  const drawCanvas = useCallback(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function syncSelected(canvas: any) {
+    const obj = canvas.getActiveObject()
+    if (!obj || isBackground(obj)) {
+      setSelectedId(null)
+      setSelectedProps(null)
+      return
+    }
+    const id = obj.data?.id ?? ''
+    setSelectedId(id)
 
-    ctx.clearRect(0, 0, canvasW, canvasH)
+    const props: SelectedProps = {
+      x: Math.round((obj.left ?? 0) * 10) / 10,
+      y: Math.round((obj.top ?? 0) * 10) / 10,
+      width: Math.round((obj.getScaledWidth?.() ?? obj.width ?? 0) * 10) / 10,
+      height: Math.round((obj.getScaledHeight?.() ?? obj.height ?? 0) * 10) / 10,
+      angle: Math.round((obj.angle ?? 0) * 10) / 10,
+    }
 
-    // Bleed zone (light checkerboard pattern to show bleed area)
-    ctx.fillStyle = '#e5e7eb'
-    ctx.fillRect(0, 0, canvasW, canvasH)
+    const objType: string = obj.type ?? ''
+    if (objType === 'textbox' || objType === 'text' || objType === 'i-text') {
+      props.text = obj.text ?? ''
+      props.fontFamily = obj.fontFamily ?? 'Arial'
+      props.fontSize = Math.round(obj.fontSize ?? 14)
+      props.fontWeight = obj.fontWeight ?? 'normal'
+      props.fontStyle = obj.fontStyle ?? 'normal'
+      props.fill = typeof obj.fill === 'string' ? obj.fill : '#000000'
+      props.textAlign = obj.textAlign ?? 'left'
+      props.charSpacing = obj.charSpacing ?? 0
+      props.lineHeight = obj.lineHeight ?? 1.4
+    } else if (objType === 'rect') {
+      props.fillColor = typeof obj.fill === 'string' ? obj.fill : '#e5e7eb'
+      props.strokeColor = typeof obj.stroke === 'string' ? obj.stroke : '#000000'
+      props.strokeWidth = obj.strokeWidth ?? 0
+    }
 
-    // Trim area (the actual print area)
+    setSelectedProps(props)
+    setActivePanel('properties')
+  }
+
+  // ── History ───────────────────────────────────────────────────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function saveHistory(canvas: any) {
+    const json = JSON.stringify(canvas.toJSON(['data', 'selectable', 'evented', 'hasControls', 'visible']))
+    historyStack.current = historyStack.current.slice(0, historyIndex.current + 1)
+    historyStack.current.push(json)
+    historyIndex.current = historyStack.current.length - 1
+  }
+
+  const undo = useCallback(async () => {
+    const canvas = fabricRef.current
+    if (!canvas || historyIndex.current <= 0) return
+    historyIndex.current--
+    const json = historyStack.current[historyIndex.current]
+    isMutating.current = true
+    await canvas.loadFromJSON(JSON.parse(json))
+    isMutating.current = false
+    canvas.renderAll()
+    syncLayers(canvas)
+    syncSelected(canvas)
+  }, [])
+
+  const redo = useCallback(async () => {
+    const canvas = fabricRef.current
+    if (!canvas || historyIndex.current >= historyStack.current.length - 1) return
+    historyIndex.current++
+    const json = historyStack.current[historyIndex.current]
+    isMutating.current = true
+    await canvas.loadFromJSON(JSON.parse(json))
+    isMutating.current = false
+    canvas.renderAll()
+    syncLayers(canvas)
+    syncSelected(canvas)
+  }, [])
+
+  // ── Keyboard shortcuts ─────────────────────────────────────────────────────
+
+  useEffect(() => {
+    async function handleKey(e: KeyboardEvent) {
+      const canvas = fabricRef.current
+      if (!canvas) return
+      const tag = (e.target as HTMLElement).tagName
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        const obj = canvas.getActiveObject()
+        if (obj && !isBackground(obj)) {
+          canvas.remove(obj)
+          canvas.discardActiveObject()
+          canvas.renderAll()
+          syncLayers(canvas)
+          saveHistory(canvas)
+        }
+      } else if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); await undo() }
+        else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); await redo() }
+        else if (e.key === 'c') {
+          const obj = canvas.getActiveObject()
+          if (obj && !isBackground(obj)) {
+            clipboardRef.current = await obj.clone(['data'])
+          }
+        } else if (e.key === 'v') {
+          if (clipboardRef.current) {
+            const cloned = await clipboardRef.current.clone(['data'])
+            cloned.set({ left: (cloned.left ?? 0) + 10, top: (cloned.top ?? 0) + 10 })
+            cloned.data = { ...cloned.data, id: makeId() }
+            canvas.add(cloned)
+            canvas.setActiveObject(cloned)
+            canvas.renderAll()
+            syncLayers(canvas)
+            saveHistory(canvas)
+          }
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKey)
+    return () => window.removeEventListener('keydown', handleKey)
+  }, [undo, redo])
+
+  // ── Background drawing ─────────────────────────────────────────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function addBackgroundObjects(canvas: any, fabric: typeof import('fabric'), bg: string) {
     const trimX = mmToPx(dims.bleedMm, scale)
     const trimY = mmToPx(dims.bleedMm, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
-    ctx.fillStyle = bgColor
-    ctx.fillRect(trimX, trimY, trimW, trimH)
 
-    // Layers (back to front)
-    const current = layersRef.current
-    for (const layer of [...current].reverse()) {
-      if (layer.type === 'image' && layer.imageUrl) {
-        const cached = imageCache.current.get(layer.imageUrl)
-        if (cached) {
-          const ox = mmToPx(layer.x + dims.bleedMm, scale)
-          const oy = mmToPx(layer.y + dims.bleedMm, scale)
-          ctx.drawImage(cached, ox, oy, mmToPx(layer.width, scale), mmToPx(layer.height, scale))
-        }
-      } else {
-        drawLayer(ctx, layer, scale, dims.bleedMm)
-      }
-    }
-
-    // Selection handles
-    const sel = current.find(l => l.id === selectedId)
-    if (sel) drawSelectionHandles(ctx, sel, scale, dims.bleedMm)
-
-    // Bleed border indicator
-    ctx.save()
-    ctx.strokeStyle = 'rgba(239,68,68,0.5)'
-    ctx.lineWidth = 1
-    ctx.setLineDash([6, 3])
-    ctx.strokeRect(trimX, trimY, trimW, trimH)
-    ctx.setLineDash([])
-    ctx.restore()
-
-    // Alignment guides
-    ctx.save()
-    ctx.strokeStyle = '#4f46e5'
-    ctx.lineWidth = 1
-    for (const g of guides) {
-      if (g.x !== undefined) {
-        ctx.beginPath(); ctx.moveTo(g.x, 0); ctx.lineTo(g.x, canvasH); ctx.stroke()
-      }
-      if (g.y !== undefined) {
-        ctx.beginPath(); ctx.moveTo(0, g.y); ctx.lineTo(canvasW, g.y); ctx.stroke()
-      }
-    }
-    ctx.restore()
-  }, [bgColor, selectedId, guides, canvasW, canvasH, dims, scale])
-
-  useEffect(() => { drawCanvas() }, [drawCanvas, layers])
-
-  // ── Mouse helpers ──────────────────────────────────────────────────────────
-  function canvasCoordsToMm(cx: number, cy: number) {
-    return {
-      xMm: pxToMm(cx, scale) - dims.bleedMm,
-      yMm: pxToMm(cy, scale) - dims.bleedMm,
-    }
-  }
-
-  function hitTest(xMm: number, yMm: number): DesignLayer | null {
-    const visible = layersRef.current.filter(l => l.visible && !l.locked)
-    for (const layer of visible) {
-      if (xMm >= layer.x && xMm <= layer.x + layer.width &&
-          yMm >= layer.y && yMm <= layer.y + layer.height) {
-        return layer
-      }
-    }
-    return null
-  }
-
-  function computeGuides(movingLayer: DesignLayer, xMm: number, yMm: number): { x?: number; y?: number }[] {
-    const guides: { x?: number; y?: number }[] = []
-    const docCenterX = dims.widthMm / 2
-    const docCenterY = dims.heightMm / 2
-    const layerCX = xMm + movingLayer.width / 2
-    const layerCY = yMm + movingLayer.height / 2
-
-    // Snap to doc center
-    if (Math.abs(layerCX - docCenterX) < SNAP_THRESHOLD_MM) {
-      guides.push({ x: mmToPx(docCenterX + dims.bleedMm, scale) })
-    }
-    if (Math.abs(layerCY - docCenterY) < SNAP_THRESHOLD_MM) {
-      guides.push({ y: mmToPx(docCenterY + dims.bleedMm, scale) })
-    }
-    // Snap to doc edges
-    if (Math.abs(xMm) < SNAP_THRESHOLD_MM) guides.push({ x: mmToPx(dims.bleedMm, scale) })
-    if (Math.abs(yMm) < SNAP_THRESHOLD_MM) guides.push({ y: mmToPx(dims.bleedMm, scale) })
-    if (Math.abs(xMm + movingLayer.width - dims.widthMm) < SNAP_THRESHOLD_MM) {
-      guides.push({ x: mmToPx(dims.widthMm + dims.bleedMm, scale) })
-    }
-    if (Math.abs(yMm + movingLayer.height - dims.heightMm) < SNAP_THRESHOLD_MM) {
-      guides.push({ y: mmToPx(dims.heightMm + dims.bleedMm, scale) })
-    }
-    return guides
-  }
-
-  function snapPosition(movingLayer: DesignLayer, xMm: number, yMm: number) {
-    let snappedX = xMm
-    let snappedY = yMm
-    const docCenterX = dims.widthMm / 2
-    const docCenterY = dims.heightMm / 2
-    const layerCX = xMm + movingLayer.width / 2
-    const layerCY = yMm + movingLayer.height / 2
-
-    if (Math.abs(layerCX - docCenterX) < SNAP_THRESHOLD_MM) snappedX = docCenterX - movingLayer.width / 2
-    if (Math.abs(layerCY - docCenterY) < SNAP_THRESHOLD_MM) snappedY = docCenterY - movingLayer.height / 2
-    if (Math.abs(xMm) < SNAP_THRESHOLD_MM) snappedX = 0
-    if (Math.abs(yMm) < SNAP_THRESHOLD_MM) snappedY = 0
-    if (Math.abs(xMm + movingLayer.width - dims.widthMm) < SNAP_THRESHOLD_MM) snappedX = dims.widthMm - movingLayer.width
-    if (Math.abs(yMm + movingLayer.height - dims.heightMm) < SNAP_THRESHOLD_MM) snappedY = dims.heightMm - movingLayer.height
-
-    return { snappedX, snappedY }
-  }
-
-  // ── Mouse events ───────────────────────────────────────────────────────────
-  function handleMouseDown(e: React.MouseEvent<HTMLCanvasElement>) {
-    const rect = canvasRef.current!.getBoundingClientRect()
-    const cx = (e.clientX - rect.left) * (canvasW / rect.width)
-    const cy = (e.clientY - rect.top) * (canvasH / rect.height)
-    const { xMm, yMm } = canvasCoordsToMm(cx, cy)
-
-    if (tool === 'select') {
-      const hit = hitTest(xMm, yMm)
-      if (hit) {
-        setSelectedId(hit.id)
-        dragging.current = true
-        dragLayerId.current = hit.id
-        dragOffset.current = { x: xMm - hit.x, y: yMm - hit.y }
-        setActivePanel('properties')
-      } else {
-        setSelectedId(null)
-        setActivePanel('layers')
-      }
-    } else if (tool === 'text') {
-      const id = makeId()
-      const newLayer: DesignLayer = {
-        id, type: 'text', name: 'Text',
-        x: Math.max(0, xMm - 20), y: Math.max(0, yMm - 5),
-        width: 50, height: 10,
-        visible: true, locked: false,
-        content: 'Enter text',
-        fontFamily: 'Arial', fontSize: 14, fontBold: false, fontItalic: false,
-        color: '#000000', textAlign: 'left', letterSpacing: 0, lineHeight: 1.4,
-      }
-      setLayers(prev => [newLayer, ...prev])
-      setSelectedId(id)
-      setTool('select')
-      setActivePanel('properties')
-    } else if (tool === 'rect') {
-      const id = makeId()
-      const newLayer: DesignLayer = {
-        id, type: 'rect', name: 'Rectangle',
-        x: Math.max(0, xMm - 10), y: Math.max(0, yMm - 10),
-        width: 20, height: 20,
-        visible: true, locked: false,
-        fillColor: '#e5e7eb', strokeColor: '#9ca3af', strokeWidth: 0.5,
-      }
-      setLayers(prev => [newLayer, ...prev])
-      setSelectedId(id)
-      setTool('select')
-      setActivePanel('properties')
-    }
-  }
-
-  function handleMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
-    if (!dragging.current || !dragLayerId.current) return
-    const rect = canvasRef.current!.getBoundingClientRect()
-    const cx = (e.clientX - rect.left) * (canvasW / rect.width)
-    const cy = (e.clientY - rect.top) * (canvasH / rect.height)
-    const { xMm, yMm } = canvasCoordsToMm(cx, cy)
-
-    const rawX = xMm - dragOffset.current.x
-    const rawY = yMm - dragOffset.current.y
-    const movingLayer = layersRef.current.find(l => l.id === dragLayerId.current)!
-
-    const { snappedX, snappedY } = snapPosition(movingLayer, rawX, rawY)
-    const newGuides = computeGuides(movingLayer, rawX, rawY)
-    setGuides(newGuides)
-
-    setLayers(prev => prev.map(l =>
-      l.id === dragLayerId.current ? { ...l, x: snappedX, y: snappedY } : l
-    ))
-  }
-
-  function handleMouseUp() {
-    dragging.current = false
-    dragLayerId.current = null
-    setGuides([])
-  }
-
-  // ── Layer operations ───────────────────────────────────────────────────────
-  function deleteLayer(id: string) {
-    setLayers(prev => prev.filter(l => l.id !== id))
-    if (selectedId === id) setSelectedId(null)
-  }
-
-  function moveLayer(id: string, dir: 'up' | 'down') {
-    setLayers(prev => {
-      const idx = prev.findIndex(l => l.id === id)
-      if (idx < 0) return prev
-      const next = [...prev]
-      const target = dir === 'up' ? idx - 1 : idx + 1
-      if (target < 0 || target >= next.length) return prev
-      ;[next[idx], next[target]] = [next[target], next[idx]]
-      return next
+    const bleedBg = new fabric.Rect({
+      left: 0, top: 0, width: canvasW, height: canvasH,
+      fill: '#e5e7eb', selectable: false, evented: false,
+      data: { role: 'bleed-bg' },
     })
+    const trimBg = new fabric.Rect({
+      left: trimX, top: trimY, width: trimW, height: trimH,
+      fill: bg, selectable: false, evented: false,
+      data: { role: 'trim-bg' },
+    })
+    const trimBorder = new fabric.Rect({
+      left: trimX, top: trimY, width: trimW, height: trimH,
+      fill: 'transparent', stroke: 'rgba(239,68,68,0.5)', strokeWidth: 1,
+      strokeDashArray: [6, 3], selectable: false, evented: false,
+      data: { role: 'trim-border' },
+    })
+
+    canvas.add(bleedBg)
+    canvas.add(trimBg)
+    canvas.add(trimBorder)
+    canvas.sendObjectToBack(trimBorder)
+    canvas.sendObjectToBack(trimBg)
+    canvas.sendObjectToBack(bleedBg)
   }
 
-  function toggleVisibility(id: string) {
-    setLayers(prev => prev.map(l => l.id === id ? { ...l, visible: !l.visible } : l))
+  // ── Snap guides ───────────────────────────────────────────────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function clearGuides(canvas: any) {
+    const guides = canvas.getObjects().filter((o: { data?: { role?: string } }) => o.data?.role === 'guide')
+    guides.forEach((g: object) => canvas.remove(g))
   }
 
-  function toggleLock(id: string) {
-    setLayers(prev => prev.map(l => l.id === id ? { ...l, locked: !l.locked } : l))
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function snapObject(canvas: any, fabric: typeof import('fabric'), obj: any) {
+    clearGuides(canvas)
+
+    const trimX = mmToPx(dims.bleedMm, scale)
+    const trimY = mmToPx(dims.bleedMm, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+    const snapPx = mmToPx(SNAP_THRESHOLD_MM, scale)
+
+    const objW = obj.getScaledWidth?.() ?? obj.width ?? 0
+    const objH = obj.getScaledHeight?.() ?? obj.height ?? 0
+    const objL = obj.left ?? 0
+    const objT = obj.top ?? 0
+    const docCX = trimX + trimW / 2
+    const docCY = trimY + trimH / 2
+
+    const guides: object[] = []
+
+    function vLine(x: number) {
+      return new fabric.Line([x, 0, x, canvasH], {
+        stroke: '#4f46e5', strokeWidth: 1, strokeDashArray: [4, 4],
+        selectable: false, evented: false, data: { role: 'guide' },
+      })
+    }
+    function hLine(y: number) {
+      return new fabric.Line([0, y, canvasW, y], {
+        stroke: '#4f46e5', strokeWidth: 1, strokeDashArray: [4, 4],
+        selectable: false, evented: false, data: { role: 'guide' },
+      })
+    }
+
+    if (Math.abs(objL + objW / 2 - docCX) < snapPx) {
+      obj.set('left', docCX - objW / 2)
+      guides.push(vLine(docCX))
+    }
+    if (Math.abs(objT + objH / 2 - docCY) < snapPx) {
+      obj.set('top', docCY - objH / 2)
+      guides.push(hLine(docCY))
+    }
+    if (Math.abs(objL - trimX) < snapPx) {
+      obj.set('left', trimX)
+      guides.push(vLine(trimX))
+    }
+    if (Math.abs(objT - trimY) < snapPx) {
+      obj.set('top', trimY)
+      guides.push(hLine(trimY))
+    }
+    if (Math.abs(objL + objW - (trimX + trimW)) < snapPx) {
+      obj.set('left', trimX + trimW - objW)
+      guides.push(vLine(trimX + trimW))
+    }
+    if (Math.abs(objT + objH - (trimY + trimH)) < snapPx) {
+      obj.set('top', trimY + trimH - objH)
+      guides.push(hLine(trimY + trimH))
+    }
+
+    guides.forEach(g => canvas.add(g))
   }
 
-  function updateSelected(patch: Partial<DesignLayer>) {
-    if (!selectedId) return
-    setLayers(prev => prev.map(l => l.id === selectedId ? { ...l, ...patch } : l))
+  // ── Templates ─────────────────────────────────────────────────────────────
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function clearUserObjects(canvas: any) {
+    const toRemove = canvas.getObjects().filter(
+      (o: { data?: { role?: string } }) => !o.data?.role || o.data.role === 'guide'
+    )
+    toRemove.forEach((o: object) => canvas.remove(o))
   }
 
-  function loadTemplate(t: Template) {
-    setLayers(instantiateTemplate(t))
-    setBgColor(t.bgColor)
-    setSelectedId(null)
-    setActivePanel('layers')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function addTextbox(canvas: any, fabric: typeof import('fabric'), text: string, left: number, top: number, width: number, opts: Record<string, unknown>) {
+    const obj = new fabric.Textbox(text, { left, top, width, ...opts })
+    canvas.add(obj)
+    return obj
   }
 
-  // ── Image upload ───────────────────────────────────────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function buildTemplate(canvas: any, fabric: typeof import('fabric'), name: string, bg: string) {
+    const bl = mmToPx(dims.bleedMm, scale)
+
+    if (name === 'Classic') {
+      addTextbox(canvas, fabric, 'John Doe', bl + mmToPx(5, scale), bl + mmToPx(14, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#111111', textAlign: 'left',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Senior Designer', bl + mmToPx(5, scale), bl + mmToPx(27, scale), mmToPx(65, scale), {
+        fontSize: mmToPx(3.2, scale), fill: '#555555', textAlign: 'left',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(36, scale),
+        width: mmToPx(45, scale), height: mmToPx(0.5, scale),
+        fill: '#cccccc', data: { id: makeId(), name: 'Divider', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'email@company.com\n+1 (555) 000-0000', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#444444', textAlign: 'left',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+    } else if (name === 'Minimal') {
+      addTextbox(canvas, fabric, 'Your Name', bl + mmToPx(7.5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fill: '#000000', textAlign: 'center', charSpacing: 200,
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Company · Title', bl + mmToPx(7.5, scale), bl + mmToPx(34, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#888888', textAlign: 'center', charSpacing: 100,
+        data: { id: makeId(), name: 'Company', layerType: 'text' },
+      })
+    } else if (name === 'Dark') {
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(4, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#4f46e5', data: { id: makeId(), name: 'Accent Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Your Name', bl + mmToPx(10, scale), bl + mmToPx(14, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'left',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Title • Company', bl + mmToPx(10, scale), bl + mmToPx(27, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#a5b4fc', textAlign: 'left',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'email@company.com', bl + mmToPx(10, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#9ca3af', textAlign: 'left',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+    }
+    // Blank: no user objects
+
+    // Update trim-bg color
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
+    if (trimBg) trimBg.set('fill', bg)
+  }
+
+  // ── Init Fabric.js ─────────────────────────────────────────────────────────
+
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let canvas: any = null
+
+    async function init() {
+      const fabric = await import('fabric')
+      fabricModRef.current = fabric
+      if (!canvasElRef.current) return
+
+      canvas = new fabric.Canvas(canvasElRef.current, {
+        width: canvasW,
+        height: canvasH,
+        preserveObjectStacking: true,
+        enableRetinaScaling: false,
+      })
+      fabricRef.current = canvas
+
+      // Draw background
+      addBackgroundObjects(canvas, fabric, bgColorRef.current)
+
+      // Load Classic template
+      buildTemplate(canvas, fabric, 'Classic', bgColorRef.current)
+      canvas.renderAll()
+
+      syncLayers(canvas)
+      saveHistory(canvas)
+
+      // ── Events ────────────────────────────────────────────────────────────
+      canvas.on('selection:created', () => syncSelected(canvas))
+      canvas.on('selection:updated', () => syncSelected(canvas))
+      canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null) })
+
+      canvas.on('object:modified', () => {
+        syncLayers(canvas)
+        syncSelected(canvas)
+        saveHistory(canvas)
+      })
+
+      canvas.on('object:added', () => {
+        if (!isMutating.current) {
+          syncLayers(canvas)
+          saveHistory(canvas)
+        }
+      })
+
+      canvas.on('object:removed', () => {
+        if (!isMutating.current) {
+          syncLayers(canvas)
+          saveHistory(canvas)
+        }
+      })
+
+      canvas.on('object:moving', (e: { target: object }) => {
+        snapObject(canvas, fabric, e.target)
+      })
+
+      canvas.on('object:moved', () => {
+        clearGuides(canvas)
+      })
+
+      // Mouse wheel zoom
+      canvas.on('mouse:wheel', (opt: { e: WheelEvent }) => {
+        const delta = opt.e.deltaY
+        let z = canvas.getZoom()
+        z *= 0.999 ** delta
+        z = Math.min(Math.max(z, 0.2), 5)
+        canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, z)
+        opt.e.preventDefault()
+        opt.e.stopPropagation()
+      })
+
+      // Click to place objects
+      canvas.on('mouse:down', async (opt: { e: MouseEvent; target?: object }) => {
+        const currentTool = toolRef.current
+        if (currentTool === 'select') return
+        if (opt.target && !isBackground(opt.target as { data?: { role?: string } })) return
+
+        const pointer = canvas.getScenePoint(opt.e)
+
+        if (currentTool === 'text') {
+          const id = makeId()
+          const obj = new fabric.Textbox('Enter text', {
+            left: pointer.x,
+            top: pointer.y,
+            width: mmToPx(40, scale),
+            fontSize: mmToPx(5, scale),
+            fontFamily: 'Arial',
+            fill: '#000000',
+            data: { id, name: 'Text', layerType: 'text' },
+          })
+          canvas.add(obj)
+          canvas.setActiveObject(obj)
+          canvas.renderAll()
+          setTool('select')
+        } else if (currentTool === 'rect') {
+          const id = makeId()
+          const obj = new fabric.Rect({
+            left: pointer.x,
+            top: pointer.y,
+            width: mmToPx(20, scale),
+            height: mmToPx(20, scale),
+            fill: '#e5e7eb',
+            stroke: '#9ca3af',
+            strokeWidth: 1,
+            data: { id, name: 'Rectangle', layerType: 'rect' },
+          })
+          canvas.add(obj)
+          canvas.setActiveObject(obj)
+          canvas.renderAll()
+          setTool('select')
+        }
+      })
+    }
+
+    init()
+
+    return () => {
+      if (canvas) canvas.dispose()
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Background color update ───────────────────────────────────────────────
+
+  function updateBgColor(color: string) {
+    setBgColor(color)
+    bgColorRef.current = color
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
+    if (trimBg) {
+      trimBg.set('fill', color)
+      canvas.renderAll()
+    }
+  }
+
+  // ── Layer add operations ──────────────────────────────────────────────────
+
+  async function addTextLayer() {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+    const id = makeId()
+    const obj = new fabric.Textbox('Enter text', {
+      left: bl + mmToPx(5, scale),
+      top: bl + mmToPx(5, scale),
+      width: mmToPx(40, scale),
+      fontSize: mmToPx(5, scale),
+      fontFamily: 'Arial',
+      fill: '#000000',
+      data: { id, name: 'Text', layerType: 'text' },
+    })
+    canvas.add(obj)
+    canvas.setActiveObject(obj)
+    canvas.renderAll()
+    setTool('select')
+  }
+
+  async function addRectLayer() {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+    const id = makeId()
+    const obj = new fabric.Rect({
+      left: bl + mmToPx(10, scale),
+      top: bl + mmToPx(10, scale),
+      width: mmToPx(20, scale),
+      height: mmToPx(20, scale),
+      fill: '#e5e7eb',
+      stroke: '#9ca3af',
+      strokeWidth: 1,
+      data: { id, name: 'Rectangle', layerType: 'rect' },
+    })
+    canvas.add(obj)
+    canvas.setActiveObject(obj)
+    canvas.renderAll()
+    setTool('select')
+  }
+
   const imageInputRef = useRef<HTMLInputElement>(null)
 
-  function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     const url = URL.createObjectURL(file)
-    const img = new Image()
-    img.onload = () => {
-      imageCache.current.set(url, img)
-      const aspectRatio = img.naturalWidth / img.naturalHeight
-      const w = Math.min(dims.widthMm * 0.6, 50)
-      const h = w / aspectRatio
-      const id = makeId()
-      setLayers(prev => [{
-        id, type: 'image', name: file.name.slice(0, 20),
-        x: (dims.widthMm - w) / 2, y: (dims.heightMm - h) / 2,
-        width: w, height: h,
-        visible: true, locked: false,
-        imageUrl: url,
-      }, ...prev])
-      setSelectedId(id)
-      setTool('select')
-    }
-    img.src = url
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+
+    const img = await fabric.FabricImage.fromURL(url)
+    const maxW = mmToPx(dims.widthMm * 0.6, scale)
+    const maxH = mmToPx(dims.heightMm * 0.6, scale)
+    const scaleF = Math.min(maxW / (img.width ?? 1), maxH / (img.height ?? 1))
+    const bl = mmToPx(dims.bleedMm, scale)
+    const id = makeId()
+    img.set({
+      left: bl + (mmToPx(dims.widthMm, scale) - (img.width ?? 0) * scaleF) / 2,
+      top: bl + (mmToPx(dims.heightMm, scale) - (img.height ?? 0) * scaleF) / 2,
+      scaleX: scaleF,
+      scaleY: scaleF,
+      data: { id, name: file.name.slice(0, 20), layerType: 'image' },
+    })
+    canvas.add(img)
+    canvas.setActiveObject(img)
+    canvas.renderAll()
     e.target.value = ''
   }
 
-  // ── Export ─────────────────────────────────────────────────────────────────
-  function exportPng() {
-    const canvas = canvasRef.current
+  // ── Load template ────────────────────────────────────────────────────────
+
+  async function loadTemplate(name: string, bg: string) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
     if (!canvas) return
+
+    isMutating.current = true
+    clearUserObjects(canvas)
+    setBgColor(bg)
+    bgColorRef.current = bg
+    buildTemplate(canvas, fabric, name, bg)
+    canvas.discardActiveObject()
+    canvas.renderAll()
+    isMutating.current = false
+
+    syncLayers(canvas)
+    saveHistory(canvas)
+    setSelectedId(null)
+    setSelectedProps(null)
+    setActivePanel('layers')
+  }
+
+  // ── Selected object update ────────────────────────────────────────────────
+
+  function updateSelected(patch: Partial<SelectedProps>) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const obj = canvas.getActiveObject()
+    if (!obj || isBackground(obj)) return
+
+    if (patch.x !== undefined) obj.set('left', patch.x)
+    if (patch.y !== undefined) obj.set('top', patch.y)
+    if (patch.angle !== undefined) obj.set('angle', patch.angle)
+    if (patch.text !== undefined) obj.set('text', patch.text)
+    if (patch.fontFamily !== undefined) obj.set('fontFamily', patch.fontFamily)
+    if (patch.fontSize !== undefined) obj.set('fontSize', patch.fontSize)
+    if (patch.fontWeight !== undefined) obj.set('fontWeight', patch.fontWeight)
+    if (patch.fontStyle !== undefined) obj.set('fontStyle', patch.fontStyle)
+    if (patch.fill !== undefined) obj.set('fill', patch.fill)
+    if (patch.textAlign !== undefined) obj.set('textAlign', patch.textAlign)
+    if (patch.charSpacing !== undefined) obj.set('charSpacing', patch.charSpacing)
+    if (patch.lineHeight !== undefined) obj.set('lineHeight', patch.lineHeight)
+    if (patch.fillColor !== undefined) obj.set('fill', patch.fillColor)
+    if (patch.strokeColor !== undefined) obj.set('stroke', patch.strokeColor)
+    if (patch.strokeWidth !== undefined) obj.set('strokeWidth', patch.strokeWidth)
+
+    canvas.renderAll()
+    setSelectedProps(prev => prev ? { ...prev, ...patch } : null)
+    saveHistory(canvas)
+  }
+
+  // ── Layer operations ──────────────────────────────────────────────────────
+
+  function deleteSelectedLayer() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const obj = canvas.getActiveObject()
+    if (obj && !isBackground(obj)) {
+      canvas.remove(obj)
+      canvas.discardActiveObject()
+      canvas.renderAll()
+      setSelectedId(null)
+      setSelectedProps(null)
+      setActivePanel('layers')
+    }
+  }
+
+  function selectLayerById(id: string) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (obj) {
+      canvas.setActiveObject(obj)
+      canvas.renderAll()
+      syncSelected(canvas)
+    }
+  }
+
+  function toggleVisibility(id: string) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (obj) {
+      obj.set('visible', !obj.visible)
+      canvas.renderAll()
+      syncLayers(canvas)
+    }
+  }
+
+  function toggleLock(id: string) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (obj) {
+      const nowLocked = obj.selectable
+      obj.set({ selectable: !nowLocked, evented: !nowLocked, hasControls: !nowLocked })
+      canvas.renderAll()
+      syncLayers(canvas)
+    }
+  }
+
+  function moveLayerOrder(id: string, dir: 'up' | 'down') {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (!obj) return
+    if (dir === 'up') canvas.bringObjectForward(obj)
+    else canvas.sendObjectBackwards(obj)
+    canvas.renderAll()
+    syncLayers(canvas)
+  }
+
+  function updateLayerName(id: string, name: string) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (obj) {
+      obj.data = { ...obj.data, name }
+      syncLayers(canvas)
+    }
+  }
+
+  // ── Export ────────────────────────────────────────────────────────────────
+
+  function getExportDataUrl(multiplier = 2): string {
+    const canvas = fabricRef.current
+    if (!canvas) return ''
+    const trimX = mmToPx(dims.bleedMm, scale)
+    const trimY = mmToPx(dims.bleedMm, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+
+    // Save viewport, reset for export
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vpt: any = [...(canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0])]
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
+
+    const dataUrl = canvas.toDataURL({
+      format: 'png',
+      left: trimX,
+      top: trimY,
+      width: trimW,
+      height: trimH,
+      multiplier,
+    })
+
+    canvas.setViewportTransform(vpt)
+    canvas.renderAll()
+    return dataUrl
+  }
+
+  function exportPng() {
+    const dataUrl = getExportDataUrl(2)
+    if (!dataUrl) return
     const link = document.createElement('a')
     link.download = `${product.slug}-design.png`
-    link.href = canvas.toDataURL('image/png')
+    link.href = dataUrl
     link.click()
   }
 
-  const [ordering, setOrdering] = useState(false)
-  const [orderError, setOrderError] = useState('')
-
   async function proceedToOrder() {
-    const canvas = canvasRef.current
-    if (!canvas) return
     setOrdering(true)
     setOrderError('')
-    canvas.toBlob(async (blob) => {
-      if (!blob) {
-        setOrdering(false)
-        setOrderError('Failed to export design.')
-        return
-      }
-      try {
-        const formData = new FormData()
-        formData.append('file', blob, `${product.slug}-design.png`)
-        const res = await fetch('/api/files/upload', { method: 'POST', body: formData })
-        const data = await res.json()
-        if (res.ok && data.fileId) {
-          // Pass through selected options from URL
-          const optionParams = new URLSearchParams()
-          for (const opt of options) {
-            const val = searchParams.get(opt.option_type)
-            if (val) optionParams.set(opt.option_type, val)
-          }
-          const optStr = optionParams.toString()
-          window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}${optStr ? '&' + optStr : ''}`
-        } else {
-          setOrdering(false)
-          setOrderError(data.error || 'Upload failed. Please try again.')
+    try {
+      const dataUrl = getExportDataUrl(3)
+      if (!dataUrl) throw new Error('Export failed')
+      const res = await fetch(dataUrl)
+      const blob = await res.blob()
+      const formData = new FormData()
+      formData.append('file', blob, `${product.slug}-design.png`)
+      const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
+      const data = await uploadRes.json()
+      if (uploadRes.ok && data.fileId) {
+        const optionParams = new URLSearchParams()
+        for (const opt of options) {
+          const val = searchParams.get(opt.option_type)
+          if (val) optionParams.set(opt.option_type, val)
         }
-      } catch {
+        const optStr = optionParams.toString()
+        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}${optStr ? '&' + optStr : ''}`
+      } else {
         setOrdering(false)
-        setOrderError('Network error. Please try again.')
+        setOrderError(data.error || '업로드에 실패했습니다.')
       }
-    }, 'image/png')
+    } catch {
+      setOrdering(false)
+      setOrderError('오류가 발생했습니다. 다시 시도해주세요.')
+    }
   }
 
   // ─── Render ────────────────────────────────────────────────────────────────
-  const TOOL_CURSOR: Record<string, string> = {
-    select: 'default',
-    text: 'text',
-    rect: 'crosshair',
-    image: 'copy',
-  }
+
+  const selectedLayer = layers.find(l => l.id === selectedId) ?? null
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
@@ -680,11 +893,21 @@ export default function EditorClient({ product, options }: Props) {
           <button
             onClick={() => imageInputRef.current?.click()}
             title="Add Image (I)"
-            className={`w-8 h-8 flex items-center justify-center rounded-md transition-colors text-gray-500 hover:text-gray-800`}
+            className="w-8 h-8 flex items-center justify-center rounded-md transition-colors text-gray-500 hover:text-gray-800"
           >
             <ImageIcon className="w-4 h-4" />
           </button>
           <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+        </div>
+
+        {/* Undo/Redo */}
+        <div className="flex gap-1">
+          <button onClick={undo} title="Undo (Ctrl+Z)" className="w-8 h-8 flex items-center justify-center rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+            <RotateCcw className="w-4 h-4" />
+          </button>
+          <button onClick={redo} title="Redo (Ctrl+Shift+Z)" className="w-8 h-8 flex items-center justify-center rounded-md text-gray-500 hover:text-gray-800 hover:bg-gray-100">
+            <RotateCw className="w-4 h-4" />
+          </button>
         </div>
 
         <div className="flex gap-2">
@@ -708,17 +931,12 @@ export default function EditorClient({ product, options }: Props) {
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas area */}
         <div className="flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
-          <canvas
-            ref={canvasRef}
-            width={canvasW}
-            height={canvasH}
-            style={{ cursor: TOOL_CURSOR[tool], maxWidth: '100%', maxHeight: '100%', imageRendering: 'crisp-edges' }}
+          <div
             className="shadow-xl"
-            onMouseDown={handleMouseDown}
-            onMouseMove={handleMouseMove}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          />
+            style={{ cursor: tool === 'text' ? 'text' : tool === 'rect' ? 'crosshair' : 'default' }}
+          >
+            <canvas ref={canvasElRef} />
+          </div>
         </div>
 
         {/* Right panel */}
@@ -726,9 +944,9 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'templates', icon: LayoutTemplate, label: 'Templates' },
-              { key: 'layers',    icon: Layers,          label: 'Layers' },
-              { key: 'properties', icon: null,           label: 'Properties' },
+              { key: 'templates', icon: LayoutTemplate, label: '템플릿' },
+              { key: 'layers',    icon: Layers,          label: '레이어' },
+              { key: 'properties', icon: null,           label: '속성' },
             ] as const).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
@@ -745,17 +963,21 @@ export default function EditorClient({ product, options }: Props) {
           {activePanel === 'templates' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               <div className="mb-2">
-                <label className="block text-xs text-gray-500 mb-1">Background Color</label>
-                <input type="color" value={bgColor} onChange={e => setBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
+                <label className="block text-xs text-gray-500 mb-1">배경 색상</label>
+                <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
-              {TEMPLATES.map(t => (
+              {[
+                { name: 'Blank',   bg: '#ffffff' },
+                { name: 'Classic', bg: '#ffffff' },
+                { name: 'Minimal', bg: '#ffffff' },
+                { name: 'Dark',    bg: '#1a1a1a' },
+              ].map(t => (
                 <button
                   key={t.name}
-                  onClick={() => loadTemplate(t)}
+                  onClick={() => loadTemplate(t.name, t.bg)}
                   className="w-full text-left rounded-lg border border-gray-200 p-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
                 >
                   <div className="text-sm font-medium text-gray-700">{t.name}</div>
-                  <div className="text-xs text-gray-400 mt-0.5">{t.layers.length} layer{t.layers.length !== 1 ? 's' : ''}</div>
                 </button>
               ))}
             </div>
@@ -767,17 +989,17 @@ export default function EditorClient({ product, options }: Props) {
               {layers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
                   <Layers className="w-6 h-6" />
-                  No layers yet
+                  레이어 없음
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
                   {layers.map((layer, idx) => (
                     <li
                       key={layer.id}
-                      onClick={() => { setSelectedId(layer.id); setActivePanel('properties') }}
+                      onClick={() => { selectLayerById(layer.id) }}
                       className={`flex items-center gap-2 px-3 py-2 cursor-pointer text-xs hover:bg-gray-50 ${selectedId === layer.id ? 'bg-indigo-50' : ''}`}
                     >
-                      <span className="text-gray-300 text-[10px] w-4 shrink-0">{layers.length - idx}</span>
+                      <span className="text-gray-300 text-[10px] w-4 shrink-0">{idx + 1}</span>
                       <span className="truncate flex-1 font-medium text-gray-700">{layer.name}</span>
                       <button onClick={e => { e.stopPropagation(); toggleVisibility(layer.id) }} className="text-gray-400 hover:text-gray-600">
                         {layer.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
@@ -785,67 +1007,81 @@ export default function EditorClient({ product, options }: Props) {
                       <button onClick={e => { e.stopPropagation(); toggleLock(layer.id) }} className="text-gray-400 hover:text-gray-600">
                         {layer.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                       </button>
-                      <button onClick={e => { e.stopPropagation(); moveLayer(layer.id, 'up') }} className="text-gray-400 hover:text-gray-600">
+                      <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'up') }} className="text-gray-400 hover:text-gray-600">
                         <ChevronUp className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={e => { e.stopPropagation(); moveLayer(layer.id, 'down') }} className="text-gray-400 hover:text-gray-600">
+                      <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'down') }} className="text-gray-400 hover:text-gray-600">
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
-                      <button onClick={e => { e.stopPropagation(); deleteLayer(layer.id) }} className="text-red-400 hover:text-red-600">
+                      <button
+                        onClick={e => { e.stopPropagation(); selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
+                        className="text-red-400 hover:text-red-600"
+                      >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </li>
                   ))}
                 </ul>
               )}
-              {/* Add buttons */}
               <div className="p-3 border-t border-gray-100 flex gap-2">
-                <button
-                  onClick={() => setTool('text')}
-                  className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Text
+                <button onClick={addTextLayer} className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400">
+                  <Plus className="w-3.5 h-3.5" /> 텍스트
                 </button>
-                <button
-                  onClick={() => setTool('rect')}
-                  className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400"
-                >
-                  <Plus className="w-3.5 h-3.5" /> Shape
+                <button onClick={addRectLayer} className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400">
+                  <Plus className="w-3.5 h-3.5" /> 도형
                 </button>
               </div>
             </div>
           )}
 
           {/* Properties panel */}
-          {activePanel === 'properties' && selectedLayer && (
+          {activePanel === 'properties' && selectedProps && selectedLayer && (
             <div className="flex-1 overflow-y-auto p-3 space-y-4 text-xs">
               {/* Name */}
               <div>
-                <label className="block text-gray-500 mb-1">Layer Name</label>
+                <label className="block text-gray-500 mb-1">레이어 이름</label>
                 <input
                   type="text"
                   value={selectedLayer.name}
-                  onChange={e => updateSelected({ name: e.target.value })}
+                  onChange={e => updateLayerName(selectedId!, e.target.value)}
                   className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                 />
               </div>
 
-              {/* Position */}
+              {/* Position / Angle */}
               <div>
-                <label className="block text-gray-500 mb-1">Position / Size (mm)</label>
+                <label className="block text-gray-500 mb-1">위치 / 크기</label>
                 <div className="grid grid-cols-2 gap-1.5">
-                  {([['x', 'X'], ['y', 'Y'], ['width', 'W'], ['height', 'H']] as const).map(([k, label]) => (
+                  {([['x', 'X'], ['y', 'Y']] as const).map(([k, label]) => (
                     <div key={k} className="flex items-center gap-1">
                       <span className="text-gray-400 w-3">{label}</span>
                       <input
                         type="number"
-                        value={Math.round(selectedLayer[k] * 10) / 10}
-                        step="0.5"
+                        value={Math.round(selectedProps[k] ?? 0)}
+                        step="1"
                         onChange={e => updateSelected({ [k]: parseFloat(e.target.value) || 0 })}
                         className="flex-1 border border-gray-200 rounded px-1.5 py-1 text-xs w-0"
                       />
                     </div>
                   ))}
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400 w-3">W</span>
+                    <span className="flex-1 border border-gray-100 rounded px-1.5 py-1 text-xs bg-gray-50 text-gray-400">{Math.round(selectedProps.width ?? 0)}</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="text-gray-400 w-3">H</span>
+                    <span className="flex-1 border border-gray-100 rounded px-1.5 py-1 text-xs bg-gray-50 text-gray-400">{Math.round(selectedProps.height ?? 0)}</span>
+                  </div>
+                  <div className="flex items-center gap-1 col-span-2">
+                    <span className="text-gray-400 w-8">각도</span>
+                    <input
+                      type="number"
+                      value={Math.round(selectedProps.angle ?? 0)}
+                      step="1" min={-360} max={360}
+                      onChange={e => updateSelected({ angle: parseFloat(e.target.value) || 0 })}
+                      className="flex-1 border border-gray-200 rounded px-1.5 py-1 text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -853,18 +1089,18 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'text' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">Text</label>
+                    <label className="block text-gray-500 mb-1">텍스트</label>
                     <textarea
-                      value={selectedLayer.content ?? ''}
-                      onChange={e => updateSelected({ content: e.target.value })}
+                      value={selectedProps.text ?? ''}
+                      onChange={e => updateSelected({ text: e.target.value })}
                       rows={3}
                       className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs resize-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">Font</label>
+                    <label className="block text-gray-500 mb-1">폰트</label>
                     <select
-                      value={selectedLayer.fontFamily ?? 'Arial'}
+                      value={selectedProps.fontFamily ?? 'Arial'}
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
                       className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                     >
@@ -873,47 +1109,47 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <label className="block text-gray-500 mb-1">Size (pt)</label>
+                      <label className="block text-gray-500 mb-1">크기 (px)</label>
                       <input
                         type="number"
-                        value={selectedLayer.fontSize ?? 12}
-                        min={6} max={200} step={1}
-                        onChange={e => updateSelected({ fontSize: parseInt(e.target.value) || 12 })}
+                        value={selectedProps.fontSize ?? 14}
+                        min={4} max={500} step={1}
+                        onChange={e => updateSelected({ fontSize: parseInt(e.target.value) || 14 })}
                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                       />
                     </div>
                     <div className="flex gap-1">
                       <button
-                        onClick={() => updateSelected({ fontBold: !selectedLayer.fontBold })}
-                        className={`w-7 h-7 flex items-center justify-center rounded border text-xs font-bold transition-colors ${selectedLayer.fontBold ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
-                      >B</button>
+                        onClick={() => updateSelected({ fontWeight: selectedProps.fontWeight === 'bold' ? 'normal' : 'bold' })}
+                        className={`w-7 h-7 flex items-center justify-center rounded border text-xs font-bold transition-colors ${selectedProps.fontWeight === 'bold' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
+                      ><Bold className="w-3.5 h-3.5" /></button>
                       <button
-                        onClick={() => updateSelected({ fontItalic: !selectedLayer.fontItalic })}
-                        className={`w-7 h-7 flex items-center justify-center rounded border text-xs italic transition-colors ${selectedLayer.fontItalic ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
-                      >I</button>
+                        onClick={() => updateSelected({ fontStyle: selectedProps.fontStyle === 'italic' ? 'normal' : 'italic' })}
+                        className={`w-7 h-7 flex items-center justify-center rounded border text-xs italic transition-colors ${selectedProps.fontStyle === 'italic' ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
+                      ><Italic className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">Color</label>
+                    <label className="block text-gray-500 mb-1">색상</label>
                     <input
                       type="color"
-                      value={selectedLayer.color ?? '#000000'}
-                      onChange={e => updateSelected({ color: e.target.value })}
+                      value={selectedProps.fill ?? '#000000'}
+                      onChange={e => updateSelected({ fill: e.target.value })}
                       className="w-full h-8 rounded cursor-pointer"
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">Align</label>
+                    <label className="block text-gray-500 mb-1">정렬</label>
                     <div className="flex gap-1">
                       {([
-                        { v: 'left', icon: AlignLeft },
+                        { v: 'left',   icon: AlignLeft },
                         { v: 'center', icon: AlignCenter },
-                        { v: 'right', icon: AlignRight },
+                        { v: 'right',  icon: AlignRight },
                       ] as const).map(({ v, icon: Icon }) => (
                         <button
                           key={v}
                           onClick={() => updateSelected({ textAlign: v })}
-                          className={`flex-1 h-7 flex items-center justify-center rounded border transition-colors ${selectedLayer.textAlign === v ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
+                          className={`flex-1 h-7 flex items-center justify-center rounded border transition-colors ${selectedProps.textAlign === v ? 'border-indigo-500 bg-indigo-50 text-indigo-600' : 'border-gray-200 text-gray-600'}`}
                         >
                           <Icon className="w-3.5 h-3.5" />
                         </button>
@@ -922,20 +1158,20 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">Letter Spacing (px)</label>
+                      <label className="block text-gray-500 mb-1">자간</label>
                       <input
                         type="number"
-                        value={selectedLayer.letterSpacing ?? 0}
-                        step={0.5}
-                        onChange={e => updateSelected({ letterSpacing: parseFloat(e.target.value) })}
+                        value={selectedProps.charSpacing ?? 0}
+                        step={10}
+                        onChange={e => updateSelected({ charSpacing: parseFloat(e.target.value) })}
                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">Line Height</label>
+                      <label className="block text-gray-500 mb-1">행간</label>
                       <input
                         type="number"
-                        value={selectedLayer.lineHeight ?? 1.4}
+                        value={selectedProps.lineHeight ?? 1.4}
                         step={0.1} min={0.8} max={4}
                         onChange={e => updateSelected({ lineHeight: parseFloat(e.target.value) })}
                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
@@ -949,30 +1185,30 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'rect' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">Fill Color</label>
+                    <label className="block text-gray-500 mb-1">채우기 색상</label>
                     <input
                       type="color"
-                      value={selectedLayer.fillColor ?? '#e5e7eb'}
+                      value={selectedProps.fillColor ?? '#e5e7eb'}
                       onChange={e => updateSelected({ fillColor: e.target.value })}
                       className="w-full h-8 rounded cursor-pointer"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">Border Color</label>
+                      <label className="block text-gray-500 mb-1">테두리 색상</label>
                       <input
                         type="color"
-                        value={selectedLayer.strokeColor ?? '#000000'}
+                        value={selectedProps.strokeColor ?? '#000000'}
                         onChange={e => updateSelected({ strokeColor: e.target.value })}
                         className="w-full h-8 rounded cursor-pointer"
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">Border Width</label>
+                      <label className="block text-gray-500 mb-1">테두리 두께</label>
                       <input
                         type="number"
-                        value={selectedLayer.strokeWidth ?? 0}
-                        step={0.1} min={0}
+                        value={selectedProps.strokeWidth ?? 0}
+                        step={0.5} min={0}
                         onChange={e => updateSelected({ strokeWidth: parseFloat(e.target.value) })}
                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                       />
@@ -982,17 +1218,17 @@ export default function EditorClient({ product, options }: Props) {
               )}
 
               <button
-                onClick={() => { deleteLayer(selectedId!); setActivePanel('layers') }}
+                onClick={deleteSelectedLayer}
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2 text-xs text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3.5 h-3.5" /> Delete Layer
+                <Trash2 className="w-3.5 h-3.5" /> 레이어 삭제
               </button>
             </div>
           )}
 
-          {activePanel === 'properties' && !selectedLayer && (
+          {activePanel === 'properties' && !selectedProps && (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-xs">
-              Select a layer
+              레이어를 선택하세요
             </div>
           )}
         </div>
