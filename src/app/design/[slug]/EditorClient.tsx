@@ -79,23 +79,15 @@ const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
 const SNAP_THRESHOLD_MM = 2
 
-// ─── 폰트 카탈로그 ───────────────────────────────────────────────────────────
-// Google Fonts URL은 로딩 시 동적으로 삽입
+// ─── Font catalog ────────────────────────────────────────────────────────────
 
 interface FontEntry {
   name: string
-  google?: boolean  // true면 Google Fonts에서 동적 로드
-  category: 'korean' | 'sans' | 'serif' | 'display' | 'system'
+  google?: boolean  // dynamically loaded from Google Fonts
+  category: 'sans' | 'serif' | 'display' | 'system'
 }
 
 const FONT_CATALOG: FontEntry[] = [
-  // ── 한국어
-  { name: 'Noto Sans KR',      google: true,  category: 'korean' },
-  { name: 'Nanum Gothic',      google: true,  category: 'korean' },
-  { name: 'Nanum Myeongjo',    google: true,  category: 'korean' },
-  { name: 'Black Han Sans',    google: true,  category: 'korean' },
-  { name: 'Jua',               google: true,  category: 'korean' },
-  { name: 'Cute Font',         google: true,  category: 'korean' },
   // ── Sans-Serif
   { name: 'Roboto',            google: true,  category: 'sans' },
   { name: 'Open Sans',         google: true,  category: 'sans' },
@@ -103,15 +95,19 @@ const FONT_CATALOG: FontEntry[] = [
   { name: 'Montserrat',        google: true,  category: 'sans' },
   { name: 'Poppins',           google: true,  category: 'sans' },
   { name: 'Inter',             google: true,  category: 'sans' },
+  { name: 'Nunito',            google: true,  category: 'sans' },
+  { name: 'Raleway',           google: true,  category: 'sans' },
   // ── Serif
   { name: 'Playfair Display',  google: true,  category: 'serif' },
   { name: 'Merriweather',      google: true,  category: 'serif' },
   { name: 'Lora',              google: true,  category: 'serif' },
+  { name: 'EB Garamond',       google: true,  category: 'serif' },
   // ── Display / Decorative
   { name: 'Oswald',            google: true,  category: 'display' },
   { name: 'Bebas Neue',        google: true,  category: 'display' },
   { name: 'Pacifico',          google: true,  category: 'display' },
-  // ── 시스템 폰트 (항상 사용 가능)
+  { name: 'Righteous',         google: true,  category: 'display' },
+  // ── System fonts (always available)
   { name: 'Arial',             category: 'system' },
   { name: 'Georgia',           category: 'system' },
   { name: 'Helvetica',         category: 'system' },
@@ -121,11 +117,10 @@ const FONT_CATALOG: FontEntry[] = [
 ]
 
 const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
-  korean: '한국어',
-  sans:   'Sans-Serif',
-  serif:  'Serif',
+  sans:    'Sans-Serif',
+  serif:   'Serif',
   display: 'Display',
-  system:  '시스템',
+  system:  'System',
 }
 
 const loadedFonts = new Set<string>()
@@ -974,11 +969,11 @@ export default function EditorClient({ product, options }: Props) {
         window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}${optStr ? '&' + optStr : ''}`
       } else {
         setOrdering(false)
-        setOrderError(data.error || '업로드에 실패했습니다.')
+        setOrderError(data.error || 'Upload failed.')
       }
     } catch {
       setOrdering(false)
-      setOrderError('오류가 발생했습니다. 다시 시도해주세요.')
+      setOrderError('An error occurred. Please try again.')
     }
   }
 
@@ -1069,9 +1064,9 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'templates', icon: LayoutTemplate, label: '템플릿' },
-              { key: 'layers',    icon: Layers,          label: '레이어' },
-              { key: 'properties', icon: null,           label: '속성' },
+              { key: 'templates', icon: LayoutTemplate, label: 'Templates' },
+              { key: 'layers',    icon: Layers,          label: 'Layers' },
+              { key: 'properties', icon: null,           label: 'Properties' },
             ] as const).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
@@ -1088,7 +1083,7 @@ export default function EditorClient({ product, options }: Props) {
           {activePanel === 'templates' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               <div className="mb-2">
-                <label className="block text-xs text-gray-500 mb-1">배경 색상</label>
+                <label className="block text-xs text-gray-500 mb-1">Background Color</label>
                 <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
               {[
@@ -1114,7 +1109,7 @@ export default function EditorClient({ product, options }: Props) {
               {layers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
                   <Layers className="w-6 h-6" />
-                  레이어 없음
+                  No layers
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100">
@@ -1150,10 +1145,10 @@ export default function EditorClient({ product, options }: Props) {
               )}
               <div className="p-3 border-t border-gray-100 flex gap-2">
                 <button onClick={addTextLayer} className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400">
-                  <Plus className="w-3.5 h-3.5" /> 텍스트
+                  <Plus className="w-3.5 h-3.5" /> Text
                 </button>
                 <button onClick={addRectLayer} className="flex-1 flex items-center justify-center gap-1 rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:text-gray-700 hover:border-gray-400">
-                  <Plus className="w-3.5 h-3.5" /> 도형
+                  <Plus className="w-3.5 h-3.5" /> Shape
                 </button>
               </div>
             </div>
@@ -1164,7 +1159,7 @@ export default function EditorClient({ product, options }: Props) {
             <div className="flex-1 overflow-y-auto p-3 space-y-4 text-xs">
               {/* Name */}
               <div>
-                <label className="block text-gray-500 mb-1">레이어 이름</label>
+                <label className="block text-gray-500 mb-1">Layer Name</label>
                 <input
                   type="text"
                   value={selectedLayer.name}
@@ -1175,7 +1170,7 @@ export default function EditorClient({ product, options }: Props) {
 
               {/* Position / Angle */}
               <div>
-                <label className="block text-gray-500 mb-1">위치 / 크기</label>
+                <label className="block text-gray-500 mb-1">Position / Size</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {([['x', 'X'], ['y', 'Y']] as const).map(([k, label]) => (
                     <div key={k} className="flex items-center gap-1">
@@ -1198,7 +1193,7 @@ export default function EditorClient({ product, options }: Props) {
                     <span className="flex-1 border border-gray-100 rounded px-1.5 py-1 text-xs bg-gray-50 text-gray-400">{Math.round(selectedProps.height ?? 0)}</span>
                   </div>
                   <div className="flex items-center gap-1 col-span-2">
-                    <span className="text-gray-400 w-8">각도</span>
+                    <span className="text-gray-400 w-8">Angle</span>
                     <input
                       type="number"
                       value={Math.round(selectedProps.angle ?? 0)}
@@ -1214,7 +1209,7 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'text' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">텍스트</label>
+                    <label className="block text-gray-500 mb-1">Text</label>
                     <textarea
                       value={selectedProps.text ?? ''}
                       onChange={e => updateSelected({ text: e.target.value })}
@@ -1223,13 +1218,13 @@ export default function EditorClient({ product, options }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">폰트</label>
+                    <label className="block text-gray-500 mb-1">Font</label>
                     <select
                       value={selectedProps.fontFamily ?? 'Arial'}
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
                       className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                     >
-                      {(['korean','sans','serif','display','system'] as const).map(cat => {
+                      {(['sans','serif','display','system'] as const).map(cat => {
                         const fonts = FONT_CATALOG.filter(f => f.category === cat)
                         return (
                           <optgroup key={cat} label={FONT_CATEGORY_LABELS[cat]}>
@@ -1241,7 +1236,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="flex gap-2 items-end">
                     <div className="flex-1">
-                      <label className="block text-gray-500 mb-1">크기 (px)</label>
+                      <label className="block text-gray-500 mb-1">Size (px)</label>
                       <input
                         type="number"
                         value={selectedProps.fontSize ?? 14}
@@ -1262,7 +1257,7 @@ export default function EditorClient({ product, options }: Props) {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">색상</label>
+                    <label className="block text-gray-500 mb-1">Color</label>
                     <input
                       type="color"
                       value={selectedProps.fill ?? '#000000'}
@@ -1271,7 +1266,7 @@ export default function EditorClient({ product, options }: Props) {
                     />
                   </div>
                   <div>
-                    <label className="block text-gray-500 mb-1">정렬</label>
+                    <label className="block text-gray-500 mb-1">Alignment</label>
                     <div className="flex gap-1">
                       {([
                         { v: 'left',   icon: AlignLeft },
@@ -1290,7 +1285,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">자간</label>
+                      <label className="block text-gray-500 mb-1">Letter Spacing</label>
                       <input
                         type="number"
                         value={selectedProps.charSpacing ?? 0}
@@ -1300,7 +1295,7 @@ export default function EditorClient({ product, options }: Props) {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">행간</label>
+                      <label className="block text-gray-500 mb-1">Line Height</label>
                       <input
                         type="number"
                         value={selectedProps.lineHeight ?? 1.4}
@@ -1311,9 +1306,9 @@ export default function EditorClient({ product, options }: Props) {
                     </div>
                   </div>
 
-                  {/* 텍스트 아웃라인 */}
+                  {/* Text outline */}
                   <div>
-                    <label className="block text-gray-500 mb-1">아웃라인</label>
+                    <label className="block text-gray-500 mb-1">Outline</label>
                     <div className="flex gap-1.5 items-center">
                       <input
                         type="color"
@@ -1327,15 +1322,15 @@ export default function EditorClient({ product, options }: Props) {
                         step={0.5} min={0} max={20}
                         onChange={e => updateSelected({ textStrokeWidth: parseFloat(e.target.value) || 0 })}
                         className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs"
-                        placeholder="두께"
+                        placeholder="Width"
                       />
                     </div>
                   </div>
 
-                  {/* 텍스트 그림자 */}
+                  {/* Text shadow */}
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <label className="text-gray-500">그림자</label>
+                      <label className="text-gray-500">Shadow</label>
                       <button
                         onClick={() => updateSelected({ shadowEnabled: !selectedProps.shadowEnabled })}
                         className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${selectedProps.shadowEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}
@@ -1352,7 +1347,7 @@ export default function EditorClient({ product, options }: Props) {
                             onChange={e => updateSelected({ shadowColor: e.target.value })}
                             className="w-8 h-6 rounded cursor-pointer shrink-0"
                           />
-                          <span className="text-gray-400 text-[10px]">색상</span>
+                          <span className="text-gray-400 text-[10px]">Color</span>
                         </div>
                         <div className="grid grid-cols-3 gap-1">
                           <div>
@@ -1384,7 +1379,7 @@ export default function EditorClient({ product, options }: Props) {
               {selectedLayer.type === 'rect' && (
                 <>
                   <div>
-                    <label className="block text-gray-500 mb-1">채우기 색상</label>
+                    <label className="block text-gray-500 mb-1">Fill Color</label>
                     <input
                       type="color"
                       value={selectedProps.fillColor ?? '#e5e7eb'}
@@ -1394,7 +1389,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                   <div className="grid grid-cols-2 gap-1.5">
                     <div>
-                      <label className="block text-gray-500 mb-1">테두리 색상</label>
+                      <label className="block text-gray-500 mb-1">Stroke Color</label>
                       <input
                         type="color"
                         value={selectedProps.strokeColor ?? '#000000'}
@@ -1403,7 +1398,7 @@ export default function EditorClient({ product, options }: Props) {
                       />
                     </div>
                     <div>
-                      <label className="block text-gray-500 mb-1">테두리 두께</label>
+                      <label className="block text-gray-500 mb-1">Stroke Width</label>
                       <input
                         type="number"
                         value={selectedProps.strokeWidth ?? 0}
@@ -1420,14 +1415,14 @@ export default function EditorClient({ product, options }: Props) {
                 onClick={deleteSelectedLayer}
                 className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-red-200 py-2 text-xs text-red-600 hover:bg-red-50"
               >
-                <Trash2 className="w-3.5 h-3.5" /> 레이어 삭제
+                <Trash2 className="w-3.5 h-3.5" /> Delete Layer
               </button>
             </div>
           )}
 
           {activePanel === 'properties' && !selectedProps && (
             <div className="flex-1 flex items-center justify-center text-gray-400 text-xs">
-              레이어를 선택하세요
+              Select a layer
             </div>
           )}
         </div>
