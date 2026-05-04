@@ -46,6 +46,14 @@ interface SelectedProps {
   textAlign?: string
   charSpacing?: number
   lineHeight?: number
+  // text effects
+  textStroke?: string
+  textStrokeWidth?: number
+  shadowEnabled?: boolean
+  shadowColor?: string
+  shadowOffsetX?: number
+  shadowOffsetY?: number
+  shadowBlur?: number
   // rect
   fillColor?: string
   strokeColor?: string
@@ -71,7 +79,70 @@ const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
 const SNAP_THRESHOLD_MM = 2
 
-const FONTS = ['Arial', 'Georgia', 'Helvetica', 'Times New Roman', 'Courier New', 'Verdana', 'Trebuchet MS', 'Impact']
+// ─── 폰트 카탈로그 ───────────────────────────────────────────────────────────
+// Google Fonts URL은 로딩 시 동적으로 삽입
+
+interface FontEntry {
+  name: string
+  google?: boolean  // true면 Google Fonts에서 동적 로드
+  category: 'korean' | 'sans' | 'serif' | 'display' | 'system'
+}
+
+const FONT_CATALOG: FontEntry[] = [
+  // ── 한국어
+  { name: 'Noto Sans KR',      google: true,  category: 'korean' },
+  { name: 'Nanum Gothic',      google: true,  category: 'korean' },
+  { name: 'Nanum Myeongjo',    google: true,  category: 'korean' },
+  { name: 'Black Han Sans',    google: true,  category: 'korean' },
+  { name: 'Jua',               google: true,  category: 'korean' },
+  { name: 'Cute Font',         google: true,  category: 'korean' },
+  // ── Sans-Serif
+  { name: 'Roboto',            google: true,  category: 'sans' },
+  { name: 'Open Sans',         google: true,  category: 'sans' },
+  { name: 'Lato',              google: true,  category: 'sans' },
+  { name: 'Montserrat',        google: true,  category: 'sans' },
+  { name: 'Poppins',           google: true,  category: 'sans' },
+  { name: 'Inter',             google: true,  category: 'sans' },
+  // ── Serif
+  { name: 'Playfair Display',  google: true,  category: 'serif' },
+  { name: 'Merriweather',      google: true,  category: 'serif' },
+  { name: 'Lora',              google: true,  category: 'serif' },
+  // ── Display / Decorative
+  { name: 'Oswald',            google: true,  category: 'display' },
+  { name: 'Bebas Neue',        google: true,  category: 'display' },
+  { name: 'Pacifico',          google: true,  category: 'display' },
+  // ── 시스템 폰트 (항상 사용 가능)
+  { name: 'Arial',             category: 'system' },
+  { name: 'Georgia',           category: 'system' },
+  { name: 'Helvetica',         category: 'system' },
+  { name: 'Times New Roman',   category: 'system' },
+  { name: 'Courier New',       category: 'system' },
+  { name: 'Impact',            category: 'system' },
+]
+
+const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
+  korean: '한국어',
+  sans:   'Sans-Serif',
+  serif:  'Serif',
+  display: 'Display',
+  system:  '시스템',
+}
+
+const loadedFonts = new Set<string>()
+
+async function loadGoogleFont(fontName: string): Promise<void> {
+  if (loadedFonts.has(fontName)) return
+  const href = `https://fonts.googleapis.com/css2?family=${encodeURIComponent(fontName)}&display=swap`
+  if (!document.querySelector(`link[data-gfont="${fontName}"]`)) {
+    const link = document.createElement('link')
+    link.rel = 'stylesheet'
+    link.href = href
+    link.setAttribute('data-gfont', fontName)
+    document.head.appendChild(link)
+  }
+  await document.fonts.ready
+  loadedFonts.add(fontName)
+}
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
@@ -183,6 +254,16 @@ export default function EditorClient({ product, options }: Props) {
       props.textAlign = obj.textAlign ?? 'left'
       props.charSpacing = obj.charSpacing ?? 0
       props.lineHeight = obj.lineHeight ?? 1.4
+      // 텍스트 아웃라인
+      props.textStroke = typeof obj.stroke === 'string' && obj.stroke ? obj.stroke : '#000000'
+      props.textStrokeWidth = obj.strokeWidth ?? 0
+      // 그림자
+      const sh = obj.shadow
+      props.shadowEnabled = !!sh
+      props.shadowColor = sh?.color ?? 'rgba(0,0,0,0.5)'
+      props.shadowOffsetX = sh?.offsetX ?? 4
+      props.shadowOffsetY = sh?.offsetY ?? 4
+      props.shadowBlur = sh?.blur ?? 6
     } else if (objType === 'rect') {
       props.fillColor = typeof obj.fill === 'string' ? obj.fill : '#e5e7eb'
       props.strokeColor = typeof obj.stroke === 'string' ? obj.stroke : '#000000'
@@ -696,7 +777,17 @@ export default function EditorClient({ product, options }: Props) {
     if (patch.y !== undefined) obj.set('top', patch.y)
     if (patch.angle !== undefined) obj.set('angle', patch.angle)
     if (patch.text !== undefined) obj.set('text', patch.text)
-    if (patch.fontFamily !== undefined) obj.set('fontFamily', patch.fontFamily)
+    if (patch.fontFamily !== undefined) {
+      const entry = FONT_CATALOG.find(f => f.name === patch.fontFamily)
+      if (entry?.google) {
+        loadGoogleFont(patch.fontFamily).then(() => {
+          obj.set('fontFamily', patch.fontFamily!)
+          canvas.requestRenderAll()
+        })
+      } else {
+        obj.set('fontFamily', patch.fontFamily)
+      }
+    }
     if (patch.fontSize !== undefined) obj.set('fontSize', patch.fontSize)
     if (patch.fontWeight !== undefined) obj.set('fontWeight', patch.fontWeight)
     if (patch.fontStyle !== undefined) obj.set('fontStyle', patch.fontStyle)
@@ -704,6 +795,33 @@ export default function EditorClient({ product, options }: Props) {
     if (patch.textAlign !== undefined) obj.set('textAlign', patch.textAlign)
     if (patch.charSpacing !== undefined) obj.set('charSpacing', patch.charSpacing)
     if (patch.lineHeight !== undefined) obj.set('lineHeight', patch.lineHeight)
+    // 텍스트 아웃라인
+    if (patch.textStroke !== undefined) obj.set('stroke', patch.textStroke)
+    if (patch.textStrokeWidth !== undefined) {
+      obj.set('strokeWidth', patch.textStrokeWidth)
+      if (patch.textStrokeWidth > 0) obj.set('paintFirst', 'stroke')
+    }
+    // 그림자
+    if (patch.shadowEnabled !== undefined || patch.shadowColor !== undefined ||
+        patch.shadowOffsetX !== undefined || patch.shadowOffsetY !== undefined ||
+        patch.shadowBlur !== undefined) {
+      const cur = selectedProps!
+      const enabled = patch.shadowEnabled ?? cur.shadowEnabled
+      if (!enabled) {
+        obj.set('shadow', null)
+      } else {
+        const fabric = fabricModRef.current
+        if (fabric) {
+          obj.set('shadow', new fabric.Shadow({
+            color: patch.shadowColor ?? cur.shadowColor ?? 'rgba(0,0,0,0.5)',
+            offsetX: patch.shadowOffsetX ?? cur.shadowOffsetX ?? 4,
+            offsetY: patch.shadowOffsetY ?? cur.shadowOffsetY ?? 4,
+            blur: patch.shadowBlur ?? cur.shadowBlur ?? 6,
+          }))
+        }
+      }
+    }
+    // Rect 전용
     if (patch.fillColor !== undefined) obj.set('fill', patch.fillColor)
     if (patch.strokeColor !== undefined) obj.set('stroke', patch.strokeColor)
     if (patch.strokeWidth !== undefined) obj.set('strokeWidth', patch.strokeWidth)
@@ -1111,7 +1229,14 @@ export default function EditorClient({ product, options }: Props) {
                       onChange={e => updateSelected({ fontFamily: e.target.value })}
                       className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                     >
-                      {FONTS.map(f => <option key={f} value={f}>{f}</option>)}
+                      {(['korean','sans','serif','display','system'] as const).map(cat => {
+                        const fonts = FONT_CATALOG.filter(f => f.category === cat)
+                        return (
+                          <optgroup key={cat} label={FONT_CATEGORY_LABELS[cat]}>
+                            {fonts.map(f => <option key={f.name} value={f.name}>{f.name}</option>)}
+                          </optgroup>
+                        )
+                      })}
                     </select>
                   </div>
                   <div className="flex gap-2 items-end">
@@ -1184,6 +1309,73 @@ export default function EditorClient({ product, options }: Props) {
                         className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
                       />
                     </div>
+                  </div>
+
+                  {/* 텍스트 아웃라인 */}
+                  <div>
+                    <label className="block text-gray-500 mb-1">아웃라인</label>
+                    <div className="flex gap-1.5 items-center">
+                      <input
+                        type="color"
+                        value={selectedProps.textStroke ?? '#000000'}
+                        onChange={e => updateSelected({ textStroke: e.target.value })}
+                        className="w-8 h-8 rounded cursor-pointer shrink-0"
+                      />
+                      <input
+                        type="number"
+                        value={selectedProps.textStrokeWidth ?? 0}
+                        step={0.5} min={0} max={20}
+                        onChange={e => updateSelected({ textStrokeWidth: parseFloat(e.target.value) || 0 })}
+                        className="flex-1 border border-gray-200 rounded px-2 py-1.5 text-xs"
+                        placeholder="두께"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 텍스트 그림자 */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-gray-500">그림자</label>
+                      <button
+                        onClick={() => updateSelected({ shadowEnabled: !selectedProps.shadowEnabled })}
+                        className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${selectedProps.shadowEnabled ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}
+                      >
+                        {selectedProps.shadowEnabled ? 'ON' : 'OFF'}
+                      </button>
+                    </div>
+                    {selectedProps.shadowEnabled && (
+                      <div className="space-y-1.5">
+                        <div className="flex items-center gap-1.5">
+                          <input
+                            type="color"
+                            value={selectedProps.shadowColor?.replace(/rgba?\([^)]+\)/,'#000000') ?? '#000000'}
+                            onChange={e => updateSelected({ shadowColor: e.target.value })}
+                            className="w-8 h-6 rounded cursor-pointer shrink-0"
+                          />
+                          <span className="text-gray-400 text-[10px]">색상</span>
+                        </div>
+                        <div className="grid grid-cols-3 gap-1">
+                          <div>
+                            <span className="block text-[10px] text-gray-400 mb-0.5">X</span>
+                            <input type="number" value={selectedProps.shadowOffsetX ?? 4} step={1}
+                              onChange={e => updateSelected({ shadowOffsetX: parseFloat(e.target.value) })}
+                              className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs" />
+                          </div>
+                          <div>
+                            <span className="block text-[10px] text-gray-400 mb-0.5">Y</span>
+                            <input type="number" value={selectedProps.shadowOffsetY ?? 4} step={1}
+                              onChange={e => updateSelected({ shadowOffsetY: parseFloat(e.target.value) })}
+                              className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs" />
+                          </div>
+                          <div>
+                            <span className="block text-[10px] text-gray-400 mb-0.5">Blur</span>
+                            <input type="number" value={selectedProps.shadowBlur ?? 6} step={1} min={0}
+                              onChange={e => updateSelected({ shadowBlur: parseFloat(e.target.value) })}
+                              className="w-full border border-gray-200 rounded px-1.5 py-1 text-xs" />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </>
               )}
