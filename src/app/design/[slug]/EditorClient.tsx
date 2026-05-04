@@ -8,7 +8,7 @@ import {
   ChevronUp, ChevronDown, Eye, EyeOff, Lock, Unlock,
   Download, ShoppingCart, Bold, Italic, AlignLeft,
   AlignCenter, AlignRight, ArrowLeft, Plus, LayoutTemplate,
-  RotateCcw, RotateCw,
+  RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -58,6 +58,14 @@ interface SelectedProps {
   fillColor?: string
   strokeColor?: string
   strokeWidth?: number
+  // image
+  opacity?: number
+  brightness?: number
+  contrast?: number
+  saturation?: number
+  grayscale?: boolean
+  blendMode?: string
+  hasCrop?: boolean
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -123,6 +131,50 @@ const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
   system:  'System',
 }
 
+// ─── Blend modes ─────────────────────────────────────────────────────────────
+
+const BLEND_MODES: { value: string; label: string }[] = [
+  { value: 'source-over', label: 'Normal' },
+  { value: 'multiply',    label: 'Multiply' },
+  { value: 'screen',      label: 'Screen' },
+  { value: 'overlay',     label: 'Overlay' },
+  { value: 'darken',      label: 'Darken' },
+  { value: 'lighten',     label: 'Lighten' },
+  { value: 'color-dodge', label: 'Color Dodge' },
+  { value: 'color-burn',  label: 'Color Burn' },
+  { value: 'hard-light',  label: 'Hard Light' },
+  { value: 'soft-light',  label: 'Soft Light' },
+  { value: 'difference',  label: 'Difference' },
+  { value: 'exclusion',   label: 'Exclusion' },
+]
+
+// ─── Shape presets ────────────────────────────────────────────────────────────
+
+type ShapeKind = 'rect' | 'circle' | 'triangle' | 'path'
+
+interface ShapePreset {
+  name: string
+  icon: React.ReactNode
+  kind: ShapeKind
+  path?: string
+}
+
+const SHAPE_PRESETS: ShapePreset[] = [
+  { name: 'Rectangle', icon: <Square className="w-4 h-4" />,   kind: 'rect' },
+  { name: 'Circle',    icon: <Circle className="w-4 h-4" />,   kind: 'circle' },
+  { name: 'Triangle',  icon: <Triangle className="w-4 h-4" />, kind: 'triangle' },
+  { name: 'Star',      icon: <Star className="w-4 h-4" />,     kind: 'path',
+    path: 'M 50 5 L 61 35 L 95 35 L 68 57 L 79 91 L 50 70 L 21 91 L 32 57 L 5 35 L 39 35 Z' },
+  { name: 'Heart',     icon: <span className="text-sm">♥</span>, kind: 'path',
+    path: 'M 50 85 C 10 55 0 35 20 20 C 35 10 45 20 50 30 C 55 20 65 10 80 20 C 100 35 90 55 50 85 Z' },
+  { name: 'Diamond',   icon: <span className="text-sm">◆</span>, kind: 'path',
+    path: 'M 50 5 L 95 50 L 50 95 L 5 50 Z' },
+  { name: 'Arrow →',   icon: <span className="text-sm">→</span>, kind: 'path',
+    path: 'M 5 38 L 65 38 L 65 20 L 95 50 L 65 80 L 65 62 L 5 62 Z' },
+  { name: 'Hexagon',   icon: <span className="text-sm">⬡</span>, kind: 'path',
+    path: 'M 25 8 L 75 8 L 95 43 L 75 78 L 25 78 L 5 43 Z' },
+]
+
 const loadedFonts = new Set<string>()
 
 async function loadGoogleFont(fontName: string): Promise<void> {
@@ -151,8 +203,10 @@ function mmToPx(mm: number, scale: number) { return mm * scale }
 
 function makeId() { return Math.random().toString(36).slice(2) }
 
+const BACKGROUND_ROLES = new Set(['bleed-bg', 'trim-bg', 'trim-border', 'guide'])
+
 function isBackground(obj: { data?: { role?: string } }) {
-  return !!obj.data?.role
+  return BACKGROUND_ROLES.has(obj.data?.role ?? '')
 }
 
 // ─── Main component ────────────────────────────────────────────────────────────
@@ -190,10 +244,13 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
-  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'properties'>('layers')
+  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties'>('layers')
   const [bgColor, setBgColor] = useState('#ffffff')
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
+  const [cropActive, setCropActive] = useState(false)
+  const cropTargetIdRef = useRef<string | null>(null)
+  const cropRectIdRef = useRef<string | null>(null)
 
   // Keep ref in sync with state for canvas event handlers
   useEffect(() => { toolRef.current = tool }, [tool])
@@ -204,7 +261,7 @@ export default function EditorClient({ product, options }: Props) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function syncLayers(canvas: any) {
-    const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o))
+    const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o) && o.data?.role !== 'crop')
     const layerList: LayerInfo[] = [...objs].reverse().map((o: {
       data?: { id?: string; name?: string; layerType?: LayerType }
       visible?: boolean
@@ -227,6 +284,8 @@ export default function EditorClient({ product, options }: Props) {
       setSelectedProps(null)
       return
     }
+    // Crop rect가 선택된 경우 properties 패널을 갱신하지 않음 (크롭 모드 유지)
+    if (obj.data?.role === 'crop') return
     const id = obj.data?.id ?? ''
     setSelectedId(id)
 
@@ -259,10 +318,24 @@ export default function EditorClient({ product, options }: Props) {
       props.shadowOffsetX = sh?.offsetX ?? 4
       props.shadowOffsetY = sh?.offsetY ?? 4
       props.shadowBlur = sh?.blur ?? 6
-    } else if (objType === 'rect') {
+    } else if (['rect', 'circle', 'triangle', 'path', 'polygon'].includes(objType)) {
       props.fillColor = typeof obj.fill === 'string' ? obj.fill : '#e5e7eb'
       props.strokeColor = typeof obj.stroke === 'string' ? obj.stroke : '#000000'
       props.strokeWidth = obj.strokeWidth ?? 0
+    } else if (objType === 'image') {
+      props.opacity = obj.opacity ?? 1
+      props.blendMode = obj.globalCompositeOperation ?? 'source-over'
+      props.hasCrop = !!obj.clipPath
+      // Read filter values
+      const filters: { type?: string; brightness?: number; contrast?: number; saturation?: number }[] = obj.filters ?? []
+      const bFilter = filters.find((f) => f.type === 'Brightness' || (f as { constructor?: { name?: string } }).constructor?.name === 'Brightness')
+      const cFilter = filters.find((f) => f.type === 'Contrast' || (f as { constructor?: { name?: string } }).constructor?.name === 'Contrast')
+      const sFilter = filters.find((f) => f.type === 'Saturation' || (f as { constructor?: { name?: string } }).constructor?.name === 'Saturation')
+      const gFilter = filters.find((f) => f.type === 'Grayscale' || (f as { constructor?: { name?: string } }).constructor?.name === 'Grayscale')
+      props.brightness = bFilter?.brightness ?? 0
+      props.contrast = cFilter?.contrast ?? 0
+      props.saturation = sFilter?.saturation ?? 0
+      props.grayscale = !!gFilter
     }
 
     setSelectedProps(props)
@@ -316,7 +389,7 @@ export default function EditorClient({ product, options }: Props) {
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const obj = canvas.getActiveObject()
-        if (obj && !isBackground(obj)) {
+        if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
           canvas.remove(obj)
           canvas.discardActiveObject()
           canvas.renderAll()
@@ -709,6 +782,7 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   const imageInputRef = useRef<HTMLInputElement>(null)
+  const replaceImageInputRef = useRef<HTMLInputElement>(null)
 
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -734,6 +808,41 @@ export default function EditorClient({ product, options }: Props) {
     canvas.add(img)
     canvas.setActiveObject(img)
     canvas.renderAll()
+    e.target.value = ''
+  }
+
+  async function handleReplaceImage(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const oldImg: any = canvas.getActiveObject()
+    if (!oldImg || oldImg.type !== 'image') return
+
+    const url = URL.createObjectURL(file)
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const newImg = await fabric.FabricImage.fromURL(url)
+
+    // Keep the old position, scale, angle, opacity, filters, data
+    newImg.set({
+      left: oldImg.left,
+      top: oldImg.top,
+      scaleX: oldImg.scaleX,
+      scaleY: oldImg.scaleY,
+      angle: oldImg.angle,
+      opacity: oldImg.opacity,
+      filters: oldImg.filters,
+      data: { ...oldImg.data, name: file.name.slice(0, 20) },
+    })
+    newImg.applyFilters()
+
+    canvas.remove(oldImg)
+    canvas.add(newImg)
+    canvas.setActiveObject(newImg)
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
     e.target.value = ''
   }
 
@@ -816,14 +925,191 @@ export default function EditorClient({ product, options }: Props) {
         }
       }
     }
-    // Rect 전용
+    // Rect-specific
     if (patch.fillColor !== undefined) obj.set('fill', patch.fillColor)
     if (patch.strokeColor !== undefined) obj.set('stroke', patch.strokeColor)
     if (patch.strokeWidth !== undefined) obj.set('strokeWidth', patch.strokeWidth)
 
+    // Image-specific
+    if (patch.opacity !== undefined) obj.set('opacity', patch.opacity)
+    if (patch.blendMode !== undefined) obj.set('globalCompositeOperation', patch.blendMode)
+    if (
+      patch.brightness !== undefined || patch.contrast !== undefined ||
+      patch.saturation !== undefined || patch.grayscale !== undefined
+    ) {
+      const fabric = fabricModRef.current
+      if (fabric) {
+        const cur = selectedProps!
+        const brightness = patch.brightness ?? cur.brightness ?? 0
+        const contrast = patch.contrast ?? cur.contrast ?? 0
+        const saturation = patch.saturation ?? cur.saturation ?? 0
+        const grayscale = patch.grayscale ?? cur.grayscale ?? false
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const newFilters: any[] = []
+        if (brightness !== 0) newFilters.push(new (fabric.filters as any).Brightness({ brightness }))
+        if (contrast !== 0) newFilters.push(new (fabric.filters as any).Contrast({ contrast }))
+        if (saturation !== 0) newFilters.push(new (fabric.filters as any).Saturation({ saturation }))
+        if (grayscale) newFilters.push(new (fabric.filters as any).Grayscale())
+        obj.filters = newFilters
+        obj.applyFilters()
+      }
+    }
+
     canvas.renderAll()
     setSelectedProps(prev => prev ? { ...prev, ...patch } : null)
     saveHistory(canvas)
+  }
+
+  // ── Crop ─────────────────────────────────────────────────────────────────
+
+  function startCrop() {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const img: any = canvas.getActiveObject()
+    if (!img || img.type !== 'image') return
+
+    cropTargetIdRef.current = img.data?.id ?? null
+    img.set({ selectable: false, evented: false })
+
+    const id = makeId()
+    cropRectIdRef.current = id
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cropRect = new (fabric as any).Rect({
+      left: img.left,
+      top: img.top,
+      width: img.getScaledWidth(),
+      height: img.getScaledHeight(),
+      fill: 'rgba(99,102,241,0.12)',
+      stroke: '#6366f1',
+      strokeWidth: 2,
+      strokeDashArray: [6, 3],
+      data: { id, role: 'crop', name: 'Crop Area', layerType: 'rect' as LayerType },
+    })
+    canvas.add(cropRect)
+    canvas.setActiveObject(cropRect)
+    canvas.renderAll()
+    setCropActive(true)
+    setActivePanel('properties')
+  }
+
+  function applyCrop() {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cropRect: any = canvas.getObjects().find((o: any) => o.data?.id === cropRectIdRef.current)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const img: any = canvas.getObjects().find((o: any) => o.data?.id === cropTargetIdRef.current)
+    if (!cropRect || !img) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    img.clipPath = new (fabric as any).Rect({
+      left: cropRect.left,
+      top: cropRect.top,
+      width: cropRect.getScaledWidth(),
+      height: cropRect.getScaledHeight(),
+      absolutePositioned: true,
+    })
+    img.dirty = true
+    img.set({ selectable: true, evented: true })
+
+    canvas.remove(cropRect)
+    canvas.setActiveObject(img)
+    canvas.renderAll()
+
+    cropRectIdRef.current = null
+    cropTargetIdRef.current = null
+    setCropActive(false)
+    syncLayers(canvas)
+    syncSelected(canvas)
+    saveHistory(canvas)
+  }
+
+  function cancelCrop() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cropRect = canvas.getObjects().find((o: any) => o.data?.id === cropRectIdRef.current)
+    if (cropRect) canvas.remove(cropRect)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const img: any = canvas.getObjects().find((o: any) => o.data?.id === cropTargetIdRef.current)
+    if (img) {
+      img.set({ selectable: true, evented: true })
+      canvas.setActiveObject(img)
+    }
+
+    canvas.renderAll()
+    cropRectIdRef.current = null
+    cropTargetIdRef.current = null
+    setCropActive(false)
+    syncLayers(canvas)
+    syncSelected(canvas)
+  }
+
+  function resetCrop() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const img: any = canvas.getActiveObject()
+    if (!img || img.type !== 'image') return
+    img.clipPath = undefined
+    img.dirty = true
+    canvas.renderAll()
+    syncSelected(canvas)
+    saveHistory(canvas)
+  }
+
+  // ── Shape library ─────────────────────────────────────────────────────────
+
+  async function addShape(preset: ShapePreset) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+    const size = mmToPx(20, scale)
+    const id = makeId()
+    const cx = bl + (mmToPx(dims.widthMm, scale) - size) / 2
+    const cy = bl + (mmToPx(dims.heightMm, scale) - size) / 2
+    const commonStyle = {
+      fill: '#e5e7eb',
+      stroke: '#9ca3af',
+      strokeWidth: 1,
+      data: { id, name: preset.name, layerType: 'rect' as LayerType },
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let obj: any
+
+    if (preset.kind === 'rect') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      obj = new (fabric as any).Rect({ left: cx, top: cy, width: size, height: size, ...commonStyle })
+    } else if (preset.kind === 'circle') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      obj = new (fabric as any).Circle({ left: cx, top: cy, radius: size / 2, ...commonStyle })
+    } else if (preset.kind === 'triangle') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      obj = new (fabric as any).Triangle({ left: cx, top: cy, width: size, height: size, ...commonStyle })
+    } else if (preset.kind === 'path' && preset.path) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      obj = new (fabric as any).Path(preset.path, commonStyle)
+      const bw = obj.width ?? 1
+      const bh = obj.height ?? 1
+      const scaleF = size / Math.max(bw, bh)
+      obj.set({ scaleX: scaleF, scaleY: scaleF, left: cx, top: cy })
+    }
+
+    if (obj) {
+      canvas.add(obj)
+      canvas.setActiveObject(obj)
+      canvas.renderAll()
+      setTool('select')
+      syncLayers(canvas)
+      saveHistory(canvas)
+    }
   }
 
   // ── Layer operations ──────────────────────────────────────────────────────
@@ -1018,6 +1304,7 @@ export default function EditorClient({ product, options }: Props) {
             <ImageIcon className="w-4 h-4" />
           </button>
           <input ref={imageInputRef} type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+          <input ref={replaceImageInputRef} type="file" accept="image/*" onChange={handleReplaceImage} className="hidden" />
         </div>
 
         {/* Undo/Redo */}
@@ -1064,16 +1351,17 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'templates', icon: LayoutTemplate, label: 'Templates' },
+              { key: 'templates', icon: LayoutTemplate, label: 'Tmpl' },
+              { key: 'shapes',    icon: Star,            label: 'Shapes' },
               { key: 'layers',    icon: Layers,          label: 'Layers' },
-              { key: 'properties', icon: null,           label: 'Properties' },
+              { key: 'properties', icon: null,           label: 'Props' },
             ] as const).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
                 onClick={() => setActivePanel(key)}
-                className={`flex-1 py-2.5 text-xs font-medium flex items-center justify-center gap-1 transition-colors ${activePanel === key ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-2.5 text-[11px] font-medium flex items-center justify-center gap-0.5 transition-colors ${activePanel === key ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
-                {Icon && <Icon className="w-3.5 h-3.5" />}
+                {Icon && <Icon className="w-3 h-3" />}
                 {label}
               </button>
             ))}
@@ -1100,6 +1388,26 @@ export default function EditorClient({ product, options }: Props) {
                   <div className="text-sm font-medium text-gray-700">{t.name}</div>
                 </button>
               ))}
+            </div>
+          )}
+
+          {/* Shapes panel */}
+          {activePanel === 'shapes' && (
+            <div className="flex-1 overflow-y-auto p-3">
+              <p className="text-[11px] text-gray-400 mb-2">Click a shape to add it to the canvas.</p>
+              <div className="grid grid-cols-4 gap-2">
+                {SHAPE_PRESETS.map(preset => (
+                  <button
+                    key={preset.name}
+                    onClick={() => addShape(preset)}
+                    title={preset.name}
+                    className="flex flex-col items-center gap-1 p-2 rounded-lg border border-gray-200 hover:border-indigo-300 hover:bg-indigo-50 transition-colors text-gray-600"
+                  >
+                    <span className="text-gray-500">{preset.icon}</span>
+                    <span className="text-[9px] text-gray-400 truncate w-full text-center">{preset.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
 
@@ -1408,6 +1716,143 @@ export default function EditorClient({ product, options }: Props) {
                       />
                     </div>
                   </div>
+                </>
+              )}
+
+              {/* Image-specific */}
+              {selectedLayer.type === 'image' && (
+                <>
+                  {/* Crop */}
+                  <div>
+                    <label className="block text-gray-500 mb-1">Crop</label>
+                    {cropActive ? (
+                      <>
+                        <p className="text-[10px] text-indigo-500 mb-1.5">Drag the blue overlay to set crop area.</p>
+                        <div className="flex gap-1.5">
+                          <button
+                            onClick={applyCrop}
+                            className="flex-1 py-1.5 text-xs rounded bg-indigo-600 text-white font-medium hover:bg-indigo-700"
+                          >
+                            Apply
+                          </button>
+                          <button
+                            onClick={cancelCrop}
+                            className="flex-1 py-1.5 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex gap-1.5">
+                        <button
+                          onClick={startCrop}
+                          className="flex-1 flex items-center justify-center gap-1 py-1.5 text-xs rounded border border-gray-200 text-gray-600 hover:bg-gray-50"
+                        >
+                          <Crop className="w-3 h-3" /> Crop
+                        </button>
+                        {selectedProps.hasCrop && (
+                          <button
+                            onClick={resetCrop}
+                            className="flex-1 py-1.5 text-xs rounded border border-gray-200 text-gray-500 hover:bg-gray-50"
+                          >
+                            Reset
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {!cropActive && (
+                  <>
+                  {/* Blend Mode */}
+                  <div>
+                    <label className="block text-gray-500 mb-1">Blend Mode</label>
+                    <select
+                      value={selectedProps.blendMode ?? 'source-over'}
+                      onChange={e => updateSelected({ blendMode: e.target.value })}
+                      className="w-full border border-gray-200 rounded px-2 py-1.5 text-xs"
+                    >
+                      {BLEND_MODES.map(m => (
+                        <option key={m.value} value={m.value}>{m.label}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-gray-500">Opacity</label>
+                      <span className="text-gray-400 text-[10px]">{Math.round((selectedProps.opacity ?? 1) * 100)}%</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0} max={1} step={0.01}
+                      value={selectedProps.opacity ?? 1}
+                      onChange={e => updateSelected({ opacity: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-gray-500">Brightness</label>
+                      <span className="text-gray-400 text-[10px]">{Math.round((selectedProps.brightness ?? 0) * 100)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-1} max={1} step={0.01}
+                      value={selectedProps.brightness ?? 0}
+                      onChange={e => updateSelected({ brightness: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-gray-500">Contrast</label>
+                      <span className="text-gray-400 text-[10px]">{Math.round((selectedProps.contrast ?? 0) * 100)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-1} max={1} step={0.01}
+                      value={selectedProps.contrast ?? 0}
+                      onChange={e => updateSelected({ contrast: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-gray-500">Saturation</label>
+                      <span className="text-gray-400 text-[10px]">{Math.round((selectedProps.saturation ?? 0) * 100)}</span>
+                    </div>
+                    <input
+                      type="range"
+                      min={-1} max={1} step={0.01}
+                      value={selectedProps.saturation ?? 0}
+                      onChange={e => updateSelected({ saturation: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <label className="text-gray-500">Grayscale</label>
+                    <button
+                      onClick={() => updateSelected({ grayscale: !selectedProps.grayscale })}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${selectedProps.grayscale ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500'}`}
+                    >
+                      {selectedProps.grayscale ? 'ON' : 'OFF'}
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => replaceImageInputRef.current?.click()}
+                    className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs text-gray-600 hover:bg-gray-50"
+                  >
+                    <RefreshCw className="w-3.5 h-3.5" /> Replace Image
+                  </button>
+                  <button
+                    onClick={() => updateSelected({ brightness: 0, contrast: 0, saturation: 0, grayscale: false, opacity: 1 })}
+                    className="w-full flex items-center justify-center gap-1.5 rounded-lg border border-gray-200 py-2 text-xs text-gray-500 hover:bg-gray-50"
+                  >
+                    Reset Filters
+                  </button>
+                  </>)}
                 </>
               )}
 
