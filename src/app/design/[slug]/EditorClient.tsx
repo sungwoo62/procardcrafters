@@ -9,12 +9,29 @@ import {
   Download, ShoppingCart, Bold, Italic, AlignLeft,
   AlignCenter, AlignRight, ArrowLeft, Plus, LayoutTemplate,
   RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
+  FileText, Save, FolderOpen, QrCode, ShieldCheck, CopyPlus,
+  AlertTriangle, CheckCircle, XCircle, FlipHorizontal2,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type LayerType = 'text' | 'image' | 'rect'
+
+interface SavedDesign {
+  id: string
+  name: string
+  productSlug: string
+  frontJson: string
+  backJson: string | null
+  thumbnail: string
+  savedAt: string
+}
+
+interface PreflightResult {
+  level: 'ok' | 'warn' | 'error'
+  message: string
+}
 
 interface LayerInfo {
   id: string
@@ -130,6 +147,35 @@ const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
   display: 'Display',
   system:  'System',
 }
+
+// ─── Template catalog ─────────────────────────────────────────────────────────
+
+interface TemplateDef {
+  name: string
+  category: 'business' | 'minimal' | 'creative' | 'photo'
+  bg: string
+  description: string
+}
+
+const TEMPLATE_CATALOG: TemplateDef[] = [
+  { name: 'Blank',      category: 'minimal',   bg: '#ffffff', description: 'Start from scratch' },
+  { name: 'Classic',    category: 'business',  bg: '#ffffff', description: 'Traditional layout' },
+  { name: 'Corporate',  category: 'business',  bg: '#0f172a', description: 'Dark professional' },
+  { name: 'Executive',  category: 'business',  bg: '#ffffff', description: 'Elegant & formal' },
+  { name: 'Minimal',    category: 'minimal',   bg: '#ffffff', description: 'Clean & simple' },
+  { name: 'Bold',       category: 'creative',  bg: '#4f46e5', description: 'Vibrant accent' },
+  { name: 'Dark',       category: 'minimal',   bg: '#1a1a1a', description: 'Dark with accent' },
+  { name: 'Creative',   category: 'creative',  bg: '#fef3c7', description: 'Warm gradient tone' },
+]
+
+const TEMPLATE_CATEGORY_LABELS: Record<TemplateDef['category'], string> = {
+  business:  'Business',
+  minimal:   'Minimal',
+  creative:  'Creative',
+  photo:     'Photo',
+}
+
+const DESIGNS_STORAGE_KEY = 'procardcrafters_saved_designs'
 
 // ─── Blend modes ─────────────────────────────────────────────────────────────
 
@@ -251,6 +297,27 @@ export default function EditorClient({ product, options }: Props) {
   const [cropActive, setCropActive] = useState(false)
   const cropTargetIdRef = useRef<string | null>(null)
   const cropRectIdRef = useRef<string | null>(null)
+
+  // Phase 5: Front/Back
+  const [activeSide, setActiveSide] = useState<'front' | 'back'>('front')
+  const frontJsonRef = useRef<string | null>(null)
+  const backJsonRef = useRef<string | null>(null)
+
+  // Phase 6: Bleed / QR / Preflight
+  const [showBleed, setShowBleed] = useState(true)
+  const [qrUrl, setQrUrl] = useState('')
+  const [showPreflight, setShowPreflight] = useState(false)
+  const [preflightResults, setPreflightResults] = useState<PreflightResult[]>([])
+  const [templateCategory, setTemplateCategory] = useState<TemplateDef['category'] | 'all'>('all')
+
+  // Phase 4: Saved designs
+  const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>(() => {
+    if (typeof window === 'undefined') return []
+    try {
+      return JSON.parse(localStorage.getItem(DESIGNS_STORAGE_KEY) ?? '[]')
+    } catch { return [] }
+  })
+  const [saveDesignName, setSaveDesignName] = useState('')
 
   // Keep ref in sync with state for canvas event handlers
   useEffect(() => { toolRef.current = tool }, [tool])
@@ -588,6 +655,84 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'email@company.com', bl + mmToPx(10, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#9ca3af', textAlign: 'left',
         data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+    } else if (name === 'Corporate') {
+      // Dark header bar at top
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(14, scale),
+        fill: '#1e293b', data: { id: makeId(), name: 'Header', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'JANE SMITH', bl + mmToPx(5, scale), bl + mmToPx(3.5, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#ffffff', charSpacing: 150,
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Product Director', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(60, scale), {
+        fontSize: mmToPx(3.5, scale), fill: '#475569', fontFamily: 'Lato',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'jane@company.com  ·  linkedin.com/in/jane', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#94a3b8',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+    } else if (name === 'Executive') {
+      // Subtle border frame
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(2, scale), top: bl + mmToPx(2, scale),
+        width: mmToPx(dims.widthMm - 4, scale), height: mmToPx(dims.heightMm - 4, scale),
+        fill: 'transparent', stroke: '#c0a060', strokeWidth: 1,
+        data: { id: makeId(), name: 'Frame', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Alexander Wright', bl + mmToPx(7.5, scale), bl + mmToPx(15, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#1a1a1a', textAlign: 'center',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, '— Managing Partner —', bl + mmToPx(7.5, scale), bl + mmToPx(26, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fontFamily: 'EB Garamond', fill: '#c0a060', textAlign: 'center', charSpacing: 100,
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'alex@firm.com', bl + mmToPx(7.5, scale), bl + mmToPx(37, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fontFamily: 'EB Garamond', fill: '#666666', textAlign: 'center',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+    } else if (name === 'Bold') {
+      // Bold colored left panel
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(28, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#ffffff', opacity: 0.15, data: { id: makeId(), name: 'Panel', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'ALEX', bl + mmToPx(3, scale), bl + mmToPx(10, scale), mmToPx(22, scale), {
+        fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center',
+        data: { id: makeId(), name: 'First', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'TURNER', bl + mmToPx(3, scale), bl + mmToPx(22, scale), mmToPx(22, scale), {
+        fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center',
+        data: { id: makeId(), name: 'Last', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'UX Designer', bl + mmToPx(32, scale), bl + mmToPx(12, scale), mmToPx(50, scale), {
+        fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ffffff',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'hello@alexturner.io\n+1 (415) 000-1234', bl + mmToPx(32, scale), bl + mmToPx(27, scale), mmToPx(50, scale), {
+        fontSize: mmToPx(2.8, scale), fill: 'rgba(255,255,255,0.8)',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+    } else if (name === 'Creative') {
+      // Warm creative style
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm - 10, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(10, scale),
+        fill: '#f59e0b', data: { id: makeId(), name: 'Footer Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'CREATIVE', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#92400e', charSpacing: 300,
+        data: { id: makeId(), name: 'Tag', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Sam Rivera', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5, scale), fontFamily: 'Pacifico', fill: '#1c1917',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Art Director & Illustrator', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fontFamily: 'Poppins', fill: '#57534e',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
       })
     }
     // Blank: no user objects
@@ -1233,6 +1378,235 @@ export default function EditorClient({ product, options }: Props) {
     link.click()
   }
 
+  // ── Phase 6: PDF export ────────────────────────────────────────────────────
+
+  async function exportPdf() {
+    const dataUrl = getExportDataUrl(300)
+    if (!dataUrl) return
+    const { PDFDocument } = await import('pdf-lib')
+    const pdfDoc = await PDFDocument.create()
+    const MM_PER_PT = 2.8346
+    const pageW = dims.widthMm * MM_PER_PT
+    const pageH = dims.heightMm * MM_PER_PT
+    const page = pdfDoc.addPage([pageW, pageH])
+    const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
+    const image = await pdfDoc.embedPng(pngBytes)
+    page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH })
+    const pdfBytes = await pdfDoc.save()
+    const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+    const link = document.createElement('a')
+    link.download = `${product.slug}-300dpi.pdf`
+    link.href = URL.createObjectURL(blob)
+    link.click()
+  }
+
+  // ── Phase 6: QR code ──────────────────────────────────────────────────────
+
+  async function addQrCode(url: string) {
+    if (!url.trim()) return
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current ?? await import('fabric')
+    if (!canvas) return
+    const QRCode = (await import('qrcode')).default
+    const qrDataUrl = await QRCode.toDataURL(url.trim(), { width: 200, margin: 1 })
+    const img = await fabric.FabricImage.fromURL(qrDataUrl)
+    const size = mmToPx(20, scale)
+    const bl = mmToPx(dims.bleedMm, scale)
+    const id = makeId()
+    img.set({
+      left: bl + mmToPx(dims.widthMm - 22, scale),
+      top: bl + mmToPx(dims.heightMm - 22, scale),
+      scaleX: size / (img.width ?? 200),
+      scaleY: size / (img.height ?? 200),
+      data: { id, name: 'QR Code', layerType: 'image' },
+    })
+    canvas.add(img)
+    canvas.setActiveObject(img)
+    canvas.renderAll()
+    setQrUrl('')
+  }
+
+  // ── Phase 6: Bleed guides toggle ──────────────────────────────────────────
+
+  function toggleBleedGuides() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const newShow = !showBleed
+    setShowBleed(newShow)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.getObjects().forEach((o: any) => {
+      if (o.data?.role === 'bleed-bg') {
+        o.set('visible', newShow)
+      }
+    })
+    canvas.renderAll()
+  }
+
+  // ── Phase 6: Preflight ────────────────────────────────────────────────────
+
+  function runPreflight(): PreflightResult[] {
+    const results: PreflightResult[] = []
+    const canvas = fabricRef.current
+    if (!canvas) return results
+
+    const bl = mmToPx(dims.bleedMm, scale)
+    const safeMargin = mmToPx(3, scale) // 3mm safe zone inside trim
+    const trimX = bl
+    const trimY = bl
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop')
+
+    if (userObjs.length === 0) {
+      results.push({ level: 'warn', message: 'Canvas is empty — add some content before ordering.' })
+    }
+
+    // Check objects near trim edges
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let nearEdge = false
+    userObjs.forEach((o: any) => {
+      const oLeft = o.left ?? 0
+      const oTop = o.top ?? 0
+      const oRight = oLeft + (o.getScaledWidth?.() ?? o.width ?? 0)
+      const oBottom = oTop + (o.getScaledHeight?.() ?? o.height ?? 0)
+      if (
+        oLeft < trimX + safeMargin ||
+        oTop < trimY + safeMargin ||
+        oRight > trimX + trimW - safeMargin ||
+        oBottom > trimY + trimH - safeMargin
+      ) {
+        nearEdge = true
+      }
+    })
+    if (nearEdge) {
+      results.push({ level: 'warn', message: 'Some elements are within 3mm of the trim edge — they may be cut off.' })
+    } else if (userObjs.length > 0) {
+      results.push({ level: 'ok', message: 'All elements are within the safe zone.' })
+    }
+
+    // Check background color
+    if (bgColor === '#ffffff' || bgColor === '#fff') {
+      results.push({ level: 'ok', message: 'White background — suitable for print.' })
+    } else {
+      results.push({ level: 'ok', message: `Background color ${bgColor} set.` })
+    }
+
+    // Resolution is always 300dpi via getExportDataUrl
+    results.push({ level: 'ok', message: 'Export resolution: 300 DPI (print-ready).' })
+
+    return results
+  }
+
+  // ── Phase 5: Front / Back switching ──────────────────────────────────────
+
+  async function switchSide(side: 'front' | 'back') {
+    if (side === activeSide) return
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return
+
+    // Save current side's JSON
+    const currentJson = JSON.stringify(canvas.toJSON(['data']))
+    if (activeSide === 'front') frontJsonRef.current = currentJson
+    else backJsonRef.current = currentJson
+
+    // Load target side JSON
+    const targetJson = side === 'front' ? frontJsonRef.current : backJsonRef.current
+
+    isMutating.current = true
+    canvas.discardActiveObject()
+
+    if (targetJson) {
+      await canvas.loadFromJSON(targetJson)
+    } else {
+      // Initialize blank canvas for new side
+      clearUserObjects(canvas)
+      const newBg = side === 'back' ? bgColor : bgColor
+      addBackgroundObjects(canvas, fabric, newBg)
+    }
+
+    canvas.renderAll()
+    isMutating.current = false
+    syncLayers(canvas)
+    setSelectedId(null)
+    setSelectedProps(null)
+    setActiveSide(side)
+  }
+
+  async function copyFrontToBack() {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return
+
+    // Save current (must be 'front') JSON
+    const frontJson = JSON.stringify(canvas.toJSON(['data']))
+    frontJsonRef.current = frontJson
+    backJsonRef.current = frontJson
+
+    // If already on back, reload
+    if (activeSide === 'back') {
+      isMutating.current = true
+      await canvas.loadFromJSON(frontJson)
+      canvas.renderAll()
+      isMutating.current = false
+      syncLayers(canvas)
+    }
+  }
+
+  // ── Phase 4: Save / Load designs ─────────────────────────────────────────
+
+  function saveDesign(name: string) {
+    const canvas = fabricRef.current
+    if (!canvas || !name.trim()) return
+
+    // Snapshot current side
+    const currentJson = JSON.stringify(canvas.toJSON(['data']))
+    if (activeSide === 'front') frontJsonRef.current = currentJson
+    else backJsonRef.current = currentJson
+
+    const thumbnail = getExportDataUrl(72)
+    const design: SavedDesign = {
+      id: makeId(),
+      name: name.trim(),
+      productSlug: product.slug,
+      frontJson: frontJsonRef.current ?? currentJson,
+      backJson: backJsonRef.current,
+      thumbnail,
+      savedAt: new Date().toISOString(),
+    }
+    const updated = [design, ...savedDesigns]
+    localStorage.setItem(DESIGNS_STORAGE_KEY, JSON.stringify(updated))
+    setSavedDesigns(updated)
+    setSaveDesignName('')
+  }
+
+  async function loadSavedDesign(design: SavedDesign) {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return
+
+    frontJsonRef.current = design.frontJson
+    backJsonRef.current = design.backJson
+
+    isMutating.current = true
+    canvas.discardActiveObject()
+    const targetJson = activeSide === 'front' ? design.frontJson : (design.backJson ?? design.frontJson)
+    await canvas.loadFromJSON(targetJson)
+    canvas.renderAll()
+    isMutating.current = false
+    syncLayers(canvas)
+    setSelectedId(null)
+    setSelectedProps(null)
+  }
+
+  function deleteSavedDesign(id: string) {
+    const updated = savedDesigns.filter(d => d.id !== id)
+    localStorage.setItem(DESIGNS_STORAGE_KEY, JSON.stringify(updated))
+    setSavedDesigns(updated)
+  }
+
   async function proceedToOrder() {
     setOrdering(true)
     setOrderError('')
@@ -1269,14 +1643,66 @@ export default function EditorClient({ product, options }: Props) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
+      {/* Preflight modal */}
+      {showPreflight && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-96 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-gray-800 flex items-center gap-2">
+                <ShieldCheck className="w-5 h-5 text-indigo-600" /> Preflight Check
+              </h3>
+              <button onClick={() => setShowPreflight(false)} className="text-gray-400 hover:text-gray-600">
+                <XCircle className="w-5 h-5" />
+              </button>
+            </div>
+            <ul className="space-y-2">
+              {preflightResults.map((r, i) => (
+                <li key={i} className="flex items-start gap-2 text-sm">
+                  {r.level === 'ok' && <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />}
+                  {r.level === 'warn' && <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />}
+                  {r.level === 'error' && <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
+                  <span className={r.level === 'ok' ? 'text-gray-700' : r.level === 'warn' ? 'text-amber-700' : 'text-red-700'}>{r.message}</span>
+                </li>
+              ))}
+            </ul>
+            <button
+              onClick={() => setShowPreflight(false)}
+              className="mt-4 w-full rounded-lg bg-indigo-600 text-white text-sm font-medium py-2 hover:bg-indigo-700"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Top bar */}
-      <div className="flex items-center gap-3 bg-white border-b border-gray-200 px-4 py-2.5 shrink-0">
+      <div className="flex items-center gap-2 bg-white border-b border-gray-200 px-3 py-2 shrink-0 flex-wrap">
         <Link href={`/products/${product.slug}`} className="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
         <div className="h-4 border-r border-gray-200" />
         <span className="text-sm font-semibold text-gray-800">{product.name_en} Editor</span>
-        <span className="text-xs text-gray-400">{dims.widthMm}×{dims.heightMm}mm (bleed {dims.bleedMm}mm)</span>
+        <span className="text-xs text-gray-400 hidden sm:inline">{dims.widthMm}×{dims.heightMm}mm</span>
+
+        {/* Phase 5: Front/Back tabs */}
+        <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+          {(['front', 'back'] as const).map(side => (
+            <button
+              key={side}
+              onClick={() => switchSide(side)}
+              className={`px-3 py-1 text-xs font-medium transition-colors ${activeSide === side ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
+            >
+              {side === 'front' ? 'Front' : 'Back'}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={copyFrontToBack}
+          title="Copy front design to back"
+          className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-300"
+        >
+          <CopyPlus className="w-3.5 h-3.5" />
+        </button>
 
         <div className="flex-1" />
 
@@ -1317,12 +1743,37 @@ export default function EditorClient({ product, options }: Props) {
           </button>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-1.5">
+          {/* Phase 6: Bleed toggle */}
+          <button
+            onClick={toggleBleedGuides}
+            title={showBleed ? 'Hide bleed guides' : 'Show bleed guides'}
+            className={`w-8 h-8 flex items-center justify-center rounded-md border transition-colors ${showBleed ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-400'}`}
+          >
+            <FlipHorizontal2 className="w-4 h-4" />
+          </button>
+          {/* Phase 6: Preflight */}
+          <button
+            onClick={() => { setPreflightResults(runPreflight()); setShowPreflight(true) }}
+            title="Run preflight check"
+            className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-300"
+          >
+            <ShieldCheck className="w-4 h-4" />
+          </button>
           <button
             onClick={exportPng}
-            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            title="Export PNG"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
           >
-            <Download className="w-3.5 h-3.5" /> Save PNG
+            <Download className="w-3.5 h-3.5" /> PNG
+          </button>
+          {/* Phase 6: PDF */}
+          <button
+            onClick={exportPdf}
+            title="Export PDF (300 DPI)"
+            className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+          >
+            <FileText className="w-3.5 h-3.5" /> PDF
           </button>
           <button
             onClick={proceedToOrder}
@@ -1369,25 +1820,127 @@ export default function EditorClient({ product, options }: Props) {
 
           {/* Templates panel */}
           {activePanel === 'templates' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              <div className="mb-2">
+            <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Background color */}
+              <div>
                 <label className="block text-xs text-gray-500 mb-1">Background Color</label>
                 <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
-              {[
-                { name: 'Blank',   bg: '#ffffff' },
-                { name: 'Classic', bg: '#ffffff' },
-                { name: 'Minimal', bg: '#ffffff' },
-                { name: 'Dark',    bg: '#1a1a1a' },
-              ].map(t => (
-                <button
-                  key={t.name}
-                  onClick={() => loadTemplate(t.name, t.bg)}
-                  className="w-full text-left rounded-lg border border-gray-200 p-3 hover:border-indigo-300 hover:bg-indigo-50 transition-colors"
-                >
-                  <div className="text-sm font-medium text-gray-700">{t.name}</div>
-                </button>
-              ))}
+
+              {/* Template category filter */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">Templates</label>
+                <div className="flex flex-wrap gap-1 mb-2">
+                  {(['all', 'business', 'minimal', 'creative'] as const).map(cat => (
+                    <button
+                      key={cat}
+                      onClick={() => setTemplateCategory(cat)}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${templateCategory === cat ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    >
+                      {cat === 'all' ? 'All' : TEMPLATE_CATEGORY_LABELS[cat]}
+                    </button>
+                  ))}
+                </div>
+                <div className="space-y-1">
+                  {TEMPLATE_CATALOG
+                    .filter(t => templateCategory === 'all' || t.category === templateCategory)
+                    .map(t => (
+                      <button
+                        key={t.name}
+                        onClick={() => loadTemplate(t.name, t.bg)}
+                        className="w-full text-left rounded-lg border border-gray-200 px-3 py-2 hover:border-indigo-300 hover:bg-indigo-50 transition-colors flex items-center gap-2"
+                      >
+                        <span className="w-6 h-6 rounded shrink-0 border border-gray-200" style={{ background: t.bg }} />
+                        <div>
+                          <div className="text-xs font-medium text-gray-700">{t.name}</div>
+                          <div className="text-[10px] text-gray-400">{t.description}</div>
+                        </div>
+                      </button>
+                    ))}
+                </div>
+              </div>
+
+              {/* Phase 6: QR Code tool */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                  <QrCode className="w-3 h-3" /> QR Code
+                </label>
+                <div className="flex gap-1">
+                  <input
+                    type="text"
+                    value={qrUrl}
+                    onChange={e => setQrUrl(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && addQrCode(qrUrl)}
+                    placeholder="https://..."
+                    className="flex-1 border border-gray-200 rounded px-2 py-1 text-xs min-w-0"
+                  />
+                  <button
+                    onClick={() => addQrCode(qrUrl)}
+                    disabled={!qrUrl.trim()}
+                    className="px-2 py-1 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700 disabled:opacity-40"
+                  >
+                    Add
+                  </button>
+                </div>
+              </div>
+
+              {/* Phase 4: Save design */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                  <Save className="w-3 h-3" /> Save Design
+                </label>
+                <div className="flex gap-1">
+                  <input
+                    type="text"
+                    value={saveDesignName}
+                    onChange={e => setSaveDesignName(e.target.value)}
+                    onKeyDown={e => e.key === 'Enter' && saveDesign(saveDesignName)}
+                    placeholder="Design name..."
+                    className="flex-1 border border-gray-200 rounded px-2 py-1 text-xs min-w-0"
+                  />
+                  <button
+                    onClick={() => saveDesign(saveDesignName)}
+                    disabled={!saveDesignName.trim()}
+                    className="px-2 py-1 rounded bg-indigo-600 text-white text-xs hover:bg-indigo-700 disabled:opacity-40"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+
+              {/* Phase 4: Saved designs */}
+              {savedDesigns.filter(d => d.productSlug === product.slug).length > 0 && (
+                <div>
+                  <label className="block text-xs text-gray-500 mb-1 flex items-center gap-1">
+                    <FolderOpen className="w-3 h-3" /> Saved Designs
+                  </label>
+                  <div className="space-y-1">
+                    {savedDesigns
+                      .filter(d => d.productSlug === product.slug)
+                      .map(design => (
+                        <div key={design.id} className="flex items-center gap-1.5 rounded-lg border border-gray-200 p-1.5">
+                          {design.thumbnail && (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={design.thumbnail} alt="" className="w-10 h-6 object-cover rounded shrink-0 border border-gray-100" />
+                          )}
+                          <button
+                            onClick={() => loadSavedDesign(design)}
+                            className="flex-1 text-left"
+                          >
+                            <div className="text-[11px] font-medium text-gray-700 truncate">{design.name}</div>
+                            <div className="text-[9px] text-gray-400">{new Date(design.savedAt).toLocaleDateString()}</div>
+                          </button>
+                          <button
+                            onClick={() => deleteSavedDesign(design.id)}
+                            className="text-red-400 hover:text-red-600 shrink-0"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
