@@ -15,7 +15,7 @@ async function getAccessToken(): Promise<string> {
   })
 
   if (!res.ok) {
-    throw new Error('PayPal 액세스 토큰 발급 실패')
+    throw new Error('Failed to obtain PayPal access token')
   }
 
   const data = await res.json()
@@ -47,7 +47,7 @@ export async function createPaypalOrder(amountUsd: number, description: string):
 
   if (!res.ok) {
     const err = await res.json()
-    throw new Error(`PayPal 주문 생성 실패: ${JSON.stringify(err)}`)
+    throw new Error(`Failed to create PayPal order: ${JSON.stringify(err)}`)
   }
 
   const data = await res.json()
@@ -71,7 +71,7 @@ export async function capturePaypalOrder(paypalOrderId: string): Promise<{
 
   if (!res.ok) {
     const err = await res.json()
-    throw new Error(`PayPal 결제 캡처 실패: ${JSON.stringify(err)}`)
+    throw new Error(`Failed to capture PayPal order: ${JSON.stringify(err)}`)
   }
 
   const data = await res.json()

@@ -19,7 +19,6 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient()
 
-  // PayPal 결제 캡처
   let captureResult: { status: string; payerId: string | null; amount: string | null }
   try {
     captureResult = await capturePaypalOrder(paypalOrderId)
@@ -29,12 +28,11 @@ export async function POST(request: NextRequest) {
 
   if (captureResult.status !== 'COMPLETED') {
     return NextResponse.json(
-      { error: `결제 미완료: ${captureResult.status}` },
+      { error: `Payment incomplete: ${captureResult.status}` },
       { status: 402 }
     )
   }
 
-  // DB 상태 업데이트
   const { data: order, error: updateError } = await supabase
     .from('print_orders')
     .update({ status: 'paid', payment_status: 'COMPLETED' })
@@ -43,10 +41,8 @@ export async function POST(request: NextRequest) {
     .single()
 
   if (updateError || !order) {
-    return NextResponse.json({ error: '주문 상태 업데이트 실패' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 })
   }
-
-  // 이메일 알림 (실패해도 무시)
   await sendOrderStatusEmail('paid', {
     orderNumber: order.order_number,
     customerEmail: order.customer_email,
