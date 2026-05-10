@@ -116,7 +116,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     if (data.validation) setFileValidation(data.validation)
   }
 
-  // PayPal createOrder 콜백 — DB 주문 생성 + PayPal Order 생성
+  // PayPal createOrder callback — creates DB order + PayPal Order
   async function handlePaypalCreateOrder() {
     setPaymentError(null)
 
@@ -148,12 +148,12 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
       throw new Error(data.error)
     }
 
-    // orderId를 세션 스토리지에 임시 저장 (캡처 시 사용)
+    // Stash orderId in sessionStorage for use in the capture callback
     sessionStorage.setItem('pccf_pending_order_id', data.orderId)
     return data.paypalOrderId as string
   }
 
-  // PayPal onApprove 콜백 — 결제 캡처
+  // PayPal onApprove callback — captures the payment
   async function handlePaypalApprove(paypalOrderId: string) {
     const orderId = sessionStorage.getItem('pccf_pending_order_id')
     if (!orderId) {
@@ -473,7 +473,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         <p className="text-xs text-gray-400">Exchange rate: 1 KRW ≈ ${exchangeRate.toFixed(6)} USD</p>
       </section>
 
-      {/* PayPal 버튼 */}
+      {/* PayPal Buttons */}
       <section>
         {!isFormValid() && formTouched && (
           <div className="flex items-center gap-2 text-amber-700 text-sm bg-amber-50 rounded-lg px-4 py-3 mb-4">

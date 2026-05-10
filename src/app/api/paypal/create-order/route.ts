@@ -148,7 +148,7 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // PayPal Order 생성
+  // Create PayPal Order
   const productNames = orderItemsData.map((i) => i.product_name_en).join(', ')
   const paypalOrderId = await createPaypalOrder(totalUsd, `Procardcrafters: ${productNames}`)
 

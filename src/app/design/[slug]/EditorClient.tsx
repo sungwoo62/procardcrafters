@@ -351,7 +351,7 @@ export default function EditorClient({ product, options }: Props) {
       setSelectedProps(null)
       return
     }
-    // Crop rect가 선택된 경우 properties 패널을 갱신하지 않음 (크롭 모드 유지)
+    // Skip property panel update when the crop rect is selected (keep crop mode active)
     if (obj.data?.role === 'crop') return
     const id = obj.data?.id ?? ''
     setSelectedId(id)
@@ -375,10 +375,10 @@ export default function EditorClient({ product, options }: Props) {
       props.textAlign = obj.textAlign ?? 'left'
       props.charSpacing = obj.charSpacing ?? 0
       props.lineHeight = obj.lineHeight ?? 1.4
-      // 텍스트 아웃라인
+      // text outline
       props.textStroke = typeof obj.stroke === 'string' && obj.stroke ? obj.stroke : '#000000'
       props.textStrokeWidth = obj.strokeWidth ?? 0
-      // 그림자
+      // shadow
       const sh = obj.shadow
       props.shadowEnabled = !!sh
       props.shadowColor = sh?.color ?? 'rgba(0,0,0,0.5)'
@@ -1335,7 +1335,7 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Export ────────────────────────────────────────────────────────────────
 
-  // targetDpi: 원하는 출력 DPI. 300 = 인쇄 품질, 150 = 미리보기
+  // targetDpi: desired output DPI. 300 = print quality, 150 = preview
   function getExportDataUrl(targetDpi = 150): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
@@ -1344,7 +1344,7 @@ export default function EditorClient({ product, options }: Props) {
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
 
-    // 제품 크기에 따라 동적으로 multiplier 계산 (DPI 보장)
+    // Compute multiplier dynamically from product dimensions to guarantee target DPI
     const MM_PER_INCH = 25.4
     const needW = (dims.widthMm / MM_PER_INCH) * targetDpi
     const needH = (dims.heightMm / MM_PER_INCH) * targetDpi
