@@ -2,7 +2,8 @@
 
 import { useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2, ShoppingCart } from 'lucide-react'
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import type { PrintProduct } from '@/types/database'
 
 interface Props {
@@ -63,14 +64,28 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValidation, setFileValidation] = useState<FileValidation | null>(null)
-  const [submitting, setSubmitting] = useState(false)
-  const [submitError, setSubmitError] = useState<string | null>(null)
+  const [paymentError, setPaymentError] = useState<string | null>(null)
+  const [formTouched, setFormTouched] = useState(false)
 
   const totalUsd = itemPriceUsd + shippingUsd
+
+  function isFormValid(): boolean {
+    return (
+      !!form.customerName &&
+      !!form.customerEmail &&
+      !!form.shippingName &&
+      !!form.addressLine1 &&
+      !!form.city &&
+      !!form.country &&
+      !!form.postalCode &&
+      uploadStatus === 'done'
+    )
+  }
 
   function handleFieldChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target
     setForm((prev) => ({ ...prev, [name]: value }))
+    setFormTouched(true)
   }
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -91,41 +106,25 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     if (!res.ok) {
       setUploadStatus('error')
       setUploadError(data.error ?? 'Upload failed')
-      if (data.validation) {
-        setFileValidation(data.validation)
-      }
+      if (data.validation) setFileValidation(data.validation)
       return
     }
 
     setUploadStatus('done')
     setUploadedFileId(data.fileId)
     setUploadedFileName(file.name)
-    if (data.validation) {
-      setFileValidation(data.validation)
-    }
+    if (data.validation) setFileValidation(data.validation)
   }
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!uploadedFileId) {
-      setSubmitError('Please upload your print file first')
-      return
-    }
+  // PayPal createOrder 콜백 — DB 주문 생성 + PayPal Order 생성
+  async function handlePaypalCreateOrder() {
+    setPaymentError(null)
 
-    setSubmitting(true)
-    setSubmitError(null)
-
-    const res = await fetch('/api/orders', {
+    const res = await fetch('/api/paypal/create-order', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: [
-          {
-            productId: product.id,
-            selectedOptions,
-            fileId: uploadedFileId,
-          },
-        ],
+        items: [{ productId: product.id, selectedOptions, fileId: uploadedFileId ?? undefined }],
         customer: {
           email: form.customerEmail,
           name: form.customerName,
@@ -144,19 +143,44 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     })
 
     const data = await res.json()
-
     if (!res.ok) {
-      setSubmitting(false)
-      setSubmitError(data.error ?? 'Failed to create order')
+      setPaymentError(data.error ?? 'Failed to create order')
+      throw new Error(data.error)
+    }
+
+    // orderId를 세션 스토리지에 임시 저장 (캡처 시 사용)
+    sessionStorage.setItem('pccf_pending_order_id', data.orderId)
+    return data.paypalOrderId as string
+  }
+
+  // PayPal onApprove 콜백 — 결제 캡처
+  async function handlePaypalApprove(paypalOrderId: string) {
+    const orderId = sessionStorage.getItem('pccf_pending_order_id')
+    if (!orderId) {
+      setPaymentError('Order session expired. Please try again.')
       return
     }
 
-    // Redirect to Stripe Checkout
-    window.location.href = data.checkoutUrl
+    const res = await fetch('/api/paypal/capture-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ paypalOrderId, orderId }),
+    })
+
+    const data = await res.json()
+    if (!res.ok) {
+      setPaymentError(data.error ?? 'Payment capture failed')
+      return
+    }
+
+    sessionStorage.removeItem('pccf_pending_order_id')
+    router.push(`/order/success?order=${data.orderNumber}`)
   }
 
+  const clientId = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID ?? ''
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-10">
+    <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Upload File & Place Order</h1>
         <p className="text-gray-500 text-sm">{product.name_en} · {product.name_ko}</p>
@@ -227,7 +251,6 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           className="hidden"
         />
 
-        {/* File Preview */}
         {uploadStatus === 'done' && uploadedFileName && (
           <div className="mt-3 flex items-center gap-2 text-sm text-gray-600 bg-gray-50 rounded-lg px-4 py-3">
             <FileText className="w-4 h-4 text-blue-500 shrink-0" />
@@ -235,10 +258,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           </div>
         )}
 
-        {/* File Validation Results */}
         {fileValidation && (
           <div className="mt-3 space-y-2">
-            {/* Details */}
             {fileValidation.details && (
               <div className="flex flex-wrap gap-2 text-xs">
                 {fileValidation.details.colorSpace && (
@@ -263,7 +284,6 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
                 )}
               </div>
             )}
-            {/* Warning Messages */}
             {fileValidation.warnings.length > 0 && (
               <div className="space-y-1">
                 {fileValidation.warnings.map((w, i) => (
@@ -357,9 +377,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address Line 2 (optional)
-            </label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Address Line 2 (optional)</label>
             <input
               type="text"
               name="addressLine2"
@@ -437,7 +455,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         </div>
       </section>
 
-      {/* Payment Summary */}
+      {/* Order Summary */}
       <section className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-3">
         <h2 className="font-semibold text-gray-900">Order Summary</h2>
         <div className="flex justify-between text-sm text-gray-600">
@@ -455,33 +473,51 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         <p className="text-xs text-gray-400">Exchange rate: 1 KRW ≈ ${exchangeRate.toFixed(6)} USD</p>
       </section>
 
-      {submitError && (
-        <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 rounded-lg px-4 py-3">
-          <AlertCircle className="w-4 h-4 shrink-0" />
-          {submitError}
-        </div>
-      )}
-
-      <button
-        type="submit"
-        disabled={submitting || uploadStatus === 'uploading'}
-        className="w-full bg-blue-600 text-white px-6 py-4 rounded-xl font-semibold text-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {submitting ? (
-          <>
-            <Loader2 className="w-5 h-5 animate-spin" />
-            Redirecting to checkout...
-          </>
-        ) : (
-          <>
-            <ShoppingCart className="w-5 h-5" />
-            Pay with Stripe
-          </>
+      {/* PayPal 버튼 */}
+      <section>
+        {!isFormValid() && formTouched && (
+          <div className="flex items-center gap-2 text-amber-700 text-sm bg-amber-50 rounded-lg px-4 py-3 mb-4">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            Please complete all required fields and upload your print file before paying.
+          </div>
         )}
-      </button>
-      <p className="text-xs text-center text-gray-400">
-        Secure USD payment via Stripe · Your card details are never stored on our servers
-      </p>
-    </form>
+        {!isFormValid() && !formTouched && (
+          <p className="text-sm text-gray-500 mb-3 text-center">
+            Fill in your details and upload your file to unlock payment.
+          </p>
+        )}
+
+        {paymentError && (
+          <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 rounded-lg px-4 py-3 mb-4">
+            <AlertCircle className="w-4 h-4 shrink-0" />
+            {paymentError}
+          </div>
+        )}
+
+        <div className={isFormValid() ? '' : 'opacity-40 pointer-events-none'}>
+          <PayPalScriptProvider
+            options={{
+              clientId,
+              currency: 'USD',
+              intent: 'capture',
+            }}
+          >
+            <PayPalButtons
+              style={{ layout: 'vertical', color: 'gold', shape: 'rect', label: 'pay' }}
+              createOrder={handlePaypalCreateOrder}
+              onApprove={async (data) => {
+                await handlePaypalApprove(data.orderID)
+              }}
+              onError={(err) => {
+                setPaymentError(`Payment error: ${String(err)}`)
+              }}
+            />
+          </PayPalScriptProvider>
+        </div>
+        <p className="text-xs text-center text-gray-400 mt-3">
+          Secure USD payment via PayPal · Your payment details are protected
+        </p>
+      </section>
+    </div>
   )
 }
