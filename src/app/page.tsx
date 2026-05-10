@@ -1,65 +1,119 @@
-import Image from "next/image";
+import Link from "next/link";
+import CategoryCard from "@/components/ui/CategoryCard";
+import { Award, DollarSign, Zap } from "lucide-react";
+
+export const revalidate = 3600
+
+const CATEGORIES = [
+  { name: "Business Cards", slug: "business-cards" },
+  { name: "Flyers & Leaflets", slug: "flyers-leaflets" },
+  { name: "Banners & Displays", slug: "banners-displays" },
+  { name: "Stickers & Labels", slug: "stickers-labels" },
+  { name: "Packaging", slug: "packaging" },
+  { name: "Lanyards & Accessories", slug: "lanyards-accessories" },
+];
+
+const WHY_US = [
+  {
+    icon: Award,
+    title: "Premium Quality",
+    desc: "Industry-leading print technology and carefully selected materials ensure every order looks flawless.",
+  },
+  {
+    icon: DollarSign,
+    title: "Clear Pricing",
+    desc: "No hidden fees, no surprises. See exactly what you pay before you order.",
+  },
+  {
+    icon: Zap,
+    title: "Fast Turnaround",
+    desc: "Standard orders ship within 3–5 business days. Rush options available.",
+  },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <>
+      {/* Hero */}
+      <section className="bg-bg-light">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 sm:py-28 lg:px-8">
+          <div className="mx-auto max-w-2xl text-center">
+            <h1 className="text-4xl font-extrabold tracking-tight text-text sm:text-5xl lg:text-6xl">
+              Print That Means Business
+            </h1>
+            <p className="mt-6 text-lg leading-8 text-secondary">
+              Premium quality printing for businesses of all sizes. Fast
+              turnaround, transparent pricing.
+            </p>
+            <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Link
+                href="/products"
+                className="rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark transition-colors"
+              >
+                Shop All Products
+              </Link>
+              <Link
+                href="/quote"
+                className="rounded-lg border border-border px-6 py-3 text-sm font-semibold text-text hover:bg-white transition-colors"
+              >
+                Get Instant Quote
+              </Link>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      {/* Category grid */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        <h2 className="text-center text-2xl font-bold text-text sm:text-3xl">
+          What Are You Printing?
+        </h2>
+        <div className="mt-10 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {CATEGORIES.map((cat) => (
+            <CategoryCard key={cat.slug} name={cat.name} slug={cat.slug} />
+          ))}
         </div>
-      </main>
-    </div>
+      </section>
+
+      {/* Why us */}
+      <section className="bg-bg-light">
+        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+          <h2 className="text-center text-2xl font-bold text-text sm:text-3xl">
+            Why ProCardCrafters?
+          </h2>
+          <div className="mt-10 grid gap-8 sm:grid-cols-3">
+            {WHY_US.map((item) => (
+              <div
+                key={item.title}
+                className="flex flex-col items-center gap-4 text-center"
+              >
+                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                  <item.icon size={28} />
+                </div>
+                <h3 className="text-lg font-semibold text-text">
+                  {item.title}
+                </h3>
+                <p className="text-sm leading-6 text-secondary">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Trust bar */}
+      <section className="border-t border-border">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-center gap-6 text-center text-sm font-medium text-secondary sm:gap-10">
+            <span>50,000+ Happy Customers</span>
+            <span className="hidden sm:inline text-border">|</span>
+            <span>500+ Products</span>
+            <span className="hidden sm:inline text-border">|</span>
+            <span>4.9★ Rating</span>
+            <span className="hidden sm:inline text-border">|</span>
+            <span>Ships Worldwide</span>
+          </div>
+        </div>
+      </section>
+    </>
   );
 }
