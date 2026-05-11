@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
 
 const PAYPAL_API_BASE =
   process.env.PAYPAL_ENV === "live"
@@ -83,6 +84,17 @@ export async function POST(req: NextRequest) {
     }
 
     const order = await res.json();
+
+    // [보안] PayPal 주문 ID를 print_orders에 저장하여 캡처 시 소유권 검증에 사용
+    if (orderId) {
+      const supabase = await createClient();
+      await supabase
+        .from("print_orders")
+        .update({ paypal_order_id: order.id })
+        .eq("id", orderId)
+        .eq("payment_status", "unpaid");
+    }
+
     return NextResponse.json({ id: order.id });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류";

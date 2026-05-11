@@ -43,6 +43,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // [보안] 소유권 검증: create-order 시 연결된 paypal_order_id와 일치해야 캡처 허용
+    if (supabaseOrderId) {
+      const supabase = await createClient();
+      const { data: orderRecord } = await supabase
+        .from("print_orders")
+        .select("id, payment_status, paypal_order_id")
+        .eq("id", supabaseOrderId)
+        .single();
+
+      if (!orderRecord) {
+        return NextResponse.json(
+          { error: "주문을 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+
+      if (orderRecord.payment_status === "paid") {
+        return NextResponse.json(
+          { error: "이미 결제가 완료된 주문입니다." },
+          { status: 409 }
+        );
+      }
+
+      if (orderRecord.paypal_order_id !== paypalOrderId) {
+        return NextResponse.json(
+          { error: "결제 정보가 일치하지 않습니다." },
+          { status: 403 }
+        );
+      }
+    }
+
     const accessToken = await getAccessToken();
 
     const res = await fetch(
