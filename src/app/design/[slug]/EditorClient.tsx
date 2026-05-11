@@ -206,6 +206,47 @@ const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
 
 const DESIGNS_STORAGE_KEY = 'procardcrafters_saved_designs'
 
+// ─── Brand palette catalog ────────────────────────────────────────────────────
+
+interface PaletteDef {
+  name: string
+  bg: string        // canvas background
+  primary: string   // main headline color
+  accent: string    // accent / shapes
+  body: string      // secondary text
+}
+
+const PALETTE_CATALOG: PaletteDef[] = [
+  { name: 'Classic Blue',    bg: '#ffffff', primary: '#1d4ed8', accent: '#3b82f6', body: '#374151' },
+  { name: 'Midnight',        bg: '#0f172a', primary: '#ffffff', accent: '#6366f1', body: '#94a3b8' },
+  { name: 'Forest Green',    bg: '#ffffff', primary: '#14532d', accent: '#16a34a', body: '#374151' },
+  { name: 'Sunset Red',      bg: '#ffffff', primary: '#991b1b', accent: '#ef4444', body: '#374151' },
+  { name: 'Rose Gold',       bg: '#fff1f2', primary: '#9d174d', accent: '#b8860b', body: '#881337' },
+  { name: 'Ocean Teal',      bg: '#f0fdfa', primary: '#134e4a', accent: '#0d9488', body: '#374151' },
+  { name: 'Monochrome',      bg: '#f5f5f5', primary: '#1a1a1a', accent: '#555555', body: '#777777' },
+  { name: 'Purple Haze',     bg: '#faf5ff', primary: '#4c1d95', accent: '#7c3aed', body: '#6b7280' },
+  { name: 'Warm Earth',      bg: '#fdf6e3', primary: '#3b1f0a', accent: '#d4956a', body: '#8b6347' },
+  { name: 'Neon Night',      bg: '#0d1117', primary: '#f0f6fc', accent: '#3fb950', body: '#6e7681' },
+  { name: 'Coral Pink',      bg: '#ffffff', primary: '#9d174d', accent: '#f97316', body: '#6b7280' },
+  { name: 'Sky Lavender',    bg: '#f8fafc', primary: '#1e40af', accent: '#818cf8', body: '#64748b' },
+]
+
+// ─── Finish (paper/coating) options ──────────────────────────────────────────
+
+interface FinishOption {
+  value: string
+  label: string
+  priceMultiplier: number
+}
+
+const FINISH_OPTIONS: FinishOption[] = [
+  { value: 'standard',  label: '일반지 (Standard)',   priceMultiplier: 1.0 },
+  { value: 'premium',   label: '고급지 (Premium)',    priceMultiplier: 1.3 },
+  { value: 'gloss',     label: '유광 (Gloss)',        priceMultiplier: 1.2 },
+  { value: 'matte',     label: '무광 (Matte)',        priceMultiplier: 1.25 },
+  { value: 'spot_uv',   label: 'Spot UV',             priceMultiplier: 1.6 },
+]
+
 // ─── Blend modes ─────────────────────────────────────────────────────────────
 
 const BLEND_MODES: { value: string; label: string }[] = [
@@ -344,6 +385,13 @@ export default function EditorClient({ product, options }: Props) {
   const [contactFields, setContactFields] = useState({
     name: '', title: '', company: '', phone: '', email: '', website: '', linkedin: '',
   })
+
+  // Phase C: Brand palette
+  const [selectedPalette, setSelectedPalette] = useState<string | null>(null)
+
+  // Phase D: Finish + logo
+  const [finish, setFinish] = useState('standard')
+  const logoInputRef = useRef<HTMLInputElement>(null)
 
   // Phase 4: Saved designs
   const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>(() => {
@@ -1241,6 +1289,64 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
+  // ── Phase C: Apply brand palette ─────────────────────────────────────────
+
+  function applyPalette(palette: PaletteDef) {
+    setSelectedPalette(palette.name)
+    updateBgColor(palette.bg)
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.getObjects().forEach((o: any) => {
+      if (isBackground(o) || o.data?.role === 'crop') return
+      const role = o.data?.paletteRole as string | undefined
+      if (role === 'primary' && o.set) {
+        o.set('fill', palette.primary)
+      } else if (role === 'accent' && o.set) {
+        o.set('fill', palette.accent)
+      } else if (role === 'body' && o.set) {
+        o.set('fill', palette.body)
+      }
+    })
+    canvas.renderAll()
+    saveHistory(canvas)
+  }
+
+  // ── Phase D: Logo upload ──────────────────────────────────────────────────
+
+  async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const reader = new FileReader()
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target?.result as string
+      if (!dataUrl) return
+      const img = await fabric.FabricImage.fromURL(dataUrl)
+      const bl = mmToPx(dims.bleedMm, scale)
+      const maxW = mmToPx(25, scale)
+      const maxH = mmToPx(15, scale)
+      const ratio = Math.min(maxW / (img.width ?? maxW), maxH / (img.height ?? maxH))
+      const id = makeId()
+      img.set({
+        left: bl + mmToPx(3, scale),
+        top: bl + mmToPx(3, scale),
+        scaleX: ratio,
+        scaleY: ratio,
+        data: { id, name: 'Logo', layerType: 'image' },
+      })
+      canvas.add(img)
+      canvas.setActiveObject(img)
+      canvas.renderAll()
+      syncLayers(canvas)
+      saveHistory(canvas)
+    }
+    reader.readAsDataURL(file)
+    e.target.value = ''
+  }
+
   // ── Init Fabric.js ─────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -2124,7 +2230,7 @@ export default function EditorClient({ product, options }: Props) {
           if (val) optionParams.set(opt.option_type, val)
         }
         const optStr = optionParams.toString()
-        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}${optStr ? '&' + optStr : ''}`
+        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
       } else {
         setOrdering(false)
         setOrderError(data.error || 'Upload failed.')
@@ -2273,6 +2379,17 @@ export default function EditorClient({ product, options }: Props) {
           >
             <FileText className="w-3.5 h-3.5" /> PDF
           </button>
+          {/* Phase D: Finish selector */}
+          <select
+            value={finish}
+            onChange={e => setFinish(e.target.value)}
+            title="용지 & 코팅 선택"
+            className="rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-xs font-medium text-gray-700 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+          >
+            {FINISH_OPTIONS.map(f => (
+              <option key={f.value} value={f.value}>{f.label}</option>
+            ))}
+          </select>
           <button
             onClick={proceedToOrder}
             disabled={ordering}
@@ -2355,9 +2472,48 @@ export default function EditorClient({ product, options }: Props) {
           {/* Templates panel */}
           {activePanel === 'templates' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
+              {/* Phase D: Logo upload */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">로고 (Logo)</label>
+                <button
+                  onClick={() => logoInputRef.current?.click()}
+                  className="w-full rounded-lg border border-dashed border-gray-300 py-2 text-xs text-gray-500 hover:border-indigo-400 hover:text-indigo-600 transition-colors"
+                >
+                  + 로고 이미지 업로드
+                </button>
+                <input ref={logoInputRef} type="file" accept="image/png,image/svg+xml,image/jpeg" onChange={handleLogoUpload} className="hidden" />
+                <p className="text-[10px] text-gray-400 mt-0.5">PNG/SVG 권장 (투명 배경)</p>
+              </div>
+
+              {/* Phase C: Brand palette */}
+              <div>
+                <label className="block text-xs text-gray-500 mb-1">브랜드 팔레트</label>
+                <div className="grid grid-cols-4 gap-1">
+                  {PALETTE_CATALOG.map(p => (
+                    <button
+                      key={p.name}
+                      title={p.name}
+                      onClick={() => applyPalette(p)}
+                      className={`rounded p-0.5 border-2 transition-colors ${selectedPalette === p.name ? 'border-indigo-500' : 'border-transparent hover:border-gray-300'}`}
+                    >
+                      <div className="w-full h-5 rounded-sm flex overflow-hidden">
+                        <span className="flex-1" style={{ background: p.bg }} />
+                        <span className="flex-1" style={{ background: p.primary }} />
+                        <span className="flex-1" style={{ background: p.accent }} />
+                        <span className="flex-1" style={{ background: p.body }} />
+                      </div>
+                      <div className="text-[8px] text-gray-400 text-center truncate mt-0.5">{p.name}</div>
+                    </button>
+                  ))}
+                </div>
+                {selectedPalette && (
+                  <p className="text-[10px] text-indigo-600 mt-1">✓ {selectedPalette} 적용됨</p>
+                )}
+              </div>
+
               {/* Background color */}
               <div>
-                <label className="block text-xs text-gray-500 mb-1">Background Color</label>
+                <label className="block text-xs text-gray-500 mb-1">배경 색상 (Background)</label>
                 <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
 
