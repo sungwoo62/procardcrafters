@@ -150,29 +150,58 @@ const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
 
 // ─── Template catalog ─────────────────────────────────────────────────────────
 
+type TemplateCategory = 'business' | 'minimal' | 'creative' | 'food' | 'health' | 'tech' | 'realestate'
+
 interface TemplateDef {
   name: string
-  category: 'business' | 'minimal' | 'creative' | 'photo'
+  category: TemplateCategory
   bg: string
   description: string
 }
 
 const TEMPLATE_CATALOG: TemplateDef[] = [
-  { name: 'Blank',      category: 'minimal',   bg: '#ffffff', description: 'Start from scratch' },
-  { name: 'Classic',    category: 'business',  bg: '#ffffff', description: 'Traditional layout' },
-  { name: 'Corporate',  category: 'business',  bg: '#0f172a', description: 'Dark professional' },
-  { name: 'Executive',  category: 'business',  bg: '#ffffff', description: 'Elegant & formal' },
-  { name: 'Minimal',    category: 'minimal',   bg: '#ffffff', description: 'Clean & simple' },
-  { name: 'Bold',       category: 'creative',  bg: '#4f46e5', description: 'Vibrant accent' },
-  { name: 'Dark',       category: 'minimal',   bg: '#1a1a1a', description: 'Dark with accent' },
-  { name: 'Creative',   category: 'creative',  bg: '#fef3c7', description: 'Warm gradient tone' },
+  // ── Business / Professional
+  { name: 'Classic',      category: 'business',    bg: '#ffffff', description: 'Traditional layout' },
+  { name: 'Corporate',    category: 'business',    bg: '#0f172a', description: 'Dark professional' },
+  { name: 'Executive',    category: 'business',    bg: '#ffffff', description: 'Elegant & formal' },
+  { name: 'Law Firm',     category: 'business',    bg: '#1c2a40', description: 'Dark navy, gold serif' },
+  { name: 'Consultant',   category: 'business',    bg: '#ffffff', description: 'Clean blue accent' },
+  { name: 'Finance',      category: 'business',    bg: '#0d1b2a', description: 'Midnight, gold stripe' },
+  // ── Minimal
+  { name: 'Blank',        category: 'minimal',     bg: '#ffffff', description: 'Start from scratch' },
+  { name: 'Minimal',      category: 'minimal',     bg: '#ffffff', description: 'Clean & simple' },
+  { name: 'Dark',         category: 'minimal',     bg: '#1a1a1a', description: 'Dark with accent' },
+  { name: 'Mono',         category: 'minimal',     bg: '#f5f5f5', description: 'Pure monochrome' },
+  // ── Creative
+  { name: 'Bold',         category: 'creative',    bg: '#4f46e5', description: 'Vibrant accent' },
+  { name: 'Creative',     category: 'creative',    bg: '#fef3c7', description: 'Warm tone' },
+  { name: 'Photographer', category: 'creative',    bg: '#111111', description: 'Dark portfolio' },
+  { name: 'Artist',       category: 'creative',    bg: '#ffffff', description: 'Gallery white' },
+  // ── Food & Hospitality
+  { name: 'Restaurant',   category: 'food',        bg: '#7b1d1d', description: 'Warm deep red' },
+  { name: 'Cafe',         category: 'food',        bg: '#3b1f0a', description: 'Coffee & cream' },
+  { name: 'Bakery',       category: 'food',        bg: '#fdf6e3', description: 'Soft warm beige' },
+  // ── Health & Wellness
+  { name: 'Medical',      category: 'health',      bg: '#f0f9ff', description: 'Clean clinical blue' },
+  { name: 'Fitness',      category: 'health',      bg: '#0f172a', description: 'Bold energy orange' },
+  { name: 'Beauty Spa',   category: 'health',      bg: '#fff1f2', description: 'Soft rose & gold' },
+  // ── Technology
+  { name: 'Tech Startup', category: 'tech',        bg: '#0f0f23', description: 'Dark gradient purple' },
+  { name: 'Developer',    category: 'tech',        bg: '#0d1117', description: 'Terminal dark' },
+  // ── Real Estate & Architecture
+  { name: 'Realtor',      category: 'realestate',  bg: '#ffffff', description: 'Gold prestige' },
+  { name: 'Architect',    category: 'realestate',  bg: '#f8f8f8', description: 'Minimal grid lines' },
 ]
 
-const TEMPLATE_CATEGORY_LABELS: Record<TemplateDef['category'], string> = {
-  business:  'Business',
-  minimal:   'Minimal',
-  creative:  'Creative',
-  photo:     'Photo',
+const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
+  all:        'All',
+  business:   'Business',
+  minimal:    'Minimal',
+  creative:   'Creative',
+  food:       'Food',
+  health:     'Health',
+  tech:       'Tech',
+  realestate: 'Real Estate',
 }
 
 const DESIGNS_STORAGE_KEY = 'procardcrafters_saved_designs'
@@ -290,7 +319,7 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
-  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties'>('layers')
+  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'contact'>('layers')
   const [bgColor, setBgColor] = useState('#ffffff')
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
@@ -308,7 +337,13 @@ export default function EditorClient({ product, options }: Props) {
   const [qrUrl, setQrUrl] = useState('')
   const [showPreflight, setShowPreflight] = useState(false)
   const [preflightResults, setPreflightResults] = useState<PreflightResult[]>([])
-  const [templateCategory, setTemplateCategory] = useState<TemplateDef['category'] | 'all'>('all')
+  const [templateCategory, setTemplateCategory] = useState<TemplateCategory | 'all'>('all')
+  const [templateSearch, setTemplateSearch] = useState('')
+
+  // Phase B: Contact smart fields
+  const [contactFields, setContactFields] = useState({
+    name: '', title: '', company: '', phone: '', email: '', website: '', linkedin: '',
+  })
 
   // Phase 4: Saved designs
   const [savedDesigns, setSavedDesigns] = useState<SavedDesign[]>(() => {
@@ -734,6 +769,412 @@ export default function EditorClient({ product, options }: Props) {
         fontSize: mmToPx(3, scale), fontFamily: 'Poppins', fill: '#57534e',
         data: { id: makeId(), name: 'Title', layerType: 'text' },
       })
+
+    // ── New templates ─────────────────────────────────────────────────────
+
+    } else if (name === 'Law Firm') {
+      // Dark navy + gold serif — legal professional
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(dims.widthMm - 6, scale), top: bl,
+        width: mmToPx(6, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#b8860b', data: { id: makeId(), name: 'Gold Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'MORRISON & ASSOCIATES', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(68, scale), {
+        fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fontFamily: 'Playfair Display',
+        fill: '#d4af6e', charSpacing: 120,
+        data: { id: makeId(), name: 'Firm', layerType: 'text' },
+      })
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(21, scale),
+        width: mmToPx(55, scale), height: mmToPx(0.4, scale),
+        fill: '#b8860b', data: { id: makeId(), name: 'Divider', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Richard Morrison', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#f5f0e0',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Senior Partner', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(65, scale), {
+        fontSize: mmToPx(3, scale), fill: '#b8860b', fontFamily: 'Lato',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'r.morrison@morrlaw.com  ·  +1 (212) 000-1234', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.4, scale), fill: '#9e9e8e',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Consultant') {
+      // Clean white with navy-blue top accent
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale),
+        fill: '#1d4ed8', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'David Chen', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fontWeight: 'bold', fontFamily: 'Montserrat', fill: '#1e293b',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Management Consultant', bl + mmToPx(5, scale), bl + mmToPx(23, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3.2, scale), fill: '#1d4ed8', fontFamily: 'Montserrat',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(32, scale),
+        width: mmToPx(50, scale), height: mmToPx(0.5, scale),
+        fill: '#e2e8f0', data: { id: makeId(), name: 'Divider', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'david.chen@firmname.com\n+1 (650) 000-5678', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#64748b',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Finance') {
+      // Midnight blue with gold stripe
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(1.5, scale),
+        fill: '#b8860b', data: { id: makeId(), name: 'Top Gold', layerType: 'rect' },
+      }))
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm - 1.5, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(1.5, scale),
+        fill: '#b8860b', data: { id: makeId(), name: 'Bottom Gold', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'APEX CAPITAL', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#d4af6e', charSpacing: 200,
+        data: { id: makeId(), name: 'Company', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Elena Voss', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#ffffff',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Private Wealth Manager', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#94a3b8',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'e.voss@apexcap.com  ·  +44 20 0000 1234', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.4, scale), fill: '#64748b',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Mono') {
+      // Pure monochrome minimal
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#f5f5f5', data: { id: makeId(), name: 'BG', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'YOUR NAME', bl + mmToPx(5, scale), bl + mmToPx(16, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fontFamily: 'Montserrat',
+        fill: '#1a1a1a', charSpacing: 200,
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(28, scale),
+        width: mmToPx(40, scale), height: mmToPx(0.5, scale),
+        fill: '#1a1a1a', data: { id: makeId(), name: 'Line', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Title  ·  Company', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#666666', charSpacing: 100,
+        data: { id: makeId(), name: 'Role', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'email@company.com', bl + mmToPx(5, scale), bl + mmToPx(42, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#888888',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Photographer') {
+      // Dark portfolio — B&W bold
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm - 16, scale),
+        width: mmToPx(dims.widthMm, scale), height: mmToPx(16, scale),
+        fill: '#ffffff', data: { id: makeId(), name: 'Bottom Light', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'STUDIO', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#888888', charSpacing: 400, fontFamily: 'Montserrat',
+        data: { id: makeId(), name: 'Label', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Oliver Kraft', bl + mmToPx(5, scale), bl + mmToPx(16, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Photography', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#111111',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'oliver@kraftstudio.com', bl + mmToPx(5, scale), bl + mmToPx(47, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.6, scale), fill: '#555555',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Artist') {
+      // Gallery white with colorful accent corner
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(dims.widthMm - 18, scale), top: bl,
+        width: mmToPx(18, scale), height: mmToPx(18, scale),
+        fill: '#f97316', data: { id: makeId(), name: 'Corner', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Maya', bl + mmToPx(5, scale), bl + mmToPx(12, scale), mmToPx(60, scale), {
+        fontSize: mmToPx(10, scale), fontFamily: 'Pacifico', fill: '#1a1a1a',
+        data: { id: makeId(), name: 'FirstName', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Visual Artist & Illustrator', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#666666', fontFamily: 'Poppins',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'maya.art@studio.com', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#f97316',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Restaurant') {
+      // Deep red with cream accents
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(12, scale),
+        fill: '#5c1010', data: { id: makeId(), name: 'Header', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'LA CUCINA', bl + mmToPx(5, scale), bl + mmToPx(2.5, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fontFamily: 'Playfair Display',
+        fill: '#f5e6c8', charSpacing: 150,
+        data: { id: makeId(), name: 'Restaurant', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Marco Rossi', bl + mmToPx(5, scale), bl + mmToPx(18, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#f5e6c8',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Executive Chef', bl + mmToPx(5, scale), bl + mmToPx(29, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#e2b97a', fontFamily: 'Lora',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'marco@lacucina.com  ·  +39 02 000 1234', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#c4a882',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Cafe') {
+      // Coffee brown with cream
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(dims.widthMm - 22, scale), top: bl,
+        width: mmToPx(22, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#6b3a1f', data: { id: makeId(), name: 'Side Panel', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'BEAN', bl + mmToPx(dims.widthMm - 19, scale), bl + mmToPx(10, scale), mmToPx(18, scale), {
+        fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#f5e6c8', textAlign: 'center', charSpacing: 100,
+        data: { id: makeId(), name: 'Brand1', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, '& CO', bl + mmToPx(dims.widthMm - 19, scale), bl + mmToPx(20, scale), mmToPx(18, scale), {
+        fontSize: mmToPx(3.5, scale), fill: '#c4a882', textAlign: 'center',
+        data: { id: makeId(), name: 'Brand2', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Sofia Lane', bl + mmToPx(5, scale), bl + mmToPx(12, scale), mmToPx(55, scale), {
+        fontSize: mmToPx(5.5, scale), fontFamily: 'Lora', fill: '#3b1f0a',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Head Barista', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(55, scale), {
+        fontSize: mmToPx(3, scale), fill: '#6b3a1f',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'sofia@beanandco.com', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(55, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#8b6347',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Bakery') {
+      // Soft beige, playful script
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(dims.heightMm - 8, scale),
+        width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(0.5, scale),
+        fill: '#d4956a', data: { id: makeId(), name: 'Bottom Line', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Sweet Crumbs', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(7, scale), fontFamily: 'Pacifico', fill: '#8b4513',
+        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'BAKERY & CAFÉ', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#d4956a', charSpacing: 200,
+        data: { id: makeId(), name: 'Sub', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Claire Dubois', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(4, scale), fontFamily: 'Lora', fill: '#5c3317',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'claire@sweetcrumbs.com', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.6, scale), fill: '#a0704a',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Medical') {
+      // Clean clinical — white & sky blue
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale),
+        fill: '#0284c7', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' },
+      }))
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm - 2, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale),
+        fill: '#0284c7', data: { id: makeId(), name: 'Bottom Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Dr. Sarah Kim', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fontWeight: 'bold', fontFamily: 'Nunito', fill: '#0c1a2e',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'M.D. — Internal Medicine', bl + mmToPx(5, scale), bl + mmToPx(23, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#0284c7', fontFamily: 'Nunito',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(5, scale), top: bl + mmToPx(32, scale),
+        width: mmToPx(55, scale), height: mmToPx(0.5, scale),
+        fill: '#bae6fd', data: { id: makeId(), name: 'Divider', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 's.kim@medcenter.com  ·  +1 (800) 000-1234', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#475569',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Fitness') {
+      // Dark + energetic orange
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(4, scale),
+        fill: '#ea580c', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'IRON WILL', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ea580c', charSpacing: 250,
+        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Jake Morrison', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ffffff',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Certified Personal Trainer', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#9ca3af',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'jake@ironwillfitness.com', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#6b7280',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Beauty Spa') {
+      // Soft rose & gold
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#fff1f2', data: { id: makeId(), name: 'BG', layerType: 'rect' },
+      }))
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm - 8, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(8, scale),
+        fill: '#fecdd3', data: { id: makeId(), name: 'Footer', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'Lumière', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(8, scale), fontFamily: 'Playfair Display', fill: '#9d174d',
+        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'BEAUTY & SPA', bl + mmToPx(5, scale), bl + mmToPx(25, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#b8860b', charSpacing: 200,
+        data: { id: makeId(), name: 'Sub', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Chloé Martin, Head Stylist', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#881337',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'chloe@lumiere-spa.com', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.5, scale), fill: '#9d174d',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
+
+    } else if (name === 'Tech Startup') {
+      // Dark gradient purple — modern SaaS
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#0f0f23', data: { id: makeId(), name: 'BG', layerType: 'rect' },
+      }))
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(3, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#7c3aed', data: { id: makeId(), name: 'Left Bar', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'NEXUS', bl + mmToPx(8, scale), bl + mmToPx(7, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#7c3aed', charSpacing: 200,
+        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Alex Park', bl + mmToPx(8, scale), bl + mmToPx(19, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Inter',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Co-founder & CTO', bl + mmToPx(8, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#a78bfa',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'alex@nexus.io  ·  nexus.io', bl + mmToPx(8, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.6, scale), fill: '#6b7280',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Developer') {
+      // Terminal dark — monospace aesthetic
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#0d1117', data: { id: makeId(), name: 'BG', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, '$ whoami', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#3fb950', fontFamily: 'Courier New',
+        data: { id: makeId(), name: 'Prompt', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Kim Juno', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#f0f6fc', fontFamily: 'Courier New',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, '// Full-Stack Engineer', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#6e7681', fontFamily: 'Courier New',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'kim@devstudio.io\ngithub.com/kimjuno', bl + mmToPx(5, scale), bl + mmToPx(39, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.6, scale), fill: '#58a6ff', fontFamily: 'Courier New',
+        data: { id: makeId(), name: 'Links', layerType: 'text' },
+      })
+
+    } else if (name === 'Realtor') {
+      // Gold prestige — real estate
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale),
+        fill: '#b8860b', data: { id: makeId(), name: 'Top Gold', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'PREMIER REALTY', bl + mmToPx(5, scale), bl + mmToPx(9, scale), mmToPx(75, scale), {
+        fontSize: mmToPx(3, scale), fill: '#b8860b', charSpacing: 150, fontFamily: 'Montserrat', fontWeight: 'bold',
+        data: { id: makeId(), name: 'Agency', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'James Sullivan', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(6, scale), fontFamily: 'Playfair Display', fill: '#1a1a1a',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Licensed Real Estate Agent', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#555555',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'j.sullivan@premierrealty.com  ·  +1 (310) 000-9876', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.4, scale), fill: '#777777',
+        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+      })
+
+    } else if (name === 'Architect') {
+      // Clean minimal grid lines
+      canvas.add(new fabric.Rect({
+        left: bl, top: bl + mmToPx(dims.heightMm / 2, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(0.3, scale),
+        fill: '#e5e7eb', data: { id: makeId(), name: 'Grid H', layerType: 'rect' },
+      }))
+      canvas.add(new fabric.Rect({
+        left: bl + mmToPx(dims.widthMm / 2, scale), top: bl, width: mmToPx(0.3, scale), height: mmToPx(dims.heightMm, scale),
+        fill: '#e5e7eb', data: { id: makeId(), name: 'Grid V', layerType: 'rect' },
+      }))
+      addTextbox(canvas, fabric, 'FORMA', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#111827', charSpacing: 300, fontFamily: 'Montserrat',
+        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Yuki Tanaka', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(65, scale), {
+        fontSize: mmToPx(5.5, scale), fontFamily: 'Raleway', fill: '#1f2937',
+        data: { id: makeId(), name: 'Name', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'Principal Architect  ·  RIBA', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(3, scale), fill: '#6b7280',
+        data: { id: makeId(), name: 'Title', layerType: 'text' },
+      })
+      addTextbox(canvas, fabric, 'y.tanaka@formaarch.com', bl + mmToPx(5, scale), bl + mmToPx(42, scale), mmToPx(70, scale), {
+        fontSize: mmToPx(2.8, scale), fill: '#9ca3af',
+        data: { id: makeId(), name: 'Email', layerType: 'text' },
+      })
     }
     // Blank: no user objects
 
@@ -741,6 +1182,63 @@ export default function EditorClient({ product, options }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
     if (trimBg) trimBg.set('fill', bg)
+  }
+
+  // ── Phase B: Apply contact smart fields ──────────────────────────────────
+
+  async function applyContactFields(fields: typeof contactFields) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+
+    const fieldMap: Record<string, string> = {
+      name:     fields.name,
+      title:    fields.title,
+      company:  fields.company,
+      phone:    fields.phone,
+      email:    fields.email,
+      website:  fields.website,
+      linkedin: fields.linkedin,
+    }
+
+    // Update existing tagged layers first
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const existing = canvas.getObjects().filter((o: any) => o.data?.fieldType)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    existing.forEach((o: any) => {
+      const val = fieldMap[o.data.fieldType]
+      if (val !== undefined && o.set) o.set('text', val || `[${o.data.fieldType}]`)
+    })
+
+    // Add missing layers if none found at all (blank canvas case)
+    if (existing.length === 0) {
+      const rows: { fieldType: string; label: string; y: number; fs: number; fw?: string; color: string }[] = [
+        { fieldType: 'name',    label: fields.name    || 'Your Name',      y: 10, fs: 6, fw: 'bold', color: '#111111' },
+        { fieldType: 'title',   label: fields.title   || 'Your Title',     y: 22, fs: 3.5,            color: '#555555' },
+        { fieldType: 'company', label: fields.company || 'Company',        y: 29, fs: 3,              color: '#777777' },
+        { fieldType: 'email',   label: fields.email   || 'email@company.com', y: 38, fs: 2.8,        color: '#444444' },
+        { fieldType: 'phone',   label: fields.phone   || '+1 (000) 000-0000', y: 44, fs: 2.8,        color: '#444444' },
+        { fieldType: 'website', label: fields.website || 'www.yoursite.com',  y: 50, fs: 2.8,        color: '#4f46e5' },
+      ]
+      rows.forEach(row => {
+        const id = makeId()
+        const obj = new fabric.Textbox(row.label, {
+          left: bl + mmToPx(5, scale),
+          top: bl + mmToPx(row.y, scale),
+          width: mmToPx(75, scale),
+          fontSize: mmToPx(row.fs, scale),
+          fontWeight: row.fw ?? 'normal',
+          fill: row.color,
+          data: { id, name: row.fieldType, layerType: 'text' as const, fieldType: row.fieldType },
+        })
+        canvas.add(obj)
+      })
+    }
+
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
   }
 
   // ── Init Fabric.js ─────────────────────────────────────────────────────────
@@ -1802,21 +2300,57 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'templates', icon: LayoutTemplate, label: 'Tmpl' },
-              { key: 'shapes',    icon: Star,            label: 'Shapes' },
-              { key: 'layers',    icon: Layers,          label: 'Layers' },
+              { key: 'templates',  icon: LayoutTemplate, label: 'Tmpl' },
+              { key: 'contact',    icon: Type,           label: 'Info' },
+              { key: 'shapes',     icon: Star,           label: 'Shapes' },
+              { key: 'layers',     icon: Layers,         label: 'Layers' },
               { key: 'properties', icon: null,           label: 'Props' },
             ] as const).map(({ key, icon: Icon, label }) => (
               <button
                 key={key}
                 onClick={() => setActivePanel(key)}
-                className={`flex-1 py-2.5 text-[11px] font-medium flex items-center justify-center gap-0.5 transition-colors ${activePanel === key ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
+                className={`flex-1 py-2.5 text-[10px] font-medium flex items-center justify-center gap-0.5 transition-colors ${activePanel === key ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
               >
                 {Icon && <Icon className="w-3 h-3" />}
                 {label}
               </button>
             ))}
           </div>
+
+          {/* Contact smart fields panel */}
+          {activePanel === 'contact' && (
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              <p className="text-[10px] text-gray-400 leading-tight">
+                연락처를 입력하고 &ldquo;디자인에 적용&rdquo;을 누르면 캔버스에 자동 배치됩니다.
+              </p>
+              {([
+                { key: 'name',     label: '이름 (Name)',       placeholder: 'John Doe' },
+                { key: 'title',    label: '직함 (Title)',      placeholder: 'Senior Designer' },
+                { key: 'company',  label: '회사 (Company)',    placeholder: 'ACME Corp.' },
+                { key: 'phone',    label: '전화 (Phone)',      placeholder: '+1 (555) 000-0000' },
+                { key: 'email',    label: '이메일 (Email)',    placeholder: 'you@company.com' },
+                { key: 'website',  label: '웹사이트 (Web)',    placeholder: 'www.yoursite.com' },
+                { key: 'linkedin', label: 'LinkedIn URL',      placeholder: 'linkedin.com/in/you' },
+              ] as const).map(({ key, label, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-[10px] text-gray-500 mb-0.5">{label}</label>
+                  <input
+                    type="text"
+                    value={contactFields[key]}
+                    onChange={e => setContactFields(prev => ({ ...prev, [key]: e.target.value }))}
+                    placeholder={placeholder}
+                    className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                  />
+                </div>
+              ))}
+              <button
+                onClick={() => applyContactFields(contactFields)}
+                className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
+              >
+                디자인에 적용
+              </button>
+            </div>
+          )}
 
           {/* Templates panel */}
           {activePanel === 'templates' && (
@@ -1827,23 +2361,33 @@ export default function EditorClient({ product, options }: Props) {
                 <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
               </div>
 
-              {/* Template category filter */}
+              {/* Template search + category filter */}
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Templates</label>
+                <input
+                  type="search"
+                  value={templateSearch}
+                  onChange={e => setTemplateSearch(e.target.value)}
+                  placeholder="Search templates..."
+                  className="w-full border border-gray-200 rounded px-2 py-1 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                />
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {(['all', 'business', 'minimal', 'creative'] as const).map(cat => (
+                  {(['all', 'business', 'minimal', 'creative', 'food', 'health', 'tech', 'realestate'] as const).map(cat => (
                     <button
                       key={cat}
-                      onClick={() => setTemplateCategory(cat)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${templateCategory === cat ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                      onClick={() => { setTemplateCategory(cat); setTemplateSearch('') }}
+                      className={`px-2 py-0.5 rounded text-[10px] font-medium transition-colors ${templateCategory === cat && !templateSearch ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
                     >
-                      {cat === 'all' ? 'All' : TEMPLATE_CATEGORY_LABELS[cat]}
+                      {TEMPLATE_CATEGORY_LABELS[cat]}
                     </button>
                   ))}
                 </div>
                 <div className="space-y-1">
                   {TEMPLATE_CATALOG
-                    .filter(t => templateCategory === 'all' || t.category === templateCategory)
+                    .filter(t => {
+                      if (templateSearch) return t.name.toLowerCase().includes(templateSearch.toLowerCase()) || t.description.toLowerCase().includes(templateSearch.toLowerCase())
+                      return templateCategory === 'all' || t.category === templateCategory
+                    })
                     .map(t => (
                       <button
                         key={t.name}
