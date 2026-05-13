@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
 import { fetchSwadpiaCategoryData, fetchAllSwadpiaData, type SwadpiaCategoryData } from '@/lib/swadpia'
 
@@ -32,10 +33,8 @@ function extractBasePrice(data: SwadpiaCategoryData): number {
 }
 
 export async function GET(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key')
-  if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const supabase = createServerClient()
   const { searchParams } = new URL(req.url)
@@ -72,10 +71,8 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const adminKey = req.headers.get('x-admin-key')
-  if (adminKey !== process.env.ADMIN_SECRET_KEY) {
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const supabase = createServerClient()
   const { searchParams } = new URL(req.url)

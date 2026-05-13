@@ -24,8 +24,6 @@ interface ChatMessage {
 }
 
 export default function AdminChatsPage() {
-  const [secret, setSecret] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const [sessions, setSessions] = useState<ChatSession[]>([])
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
@@ -38,24 +36,18 @@ export default function AdminChatsPage() {
     setLoading(true)
     setError('')
     const res = await fetch(`/api/admin/chats?page=${page}`, {
-      headers: { 'x-admin-secret': secret },
     })
 
-    if (res.status === 401) {
-      setAuthenticated(false)
-      setError('Authentication failed. Check your password.')
-      setLoading(false)
-      return
-    }
+    if (res.status === 401) { window.location.href = '/admin/login'; return }
 
     const data = await res.json()
     setSessions(data.sessions ?? [])
     setLoading(false)
-  }, [secret, page])
+  }, [page])
 
   useEffect(() => {
-    if (authenticated) fetchSessions()
-  }, [authenticated, fetchSessions])
+    fetchSessions()
+  }, [fetchSessions])
 
   async function toggleSession(sessionId: string) {
     if (expandedSession === sessionId) {
@@ -69,44 +61,13 @@ export default function AdminChatsPage() {
 
     setLoadingSession(sessionId)
     const res = await fetch(`/api/admin/chats/${sessionId}`, {
-      headers: { 'x-admin-secret': secret },
     })
     const data = await res.json()
     setSessionMessages((prev) => ({ ...prev, [sessionId]: data.messages ?? [] }))
     setLoadingSession(null)
   }
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setAuthenticated(true)
-  }
 
-  if (!authenticated) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <form
-          onSubmit={handleLogin}
-          className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-md"
-        >
-          <h1 className="mb-6 text-xl font-bold text-gray-900">Admin — Chat Logs</h1>
-          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
-          <input
-            type="password"
-            placeholder="Admin password"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            className="mb-4 w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-gray-400"
-          />
-          <button
-            type="submit"
-            className="w-full rounded-xl bg-gray-900 py-3 text-sm font-semibold text-white hover:bg-gray-700 transition-colors"
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8">

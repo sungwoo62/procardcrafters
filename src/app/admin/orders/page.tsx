@@ -43,8 +43,6 @@ interface Order {
 }
 
 export default function AdminOrdersPage() {
-  const [secret, setSecret] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const [orders, setOrders] = useState<Order[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -65,31 +63,21 @@ export default function AdminOrdersPage() {
     if (statusFilter) params.set('status', statusFilter)
 
     const res = await fetch(`/api/admin/orders?${params}`, {
-      headers: { 'x-admin-secret': secret },
     })
 
-    if (res.status === 401) {
-      setAuthenticated(false)
-      setError('Authentication failed. Please check your password.')
-      setLoading(false)
-      return
-    }
+    if (res.status === 401) { window.location.href = '/admin/login'; return }
 
     const data = await res.json()
     setOrders(data.orders ?? [])
     setTotal(data.total ?? 0)
     setSelectedIds(new Set())
     setLoading(false)
-  }, [secret, page, statusFilter])
+  }, [page, statusFilter])
 
   useEffect(() => {
-    if (authenticated) fetchOrders()
-  }, [authenticated, fetchOrders])
+    fetchOrders()
+  }, [fetchOrders])
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setAuthenticated(true)
-  }
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -117,7 +105,6 @@ export default function AdminOrdersPage() {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
-        'x-admin-secret': secret,
       },
       body: JSON.stringify({ ids: Array.from(selectedIds), status: bulkStatus }),
     })
@@ -156,30 +143,6 @@ export default function AdminOrdersPage() {
     URL.revokeObjectURL(url)
   }
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <form onSubmit={handleLogin} className="bg-white p-8 rounded-lg shadow w-80 space-y-4">
-          <h1 className="text-xl font-bold text-center">Admin Login</h1>
-          {error && <p className="text-red-600 text-sm">{error}</p>}
-          <input
-            type="password"
-            placeholder="Admin secret"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            className="w-full border rounded px-3 py-2 text-sm"
-            required
-          />
-          <button
-            type="submit"
-            className="w-full bg-black text-white rounded py-2 text-sm font-medium hover:bg-gray-800"
-          >
-            Login
-          </button>
-        </form>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -304,7 +267,7 @@ export default function AdminOrdersPage() {
                     </td>
                     <td className="px-4 py-3">
                       <a
-                        href={`/admin/orders/${order.id}?secret=${encodeURIComponent(secret)}`}
+                        href={`/admin/orders/${order.id}`}
                         className="text-blue-600 hover:underline"
                       >
                         View

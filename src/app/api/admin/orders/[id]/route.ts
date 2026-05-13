@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
 import { sendOrderStatusEmail, sendAdminStatusChangeEmail } from '@/lib/email'
 import { OrderStatus } from '@/types/database'
@@ -13,18 +14,13 @@ const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
   refunded: [],
 }
 
-function verifyAdmin(request: NextRequest): boolean {
-  const secret = request.headers.get('x-admin-secret')
-  return secret === process.env.ADMIN_SECRET
-}
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const { id } = await params
   const supabase = createServerClient()
@@ -46,9 +42,8 @@ export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: 'Authentication failed' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const { id } = await params
   const supabase = createServerClient()

@@ -68,8 +68,6 @@ function formatDate(dateStr: string): string {
 }
 
 export default function AdminFilesPage() {
-  const [secret, setSecret] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const [files, setFiles] = useState<FileRecord[]>([])
   const [loading, setLoading] = useState(false)
   const [total, setTotal] = useState(0)
@@ -86,23 +84,18 @@ export default function AdminFilesPage() {
     if (statusFilter) params.set('status', statusFilter)
 
     const res = await fetch(`/api/admin/files?${params}`, {
-      headers: { 'x-admin-secret': secret },
     })
-    if (res.status === 401) {
-      setAuthenticated(false)
-      setLoading(false)
-      return
-    }
+    if (res.status === 401) { window.location.href = '/admin/login'; return }
     const data = await res.json()
     setFiles(data.files ?? [])
     setTotal(data.total ?? 0)
     setTotalPages(data.totalPages ?? 1)
     setLoading(false)
-  }, [secret, page, statusFilter])
+  }, [page, statusFilter])
 
   useEffect(() => {
-    if (authenticated) fetchFiles()
-  }, [authenticated, fetchFiles])
+    fetchFiles()
+  }, [fetchFiles])
 
   async function updateFileStatus(fileId: string, status: string) {
     setUpdating(true)
@@ -113,7 +106,7 @@ export default function AdminFilesPage() {
 
     await fetch('/api/admin/files', {
       method: 'PATCH',
-      headers: { 'x-admin-secret': secret, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
     setUpdating(false)
@@ -122,30 +115,7 @@ export default function AdminFilesPage() {
     fetchFiles()
   }
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setAuthenticated(true)
-  }
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <form onSubmit={handleLogin} className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-sm space-y-4">
-          <h1 className="text-xl font-bold text-gray-900">File Management</h1>
-          <input
-            type="password"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            placeholder="Admin password"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          />
-          <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg font-medium text-sm">
-            Log In
-          </button>
-        </form>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">

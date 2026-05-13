@@ -52,8 +52,6 @@ const EMPTY_FORM: FormState = {
 }
 
 export default function AdminPortfolioPage() {
-  const [secret, setSecret] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const [items, setItems] = useState<PortfolioItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -66,9 +64,7 @@ export default function AdminPortfolioPage() {
     setLoading(true)
     setError('')
     try {
-      const res = await fetch('/api/admin/portfolio', {
-        headers: { 'x-admin-secret': secret },
-      })
+      const res = await fetch('/api/admin/portfolio')
       if (!res.ok) throw new Error('Authentication failed')
       const data = await res.json()
       setItems(data.items)
@@ -77,16 +73,12 @@ export default function AdminPortfolioPage() {
     } finally {
       setLoading(false)
     }
-  }, [secret])
+  }, [])
 
   useEffect(() => {
-    if (authenticated) fetchItems()
-  }, [authenticated, fetchItems])
+    fetchItems()
+  }, [fetchItems])
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    if (secret.trim()) setAuthenticated(true)
-  }
 
   function openNew() {
     setEditId(null)
@@ -122,7 +114,7 @@ export default function AdminPortfolioPage() {
       const url = editId ? `/api/admin/portfolio/${editId}` : '/api/admin/portfolio'
       const res = await fetch(url, {
         method: editId ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
       if (!res.ok) throw new Error('Save failed')
@@ -140,7 +132,6 @@ export default function AdminPortfolioPage() {
     try {
       const res = await fetch(`/api/admin/portfolio/${id}`, {
         method: 'DELETE',
-        headers: { 'x-admin-secret': secret },
       })
       if (!res.ok) throw new Error('Delete failed')
       await fetchItems()
@@ -153,7 +144,7 @@ export default function AdminPortfolioPage() {
     try {
       const res = await fetch(`/api/admin/portfolio/${id}`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json', 'x-admin-secret': secret },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: !current }),
       })
       if (!res.ok) throw new Error('Update failed')
@@ -163,28 +154,6 @@ export default function AdminPortfolioPage() {
     }
   }
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <form onSubmit={handleLogin} className="bg-white rounded-2xl shadow-lg p-8 w-full max-w-sm">
-          <h1 className="text-xl font-bold text-gray-900 mb-6">Admin Login</h1>
-          <input
-            type="password"
-            placeholder="Admin Secret"
-            value={secret}
-            onChange={(e) => setSecret(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <button
-            type="submit"
-            className="w-full bg-blue-600 text-white rounded-xl py-2.5 font-semibold hover:bg-blue-700 transition-colors"
-          >
-            Enter
-          </button>
-        </form>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-10">

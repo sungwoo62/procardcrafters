@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { OrderStatus } from '@/types/database'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
@@ -66,9 +66,7 @@ interface Order {
 
 export default function AdminOrderDetailPage() {
   const params = useParams()
-  const searchParams = useSearchParams()
   const id = params.id as string
-  const secret = searchParams.get('secret') ?? ''
 
   const [order, setOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
@@ -82,8 +80,7 @@ export default function AdminOrderDetailPage() {
   useEffect(() => {
     async function fetchOrder() {
       const res = await fetch(`/api/admin/orders/${id}`, {
-        headers: { 'x-admin-secret': secret },
-      })
+        })
       if (!res.ok) {
         setError('Failed to load order.')
         setLoading(false)
@@ -95,7 +92,7 @@ export default function AdminOrderDetailPage() {
       setLoading(false)
     }
     fetchOrder()
-  }, [id, secret])
+  }, [id])
 
   async function handleUpdate() {
     if (!newStatus && !notes && !trackingNumber) return
@@ -109,7 +106,7 @@ export default function AdminOrderDetailPage() {
 
     const res = await fetch(`/api/admin/orders/${id}`, {
       method: 'PATCH',
-      headers: { 'x-admin-secret': secret, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body),
     })
 

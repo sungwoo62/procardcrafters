@@ -1,20 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
-import { Resend } from 'resend'
+import { sendFileRejectionEmail } from '@/lib/email'
 
-function getResend() {
-  return new Resend(process.env.RESEND_API_KEY ?? '')
-}
-
-function verifyAdmin(request: NextRequest): boolean {
-  return request.headers.get('x-admin-secret') === process.env.ADMIN_SECRET
-}
 
 // List files (admin)
 export async function GET(request: NextRequest) {
-  if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const { searchParams } = new URL(request.url)
   const status = searchParams.get('status')
@@ -50,9 +43,8 @@ export async function GET(request: NextRequest) {
 
 // Update file status (approve/reject)
 export async function PATCH(request: NextRequest) {
-  if (!verifyAdmin(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
 
   const body = await request.json()
   const { fileId, status, rejectionReason, reviewedBy } = body
@@ -93,43 +85,24 @@ export async function PATCH(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  // Send email notification to customer
-  const customerEmail = (data as Record<string, unknown> & { print_orders?: { customer_email?: string; customer_name?: string; order_number?: string } })?.print_orders?.customer_email
-  const customerName = (data as Record<string, unknown> & { print_orders?: { customer_name?: string } })?.print_orders?.customer_name
-  const orderNumber = (data as Record<string, unknown> & { print_orders?: { order_number?: string } })?.print_orders?.order_number
+  // Send rejection email to customer
+  type FileWithRelations = {
+    original_filename: string
+    print_orders?: { customer_email?: string; customer_name?: string; order_number?: string } | null
+  }
+  const fileData = data as FileWithRelations
+  const customerEmail = fileData.print_orders?.customer_email
+  const customerName = fileData.print_orders?.customer_name
+  const orderNumber = fileData.print_orders?.order_number
 
-  if (customerEmail && process.env.RESEND_API_KEY) {
-    if (status === 'approved') {
-      await getResend().emails.send({
-        from: 'Procardcrafters <noreply@procardcrafters.com>',
-        to: customerEmail,
-        subject: `File Approved — ${orderNumber ?? 'Order'}`,
-        html: `
-          <p>Hi ${customerName ?? 'Customer'},</p>
-          <p>Your print file (<strong>${(data as Record<string, string>).original_filename}</strong>) has passed review.</p>
-          <p>Your file has been added to the print queue. We will notify you when production begins.</p>
-          <br/>
-          <p>Thank you,<br/>Procardcrafters Team</p>
-        `,
-      }).catch(() => null)  // Silently ignore email send failures
-    } else if (status === 'rejected') {
-      await getResend().emails.send({
-        from: 'Procardcrafters <noreply@procardcrafters.com>',
-        to: customerEmail,
-        subject: `File Review Result — ${orderNumber ?? 'Order'}`,
-        html: `
-          <p>Hi ${customerName ?? 'Customer'},</p>
-          <p>Your print file (<strong>${(data as Record<string, string>).original_filename}</strong>) was rejected for the following reason:</p>
-          <blockquote style="border-left:3px solid #ef4444;padding-left:12px;color:#374151;">
-            ${rejectionReason ?? 'Does not meet print quality standards'}
-          </blockquote>
-          <p>Please update the file and re-upload it from your order page.</p>
-          <p>If you have any questions, feel free to reach out.</p>
-          <br/>
-          <p>Thank you,<br/>Procardcrafters Team</p>
-        `,
-      }).catch(() => null)
-    }
+  if (status === 'rejected' && customerEmail && orderNumber) {
+    await sendFileRejectionEmail({
+      customerEmail,
+      customerName: customerName ?? 'Customer',
+      orderNumber,
+      filename: fileData.original_filename,
+      rejectionReason: rejectionReason ?? 'Does not meet print quality standards',
+    }).catch(() => null)
   }
 
   return NextResponse.json({ file: data })

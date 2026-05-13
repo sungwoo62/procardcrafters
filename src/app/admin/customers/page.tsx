@@ -23,8 +23,6 @@ function formatDate(dateStr: string) {
 }
 
 export default function AdminCustomersPage() {
-  const [secret, setSecret] = useState('')
-  const [authenticated, setAuthenticated] = useState(false)
   const [customers, setCustomers] = useState<Customer[]>([])
   const [total, setTotal] = useState(0)
   const [page, setPage] = useState(1)
@@ -39,28 +37,19 @@ export default function AdminCustomersPage() {
     if (q) params.set('q', q)
 
     const res = await fetch(`/api/admin/customers?${params}`, {
-      headers: { 'x-admin-secret': secret },
     })
-    if (res.status === 401) {
-      setAuthenticated(false)
-      setLoading(false)
-      return
-    }
+    if (res.status === 401) { window.location.href = '/admin/login'; return }
     const data = await res.json()
     setCustomers(data.customers ?? [])
     setTotal(data.total ?? 0)
     setTotalPages(data.totalPages ?? 1)
     setLoading(false)
-  }, [secret, page, q])
+  }, [page, q])
 
   useEffect(() => {
-    if (authenticated) fetchCustomers()
-  }, [authenticated, fetchCustomers])
+    fetchCustomers()
+  }, [fetchCustomers])
 
-  function handleLogin(e: React.FormEvent) {
-    e.preventDefault()
-    setAuthenticated(true)
-  }
 
   function handleSearch(e: React.FormEvent) {
     e.preventDefault()
@@ -68,25 +57,6 @@ export default function AdminCustomersPage() {
     setPage(1)
   }
 
-  if (!authenticated) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-        <form onSubmit={handleLogin} className="bg-white rounded-xl border border-gray-200 p-8 w-full max-w-sm space-y-4">
-          <h1 className="text-xl font-bold text-gray-900">Customer Management</h1>
-          <input
-            type="password"
-            value={secret}
-            onChange={e => setSecret(e.target.value)}
-            placeholder="Admin password"
-            className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm"
-          />
-          <button type="submit" className="w-full bg-gray-900 text-white py-2 rounded-lg font-medium text-sm">
-            Login
-          </button>
-        </form>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -94,7 +64,7 @@ export default function AdminCustomersPage() {
         {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
-            <Link href={`/admin?secret=${encodeURIComponent(secret)}`} className="text-gray-500 hover:text-gray-700">
+            <Link href={`/admin`} className="text-gray-500 hover:text-gray-700">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
