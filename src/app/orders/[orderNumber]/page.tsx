@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react'
-import type { PrintOrder, PrintOrderItem, OrderStatus } from '@/types/database'
+import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
+import RejectedFileUpload from '@/components/RejectedFileUpload'
 
 export const dynamic = 'force-dynamic'
 
@@ -76,6 +77,14 @@ export default async function OrderTrackingPage({ params }: Props) {
 
   const items = (itemsData as PrintOrderItem[] | null) ?? []
 
+  const { data: filesData } = await supabase
+    .from('print_files')
+    .select('id, original_filename, rejection_reason, status')
+    .eq('order_id', order.id)
+    .eq('status', 'rejected')
+
+  const rejectedFiles = (filesData as Pick<PrintFile, 'id' | 'original_filename' | 'rejection_reason' | 'status'>[] | null) ?? []
+
   const currentStatus = order.status
   const statusInfo = STATUS_CONFIG[currentStatus]
   const currentStepIndex = STATUS_STEPS.indexOf(currentStatus as OrderStatus)
@@ -131,6 +140,16 @@ export default async function OrderTrackingPage({ params }: Props) {
             })}
           </div>
         </div>
+      )}
+
+      {/* Rejected file re-upload */}
+      {rejectedFiles.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-gray-900">파일 재업로드 필요</h2>
+          {rejectedFiles.map((file) => (
+            <RejectedFileUpload key={file.id} file={file} orderNumber={order.order_number} />
+          ))}
+        </section>
       )}
 
       {/* Order Items */}

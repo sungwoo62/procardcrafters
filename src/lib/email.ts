@@ -173,6 +173,81 @@ export async function sendAdminNewOrderEmail(
   })
 }
 
+export async function sendAdminFraudAlertEmail(
+  data: OrderEmailData & { expectedAmount: number; actualAmount: number; paymentMethod: string }
+): Promise<void> {
+  if (!resend) return
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <h2 style="color:#dc2626">Payment Fraud Alert — Order Cancelled</h2>
+      <p>A payment amount mismatch was detected. The order has been automatically cancelled.</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:4px 0;font-weight:bold">Order #</td><td>${data.orderNumber}</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Customer</td><td>${data.customerName} (${data.customerEmail})</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Payment Method</td><td>${data.paymentMethod}</td></tr>
+        <tr style="background:#fef2f2"><td style="padding:4px 0;font-weight:bold;color:#dc2626">Expected Amount</td><td style="color:#dc2626">$${data.expectedAmount.toFixed(2)} USD</td></tr>
+        <tr style="background:#fef2f2"><td style="padding:4px 0;font-weight:bold;color:#dc2626">Actual Amount</td><td style="color:#dc2626">$${data.actualAmount.toFixed(2)} USD</td></tr>
+      </table>
+      <p><a href="${SITE_URL}/admin/orders" style="display:inline-block;padding:10px 20px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px">Review in Admin</a></p>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `[FRAUD ALERT] Amount mismatch — #${data.orderNumber} (${data.paymentMethod})`,
+    html,
+  })
+}
+
+export interface FileRejectionEmailData {
+  customerEmail: string
+  customerName: string
+  orderNumber: string
+  filename: string
+  rejectionReason: string
+}
+
+export async function sendFileRejectionEmail(data: FileRejectionEmailData): Promise<void> {
+  if (!resend) return
+
+  const reuploadUrl = `${SITE_URL}/orders/${data.orderNumber}#reupload`
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <p>Hi ${data.customerName},</p>
+      <p>Unfortunately, the print file you uploaded for order <strong>#${data.orderNumber}</strong> did not pass our quality review.</p>
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <tr><td style="padding:6px 0;font-weight:bold;width:140px">File</td><td>${data.filename}</td></tr>
+        <tr><td style="padding:6px 0;font-weight:bold">Reason</td><td style="color:#dc2626">${data.rejectionReason}</td></tr>
+      </table>
+      <p><strong>How to fix this:</strong></p>
+      <ol style="padding-left:20px;line-height:1.8">
+        <li>Review the rejection reason above and adjust your file accordingly.</li>
+        <li>Make sure your file meets our requirements: PDF/AI/PSD/PNG/JPG/TIFF, 300 DPI or higher, correct dimensions.</li>
+        <li>Click the button below to re-upload your corrected file.</li>
+      </ol>
+      <p style="text-align:center;margin:24px 0">
+        <a href="${reuploadUrl}" style="display:inline-block;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold">
+          Re-upload File
+        </a>
+      </p>
+      <p>If you have any questions or need help preparing your file, reply to this email — we're happy to assist.</p>
+      <p>— Procardcrafters Team</p>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"/>
+      <p style="color:#888;font-size:12px">Procardcrafters · Premium Print Services<br/>${SITE_URL}</p>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM,
+    to: data.customerEmail,
+    subject: `[Action Required] File Re-upload Needed — Order #${data.orderNumber}`,
+    html,
+  })
+}
+
 export async function sendAdminStatusChangeEmail(
   status: OrderStatus,
   data: OrderEmailData & { changedBy?: string }
