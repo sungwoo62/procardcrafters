@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { sendOrderStatusEmail } from '@/lib/email'
+import { sendOrderStatusEmail, sendAdminStatusChangeEmail } from '@/lib/email'
 import { OrderStatus } from '@/types/database'
 
 const ALLOWED_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
@@ -97,17 +97,19 @@ export async function PATCH(
     return NextResponse.json({ error: `Update failed: ${updateError?.message}` }, { status: 500 })
   }
 
-  // Send email notification on status change
   if (body.status) {
-    await sendOrderStatusEmail(body.status, {
+    const emailData = {
       orderNumber: order.order_number,
       customerEmail: order.customer_email,
       customerName: order.customer_name,
       totalUsd: order.total_usd,
       trackingNumber: body.trackingNumber,
-    }).catch(() => {
-      // Email failure should not block API success
-    })
+    }
+
+    await Promise.allSettled([
+      sendOrderStatusEmail(body.status, emailData),
+      sendAdminStatusChangeEmail(body.status, { ...emailData, changedBy: 'Admin' }),
+    ])
   }
 
   return NextResponse.json(updated)

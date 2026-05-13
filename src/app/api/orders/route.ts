@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
+import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 
 interface OrderItemInput {
   productId: string
@@ -206,6 +207,30 @@ export async function POST(request: NextRequest) {
     .from('print_orders')
     .update({ stripe_session_id: session.id })
     .eq('id', order.id)
+
+  const emailItems = orderItemsData.map((i) => ({
+    name: i.product_name_en,
+    quantity: i.quantity,
+    priceUsd: i.subtotal_usd,
+  }))
+
+  await Promise.allSettled([
+    sendOrderStatusEmail('pending', {
+      orderNumber: order.order_number,
+      customerEmail: customer.email,
+      customerName: customer.name,
+      totalUsd,
+      items: emailItems,
+    }),
+    sendAdminNewOrderEmail({
+      orderNumber: order.order_number,
+      customerEmail: customer.email,
+      customerName: customer.name,
+      totalUsd,
+      items: emailItems,
+      paymentMethod: 'Stripe (pending)',
+    }),
+  ])
 
   return NextResponse.json({ checkoutUrl: session.url, orderNumber: order.order_number })
 }

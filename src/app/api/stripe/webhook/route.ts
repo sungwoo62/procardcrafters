@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createServerClient } from '@/lib/supabase'
+import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
@@ -26,13 +27,36 @@ export async function POST(request: NextRequest) {
     const orderId = session.metadata?.orderId
 
     if (orderId) {
-      await supabase
+      const { data: order } = await supabase
         .from('print_orders')
         .update({
           status: 'paid',
           stripe_payment_intent_id: session.payment_intent as string,
         })
         .eq('id', orderId)
+        .select('*, print_order_items(*)')
+        .single()
+
+      if (order) {
+        const items = (order.print_order_items ?? []).map((i: { product_name_en: string; quantity: number; subtotal_usd: number }) => ({
+          name: i.product_name_en,
+          quantity: i.quantity,
+          priceUsd: i.subtotal_usd,
+        }))
+
+        const emailData = {
+          orderNumber: order.order_number,
+          customerEmail: order.customer_email,
+          customerName: order.customer_name,
+          totalUsd: order.total_usd,
+          items,
+        }
+
+        await Promise.allSettled([
+          sendOrderStatusEmail('paid', emailData),
+          sendAdminNewOrderEmail({ ...emailData, paymentMethod: 'Stripe' }),
+        ])
+      }
     }
   }
 
@@ -41,10 +65,21 @@ export async function POST(request: NextRequest) {
     const orderId = paymentIntent.metadata?.orderId
 
     if (orderId) {
-      await supabase
+      const { data: order } = await supabase
         .from('print_orders')
         .update({ status: 'cancelled' })
         .eq('id', orderId)
+        .select()
+        .single()
+
+      if (order) {
+        await sendOrderStatusEmail('cancelled', {
+          orderNumber: order.order_number,
+          customerEmail: order.customer_email,
+          customerName: order.customer_name,
+          totalUsd: order.total_usd,
+        }).catch(() => {})
+      }
     }
   }
 

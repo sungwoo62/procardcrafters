@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { capturePaypalOrder } from '@/lib/paypal'
-import { sendOrderStatusEmail } from '@/lib/email'
+import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   let body: { paypalOrderId: string; orderId: string }
@@ -37,18 +37,31 @@ export async function POST(request: NextRequest) {
     .from('print_orders')
     .update({ status: 'paid', payment_status: 'COMPLETED' })
     .eq('id', orderId)
-    .select()
+    .select('*, print_order_items(*)')
     .single()
 
   if (updateError || !order) {
     return NextResponse.json({ error: 'Failed to update order status' }, { status: 500 })
   }
-  await sendOrderStatusEmail('paid', {
+
+  const items = (order.print_order_items ?? []).map((i: { product_name_en: string; quantity: number; subtotal_usd: number }) => ({
+    name: i.product_name_en,
+    quantity: i.quantity,
+    priceUsd: i.subtotal_usd,
+  }))
+
+  const emailData = {
     orderNumber: order.order_number,
     customerEmail: order.customer_email,
     customerName: order.customer_name,
     totalUsd: order.total_usd,
-  }).catch(() => {})
+    items,
+  }
+
+  await Promise.allSettled([
+    sendOrderStatusEmail('paid', emailData),
+    sendAdminNewOrderEmail({ ...emailData, paymentMethod: 'PayPal' }),
+  ])
 
   return NextResponse.json({ orderNumber: order.order_number })
 }
