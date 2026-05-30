@@ -93,6 +93,17 @@ interface SelectedProps {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
+//
+// 새 템플릿 추가 가이드라인
+// 1) TEMPLATE_CATALOG에 { name, category, bg, description, products: [slug] } 추가
+//    - BN = banners, PB = premium_business_cards, BC = 명함 공용, ST/DC = 스티커, PC = 엽서
+//    - 신규 카테고리는 TemplateCategory 타입 + TEMPLATE_CATEGORY_LABELS에도 추가
+// 2) REQUIRED_FIELDS에 제품 fieldKey 스키마 정의 (사이드 패널 ↔ 캔버스 바인딩)
+// 3) buildTemplate()에 name 분기 추가
+//    - mm 좌표는 mmToPx(mm, scale) 변환 후 사용
+//    - 텍스트 박스: addTextbox(canvas, fabric, text, x, y, width, options)
+//    - data.fieldKey를 REQUIRED_FIELDS의 key와 일치시켜야 즉시반영 작동
+// 4) products 배열이 비어 있는 템플릿은 모든 페이지에 노출됨 (범용)
 
 const PRODUCT_DIMS: Record<string, EditorDimensions> = {
   business_cards:          { widthMm: 85,  heightMm: 55,  bleedMm: 3 },
@@ -135,16 +146,22 @@ const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
     { key: 'sub',      label: '서브 문구 (Sub)',     placeholder: '오늘부터 5월 30일까지', type: 'text' },
   ],
   flyers: [
-    { key: 'headline', label: '헤드라인 (Headline)', placeholder: '이번 주 50% 할인',   type: 'text' },
-    { key: 'body',     label: '본문 (Body)',        placeholder: '할인 상세 내용...',   type: 'multiline' },
-    { key: 'cta',      label: 'CTA',                placeholder: '지금 방문하기',       type: 'text' },
-    { key: 'contact',  label: '연락처 (Contact)',   placeholder: '전화 / 주소',         type: 'multiline' },
+    { key: 'headline', label: '헤드라인 (Headline)', placeholder: '이번 주 50% 할인',      type: 'text' },
+    { key: 'subhead',  label: '서브헤드 (Subhead)',  placeholder: '기간 한정 특별 혜택',    type: 'text' },
+    { key: 'body',     label: '본문 (Body)',          placeholder: '상세 내용을 입력하세요...', type: 'multiline' },
+    { key: 'cta',      label: 'CTA',                  placeholder: '지금 방문하기',          type: 'text' },
+    { key: 'date',     label: '날짜 (Date)',           placeholder: '2026.06.01 ~ 06.30',    type: 'text' },
+    { key: 'venue',    label: '장소 (Venue)',          placeholder: '서울특별시 강남구',       type: 'text' },
+    { key: 'contact',  label: '연락처 (Contact)',      placeholder: '02-1234-5678',          type: 'text' },
   ],
   brochures: [
-    { key: 'company',  label: '회사명 (Company)',   placeholder: '회사명',              type: 'text' },
-    { key: 'tagline',  label: '슬로건 (Tagline)',   placeholder: '한 줄 슬로건',         type: 'text' },
-    { key: 'body',     label: '본문 (Body)',        placeholder: '소개 본문...',        type: 'multiline' },
-    { key: 'contact',  label: '연락처 (Contact)',   placeholder: '전화 / 이메일 / 웹사이트', type: 'multiline' },
+    { key: 'company',        label: '회사명 (Company)',       placeholder: '회사명',              type: 'text' },
+    { key: 'tagline',        label: '슬로건 (Tagline)',       placeholder: '한 줄 슬로건',         type: 'text' },
+    { key: 'section1_title', label: '섹션1 제목',             placeholder: '핵심 서비스',          type: 'text' },
+    { key: 'section1_body',  label: '섹션1 본문',             placeholder: '서비스 설명...',       type: 'multiline' },
+    { key: 'section2_title', label: '섹션2 제목',             placeholder: '왜 우리인가',          type: 'text' },
+    { key: 'section2_body',  label: '섹션2 본문',             placeholder: '차별점 설명...',       type: 'multiline' },
+    { key: 'contact',        label: '연락처 (Contact)',       placeholder: '전화 / 이메일 / 웹',   type: 'multiline' },
   ],
   postcards: [
     { key: 'greeting', label: '인사말 (Greeting)',  placeholder: '안녕하세요',          type: 'text' },
@@ -152,15 +169,19 @@ const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
     { key: 'signature',label: '서명 (Signature)',   placeholder: '드림',                type: 'text' },
   ],
   posters: [
-    { key: 'headline', label: '메인 헤드라인 (Headline)', placeholder: '큰 글씨 한 줄',  type: 'text' },
-    { key: 'sub',      label: '서브타이틀 (Sub)',         placeholder: '부가 설명',      type: 'text' },
-    { key: 'body',     label: '본문 (Body)',             placeholder: '세부 정보...',   type: 'multiline' },
-    { key: 'date',     label: '날짜/장소 (Date/Place)',   placeholder: '2026.06.01 · 서울', type: 'text' },
+    { key: 'title',       label: '제목 (Title)',         placeholder: '포스터 제목',           type: 'text' },
+    { key: 'subtitle',    label: '부제목 (Subtitle)',    placeholder: '부가 설명 한 줄',        type: 'text' },
+    { key: 'date',        label: '날짜 (Date)',          placeholder: '2026.06.01',            type: 'text' },
+    { key: 'venue',       label: '장소 (Venue)',         placeholder: '서울 올림픽공원',        type: 'text' },
+    { key: 'description', label: '설명 (Description)',   placeholder: '행사 상세 내용...',      type: 'multiline' },
+    { key: 'sponsor',     label: '주최/후원 (Sponsor)',  placeholder: '주최: OOO',             type: 'text' },
+    { key: 'url',         label: '웹사이트 (URL)',        placeholder: 'www.example.com',       type: 'text' },
   ],
   banners: [
-    { key: 'headline', label: '메인 문구 (Headline)',     placeholder: 'GRAND OPEN',     type: 'text' },
-    { key: 'sub',      label: '서브 문구 (Sub)',          placeholder: '5월 30일',       type: 'text' },
-    { key: 'contact',  label: '연락처 (Contact)',         placeholder: '02-1234-5678',   type: 'text' },
+    { key: 'main',    label: '메인 문구 (Main)',     placeholder: 'GRAND OPEN',         type: 'text' },
+    { key: 'sub',     label: '서브 문구 (Sub)',      placeholder: '오픈 기념 특가',      type: 'text' },
+    { key: 'date',    label: '날짜/기간 (Date)',     placeholder: '2026.06.01 ~',       type: 'text' },
+    { key: 'contact', label: '연락처 (Contact)',     placeholder: '02-1234-5678',       type: 'text' },
   ],
 }
 
@@ -216,7 +237,7 @@ const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
 
 // ─── Template catalog ─────────────────────────────────────────────────────────
 
-type TemplateCategory = 'business' | 'minimal' | 'creative' | 'food' | 'health' | 'tech' | 'realestate' | 'sticker' | 'postcard'
+type TemplateCategory = 'business' | 'minimal' | 'creative' | 'food' | 'health' | 'tech' | 'realestate' | 'sticker' | 'postcard' | 'banner' | 'luxury' | 'flyer' | 'brochure' | 'poster'
 
 interface TemplateDef {
   name: string
@@ -230,6 +251,11 @@ const BC = ['business_cards', 'premium_business_cards']
 const ST = ['stickers']
 const DC = ['die_cut_stickers']
 const PC = ['postcards']
+const BN = ['banners']
+const PB = ['premium_business_cards']
+const FY = ['flyers']
+const BR = ['brochures']
+const PO = ['posters']
 
 const TEMPLATE_CATALOG: TemplateDef[] = [
   // ── Business / Professional (명함)
@@ -325,6 +351,66 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Welcome Card',       category: 'postcard',    bg: '#f0fdf4', description: '환영 온보딩 카드',            products: PC },
   { name: 'Farewell Card',      category: 'postcard',    bg: '#fafafa', description: '작별 인사 카드',              products: PC },
   { name: 'Congrats Card',      category: 'postcard',    bg: '#fefce8', description: '축하 기념 엽서',              products: PC },
+
+  // ══ 배너 8 (200×300mm, 세로형) ══════════════════════════════════════════════
+  { name: '오픈 안내 배너',      category: 'banner',      bg: '#1e40af', description: '그랜드 오픈 배너 — 진한 블루', products: BN },
+  { name: '특가 안내 배너',      category: 'banner',      bg: '#dc2626', description: '할인·특가 홍보 배너',           products: BN },
+  { name: '신메뉴 출시 배너',    category: 'banner',      bg: '#065f46', description: '신메뉴·신제품 출시 배너',       products: BN },
+  { name: '이벤트 안내 배너',    category: 'banner',      bg: '#7c3aed', description: '이벤트·프로모션 배너',          products: BN },
+  { name: '환영 배너',           category: 'banner',      bg: '#ffffff', description: '환영·웰컴 미니멀 배너',          products: BN },
+  { name: '공연 안내 배너',      category: 'banner',      bg: '#0f172a', description: '공연·전시 안내 다크 배너',       products: BN },
+  { name: '모집 공고 배너',      category: 'banner',      bg: '#fef3c7', description: '채용·모집 따뜻한 배너',          products: BN },
+  { name: '시즌 세일 배너',      category: 'banner',      bg: '#831843', description: '시즌 세일 딥 핑크 배너',         products: BN },
+
+  // ══ 고급명함 8 (85×55mm, 고급 마감) ════════════════════════════════════════
+  { name: 'Luxe Black',          category: 'luxury',      bg: '#0a0a0a', description: '올블랙 골드 고급명함',           products: PB },
+  { name: 'Gold Stamp',          category: 'luxury',      bg: '#1a1203', description: '딥 버건디 + 금박 스탬프',        products: PB },
+  { name: 'Marble Edge',         category: 'luxury',      bg: '#f8f8f8', description: '마블 텍스처 엣지 명함',          products: PB },
+  { name: 'Embossed Logo',       category: 'luxury',      bg: '#1c1c2e', description: '엠보싱 로고 딥 네이비',          products: PB },
+  { name: 'Letterpress Style',   category: 'luxury',      bg: '#fdf8f0', description: '레터프레스 크림 오프화이트',      products: PB },
+  { name: 'Platinum Card',       category: 'luxury',      bg: '#e8e8e8', description: '플래티넘 실버 프리미엄',          products: PB },
+  { name: 'Rose Gold Foil',      category: 'luxury',      bg: '#2d1515', description: '로즈골드 포일 다크 레드',         products: PB },
+  { name: 'Minimal Noir',        category: 'luxury',      bg: '#f5f5f0', description: '노이르 미니멀 오트밀 베이지',     products: PB },
+
+  // ══ 전단지 12 (148×210mm A5 세로) ════════════════════════════════════════════
+  { name: 'Flyer Open Event',    category: 'flyer',       bg: '#ff6b00', description: '오픈 이벤트 — 주황 에너지',         products: FY },
+  { name: 'Flyer Season Sale',   category: 'flyer',       bg: '#1d4ed8', description: '계절 세일 — 블루 & 화이트',         products: FY },
+  { name: 'Flyer Restaurant',    category: 'flyer',       bg: '#7b1d1d', description: '레스토랑 메뉴 — 딥 레드',            products: FY },
+  { name: 'Flyer Academy',       category: 'flyer',       bg: '#1e3a5f', description: '학원 모집 — 네이비 학술',            products: FY },
+  { name: 'Flyer Seminar',       category: 'flyer',       bg: '#ffffff', description: '세미나 안내 — 클린 화이트',           products: FY },
+  { name: 'Flyer Cafe',          category: 'flyer',       bg: '#3b1f0a', description: '카페 신메뉴 — 커피 브라운',           products: FY },
+  { name: 'Flyer Health',        category: 'flyer',       bg: '#0f172a', description: '헬스 클럽 — 다크 에너지',             products: FY },
+  { name: 'Flyer Beauty',        category: 'flyer',       bg: '#fdf2f8', description: '뷰티 살롱 — 소프트 핑크',            products: FY },
+  { name: 'Flyer Real Estate',   category: 'flyer',       bg: '#0a1628', description: '부동산 안내 — 네이비 골드',           products: FY },
+  { name: 'Flyer Concert',       category: 'flyer',       bg: '#0d0d0d', description: '공연 안내 — 블랙 네온',              products: FY },
+  { name: 'Flyer Promo',         category: 'flyer',       bg: '#dc2626', description: '특가 프로모션 — 레드 임팩트',         products: FY },
+  { name: 'Flyer Festival',      category: 'flyer',       bg: '#7c3aed', description: '지역 축제 — 컬러풀 바이브',           products: FY },
+
+  // ══ 브로슈어 10 (148×210mm A5 세로) ══════════════════════════════════════════
+  { name: 'Brochure Company',    category: 'brochure',    bg: '#0f172a', description: '회사 소개 — 다크 프리미엄',           products: BR },
+  { name: 'Brochure Service',    category: 'brochure',    bg: '#f0fdfa', description: '서비스 안내 — 민트 클린',             products: BR },
+  { name: 'Brochure Catalog',    category: 'brochure',    bg: '#1e293b', description: '제품 카탈로그 — 슬레이트 다크',       products: BR },
+  { name: 'Brochure Medical',    category: 'brochure',    bg: '#f0f9ff', description: '의료 서비스 — 클리닉 블루',           products: BR },
+  { name: 'Brochure Education',  category: 'brochure',    bg: '#4c1d95', description: '교육 과정 — 딥 바이올렛',             products: BR },
+  { name: 'Brochure Travel',     category: 'brochure',    bg: '#0c4a6e', description: '여행 패키지 — 오션 블루',             products: BR },
+  { name: 'Brochure Realty',     category: 'brochure',    bg: '#fdf6e3', description: '부동산 소개 — 베이지 골드',           products: BR },
+  { name: 'Brochure Dining',     category: 'brochure',    bg: '#3b0a0a', description: '레스토랑 안내 — 버건디 다크',         products: BR },
+  { name: 'Brochure IT',         category: 'brochure',    bg: '#0f0f23', description: 'IT 솔루션 — 테크 다크',               products: BR },
+  { name: 'Brochure Legal',      category: 'brochure',    bg: '#1c2a40', description: '법률 서비스 — 로펌 네이비',           products: BR },
+
+  // ══ 포스터 12 (210×297mm A4 세로) ════════════════════════════════════════════
+  { name: 'Poster Concert',      category: 'poster',      bg: '#0d0d0d', description: '콘서트 포스터 — 블랙 네온',           products: PO },
+  { name: 'Poster Exhibition',   category: 'poster',      bg: '#fafafa', description: '전시회 포스터 — 미니멀 아트',          products: PO },
+  { name: 'Poster Movie',        category: 'poster',      bg: '#1a0a2e', description: '영화 포스터 — 드라마틱 다크',          products: PO },
+  { name: 'Poster Conference',   category: 'poster',      bg: '#1d4ed8', description: '학회 안내 — 어카데믹 블루',            products: PO },
+  { name: 'Poster Awards',       category: 'poster',      bg: '#0a0a0a', description: '시상식 — 블랙 골드',                  products: PO },
+  { name: 'Poster Academy',      category: 'poster',      bg: '#2d1b69', description: '아카데미 모집 — 딥 퍼플',              products: PO },
+  { name: 'Poster Marathon',     category: 'poster',      bg: '#fff7ed', description: '마라톤 대회 — 에너지 오렌지',          products: PO },
+  { name: 'Poster Musical',      category: 'poster',      bg: '#3b0764', description: '뮤지컬 공연 — 로열 퍼플',              products: PO },
+  { name: 'Poster Art Fair',     category: 'poster',      bg: '#ffffff', description: '아트 페어 — 모던 화이트',              products: PO },
+  { name: 'Poster Graduation',   category: 'poster',      bg: '#f8f0fb', description: '졸업 전시 — 파스텔 라벤더',            products: PO },
+  { name: 'Poster Contest',      category: 'poster',      bg: '#fefce8', description: '공모전 안내 — 옐로우 임팩트',          products: PO },
+  { name: 'Poster Recruitment',  category: 'poster',      bg: '#0f172a', description: '기업 채용 — 다크 프로페셔널',          products: PO },
 ]
 
 const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
@@ -338,6 +424,11 @@ const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
   realestate: 'Real Estate',
   sticker:    'Sticker',
   postcard:   'Postcard',
+  banner:     'Banner',
+  luxury:     'Luxury',
+  flyer:      'Flyer',
+  brochure:   'Brochure',
+  poster:     'Poster',
 }
 
 const DESIGNS_STORAGE_KEY = 'procardcrafters_saved_designs'
@@ -1365,8 +1456,932 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'y.tanaka@formaarch.com', bl + mmToPx(5, scale), bl + mmToPx(42, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#9ca3af',
-        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
+        data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' },
       })
+
+    // ══ 신규 명함 +20 ═════════════════════════════════════════════════════════
+
+    } else if (name === 'Event Planner') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'GRAND EVENTS', bl + mmToPx(5, scale), bl + mmToPx(9, scale), mmToPx(75, scale), { fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#f59e0b', charSpacing: 180, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Isabelle Park', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Playfair Display', fill: '#e2e8f0', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Senior Event Planner', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#a78bfa', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'isabelle@grandevents.co  ·  +82 10 0000 1234', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), { fontSize: mmToPx(2.4, scale), fill: '#64748b', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Travel Agent') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(14, scale), fill: '#0369a1', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'VOYAGE TRAVEL', bl + mmToPx(5, scale), bl + mmToPx(3, scale), mmToPx(75, scale), { fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#e0f2fe', charSpacing: 150, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Nina Russo', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Raleway', fill: '#0c4a6e', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Travel Consultant', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#0369a1', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'nina@voyagetravel.com  ·  +1 (888) 000-7890', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), { fontSize: mmToPx(2.4, scale), fill: '#64748b', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Investment Advisor') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(1.5, scale), fill: '#d4af6e', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 1.5, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(1.5, scale), fill: '#d4af6e', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SUMMIT WEALTH', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(75, scale), { fontSize: mmToPx(3, scale), fontWeight: 'bold', fill: '#d4af6e', charSpacing: 200, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Thomas Crane', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#e2e8f0', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Senior Investment Advisor', bl + mmToPx(5, scale), bl + mmToPx(29, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#94a3b8', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 't.crane@summitwealth.com', bl + mmToPx(5, scale), bl + mmToPx(39, scale), mmToPx(70, scale), { fontSize: mmToPx(2.5, scale), fill: '#64748b', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Marketing Agency') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(6, scale), height: mmToPx(dims.heightMm, scale), fill: '#dc2626', data: { id: makeId(), name: 'Left Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'REDLINE', bl + mmToPx(11, scale), bl + mmToPx(8, scale), mmToPx(70, scale), { fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#dc2626', charSpacing: 200, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Chris Moon', bl + mmToPx(11, scale), bl + mmToPx(20, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Montserrat', fontWeight: 'bold', fill: '#1e293b', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Creative Director', bl + mmToPx(11, scale), bl + mmToPx(32, scale), mmToPx(65, scale), { fontSize: mmToPx(3, scale), fill: '#475569', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'chris@redline.agency', bl + mmToPx(11, scale), bl + mmToPx(42, scale), mmToPx(65, scale), { fontSize: mmToPx(2.6, scale), fill: '#64748b', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Language School') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 6, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(6, scale), fill: '#fde68a', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LinguaVox Academy', bl + mmToPx(5, scale), bl + mmToPx(6, scale), mmToPx(75, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Poppins', fontWeight: 'bold', fill: '#78350f', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Ami Tanaka', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Nunito', fill: '#1c1917', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Language Instructor', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#92400e', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'ami@linguavox.com', bl + mmToPx(5, scale), bl + mmToPx(38, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#78350f', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Editorial') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(10, scale), width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(0.5, scale), fill: '#111827', data: { id: makeId(), name: 'TopLine', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(dims.heightMm - 10, scale), width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(0.5, scale), fill: '#111827', data: { id: makeId(), name: 'BotLine', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'CLAIRE FONTAINE', bl + mmToPx(5, scale), bl + mmToPx(14, scale), mmToPx(75, scale), { fontSize: mmToPx(5, scale), fontFamily: 'EB Garamond', fill: '#111827', charSpacing: 100, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Editor · Writer · Curator', bl + mmToPx(5, scale), bl + mmToPx(26, scale), mmToPx(75, scale), { fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#6b7280', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'claire@fontaine.press', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Photographer Studio') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0a0a0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm - 2, scale), top: bl, width: mmToPx(2, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'Right Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'FRAME & LIGHT', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#9ca3af', charSpacing: 300, fontFamily: 'Montserrat', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Lena Hoffmann', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Portrait & Commercial', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#d1d5db', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'lena@frameandlight.de', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#6b7280', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Freelance Writer') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm - 8, scale), top: bl, width: mmToPx(8, scale), height: mmToPx(dims.heightMm, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Owen Blake', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(68, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Playfair Display', fill: '#1c1917', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Freelance Writer & Editor', bl + mmToPx(5, scale), bl + mmToPx(25, scale), mmToPx(68, scale), { fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#78350f', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'owen@blakewords.com', bl + mmToPx(5, scale), bl + mmToPx(37, scale), mmToPx(65, scale), { fontSize: mmToPx(2.8, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Music Teacher') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1a0535', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 4, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(4, scale), fill: '#7c3aed', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '♩ Harmonia Studio', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(75, scale), { fontSize: mmToPx(3.5, scale), fill: '#c4b5fd', fontFamily: 'Poppins', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Elena Cruz', bl + mmToPx(5, scale), bl + mmToPx(18, scale), mmToPx(70, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Pacifico', fill: '#ffffff', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Piano & Voice Instructor', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#a78bfa', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'elena@harmonia.music', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#7c3aed', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Interior Designer') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(5, scale), width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(dims.heightMm - 10, scale), fill: 'transparent', stroke: '#d4956a', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Soo Yeon', bl + mmToPx(10, scale), bl + mmToPx(11, scale), mmToPx(65, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Lora', fill: '#3b2314', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Interior Design Studio', bl + mmToPx(10, scale), bl + mmToPx(26, scale), mmToPx(65, scale), { fontSize: mmToPx(3, scale), fill: '#d4956a', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(35, scale), width: mmToPx(40, scale), height: mmToPx(0.5, scale), fill: '#d4956a', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'sooyeon@studiodesign.kr', bl + mmToPx(10, scale), bl + mmToPx(38, scale), mmToPx(65, scale), { fontSize: mmToPx(2.8, scale), fill: '#8b6347', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Wellness Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(3.5, scale), height: mmToPx(dims.heightMm, scale), fill: '#16a34a', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Greenleaf Wellness', bl + mmToPx(8, scale), bl + mmToPx(8, scale), mmToPx(72, scale), { fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#16a34a', fontFamily: 'Nunito', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Dr. Priya Nair', bl + mmToPx(8, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Nunito', fontWeight: 'bold', fill: '#14532d', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Holistic Health Coach', bl + mmToPx(8, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#166534', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'priya@greenleaf.health', bl + mmToPx(8, scale), bl + mmToPx(42, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#4ade80', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Yoga Instructor') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf4ff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 7, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(7, scale), fill: '#d8b4fe', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Aura Yoga', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(75, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Pacifico', fill: '#7c3aed', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Maya Okonkwo', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Lora', fill: '#4c1d95', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'RYT-500 Certified Instructor', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#7c3aed', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'maya@aurayoga.studio', bl + mmToPx(5, scale), bl + mmToPx(38, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#a78bfa', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Nutritionist') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#4ade80', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'NutriLife', bl + mmToPx(5, scale), bl + mmToPx(9, scale), mmToPx(75, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Nunito', fontWeight: 'bold', fill: '#16a34a', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Hyun-Ju Lee', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fill: '#14532d', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Registered Dietitian · Sports Nutrition', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#166534', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'hyunju@nutrilife.kr', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#4ade80', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Dental Clinic') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(12, scale), fill: '#0ea5e9', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SmilePure Dental', bl + mmToPx(5, scale), bl + mmToPx(2.5, scale), mmToPx(75, scale), { fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Nunito', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Dr. Jin Park', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Nunito', fontWeight: 'bold', fill: '#0c4a6e', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'D.D.S. — General & Cosmetic Dentistry', bl + mmToPx(5, scale), bl + mmToPx(28, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#0369a1', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'jinpark@smilepure.clinic  ·  +82 10 0000 5678', bl + mmToPx(5, scale), bl + mmToPx(39, scale), mmToPx(70, scale), { fontSize: mmToPx(2.4, scale), fill: '#64748b', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Pet Veterinarian') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 10, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(10, scale), fill: '#fde68a', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '🐾 Pawsome Clinic', bl + mmToPx(5, scale), bl + mmToPx(6, scale), mmToPx(75, scale), { fontSize: mmToPx(4, scale), fontFamily: 'Nunito', fontWeight: 'bold', fill: '#92400e', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Dr. Hana Kim', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Nunito', fill: '#78350f', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Doctor of Veterinary Medicine', bl + mmToPx(5, scale), bl + mmToPx(28, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#92400e', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'hana@pawsome.vet', bl + mmToPx(5, scale), bl + mmToPx(37, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#78350f', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Product Designer') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(dims.heightMm - 8, scale), width: mmToPx(30, scale), height: mmToPx(2, scale), fill: '#38bdf8', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'PIXELFORM', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(75, scale), { fontSize: mmToPx(3, scale), fontWeight: 'bold', fill: '#38bdf8', charSpacing: 250, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Mia Chen', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#f1f5f9', fontFamily: 'Inter', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Senior Product Designer', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#64748b', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'mia@pixelform.io', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#38bdf8', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Startup Founder') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#020617', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(1, scale), fill: '#6366f1', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ORBIT AI', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), { fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#6366f1', charSpacing: 200, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Sam Kwon', bl + mmToPx(5, scale), bl + mmToPx(18, scale), mmToPx(70, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#f8fafc', fontFamily: 'Inter', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Founder & CEO', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), { fontSize: mmToPx(3, scale), fill: '#818cf8', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'sam@orbitai.co', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#4b5563', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Software Engineer') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#111827', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '{ }', bl + mmToPx(dims.widthMm - 18, scale), bl + mmToPx(6, scale), mmToPx(15, scale), { fontSize: mmToPx(10, scale), fontFamily: 'Courier New', fill: '#1d4ed8', opacity: 0.3, data: { id: makeId(), name: 'Deco', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'Jisoo Bae', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(68, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#f9fafb', fontFamily: 'Inter', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Backend Engineer  ·  Go / Rust', bl + mmToPx(5, scale), bl + mmToPx(23, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#9ca3af', fontFamily: 'Courier New', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'jisoo@dev.io  ·  github.com/jisoobae', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), { fontSize: mmToPx(2.6, scale), fill: '#3b82f6', fontFamily: 'Courier New', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Real Estate v2') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e293b', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm - 18, scale), top: bl, width: mmToPx(18, scale), height: mmToPx(dims.heightMm, scale), fill: '#d4af6e', data: { id: makeId(), name: 'Gold Panel', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ELITE PROPERTY', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(60, scale), { fontSize: mmToPx(3, scale), fontWeight: 'bold', fill: '#d4af6e', charSpacing: 150, data: { id: makeId(), name: 'Agency', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Anna Petrova', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(60, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#f8fafc', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Luxury Real Estate Specialist', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(60, scale), { fontSize: mmToPx(2.8, scale), fill: '#94a3b8', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'anna@eliteproperty.com', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(60, scale), { fontSize: mmToPx(2.5, scale), fill: '#64748b', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Tutor') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 2, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'AcademiaPro', bl + mmToPx(5, scale), bl + mmToPx(7, scale), mmToPx(75, scale), { fontSize: mmToPx(4, scale), fontWeight: 'bold', fontFamily: 'Nunito', fill: '#1d4ed8', data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Min-Jae Seo', bl + mmToPx(5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Nunito', fill: '#1e3a8a', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Math & Science Tutor · Grade 7–12', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'minjae@academiapro.kr', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#6b7280', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    // ══ 스티커 (70×70mm) ════════════════════════════════════════════════════════
+
+    } else if (name === 'Logo Round') {
+      const cx = mmToPx(35, scale), cy = mmToPx(35, scale), r = mmToPx(30, scale)
+      canvas.add(new fabric.Circle({ left: bl + cx - r, top: bl + cy - r, radius: r, fill: '#f1f5f9', stroke: '#cbd5e1', strokeWidth: 1, data: { id: makeId(), name: 'Circle BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'BRAND', bl + mmToPx(10, scale), bl + mmToPx(25, scale), mmToPx(50, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#1e293b', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Logo Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'Your tagline here', bl + mmToPx(10, scale), bl + mmToPx(43, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Quote Square') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fef9c3', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '"', bl + mmToPx(3, scale), bl + mmToPx(0, scale), mmToPx(20, scale), { fontSize: mmToPx(20, scale), fontFamily: 'Playfair Display', fill: '#fde047', data: { id: makeId(), name: 'Quote Mark', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'Your inspiring quote goes here', bl + mmToPx(8, scale), bl + mmToPx(18, scale), mmToPx(54, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Lora', fill: '#78350f', textAlign: 'center', data: { id: makeId(), name: 'Quote', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '— Author Name', bl + mmToPx(8, scale), bl + mmToPx(50, scale), mmToPx(54, scale), { fontSize: mmToPx(3.5, scale), fill: '#92400e', textAlign: 'right', data: { id: makeId(), name: 'Author', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Brand Badge') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e293b', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(5, scale), width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(dims.heightMm - 10, scale), fill: 'transparent', stroke: '#f59e0b', strokeWidth: 1.5, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'BRAND', bl + mmToPx(8, scale), bl + mmToPx(18, scale), mmToPx(54, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#f8fafc', textAlign: 'center', charSpacing: 300, data: { id: makeId(), name: 'Brand', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'EST. 2024', bl + mmToPx(8, scale), bl + mmToPx(45, scale), mmToPx(54, scale), { fontSize: mmToPx(3.5, scale), fill: '#f59e0b', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Event Promo') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#dc2626', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '50%', bl + mmToPx(4, scale), bl + mmToPx(4, scale), mmToPx(62, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Discount', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'OFF', bl + mmToPx(4, scale), bl + mmToPx(40, scale), mmToPx(62, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#fef2f2', textAlign: 'center', charSpacing: 300, data: { id: makeId(), name: 'Off', layerType: 'text' } })
+      addTextbox(canvas, fabric, '오늘만 특가!', bl + mmToPx(4, scale), bl + mmToPx(55, scale), mmToPx(62, scale), { fontSize: mmToPx(4, scale), fill: '#fecaca', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Caution Label') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fbbf24', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: 'transparent', stroke: '#000000', strokeWidth: 3, data: { id: makeId(), name: 'Border', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '⚠', bl + mmToPx(4, scale), bl + mmToPx(5, scale), mmToPx(62, scale), { fontSize: mmToPx(14, scale), fill: '#000000', textAlign: 'center', data: { id: makeId(), name: 'Icon', layerType: 'text' } })
+      addTextbox(canvas, fabric, '주의사항', bl + mmToPx(4, scale), bl + mmToPx(44, scale), mmToPx(62, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#000000', textAlign: 'center', data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'CAUTION', bl + mmToPx(4, scale), bl + mmToPx(57, scale), mmToPx(62, scale), { fontSize: mmToPx(3.5, scale), fill: '#000000', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Thank You') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf2f8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '♥', bl + mmToPx(4, scale), bl + mmToPx(4, scale), mmToPx(62, scale), { fontSize: mmToPx(14, scale), fill: '#db2777', textAlign: 'center', data: { id: makeId(), name: 'Heart', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'Thank You!', bl + mmToPx(4, scale), bl + mmToPx(40, scale), mmToPx(62, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Pacifico', fill: '#9d174d', textAlign: 'center', data: { id: makeId(), name: 'Message', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '감사합니다', bl + mmToPx(4, scale), bl + mmToPx(58, scale), mmToPx(62, scale), { fontSize: mmToPx(3.5, scale), fill: '#be185d', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Handmade') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fefce8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(3, scale), top: bl + mmToPx(3, scale), width: mmToPx(dims.widthMm - 6, scale), height: mmToPx(dims.heightMm - 6, scale), fill: 'transparent', stroke: '#d97706', strokeWidth: 1, strokeDashArray: [3, 3], data: { id: makeId(), name: 'Border', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Handmade', bl + mmToPx(5, scale), bl + mmToPx(15, scale), mmToPx(60, scale), { fontSize: mmToPx(9, scale), fontFamily: 'Pacifico', fill: '#92400e', textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'with love ♥', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(60, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Lora', fill: '#b45309', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Open Sign') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#16a34a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(4, scale), top: bl + mmToPx(4, scale), width: mmToPx(dims.widthMm - 8, scale), height: mmToPx(dims.heightMm - 8, scale), fill: 'transparent', stroke: '#ffffff', strokeWidth: 2, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'OPEN', bl + mmToPx(6, scale), bl + mmToPx(15, scale), mmToPx(58, scale), { fontSize: mmToPx(14, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Open', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '영업중', bl + mmToPx(6, scale), bl + mmToPx(52, scale), mmToPx(58, scale), { fontSize: mmToPx(5, scale), fill: '#bbf7d0', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Sale Badge') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7c3aed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SALE', bl + mmToPx(4, scale), bl + mmToPx(8, scale), mmToPx(62, scale), { fontSize: mmToPx(14, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Sale', layerType: 'text', fieldKey: 'headline' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(48, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(1, scale), fill: '#c4b5fd', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '특별 할인 혜택', bl + mmToPx(4, scale), bl + mmToPx(53, scale), mmToPx(62, scale), { fontSize: mmToPx(4, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Minimal Label') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(3, scale), top: bl + mmToPx(3, scale), width: mmToPx(dims.widthMm - 6, scale), height: mmToPx(dims.heightMm - 6, scale), fill: 'transparent', stroke: '#e2e8f0', strokeWidth: 1.5, data: { id: makeId(), name: 'Border', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LABEL', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(60, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#111827', textAlign: 'center', charSpacing: 300, data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'subtitle text', bl + mmToPx(5, scale), bl + mmToPx(46, scale), mmToPx(60, scale), { fontSize: mmToPx(4, scale), fill: '#9ca3af', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    // ══ 도무송 스티커 (70×70mm, 안전 영역 5mm) ══════════════════════════════════
+    // safe zone: content within 10mm~60mm (x) and 10mm~60mm (y)
+
+    } else if (name === 'Circle Logo') {
+      const r2 = mmToPx(25, scale)
+      canvas.add(new fabric.Circle({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), radius: r2, fill: '#1e293b', data: { id: makeId(), name: 'Circle', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LOGO', bl + mmToPx(10, scale), bl + mmToPx(25, scale), mmToPx(50, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Logo', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'tagline', bl + mmToPx(10, scale), bl + mmToPx(46, scale), mmToPx(50, scale), { fontSize: mmToPx(4, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Heart Love') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(50, scale), height: mmToPx(50, scale), fill: '#fdf2f8', data: { id: makeId(), name: 'Safe Area', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '♥', bl + mmToPx(10, scale), bl + mmToPx(8, scale), mmToPx(50, scale), { fontSize: mmToPx(16, scale), fill: '#db2777', textAlign: 'center', data: { id: makeId(), name: 'Heart', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'LOVE', bl + mmToPx(10, scale), bl + mmToPx(42, scale), mmToPx(50, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#9d174d', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'with all my heart', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#be185d', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Star Badge') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(50, scale), height: mmToPx(50, scale), fill: '#fef9c3', data: { id: makeId(), name: 'Safe BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '★', bl + mmToPx(10, scale), bl + mmToPx(6, scale), mmToPx(50, scale), { fontSize: mmToPx(16, scale), fill: '#f59e0b', textAlign: 'center', data: { id: makeId(), name: 'Star', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'BEST', bl + mmToPx(10, scale), bl + mmToPx(43, scale), mmToPx(50, scale), { fontSize: mmToPx(7.5, scale), fontWeight: 'bold', fill: '#78350f', textAlign: 'center', charSpacing: 150, data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '별점 최고!', bl + mmToPx(10, scale), bl + mmToPx(56, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#92400e', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Speech Bubble') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(54, scale), height: mmToPx(42, scale), rx: mmToPx(5, scale), ry: mmToPx(5, scale), fill: '#eff6ff', data: { id: makeId(), name: 'Bubble', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Hello!', bl + mmToPx(10, scale), bl + mmToPx(14, scale), mmToPx(50, scale), { fontSize: mmToPx(10, scale), fontFamily: 'Pacifico', fill: '#1d4ed8', textAlign: 'center', data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '안녕하세요', bl + mmToPx(10, scale), bl + mmToPx(35, scale), mmToPx(50, scale), { fontSize: mmToPx(4, scale), fill: '#3b82f6', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Icon Text Round') {
+      const r3 = mmToPx(27, scale)
+      canvas.add(new fabric.Circle({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), radius: r3, fill: '#f0fdf4', stroke: '#16a34a', strokeWidth: 2, data: { id: makeId(), name: 'Circle', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '✓', bl + mmToPx(10, scale), bl + mmToPx(12, scale), mmToPx(50, scale), { fontSize: mmToPx(12, scale), fill: '#16a34a', textAlign: 'center', data: { id: makeId(), name: 'Icon', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'CERTIFIED', bl + mmToPx(10, scale), bl + mmToPx(44, scale), mmToPx(50, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#14532d', textAlign: 'center', charSpacing: 150, data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '인증 완료', bl + mmToPx(10, scale), bl + mmToPx(56, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#16a34a', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Vintage Stamp') {
+      const r4 = mmToPx(27, scale)
+      canvas.add(new fabric.Circle({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), radius: r4, fill: '#fdf6e3', data: { id: makeId(), name: 'Outer', layerType: 'rect' } }))
+      canvas.add(new fabric.Circle({ left: bl + mmToPx(13, scale), top: bl + mmToPx(13, scale), radius: mmToPx(22, scale), fill: 'transparent', stroke: '#d4956a', strokeWidth: 1.5, data: { id: makeId(), name: 'Inner Ring', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ORIGINAL', bl + mmToPx(10, scale), bl + mmToPx(20, scale), mmToPx(50, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#8b4513', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Top', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '★★★', bl + mmToPx(10, scale), bl + mmToPx(32, scale), mmToPx(50, scale), { fontSize: mmToPx(5, scale), fill: '#d4956a', textAlign: 'center', data: { id: makeId(), name: 'Stars', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'SINCE 2024', bl + mmToPx(10, scale), bl + mmToPx(43, scale), mmToPx(50, scale), { fontSize: mmToPx(4, scale), fill: '#a0704a', charSpacing: 150, textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Character Card') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(50, scale), height: mmToPx(50, scale), fill: '#faf5ff', data: { id: makeId(), name: 'Safe BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '(●ᴗ●)', bl + mmToPx(10, scale), bl + mmToPx(12, scale), mmToPx(50, scale), { fontSize: mmToPx(8, scale), fill: '#7c3aed', textAlign: 'center', data: { id: makeId(), name: 'Character', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'Hi There!', bl + mmToPx(10, scale), bl + mmToPx(38, scale), mmToPx(50, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Pacifico', fill: '#6d28d9', textAlign: 'center', data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '반가워요!', bl + mmToPx(10, scale), bl + mmToPx(54, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#a78bfa', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    } else if (name === 'Hexagon Label') {
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(50, scale), height: mmToPx(50, scale), fill: '#f0f9ff', data: { id: makeId(), name: 'Safe BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(14, scale), top: bl + mmToPx(14, scale), width: mmToPx(42, scale), height: mmToPx(42, scale), fill: 'transparent', stroke: '#0369a1', strokeWidth: 2, data: { id: makeId(), name: 'Border', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LABEL', bl + mmToPx(10, scale), bl + mmToPx(22, scale), mmToPx(50, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#0c4a6e', textAlign: 'center', charSpacing: 150, data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'product info', bl + mmToPx(10, scale), bl + mmToPx(45, scale), mmToPx(50, scale), { fontSize: mmToPx(4, scale), fill: '#0369a1', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+
+    // ══ 엽서 (152×102mm 가로) ═══════════════════════════════════════════════════
+    // Left half (image area): 0~76mm  Right half (text area): 76~152mm
+    // fieldKey: greeting, body, signature
+
+    } else if (name === 'Greeting Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(60, scale), height: mmToPx(dims.heightMm, scale), fill: '#fff7ed', data: { id: makeId(), name: 'Left Panel', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(60, scale), top: bl, width: mmToPx(dims.widthMm - 60, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdba74', data: { id: makeId(), name: 'Right Panel', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '안녕하세요', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(50, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Pacifico', fill: '#92400e', textAlign: 'center', data: { id: makeId(), name: 'Greeting', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '따뜻한 인사를 전합니다', bl + mmToPx(5, scale), bl + mmToPx(38, scale), mmToPx(50, scale), { fontSize: mmToPx(3.5, scale), fill: '#b45309', textAlign: 'center', data: { id: makeId(), name: 'Message', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '드림', bl + mmToPx(65, scale), bl + mmToPx(78, scale), mmToPx(82, scale), { fontSize: mmToPx(3.5, scale), fill: '#7c2d12', textAlign: 'right', data: { id: makeId(), name: 'Signature', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Invitation') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e1b4b', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(2, scale), height: mmToPx(dims.heightMm, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'YOU ARE INVITED', bl + mmToPx(8, scale), bl + mmToPx(8, scale), mmToPx(90, scale), { fontSize: mmToPx(3.5, scale), fill: '#f59e0b', charSpacing: 200, data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'greeting' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(18, scale), width: mmToPx(80, scale), height: mmToPx(0.5, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '이벤트 이름을 입력하세요', bl + mmToPx(8, scale), bl + mmToPx(22, scale), mmToPx(130, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Playfair Display', fill: '#ffffff', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '2026년 6월 1일 · 서울', bl + mmToPx(8, scale), bl + mmToPx(70, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#a5b4fc', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Thank You Note') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(55, scale), height: mmToPx(dims.heightMm, scale), fill: '#fce7f3', data: { id: makeId(), name: 'Left', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(55, scale), top: bl, width: mmToPx(dims.widthMm - 55, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf2f8', data: { id: makeId(), name: 'Right', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Thank\nYou!', bl + mmToPx(5, scale), bl + mmToPx(15, scale), mmToPx(45, scale), { fontSize: mmToPx(9, scale), fontFamily: 'Pacifico', fill: '#9d174d', textAlign: 'center', data: { id: makeId(), name: 'Thanks', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '감사한 마음을\n전하고 싶어요', bl + mmToPx(60, scale), bl + mmToPx(15, scale), mmToPx(85, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Lora', fill: '#831843', data: { id: makeId(), name: 'Message', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '— 보내는 이', bl + mmToPx(60, scale), bl + mmToPx(75, scale), mmToPx(85, scale), { fontSize: mmToPx(3.5, scale), fill: '#be185d', textAlign: 'right', data: { id: makeId(), name: 'From', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Business Postcard') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(4, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '새로운 소식을 전합니다', bl + mmToPx(10, scale), bl + mmToPx(10, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#60a5fa', data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '비즈니스 안내', bl + mmToPx(10, scale), bl + mmToPx(20, scale), mmToPx(130, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Inter', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, 'contact@company.com', bl + mmToPx(10, scale), bl + mmToPx(75, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#64748b', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Event Invite') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7c3aed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 18, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(18, scale), fill: '#6d28d9', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '초대합니다', bl + mmToPx(8, scale), bl + mmToPx(8, scale), mmToPx(130, scale), { fontSize: mmToPx(3, scale), fill: '#ddd6fe', charSpacing: 150, data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '특별한 이벤트에 참석해주세요', bl + mmToPx(8, scale), bl + mmToPx(20, scale), mmToPx(130, scale), { fontSize: mmToPx(6.5, scale), fontFamily: 'Playfair Display', fill: '#ffffff', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '2026.06.01  |  오후 6시  |  서울 강남구', bl + mmToPx(8, scale), bl + mmToPx(88, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#c4b5fd', data: { id: makeId(), name: 'Details', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Holiday Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#14532d', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#ef4444', data: { id: makeId(), name: 'Top Red', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 2, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#ef4444', data: { id: makeId(), name: 'Bot Red', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '★ Season\'s Greetings ★', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(130, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Playfair Display', fill: '#fde68a', textAlign: 'center', data: { id: makeId(), name: 'Greeting', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '따뜻한 연말 보내세요', bl + mmToPx(8, scale), bl + mmToPx(35, scale), mmToPx(130, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Lora', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Message', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '드림', bl + mmToPx(8, scale), bl + mmToPx(75, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#86efac', textAlign: 'right', data: { id: makeId(), name: 'Sign', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Product Launch') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(70, scale), height: mmToPx(dims.heightMm, scale), fill: '#0c4a6e', data: { id: makeId(), name: 'Left', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(70, scale), top: bl, width: mmToPx(dims.widthMm - 70, scale), height: mmToPx(dims.heightMm, scale), fill: '#f0f9ff', data: { id: makeId(), name: 'Right', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'NEW', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(60, scale), { fontSize: mmToPx(12, scale), fontWeight: 'bold', fill: '#38bdf8', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'New', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '신제품 출시!', bl + mmToPx(5, scale), bl + mmToPx(60, scale), mmToPx(60, scale), { fontSize: mmToPx(4, scale), fill: '#e0f2fe', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '제품명 & 특징을\n이곳에 입력하세요', bl + mmToPx(75, scale), bl + mmToPx(15, scale), mmToPx(70, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Poppins', fill: '#0c4a6e', data: { id: makeId(), name: 'Detail', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Welcome Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f0fdf4', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(4, scale), fill: '#16a34a', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'WELCOME', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(130, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#14532d', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Welcome', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '함께해 주셔서 감사합니다', bl + mmToPx(8, scale), bl + mmToPx(45, scale), mmToPx(130, scale), { fontSize: mmToPx(4.5, scale), fill: '#166534', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '더 궁금한 점은 연락주세요 →', bl + mmToPx(8, scale), bl + mmToPx(76, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#16a34a', textAlign: 'right', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Farewell Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fafafa', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 16, scale), fill: 'transparent', stroke: '#d1d5db', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'Goodbye &\nBest Wishes', bl + mmToPx(15, scale), bl + mmToPx(15, scale), mmToPx(120, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Playfair Display', fill: '#374151', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, '새로운 시작을 응원합니다', bl + mmToPx(15, scale), bl + mmToPx(55, scale), mmToPx(120, scale), { fontSize: mmToPx(4, scale), fontFamily: 'Lora', fill: '#6b7280', data: { id: makeId(), name: 'Message', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '— 모두에게', bl + mmToPx(15, scale), bl + mmToPx(78, scale), mmToPx(120, scale), { fontSize: mmToPx(3.5, scale), fill: '#9ca3af', textAlign: 'right', data: { id: makeId(), name: 'Sign', layerType: 'text', fieldKey: 'signature' } })
+
+    } else if (name === 'Congrats Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fefce8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 3, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '🎉 축하합니다!', bl + mmToPx(8, scale), bl + mmToPx(10, scale), mmToPx(130, scale), { fontSize: mmToPx(8, scale), fontFamily: 'Pacifico', fill: '#92400e', textAlign: 'center', data: { id: makeId(), name: 'Congrats', layerType: 'text', fieldKey: 'greeting' } })
+      addTextbox(canvas, fabric, 'CONGRATULATIONS', bl + mmToPx(8, scale), bl + mmToPx(45, scale), mmToPx(130, scale), { fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#d97706', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '함께 축하합니다', bl + mmToPx(8, scale), bl + mmToPx(76, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#b45309', textAlign: 'right', data: { id: makeId(), name: 'Sign', layerType: 'text', fieldKey: 'signature' } })
+
+    // ══ 배너 (200×300mm, 세로형) ════════════════════════════════════════════════
+    // safe zone: bleed 5mm. fieldKey: main, sub, date, contact
+    // y 좌표 = bleed + mm 값. 헤드라인은 큰 폰트 위주로 배치한다.
+
+    } else if (name === '오픈 안내 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e40af', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 16, scale), fill: 'transparent', stroke: '#93c5fd', strokeWidth: 1.5, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'GRAND OPEN', bl + mmToPx(10, scale), bl + mmToPx(75, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Oswald', fill: '#ffffff', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '오픈 기념 특별 혜택', bl + mmToPx(10, scale), bl + mmToPx(155, scale), mmToPx(180, scale), { fontSize: mmToPx(9, scale), fill: '#93c5fd', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '2026.06.01 오픈', bl + mmToPx(10, scale), bl + mmToPx(195, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#dbeafe', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6, scale), fill: '#93c5fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '특가 안내 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#dc2626', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(100, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(100, scale), fill: '#b91c1c', data: { id: makeId(), name: 'Mid Band', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '특별 특가 세일', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fontFamily: 'Bebas Neue', fill: '#ffffff', textAlign: 'center', charSpacing: 80, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '최대 70% 할인', bl + mmToPx(10, scale), bl + mmToPx(120, scale), mmToPx(180, scale), { fontSize: mmToPx(14, scale), fontWeight: 'bold', fill: '#fef2f2', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '기간: ~ 6월 30일', bl + mmToPx(10, scale), bl + mmToPx(180, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#fca5a5', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '문의: 02-0000-0000', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#fee2e2', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '신메뉴 출시 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#065f46', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(88, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1.5, scale), fill: '#34d399', data: { id: makeId(), name: 'Line1', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(175, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1.5, scale), fill: '#34d399', data: { id: makeId(), name: 'Line2', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '신메뉴 출시', bl + mmToPx(10, scale), bl + mmToPx(50, scale), mmToPx(180, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '지금 맛보세요!', bl + mmToPx(10, scale), bl + mmToPx(100, scale), mmToPx(180, scale), { fontSize: mmToPx(9, scale), fill: '#a7f3d0', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '출시일: 6월 1일', bl + mmToPx(10, scale), bl + mmToPx(182, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#6ee7b7', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '매장 문의', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#a7f3d0', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '이벤트 안내 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7c3aed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(80, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(80, scale), fill: '#6d28d9', data: { id: makeId(), name: 'Band', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '이벤트 안내', bl + mmToPx(10, scale), bl + mmToPx(45, scale), mmToPx(180, scale), { fontSize: mmToPx(19, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '특별한 혜택을 드립니다', bl + mmToPx(10, scale), bl + mmToPx(100, scale), mmToPx(180, scale), { fontSize: mmToPx(9, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '기간: 6월 1일 ~ 6월 30일', bl + mmToPx(10, scale), bl + mmToPx(180, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#c4b5fd', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '문의: 02-0000-0000', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#ede9fe', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '환영 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(130, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#e2e8f0', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'WELCOME', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Raleway', fill: '#1e293b', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '환영합니다', bl + mmToPx(10, scale), bl + mmToPx(107, scale), mmToPx(180, scale), { fontSize: mmToPx(10, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '2026. 06. 01', bl + mmToPx(10, scale), bl + mmToPx(142, scale), mmToPx(180, scale), { fontSize: mmToPx(7.5, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '공연 안내 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(130, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Gold Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '공연 안내', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Playfair Display', fill: '#f59e0b', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '특별 공연', bl + mmToPx(10, scale), bl + mmToPx(107, scale), mmToPx(180, scale), { fontSize: mmToPx(11, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '2026.07.15  |  오후 7시', bl + mmToPx(10, scale), bl + mmToPx(142, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#fbbf24', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '예매 문의', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '모집 공고 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fef3c7', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(20, scale), fill: '#d97706', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 20, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(20, scale), fill: '#d97706', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '모집 공고', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(20, scale), fontWeight: 'bold', fill: '#92400e', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '함께 일할 분을 찾습니다', bl + mmToPx(10, scale), bl + mmToPx(110, scale), mmToPx(180, scale), { fontSize: mmToPx(9, scale), fill: '#78350f', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '지원 마감: 6월 15일', bl + mmToPx(10, scale), bl + mmToPx(160, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#b45309', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, 'recruit@company.com', bl + mmToPx(10, scale), bl + mmToPx(235, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#78350f', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === '시즌 세일 배너') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#831843', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(dims.heightMm - 20, scale), fill: 'transparent', stroke: '#f9a8d4', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SEASON SALE', bl + mmToPx(10, scale), bl + mmToPx(50, scale), mmToPx(180, scale), { fontSize: mmToPx(19, scale), fontWeight: 'bold', fontFamily: 'Bebas Neue', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
+      addTextbox(canvas, fabric, '최대 70% 할인', bl + mmToPx(10, scale), bl + mmToPx(125, scale), mmToPx(180, scale), { fontSize: mmToPx(12, scale), fill: '#fce7f3', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
+      addTextbox(canvas, fabric, '기간: 6/1 ~ 6/30', bl + mmToPx(10, scale), bl + mmToPx(175, scale), mmToPx(180, scale), { fontSize: mmToPx(7.5, scale), fill: '#f9a8d4', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '02-0000-0000', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#fbcfe8', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    // ══ 고급명함 (85×55mm, premium_business_cards) ════════════════════════════
+    // 럭셔리 마감 시뮬레이션. fieldKey: name, title, company, phone, email
+    // 좌표는 business_cards와 동일 스케일 (widthMm=85, heightMm=55)
+
+    } else if (name === 'Luxe Black') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0a0a0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(2, scale), top: bl + mmToPx(2, scale), width: mmToPx(dims.widthMm - 4, scale), height: mmToPx(dims.heightMm - 4, scale), fill: 'transparent', stroke: '#b8860b', strokeWidth: 0.8, data: { id: makeId(), name: 'Gold Frame', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(34, scale), width: mmToPx(25, scale), height: mmToPx(0.6, scale), fill: '#b8860b', data: { id: makeId(), name: 'Gold Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ALEXANDER', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(75, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#ffffff', charSpacing: 200, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Managing Director', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(75, scale), { fontSize: mmToPx(3, scale), fontFamily: 'EB Garamond', fill: '#b8860b', charSpacing: 100, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'alex@luxe.com', bl + mmToPx(5, scale), bl + mmToPx(38, scale), mmToPx(75, scale), { fontSize: mmToPx(2.8, scale), fill: '#888888', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Gold Stamp') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1a1203', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(8, scale), height: mmToPx(dims.heightMm, scale), fill: '#b8860b', data: { id: makeId(), name: 'Gold Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'VICTOR', bl + mmToPx(14, scale), bl + mmToPx(10, scale), mmToPx(68, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#d4a017', charSpacing: 150, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Chief Executive Officer', bl + mmToPx(14, scale), bl + mmToPx(24, scale), mmToPx(68, scale), { fontSize: mmToPx(2.8, scale), fontFamily: 'EB Garamond', fill: '#c8a84b', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(14, scale), top: bl + mmToPx(33, scale), width: mmToPx(40, scale), height: mmToPx(0.5, scale), fill: '#b8860b', data: { id: makeId(), name: 'Divider', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'victor@company.com', bl + mmToPx(14, scale), bl + mmToPx(37, scale), mmToPx(68, scale), { fontSize: mmToPx(2.6, scale), fill: '#8a7a50', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+      addTextbox(canvas, fabric, '+82 10-0000-0000', bl + mmToPx(14, scale), bl + mmToPx(43, scale), mmToPx(68, scale), { fontSize: mmToPx(2.6, scale), fill: '#8a7a50', data: { id: makeId(), name: 'Phone', layerType: 'text', fieldKey: 'phone' } })
+
+    } else if (name === 'Marble Edge') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f8f8f8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(3, scale), height: mmToPx(dims.heightMm, scale), fill: '#2c2c2c', data: { id: makeId(), name: 'Left Edge', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm - 3, scale), top: bl, width: mmToPx(3, scale), height: mmToPx(dims.heightMm, scale), fill: '#2c2c2c', data: { id: makeId(), name: 'Right Edge', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SOPHIA', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(69, scale), { fontSize: mmToPx(6.5, scale), fontFamily: 'Playfair Display', fill: '#1a1a1a', charSpacing: 200, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Creative Director', bl + mmToPx(8, scale), bl + mmToPx(25, scale), mmToPx(69, scale), { fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#666666', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(34, scale), width: mmToPx(30, scale), height: mmToPx(0.5, scale), fill: '#c0c0c0', data: { id: makeId(), name: 'Divider', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'sophia@studio.com', bl + mmToPx(8, scale), bl + mmToPx(38, scale), mmToPx(69, scale), { fontSize: mmToPx(2.6, scale), fill: '#888888', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Embossed Logo') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1c1c2e', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      const r5 = mmToPx(8, scale)
+      canvas.add(new fabric.Circle({ left: bl + mmToPx(60, scale), top: bl + mmToPx(4, scale), radius: r5, fill: 'transparent', stroke: '#a0a0d0', strokeWidth: 1, data: { id: makeId(), name: 'Logo Ring', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'L', bl + mmToPx(62, scale), bl + mmToPx(6, scale), mmToPx(12, scale), { fontSize: mmToPx(7.5, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#a0a0d0', textAlign: 'center', data: { id: makeId(), name: 'Logo', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'LUCAS PARK', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(75, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Raleway', fontWeight: 'bold', fill: '#e8e8f8', charSpacing: 150, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Senior Consultant', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(75, scale), { fontSize: mmToPx(2.8, scale), fill: '#7878a8', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'lucas@corp.com  ·  +82 10-1234-5678', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(75, scale), { fontSize: mmToPx(2.4, scale), fill: '#6060a0', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Letterpress Style') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf8f0', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(4, scale), top: bl + mmToPx(4, scale), width: mmToPx(dims.widthMm - 8, scale), height: mmToPx(dims.heightMm - 8, scale), fill: 'transparent', stroke: '#c8a87a', strokeWidth: 1, strokeDashArray: [3, 2], data: { id: makeId(), name: 'Dashed Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'EMMA WATSON', bl + mmToPx(7, scale), bl + mmToPx(12, scale), mmToPx(71, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'EB Garamond', fontWeight: 'bold', fill: '#3d2b1f', charSpacing: 100, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Brand Strategist', bl + mmToPx(7, scale), bl + mmToPx(23, scale), mmToPx(71, scale), { fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#7a5c40', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(7, scale), top: bl + mmToPx(33, scale), width: mmToPx(50, scale), height: mmToPx(0.5, scale), fill: '#c8a87a', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'emma@brandco.com', bl + mmToPx(7, scale), bl + mmToPx(37, scale), mmToPx(71, scale), { fontSize: mmToPx(2.7, scale), fill: '#9a7050', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+      addTextbox(canvas, fabric, '+82 10-5678-0000', bl + mmToPx(7, scale), bl + mmToPx(43, scale), mmToPx(71, scale), { fontSize: mmToPx(2.7, scale), fill: '#9a7050', data: { id: makeId(), name: 'Phone', layerType: 'text', fieldKey: 'phone' } })
+
+    } else if (name === 'Platinum Card') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#e8e8e8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#a8a8a8', data: { id: makeId(), name: 'Top Strip', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 5, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#a8a8a8', data: { id: makeId(), name: 'Bottom Strip', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'JAMES LEE', bl + mmToPx(6, scale), bl + mmToPx(12, scale), mmToPx(73, scale), { fontSize: mmToPx(6, scale), fontFamily: 'Raleway', fontWeight: 'bold', fill: '#1a1a1a', charSpacing: 200, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Platinum Member · Director', bl + mmToPx(6, scale), bl + mmToPx(24, scale), mmToPx(73, scale), { fontSize: mmToPx(2.8, scale), fill: '#606060', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(6, scale), top: bl + mmToPx(33, scale), width: mmToPx(35, scale), height: mmToPx(0.5, scale), fill: '#909090', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'james@platinum.com', bl + mmToPx(6, scale), bl + mmToPx(37, scale), mmToPx(73, scale), { fontSize: mmToPx(2.6, scale), fill: '#707070', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+
+    } else if (name === 'Rose Gold Foil') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#2d1515', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(26, scale), width: mmToPx(dims.widthMm - 10, scale), height: mmToPx(0.6, scale), fill: '#c7748a', data: { id: makeId(), name: 'Rose Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ISABELLA', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), { fontSize: mmToPx(7, scale), fontFamily: 'Playfair Display', fill: '#e8a0b0', charSpacing: 200, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Art Director', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(75, scale), { fontSize: mmToPx(3, scale), fontFamily: 'EB Garamond', fill: '#c7748a', charSpacing: 50, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'isabella@art.studio', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(75, scale), { fontSize: mmToPx(2.7, scale), fill: '#7a4040', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
+      addTextbox(canvas, fabric, '+82 10-0000-1234', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(75, scale), { fontSize: mmToPx(2.7, scale), fill: '#7a4040', data: { id: makeId(), name: 'Phone', layerType: 'text', fieldKey: 'phone' } })
+
+    } else if (name === 'Minimal Noir') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f5f5f0', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(5, scale), top: bl + mmToPx(29, scale), width: mmToPx(4, scale), height: mmToPx(0.8, scale), fill: '#1a1a1a', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'NOIR', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(75, scale), { fontSize: mmToPx(9, scale), fontFamily: 'Raleway', fontWeight: 'bold', fill: '#0f0f0f', charSpacing: 400, data: { id: makeId(), name: 'Brand', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'Min-jun Choi', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(75, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Lora', fill: '#1a1a1a', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+      addTextbox(canvas, fabric, 'Design Consultant', bl + mmToPx(12, scale), bl + mmToPx(31, scale), mmToPx(63, scale), { fontSize: mmToPx(2.8, scale), fill: '#666666', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'hello@noir.studio  ·  010-0000-1234', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(75, scale), { fontSize: mmToPx(2.5, scale), fill: '#888888', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+
+    // ══ 전단지 (148×210mm A5) ══════════════════════════════════════════════════════
+
+    } else if (name === 'Flyer Open Event') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(55, scale), fill: '#ff6b00', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(55, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm - 55, scale), fill: '#ffffff', data: { id: makeId(), name: 'Body BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'GRAND OPEN', bl + mmToPx(8, scale), bl + mmToPx(10, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(16, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 100, fontFamily: 'Oswald', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '오픈 기념 특별 이벤트', bl + mmToPx(8, scale), bl + mmToPx(42, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fill: '#fff3e0', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '특별 혜택을 만나보세요.\n방문하시는 모든 분께 소정의 선물을 드립니다.', bl + mmToPx(10, scale), bl + mmToPx(65, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(150, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(20, scale), rx: mmToPx(2, scale), ry: mmToPx(2, scale), fill: '#ff6b00', data: { id: makeId(), name: 'CTA Btn', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '지금 방문하기', bl + mmToPx(10, scale), bl + mmToPx(155, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '2026.06.01 ~ 06.30', bl + mmToPx(10, scale), bl + mmToPx(178, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#6b7280', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 강남구', bl + mmToPx(10, scale), bl + mmToPx(186, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#6b7280', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(198, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.5, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Season Sale') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 50, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(50, scale), fill: '#ffffff', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SEASON', bl + mmToPx(6, scale), bl + mmToPx(18, scale), mmToPx(dims.widthMm - 12, scale), { fontSize: mmToPx(20, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', charSpacing: 200, fontFamily: 'Oswald', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'SALE', bl + mmToPx(6, scale), bl + mmToPx(55, scale), mmToPx(dims.widthMm - 12, scale), { fontSize: mmToPx(26, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', charSpacing: 200, fontFamily: 'Bebas Neue', data: { id: makeId(), name: 'Sale', layerType: 'text' } })
+      addTextbox(canvas, fabric, '최대 50% 특별 할인 혜택', bl + mmToPx(8, scale), bl + mmToPx(102, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fill: '#bfdbfe', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '기간 한정 특별 프로모션입니다.\n이 기회를 놓치지 마세요!', bl + mmToPx(8, scale), bl + mmToPx(115, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#e0e7ff', textAlign: 'center', lineHeight: 1.6, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '2026.07.01 ~ 07.31', bl + mmToPx(8, scale), bl + mmToPx(166, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#374151', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(8, scale), bl + mmToPx(176, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#6b7280', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Restaurant') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7b1d1d', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(6, scale), top: bl + mmToPx(6, scale), width: mmToPx(dims.widthMm - 12, scale), height: mmToPx(dims.heightMm - 12, scale), fill: 'transparent', stroke: '#d4956a', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'RESTAURANT', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#d4956a', textAlign: 'center', charSpacing: 150, fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(38, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(0.5, scale), fill: '#d4956a', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '새로운 메뉴를 소개합니다', bl + mmToPx(8, scale), bl + mmToPx(42, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Lora', fill: '#f5f5dc', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '엄선된 재료로 정성껏 준비한\n특별한 메뉴를 맛보세요.', bl + mmToPx(10, scale), bl + mmToPx(70, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Lora', fill: '#e5d5b5', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '예약 및 문의', bl + mmToPx(8, scale), bl + mmToPx(130, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#d4956a', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '매일 오전 11시 ~ 오후 10시', bl + mmToPx(8, scale), bl + mmToPx(148, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#d4956a', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 마포구 홍대입구역 3번 출구', bl + mmToPx(8, scale), bl + mmToPx(158, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#c4a882', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(8, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#d4956a', textAlign: 'center', fontFamily: 'Lora', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Academy') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e3a5f', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(6, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '학원 수강생\n모집 안내', bl + mmToPx(12, scale), bl + mmToPx(18, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(11, scale), fontWeight: 'bold', fill: '#ffffff', lineHeight: 1.3, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '2026년 하반기 신입생 모집', bl + mmToPx(12, scale), bl + mmToPx(65, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#93c5fd', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(12, scale), top: bl + mmToPx(78, scale), width: mmToPx(dims.widthMm - 24, scale), height: mmToPx(0.5, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '체계적인 커리큘럼으로\n실력을 키워드립니다.\n소수 정예 맞춤 수업.', bl + mmToPx(12, scale), bl + mmToPx(84, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#dbeafe', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(12, scale), top: bl + mmToPx(152, scale), width: mmToPx(dims.widthMm - 24, scale), height: mmToPx(18, scale), fill: '#3b82f6', data: { id: makeId(), name: 'CTA Btn', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '무료 체험 신청하기', bl + mmToPx(12, scale), bl + mmToPx(156, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '모집기간: 2026.07.01 ~ 07.31', bl + mmToPx(12, scale), bl + mmToPx(178, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#93c5fd', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '02-1234-5678  |  www.academy.kr', bl + mmToPx(12, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.5, scale), fill: '#60a5fa', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Seminar') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 3, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'Bot Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'SEMINAR', bl + mmToPx(8, scale), bl + mmToPx(10, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#1d4ed8', textAlign: 'center', charSpacing: 300, data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      addTextbox(canvas, fabric, '세미나 안내', bl + mmToPx(8, scale), bl + mmToPx(22, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(13, scale), fontWeight: 'bold', fill: '#111827', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '비즈니스 성장을 위한 핵심 전략', bl + mmToPx(8, scale), bl + mmToPx(57, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fill: '#4b5563', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(69, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(0.5, scale), fill: '#e5e7eb', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '업계 전문가와 함께하는 실전 세미나.\n최신 트렌드와 전략을 공유합니다.', bl + mmToPx(10, scale), bl + mmToPx(76, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#374151', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(148, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(18, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'CTA Btn', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '사전 등록하기', bl + mmToPx(10, scale), bl + mmToPx(152, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '2026.08.15 (토)', bl + mmToPx(10, scale), bl + mmToPx(174, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#6b7280', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 코엑스 컨퍼런스홀 B1', bl + mmToPx(10, scale), bl + mmToPx(182, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#6b7280', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(196, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.5, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Cafe') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b1f0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 16, scale), fill: 'transparent', stroke: '#d4956a', strokeWidth: 0.8, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '☕', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(12, scale), textAlign: 'center', data: { id: makeId(), name: 'Icon', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'NEW MENU', bl + mmToPx(8, scale), bl + mmToPx(42, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(7.5, scale), fontWeight: 'bold', fill: '#d4956a', textAlign: 'center', charSpacing: 150, fontFamily: 'Raleway', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '봄 시즌 신메뉴 출시', bl + mmToPx(8, scale), bl + mmToPx(58, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Lora', fill: '#e8d5b5', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(25, scale), top: bl + mmToPx(70, scale), width: mmToPx(dims.widthMm - 50, scale), height: mmToPx(0.5, scale), fill: '#d4956a', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '엄선된 원두와 신선한 재료로\n만든 봄 한정 시그니처 메뉴.', bl + mmToPx(10, scale), bl + mmToPx(78, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fontFamily: 'Lora', fill: '#d4c5a0', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '매일 오전 8시 ~ 오후 10시', bl + mmToPx(10, scale), bl + mmToPx(158, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#a07850', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 성수동 카페거리', bl + mmToPx(10, scale), bl + mmToPx(166, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#a07850', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '@cafe_instagram  |  02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.5, scale), fill: '#d4956a', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Health') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(4, scale), height: mmToPx(dims.heightMm, scale), fill: '#f97316', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'FITNESS\nCLUB', bl + mmToPx(10, scale), bl + mmToPx(16, scale), mmToPx(dims.widthMm - 18, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Bebas Neue', lineHeight: 0.9, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '당신의 한계를 넘어서라', bl + mmToPx(10, scale), bl + mmToPx(78, scale), mmToPx(dims.widthMm - 18, scale), { fontSize: mmToPx(5.5, scale), fill: '#f97316', fontFamily: 'Oswald', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(90, scale), width: mmToPx(40, scale), height: mmToPx(1, scale), fill: '#f97316', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '전문 트레이너와 함께하는\n맞춤형 피트니스 프로그램.\n지금 무료 체험을 신청하세요.', bl + mmToPx(10, scale), bl + mmToPx(96, scale), mmToPx(dims.widthMm - 18, scale), { fontSize: mmToPx(4.5, scale), fill: '#94a3b8', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(156, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(20, scale), fill: '#f97316', data: { id: makeId(), name: 'CTA Btn', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '무료 1주 체험 신청', bl + mmToPx(10, scale), bl + mmToPx(161, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Oswald', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '연중무휴 06:00 ~ 24:00', bl + mmToPx(10, scale), bl + mmToPx(184, scale), mmToPx(dims.widthMm - 18, scale), { fontSize: mmToPx(3.8, scale), fill: '#64748b', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '010-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 18, scale), { fontSize: mmToPx(3.8, scale), fill: '#f97316', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Beauty') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf2f8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(50, scale), fill: '#db2777', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'BEAUTY\nSALON', bl + mmToPx(8, scale), bl + mmToPx(8, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(12, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Raleway', lineHeight: 0.95, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '당신만을 위한 특별한 시간', bl + mmToPx(8, scale), bl + mmToPx(56, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fontFamily: 'Lora', fill: '#9d174d', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(25, scale), top: bl + mmToPx(67, scale), width: mmToPx(dims.widthMm - 50, scale), height: mmToPx(0.5, scale), fill: '#f9a8d4', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '헤어 · 메이크업 · 네일 · 스킨케어\n전문가가 직접 관리해드립니다.\n첫 방문 20% 할인 혜택.', bl + mmToPx(10, scale), bl + mmToPx(74, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#6b7280', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(150, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(18, scale), rx: mmToPx(9, scale), ry: mmToPx(9, scale), fill: '#db2777', data: { id: makeId(), name: 'CTA Btn', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '예약 상담하기', bl + mmToPx(10, scale), bl + mmToPx(154, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '화 ~ 일 10:00 ~ 21:00 (월 정기 휴무)', bl + mmToPx(8, scale), bl + mmToPx(176, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#9ca3af', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '010-1234-5678  |  서울 강남구', bl + mmToPx(8, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#db2777', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Real Estate') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0a1628', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(dims.heightMm - 20, scale), fill: 'transparent', stroke: '#b8860b', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'REAL ESTATE', bl + mmToPx(14, scale), bl + mmToPx(16, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#b8860b', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(27, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(0.5, scale), fill: '#b8860b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '신규 매물\n안내', bl + mmToPx(12, scale), bl + mmToPx(33, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(14, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Playfair Display', textAlign: 'center', lineHeight: 1.1, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '입지 좋은 프리미엄 물건 소개', bl + mmToPx(12, scale), bl + mmToPx(86, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(4.5, scale), fill: '#d4af6e', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '직거래 가능 · 즉시 입주 · 전문 컨설팅\n수십 년 경력의 전문가가 함께합니다.', bl + mmToPx(14, scale), bl + mmToPx(100, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4, scale), fill: '#94a3b8', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '무료 상담 예약', bl + mmToPx(14, scale), bl + mmToPx(148, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4.5, scale), fill: '#b8860b', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '평일 09:00 ~ 18:00', bl + mmToPx(14, scale), bl + mmToPx(168, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(3.8, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 강남구 테헤란로', bl + mmToPx(14, scale), bl + mmToPx(177, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(3.8, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(14, scale), bl + mmToPx(196, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Concert') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0d0d0d', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(90, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#a3e635', data: { id: makeId(), name: 'Neon Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LIVE\nCONCERT', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(19, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Bebas Neue', lineHeight: 0.85, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '특별 공연 안내', bl + mmToPx(8, scale), bl + mmToPx(96, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fill: '#a3e635', fontFamily: 'Oswald', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '잊지 못할 밤을 선사합니다.\n최고의 아티스트와 함께하는\n라이브 콘서트.', bl + mmToPx(8, scale), bl + mmToPx(112, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4.5, scale), fill: '#9ca3af', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(162, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(1.5, scale), fill: '#a3e635', data: { id: makeId(), name: 'Line2', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '2026.09.20 (토) 오후 7시', bl + mmToPx(8, scale), bl + mmToPx(168, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4.5, scale), fill: '#d1d5db', fontWeight: 'bold', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '올림픽공원 88잔디마당', bl + mmToPx(8, scale), bl + mmToPx(178, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, 'www.ticket.kr  |  1544-1234', bl + mmToPx(8, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#a3e635', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Promo') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#dc2626', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(50, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 70, scale), fill: '#ffffff', data: { id: makeId(), name: 'Content Box', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '특가', bl + mmToPx(8, scale), bl + mmToPx(6, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', fontFamily: 'Bebas Neue', data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, 'SPECIAL OFFER', bl + mmToPx(8, scale), bl + mmToPx(44, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4.5, scale), fill: '#fee2e2', textAlign: 'center', charSpacing: 150, data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      addTextbox(canvas, fabric, '한정 수량 파격 할인!', bl + mmToPx(14, scale), bl + mmToPx(56, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#dc2626', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      addTextbox(canvas, fabric, '매장 방문 고객 한정\n최대 70% 파격 할인 행사.\n수량 소진 시 조기 종료됩니다.', bl + mmToPx(14, scale), bl + mmToPx(72, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4.5, scale), fill: '#374151', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '2026.06.01 ~ 06.07 (1주일)', bl + mmToPx(14, scale), bl + mmToPx(146, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(4, scale), fill: '#dc2626', fontWeight: 'bold', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '전국 직영 매장', bl + mmToPx(14, scale), bl + mmToPx(156, scale), mmToPx(dims.widthMm - 28, scale), { fontSize: mmToPx(3.8, scale), fill: '#6b7280', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '1544-1234  |  www.promo.kr', bl + mmToPx(8, scale), bl + mmToPx(197, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Flyer Festival') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7c3aed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#f97316', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 5, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#f97316', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'FESTIVAL', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 100, data: { id: makeId(), name: 'Headline', layerType: 'text', fieldKey: 'headline' } })
+      addTextbox(canvas, fabric, '지역 축제 안내', bl + mmToPx(8, scale), bl + mmToPx(46, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(6, scale), fill: '#e9d5ff', textAlign: 'center', data: { id: makeId(), name: 'Subhead', layerType: 'text', fieldKey: 'subhead' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(59, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(1, scale), fill: '#f97316', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '음악 · 음식 · 공연 · 체험\n온 가족이 함께 즐기는\n특별한 하루를 만나보세요!', bl + mmToPx(10, scale), bl + mmToPx(66, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#ddd6fe', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Body', layerType: 'text', fieldKey: 'body' } })
+      addTextbox(canvas, fabric, '무료 입장', bl + mmToPx(10, scale), bl + mmToPx(140, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', fontFamily: 'Bebas Neue', data: { id: makeId(), name: 'CTA', layerType: 'text', fieldKey: 'cta' } })
+      addTextbox(canvas, fabric, '2026.10.03 ~ 10.05', bl + mmToPx(10, scale), bl + mmToPx(165, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#e9d5ff', textAlign: 'center', fontWeight: 'bold', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '○○공원 야외 광장', bl + mmToPx(10, scale), bl + mmToPx(175, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(196, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#c4b5fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    // ══ 브로슈어 (148×210mm A5) ══════════════════════════════════════════════════
+
+    } else if (name === 'Brochure Company') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(40, scale), fill: '#1e293b', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(40, scale), width: mmToPx(4, scale), height: mmToPx(dims.heightMm - 40, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '회사 소개', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(10, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, '신뢰와 혁신으로 함께합니다', bl + mmToPx(8, scale), bl + mmToPx(30, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#93c5fd', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '핵심 서비스', bl + mmToPx(12, scale), bl + mmToPx(48, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#60a5fa', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '최고 품질의 서비스로 고객 만족을 실현합니다. 전문가 팀이 함께합니다.', bl + mmToPx(12, scale), bl + mmToPx(58, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#94a3b8', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(12, scale), top: bl + mmToPx(88, scale), width: mmToPx(dims.widthMm - 24, scale), height: mmToPx(0.5, scale), fill: '#1e293b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '왜 우리인가', bl + mmToPx(12, scale), bl + mmToPx(96, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#60a5fa', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '10년 이상의 업계 경험과 수백 개 기업의 성공 사례를 보유하고 있습니다.', bl + mmToPx(12, scale), bl + mmToPx(106, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#94a3b8', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 30, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(30, scale), fill: '#1e293b', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'contact@company.com  |  02-1234-5678  |  www.company.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 22, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#60a5fa', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Service') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f0fdfa', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(50, scale), fill: '#0d9488', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '서비스 안내', bl + mmToPx(8, scale), bl + mmToPx(10, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(11, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, '고객을 위한 최선의 솔루션', bl + mmToPx(8, scale), bl + mmToPx(38, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#ccfbf1', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(58, scale), width: mmToPx(3, scale), height: mmToPx(14, scale), fill: '#0d9488', data: { id: makeId(), name: 'S1 Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '주요 서비스', bl + mmToPx(16, scale), bl + mmToPx(59, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#134e4a', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '전문적이고 체계적인 서비스로 고객의 니즈를 정확히 파악하여 맞춤 솔루션을 제공합니다.', bl + mmToPx(8, scale), bl + mmToPx(78, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(116, scale), width: mmToPx(3, scale), height: mmToPx(14, scale), fill: '#0d9488', data: { id: makeId(), name: 'S2 Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '서비스 특장점', bl + mmToPx(16, scale), bl + mmToPx(117, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#134e4a', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '빠른 대응, 합리적 가격, 전문 인력으로 고객 만족도 1위를 유지하고 있습니다.', bl + mmToPx(8, scale), bl + mmToPx(136, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#0d9488', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '02-1234-5678  |  www.service.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#ccfbf1', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Catalog') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e293b', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(60, scale), fill: '#0f172a', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(18, scale), width: mmToPx(2, scale), height: mmToPx(22, scale), fill: '#e2e8f0', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '제품 카탈로그', bl + mmToPx(15, scale), bl + mmToPx(18, scale), mmToPx(dims.widthMm - 23, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#f8fafc', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'PRODUCT COLLECTION 2026', bl + mmToPx(15, scale), bl + mmToPx(47, scale), mmToPx(dims.widthMm - 23, scale), { fontSize: mmToPx(3, scale), fill: '#94a3b8', charSpacing: 150, data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '주요 제품', bl + mmToPx(10, scale), bl + mmToPx(68, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#e2e8f0', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(79, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(0.5, scale), fill: '#334155', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '엄선된 소재와 최신 기술로 제작된 프리미엄 제품 라인업을 소개합니다.', bl + mmToPx(10, scale), bl + mmToPx(84, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#cbd5e1', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      addTextbox(canvas, fabric, '스펙 & 사양', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#e2e8f0', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(129, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(0.5, scale), fill: '#334155', data: { id: makeId(), name: 'Line2', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '다양한 규격과 옵션으로 고객 맞춤형 제품 구성이 가능합니다.', bl + mmToPx(10, scale), bl + mmToPx(134, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#cbd5e1', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      addTextbox(canvas, fabric, 'sales@company.kr  |  02-1234-5678', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 16, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Medical') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f0f9ff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(48, scale), fill: '#0369a1', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(12, scale), width: mmToPx(8, scale), height: mmToPx(8, scale), fill: '#ffffff', rx: mmToPx(1, scale), ry: mmToPx(1, scale), data: { id: makeId(), name: 'Cross BG', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '+', bl + mmToPx(8, scale), bl + mmToPx(9, scale), mmToPx(8, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#0369a1', textAlign: 'center', data: { id: makeId(), name: 'Cross', layerType: 'text' } })
+      addTextbox(canvas, fabric, '의료 서비스', bl + mmToPx(22, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 30, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, '건강한 삶을 위한 신뢰할 수 있는 파트너', bl + mmToPx(8, scale), bl + mmToPx(38, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#bae6fd', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '주요 진료과목', bl + mmToPx(8, scale), bl + mmToPx(56, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#0369a1', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '내과 · 외과 · 소아과 · 정형외과 · 피부과\n최신 의료 장비와 전문 의료진이 함께합니다.', bl + mmToPx(8, scale), bl + mmToPx(67, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(98, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(0.5, scale), fill: '#bae6fd', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '진료 시간 안내', bl + mmToPx(8, scale), bl + mmToPx(106, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#0369a1', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '평일 09:00~18:00 / 토 09:00~13:00\n(일·공휴일 휴진)', bl + mmToPx(8, scale), bl + mmToPx(117, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#0369a1', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '02-1234-5678  |  서울 강남구  |  www.clinic.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#bae6fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Education') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#faf5ff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(55, scale), fill: '#4c1d95', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(45, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(20, scale), fill: '#7c3aed', data: { id: makeId(), name: 'Overlap', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '교육 과정 안내', bl + mmToPx(10, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(10, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, '미래를 준비하는 최고의 선택', bl + mmToPx(10, scale), bl + mmToPx(47, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#e9d5ff', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '커리큘럼 소개', bl + mmToPx(10, scale), bl + mmToPx(72, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#4c1d95', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '기초부터 심화까지 체계적으로 구성된 커리큘럼으로 실무 능력을 키웁니다.', bl + mmToPx(10, scale), bl + mmToPx(84, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(114, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(0.5, scale), fill: '#ddd6fe', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '수강 혜택', bl + mmToPx(10, scale), bl + mmToPx(122, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#4c1d95', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '수료증 발급 · 취업 연계 · 멘토링 프로그램 · 동문 네트워크 제공.', bl + mmToPx(10, scale), bl + mmToPx(134, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#4c1d95', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '02-1234-5678  |  www.edu.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Travel') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f0f9ff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(52, scale), fill: '#0c4a6e', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '✈ 여행 패키지', bl + mmToPx(8, scale), bl + mmToPx(10, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(10, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, '꿈의 여행을 현실로', bl + mmToPx(8, scale), bl + mmToPx(40, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(4, scale), fill: '#bae6fd', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '추천 여행 코스', bl + mmToPx(8, scale), bl + mmToPx(60, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#0c4a6e', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '유럽 10박 12일 · 동남아 7박 8일 · 일본 4박 5일\n전문 가이드 동행 · 항공 + 호텔 패키지 포함.', bl + mmToPx(8, scale), bl + mmToPx(72, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(106, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(0.5, scale), fill: '#bae6fd', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '패키지 혜택', bl + mmToPx(8, scale), bl + mmToPx(114, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#0c4a6e', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '여행자 보험 · 공항 픽업 · 한국어 가이드 · 호텔 업그레이드 포함.', bl + mmToPx(8, scale), bl + mmToPx(126, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#0c4a6e', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '02-1234-5678  |  www.travel.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#bae6fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Realty') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fdf6e3', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(55, scale), fill: '#1a1203', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(55, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#b8860b', data: { id: makeId(), name: 'Gold Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '부동산 소개', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(10, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#d4af6e', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Premium Real Estate Services', bl + mmToPx(8, scale), bl + mmToPx(44, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#9e8b6a', charSpacing: 100, fontFamily: 'Lora', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '매물 소개', bl + mmToPx(10, scale), bl + mmToPx(66, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#1a1203', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '강남권 신축 아파트 · 오피스텔 · 상가\n전문 컨설턴트의 1:1 맞춤 서비스.', bl + mmToPx(10, scale), bl + mmToPx(78, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#5c4a2a', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(110, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(0.5, scale), fill: '#b8860b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '투자 상담', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#1a1203', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '20년 경력의 전문가가 부동산 투자 전략을 무료로 상담해 드립니다.', bl + mmToPx(10, scale), bl + mmToPx(130, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#5c4a2a', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      addTextbox(canvas, fabric, '02-1234-5678  |  www.realty.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Dining') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b0a0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(58, scale), fill: '#1a0505', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(12, scale), top: bl + mmToPx(54, scale), width: mmToPx(dims.widthMm - 24, scale), height: mmToPx(2, scale), fill: '#dc2626', data: { id: makeId(), name: 'Red Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '레스토랑 안내', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(9.5, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#f5f5dc', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Fine Dining & Private Banquet', bl + mmToPx(8, scale), bl + mmToPx(45, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#dc2626', fontFamily: 'Lora', data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '시그니처 메뉴', bl + mmToPx(8, scale), bl + mmToPx(64, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#d4956a', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '제철 식재료와 셰프의 노하우가 담긴 코스 메뉴. 런치 · 디너 · 프라이빗 파티 예약 가능.', bl + mmToPx(8, scale), bl + mmToPx(76, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#c4a882', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(110, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(0.5, scale), fill: '#5c1a1a', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '와인 & 음료', bl + mmToPx(8, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#d4956a', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '국내외 엄선된 와인 200여 종과 전통주 컬렉션. 소믈리에 추천 페어링.', bl + mmToPx(8, scale), bl + mmToPx(130, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#c4a882', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      addTextbox(canvas, fabric, '예약: 02-1234-5678  |  reservation@dining.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#dc2626', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure IT') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f0f23', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(50, scale), fill: '#000011', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(50, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(2, scale), fill: '#6366f1', data: { id: makeId(), name: 'Accent Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'IT SOLUTION', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(9, scale), fontWeight: 'bold', fill: '#6366f1', fontFamily: 'Raleway', charSpacing: 50, data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Digital Transformation Partner', bl + mmToPx(8, scale), bl + mmToPx(40, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#818cf8', charSpacing: 50, data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '핵심 솔루션', bl + mmToPx(8, scale), bl + mmToPx(60, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#a5b4fc', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, 'AI · 클라우드 · DevOps · 보안 솔루션\n최신 기술 스택으로 디지털 혁신을 이끕니다.', bl + mmToPx(8, scale), bl + mmToPx(72, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#c7d2fe', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(104, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(0.5, scale), fill: '#1e1b4b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '도입 효과', bl + mmToPx(8, scale), bl + mmToPx(112, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#a5b4fc', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '업무 효율 40% 향상 · 비용 절감 30% · 보안 사고 98% 감소 달성.', bl + mmToPx(8, scale), bl + mmToPx(124, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#c7d2fe', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      addTextbox(canvas, fabric, 'info@it-solution.kr  |  02-1234-5678', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#6366f1', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    } else if (name === 'Brochure Legal') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f8f8f5', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(55, scale), fill: '#1c2a40', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(52, scale), width: mmToPx(30, scale), height: mmToPx(2, scale), fill: '#b8860b', data: { id: makeId(), name: 'Gold Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '법률 서비스', bl + mmToPx(8, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(10, scale), fontFamily: 'Playfair Display', fontWeight: 'bold', fill: '#ffffff', data: { id: makeId(), name: 'Company', layerType: 'text', fieldKey: 'company' } })
+      addTextbox(canvas, fabric, 'Trusted Legal Advisors Since 2000', bl + mmToPx(8, scale), bl + mmToPx(43, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.2, scale), fill: '#b8860b', fontFamily: 'Lora', charSpacing: 50, data: { id: makeId(), name: 'Tagline', layerType: 'text', fieldKey: 'tagline' } })
+      addTextbox(canvas, fabric, '전문 분야', bl + mmToPx(8, scale), bl + mmToPx(64, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#1c2a40', data: { id: makeId(), name: 'S1 Title', layerType: 'text', fieldKey: 'section1_title' } })
+      addTextbox(canvas, fabric, '민사 · 형사 · 기업법 · 부동산 · 이민법\n20년 이상의 경력을 갖춘 변호사 팀.', bl + mmToPx(8, scale), bl + mmToPx(76, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S1 Body', layerType: 'text', fieldKey: 'section1_body' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(108, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(0.5, scale), fill: '#d1d5db', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '상담 안내', bl + mmToPx(8, scale), bl + mmToPx(116, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#1c2a40', data: { id: makeId(), name: 'S2 Title', layerType: 'text', fieldKey: 'section2_title' } })
+      addTextbox(canvas, fabric, '초기 상담 무료. 의뢰인 중심의 투명한 비용 구조. 비밀 유지 보장.', bl + mmToPx(8, scale), bl + mmToPx(128, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.8, scale), fill: '#374151', lineHeight: 1.6, data: { id: makeId(), name: 'S2 Body', layerType: 'text', fieldKey: 'section2_body' } })
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#1c2a40', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '02-1234-5678  |  law@firm.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
+
+    // ══ 포스터 (210×297mm A4) ══════════════════════════════════════════════════════
+
+    } else if (name === 'Poster Concert') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0d0d0d', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(100, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#a3e635', data: { id: makeId(), name: 'Neon Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'LIVE', bl + mmToPx(8, scale), bl + mmToPx(15, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(28, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 200, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'CONCERT 2026', bl + mmToPx(8, scale), bl + mmToPx(66, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(9, scale), fill: '#a3e635', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 100, data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      addTextbox(canvas, fabric, '최고의 아티스트와 함께하는 특별한 밤.\n잊지 못할 공연을 선사합니다.', bl + mmToPx(10, scale), bl + mmToPx(112, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#9ca3af', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(170, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(1, scale), fill: '#a3e635', data: { id: makeId(), name: 'Line2', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '2026.09.20 (토) · 오후 7:00', bl + mmToPx(10, scale), bl + mmToPx(178, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fill: '#d1d5db', fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '올림픽공원 88잔디마당', bl + mmToPx(10, scale), bl + mmToPx(192, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#6b7280', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: OOO엔터테인먼트', bl + mmToPx(10, scale), bl + mmToPx(230, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#4b5563', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.ticket.kr', bl + mmToPx(10, scale), bl + mmToPx(280, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#a3e635', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Exhibition') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fafafa', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(3, scale), height: mmToPx(dims.heightMm, scale), fill: '#111827', data: { id: makeId(), name: 'Left Bar', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm - 3, scale), top: bl, width: mmToPx(3, scale), height: mmToPx(dims.heightMm, scale), fill: '#111827', data: { id: makeId(), name: 'Right Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '전시회', bl + mmToPx(10, scale), bl + mmToPx(20, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(24, scale), fontWeight: 'bold', fontFamily: 'Playfair Display', fill: '#111827', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'Exhibition 2026', bl + mmToPx(10, scale), bl + mmToPx(88, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(7, scale), fill: '#6b7280', fontFamily: 'Lora', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(108, scale), width: mmToPx(30, scale), height: mmToPx(2, scale), fill: '#111827', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '현대 미술의 새로운 지평을 열다.\n국내외 30인의 작가, 150여 점의 작품.', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#374151', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.11.01 ~ 11.30', bl + mmToPx(10, scale), bl + mmToPx(190, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fill: '#111827', fontWeight: 'bold', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '국립현대미술관 서울관', bl + mmToPx(10, scale), bl + mmToPx(204, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#6b7280', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: 문화체육관광부', bl + mmToPx(10, scale), bl + mmToPx(240, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.exhibition.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#111827', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Movie') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1a0a2e', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(dims.widthMm / 2 - 1, scale), top: bl, width: mmToPx(2, scale), height: mmToPx(dims.heightMm, scale), fill: 'rgba(139,92,246,0.15)', data: { id: makeId(), name: 'Center Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'MOVIE', bl + mmToPx(8, scale), bl + mmToPx(20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(26, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 300, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '영화 포스터 스타일', bl + mmToPx(8, scale), bl + mmToPx(88, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(7, scale), fill: '#8b5cf6', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(50, scale), top: bl + mmToPx(108, scale), width: mmToPx(dims.widthMm - 100, scale), height: mmToPx(0.5, scale), fill: '#8b5cf6', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '이 가을, 가장 극적인 이야기가 시작된다.\n당신의 숨을 멎게 할 그 작품.', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#c4b5fd', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.10.10 개봉', bl + mmToPx(10, scale), bl + mmToPx(195, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '전국 극장 동시 상영', bl + mmToPx(10, scale), bl + mmToPx(208, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '제작: OOO픽처스  |  배급: OOO', bl + mmToPx(10, scale), bl + mmToPx(238, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.5, scale), fill: '#6b7280', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.movie.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#8b5cf6', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Conference') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(4, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 4, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(4, scale), fill: '#1d4ed8', data: { id: makeId(), name: 'Bot Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'CONFERENCE', bl + mmToPx(10, scale), bl + mmToPx(12, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#1d4ed8', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      addTextbox(canvas, fabric, '국제 학술 대회', bl + mmToPx(10, scale), bl + mmToPx(28, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#111827', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '미래 기술과 인류의 내일을 논하다', bl + mmToPx(10, scale), bl + mmToPx(92, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fill: '#4b5563', textAlign: 'center', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(30, scale), top: bl + mmToPx(108, scale), width: mmToPx(dims.widthMm - 60, scale), height: mmToPx(1, scale), fill: '#e5e7eb', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '국내외 석학 · 기업 대표 · 연구자 150인 참가.\n네트워킹 · 세션 발표 · 패널 토론.', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#374151', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.11.15 ~ 11.17', bl + mmToPx(10, scale), bl + mmToPx(192, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#1d4ed8', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 코엑스 컨벤션센터', bl + mmToPx(10, scale), bl + mmToPx(206, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#6b7280', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: 한국과학기술원', bl + mmToPx(10, scale), bl + mmToPx(240, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#9ca3af', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.conference.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#1d4ed8', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Awards') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0a0a0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(dims.heightMm - 20, scale), fill: 'transparent', stroke: '#b8860b', strokeWidth: 1.5, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '★', bl + mmToPx(10, scale), bl + mmToPx(18, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(18, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'Star', layerType: 'text' } })
+      addTextbox(canvas, fabric, 'AWARDS\nCEREMONY', bl + mmToPx(10, scale), bl + mmToPx(62, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(17, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Bebas Neue', lineHeight: 0.9, charSpacing: 150, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '제15회 시상식', bl + mmToPx(10, scale), bl + mmToPx(118, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fill: '#b8860b', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(30, scale), top: bl + mmToPx(133, scale), width: mmToPx(dims.widthMm - 60, scale), height: mmToPx(0.5, scale), fill: '#b8860b', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '올해의 탁월한 성과를 이룬 분들께\n최고의 영예를 드립니다.', bl + mmToPx(10, scale), bl + mmToPx(142, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#d4c5a0', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.12.05 (금)', bl + mmToPx(10, scale), bl + mmToPx(198, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#d4af6e', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '그랜드 하얏트 서울 볼룸', bl + mmToPx(10, scale), bl + mmToPx(212, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#9ca3af', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: 한국산업진흥협회', bl + mmToPx(10, scale), bl + mmToPx(244, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#4b5563', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.awards.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Academy') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#2d1b69', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#fbbf24', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ACADEMY', bl + mmToPx(10, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', charSpacing: 250, fontFamily: 'Bebas Neue', data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      addTextbox(canvas, fabric, '수강생 모집', bl + mmToPx(10, scale), bl + mmToPx(32, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(20, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Raleway', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '2026년 하반기 모집', bl + mmToPx(10, scale), bl + mmToPx(96, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(7, scale), fill: '#c4b5fd', textAlign: 'center', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(30, scale), top: bl + mmToPx(115, scale), width: mmToPx(dims.widthMm - 60, scale), height: mmToPx(1, scale), fill: '#fbbf24', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '전문 강사진 · 소수 정예 · 온/오프라인 병행\n수료 후 취업 연계 · 수료증 발급.', bl + mmToPx(10, scale), bl + mmToPx(124, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#e9d5ff', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '모집: 2026.07.01 ~ 07.31', bl + mmToPx(10, scale), bl + mmToPx(196, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#fbbf24', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '온라인 · 서울 강남캠퍼스', bl + mmToPx(10, scale), bl + mmToPx(210, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주관: OOO아카데미', bl + mmToPx(10, scale), bl + mmToPx(240, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#7c3aed', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.academy.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#a78bfa', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Marathon') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fff7ed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#ea580c', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 5, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#ea580c', data: { id: makeId(), name: 'Bottom', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'MARATHON', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fill: '#ea580c', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 150, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '시민 마라톤 대회', bl + mmToPx(8, scale), bl + mmToPx(64, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(8, scale), fill: '#1c1917', textAlign: 'center', fontFamily: 'Raleway', fontWeight: 'bold', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(88, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(1.5, scale), fill: '#ea580c', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '5km · 10km · 하프 · 풀코스 참가 가능\n남녀노소 누구나 참여 환영.', bl + mmToPx(10, scale), bl + mmToPx(98, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#44403c', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.10.18 (일) AM 08:00', bl + mmToPx(10, scale), bl + mmToPx(194, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#ea580c', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '잠실 올림픽주경기장 광장', bl + mmToPx(10, scale), bl + mmToPx(208, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#57534e', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: 서울시체육회  |  후원: OOO', bl + mmToPx(10, scale), bl + mmToPx(242, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#a8a29e', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.marathon.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#ea580c', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Musical') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b0764', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 16, scale), fill: 'transparent', stroke: '#d4af6e', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '♪ MUSICAL ♪', bl + mmToPx(12, scale), bl + mmToPx(16, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(6, scale), fill: '#d4af6e', textAlign: 'center', charSpacing: 100, fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(30, scale), top: bl + mmToPx(32, scale), width: mmToPx(dims.widthMm - 60, scale), height: mmToPx(0.5, scale), fill: '#d4af6e', data: { id: makeId(), name: 'Line1', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '뮤지컬 공연', bl + mmToPx(12, scale), bl + mmToPx(38, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(21, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '사랑과 운명의 서사시', bl + mmToPx(12, scale), bl + mmToPx(104, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(6.5, scale), fill: '#d4af6e', textAlign: 'center', fontFamily: 'Lora', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      addTextbox(canvas, fabric, '꿈과 현실 사이, 사랑을 찾아가는\n감동의 2시간 30분.', bl + mmToPx(12, scale), bl + mmToPx(124, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(5, scale), fill: '#e9d5ff', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.11.01 ~ 12.31', bl + mmToPx(12, scale), bl + mmToPx(200, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#d4af6e', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '샤롯데씨어터', bl + mmToPx(12, scale), bl + mmToPx(214, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(5, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: OOO엔터테인먼트', bl + mmToPx(12, scale), bl + mmToPx(244, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(3.8, scale), fill: '#7c3aed', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.musical.kr  |  예매: 1544-1234', bl + mmToPx(12, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 24, scale), { fontSize: mmToPx(4, scale), fill: '#d4af6e', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Art Fair') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(20, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(dims.heightMm - 40, scale), fill: 'transparent', stroke: '#111827', strokeWidth: 2, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'ART\nFAIR', bl + mmToPx(25, scale), bl + mmToPx(28, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(28, scale), fontWeight: 'bold', fill: '#111827', fontFamily: 'Raleway', lineHeight: 0.85, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '2026', bl + mmToPx(25, scale), bl + mmToPx(108, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(12, scale), fill: '#9ca3af', fontFamily: 'Bebas Neue', charSpacing: 150, data: { id: makeId(), name: 'Year', layerType: 'text' } })
+      addTextbox(canvas, fabric, '현대 미술의 중심에서', bl + mmToPx(25, scale), bl + mmToPx(134, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(6, scale), fill: '#374151', fontFamily: 'Lora', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(25, scale), top: bl + mmToPx(150, scale), width: mmToPx(20, scale), height: mmToPx(2, scale), fill: '#111827', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '50개국 200개 갤러리 · 3,000여 점의 작품.\n아트 컬렉터와 애호가를 위한 최고의 축제.', bl + mmToPx(25, scale), bl + mmToPx(162, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(4.5, scale), fill: '#6b7280', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.09.01 ~ 09.07', bl + mmToPx(25, scale), bl + mmToPx(216, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#111827', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '코엑스 아티움', bl + mmToPx(25, scale), bl + mmToPx(228, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(4.5, scale), fill: '#6b7280', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: 한국갤러리협회', bl + mmToPx(25, scale), bl + mmToPx(256, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(3.5, scale), fill: '#9ca3af', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.artfair.kr', bl + mmToPx(25, scale), bl + mmToPx(275, scale), mmToPx(dims.widthMm - 50, scale), { fontSize: mmToPx(4, scale), fill: '#111827', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Graduation') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#f8f0fb', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(6, scale), fill: '#9333ea', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '졸업 전시회', bl + mmToPx(10, scale), bl + mmToPx(16, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(20, scale), fontWeight: 'bold', fill: '#4a044e', textAlign: 'center', fontFamily: 'Playfair Display', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, 'Graduation Exhibition 2026', bl + mmToPx(10, scale), bl + mmToPx(82, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fill: '#9333ea', textAlign: 'center', fontFamily: 'Lora', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(40, scale), top: bl + mmToPx(100, scale), width: mmToPx(dims.widthMm - 80, scale), height: mmToPx(1, scale), fill: '#e9d5ff', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '4년간의 열정과 노력을 담은 작품들.\n창의와 도전의 결실을 함께 나눕니다.', bl + mmToPx(10, scale), bl + mmToPx(110, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#6b21a8', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '2026.12.10 ~ 12.16', bl + mmToPx(10, scale), bl + mmToPx(198, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#9333ea', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, 'OO대학교 예술관 갤러리', bl + mmToPx(10, scale), bl + mmToPx(212, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#7e22ce', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: OO대학교 디자인학과', bl + mmToPx(10, scale), bl + mmToPx(242, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#c084fc', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.gradshow.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#9333ea', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Contest') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fefce8', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(5, scale), fill: '#ca8a04', data: { id: makeId(), name: 'Top', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'CONTEST', bl + mmToPx(8, scale), bl + mmToPx(14, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(20, scale), fontWeight: 'bold', fill: '#ca8a04', textAlign: 'center', fontFamily: 'Bebas Neue', charSpacing: 200, data: { id: makeId(), name: 'Label', layerType: 'text' } })
+      addTextbox(canvas, fabric, '공모전 안내', bl + mmToPx(8, scale), bl + mmToPx(64, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(14, scale), fontWeight: 'bold', fill: '#1c1917', textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '당신의 아이디어를 펼쳐주세요', bl + mmToPx(8, scale), bl + mmToPx(102, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(6, scale), fill: '#78716c', textAlign: 'center', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(20, scale), top: bl + mmToPx(120, scale), width: mmToPx(dims.widthMm - 40, scale), height: mmToPx(1.5, scale), fill: '#ca8a04', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '대상 100만원 · 최우수 50만원 · 우수 30만원\n수상작 전시 · 포트폴리오 게재.', bl + mmToPx(10, scale), bl + mmToPx(130, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#44403c', textAlign: 'center', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '접수: 2026.08.01 ~ 09.30', bl + mmToPx(10, scale), bl + mmToPx(200, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ca8a04', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '온라인 접수 (전국 공모)', bl + mmToPx(10, scale), bl + mmToPx(214, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5, scale), fill: '#78716c', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주최: OOO문화재단', bl + mmToPx(10, scale), bl + mmToPx(242, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#a8a29e', textAlign: 'center', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'www.contest.kr', bl + mmToPx(10, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#ca8a04', textAlign: 'center', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
+
+    } else if (name === 'Poster Recruitment') {
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
+      canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(5, scale), height: mmToPx(dims.heightMm, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Accent', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, 'WE ARE\nHIRING', bl + mmToPx(12, scale), bl + mmToPx(18, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Bebas Neue', lineHeight: 0.85, charSpacing: 100, data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+      addTextbox(canvas, fabric, '함께 성장할 인재를 찾습니다', bl + mmToPx(12, scale), bl + mmToPx(108, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(6.5, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Subtitle', layerType: 'text', fieldKey: 'subtitle' } })
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(12, scale), top: bl + mmToPx(124, scale), width: mmToPx(50, scale), height: mmToPx(1.5, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
+      addTextbox(canvas, fabric, '도전적인 환경에서 성장하고 싶은 분\n아이디어를 현실로 만드는 열정이 있는 분\n팀워크와 협업을 즐기는 분.', bl + mmToPx(12, scale), bl + mmToPx(132, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.8, scale), fill: '#94a3b8', lineHeight: 1.7, data: { id: makeId(), name: 'Desc', layerType: 'text', fieldKey: 'description' } })
+      addTextbox(canvas, fabric, '채용 기간: 2026.06.01 ~ 06.30', bl + mmToPx(12, scale), bl + mmToPx(210, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(5.5, scale), fill: '#60a5fa', fontWeight: 'bold', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
+      addTextbox(canvas, fabric, '서울 강남구 테헤란로 OO빌딩', bl + mmToPx(12, scale), bl + mmToPx(224, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4.5, scale), fill: '#64748b', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
+      addTextbox(canvas, fabric, '주관: OOO주식회사 인사팀', bl + mmToPx(12, scale), bl + mmToPx(248, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#475569', data: { id: makeId(), name: 'Sponsor', layerType: 'text', fieldKey: 'sponsor' } })
+      addTextbox(canvas, fabric, 'careers.company.kr  |  recruit@company.kr', bl + mmToPx(12, scale), bl + mmToPx(278, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#3b82f6', data: { id: makeId(), name: 'URL', layerType: 'text', fieldKey: 'url' } })
     }
     // Blank: no user objects
 
@@ -2818,7 +3833,7 @@ export default function EditorClient({ product, options }: Props) {
                   className="w-full border border-gray-200 rounded px-2 py-1 text-xs mb-2 focus:outline-none focus:ring-1 focus:ring-indigo-400"
                 />
                 <div className="flex flex-wrap gap-1 mb-2">
-                  {(['all', 'business', 'minimal', 'creative', 'food', 'health', 'tech', 'realestate'] as const).map(cat => (
+                  {(['all', 'business', 'minimal', 'creative', 'food', 'health', 'tech', 'realestate', 'sticker', 'postcard', 'banner', 'luxury'] as const).map(cat => (
                     <button
                       key={cat}
                       onClick={() => { setTemplateCategory(cat); setTemplateSearch('') }}
@@ -2831,6 +3846,7 @@ export default function EditorClient({ product, options }: Props) {
                 <div className="space-y-1">
                   {TEMPLATE_CATALOG
                     .filter(t => {
+                      if (t.products && t.products.length > 0 && !t.products.includes(product.slug)) return false
                       if (templateSearch) return t.name.toLowerCase().includes(templateSearch.toLowerCase()) || t.description.toLowerCase().includes(templateSearch.toLowerCase())
                       return templateCategory === 'all' || t.category === templateCategory
                     })
