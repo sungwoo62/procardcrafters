@@ -216,47 +216,115 @@ const FONT_CATEGORY_LABELS: Record<FontEntry['category'], string> = {
 
 // ─── Template catalog ─────────────────────────────────────────────────────────
 
-type TemplateCategory = 'business' | 'minimal' | 'creative' | 'food' | 'health' | 'tech' | 'realestate'
+type TemplateCategory = 'business' | 'minimal' | 'creative' | 'food' | 'health' | 'tech' | 'realestate' | 'sticker' | 'postcard'
 
 interface TemplateDef {
   name: string
   category: TemplateCategory
   bg: string
   description: string
+  products?: string[]
 }
 
+const BC = ['business_cards', 'premium_business_cards']
+const ST = ['stickers']
+const DC = ['die_cut_stickers']
+const PC = ['postcards']
+
 const TEMPLATE_CATALOG: TemplateDef[] = [
-  // ── Business / Professional
-  { name: 'Classic',      category: 'business',    bg: '#ffffff', description: 'Traditional layout' },
-  { name: 'Corporate',    category: 'business',    bg: '#0f172a', description: 'Dark professional' },
-  { name: 'Executive',    category: 'business',    bg: '#ffffff', description: 'Elegant & formal' },
-  { name: 'Law Firm',     category: 'business',    bg: '#1c2a40', description: 'Dark navy, gold serif' },
-  { name: 'Consultant',   category: 'business',    bg: '#ffffff', description: 'Clean blue accent' },
-  { name: 'Finance',      category: 'business',    bg: '#0d1b2a', description: 'Midnight, gold stripe' },
-  // ── Minimal
-  { name: 'Blank',        category: 'minimal',     bg: '#ffffff', description: 'Start from scratch' },
-  { name: 'Minimal',      category: 'minimal',     bg: '#ffffff', description: 'Clean & simple' },
-  { name: 'Dark',         category: 'minimal',     bg: '#1a1a1a', description: 'Dark with accent' },
-  { name: 'Mono',         category: 'minimal',     bg: '#f5f5f5', description: 'Pure monochrome' },
-  // ── Creative
-  { name: 'Bold',         category: 'creative',    bg: '#4f46e5', description: 'Vibrant accent' },
-  { name: 'Creative',     category: 'creative',    bg: '#fef3c7', description: 'Warm tone' },
-  { name: 'Photographer', category: 'creative',    bg: '#111111', description: 'Dark portfolio' },
-  { name: 'Artist',       category: 'creative',    bg: '#ffffff', description: 'Gallery white' },
-  // ── Food & Hospitality
-  { name: 'Restaurant',   category: 'food',        bg: '#7b1d1d', description: 'Warm deep red' },
-  { name: 'Cafe',         category: 'food',        bg: '#3b1f0a', description: 'Coffee & cream' },
-  { name: 'Bakery',       category: 'food',        bg: '#fdf6e3', description: 'Soft warm beige' },
-  // ── Health & Wellness
-  { name: 'Medical',      category: 'health',      bg: '#f0f9ff', description: 'Clean clinical blue' },
-  { name: 'Fitness',      category: 'health',      bg: '#0f172a', description: 'Bold energy orange' },
-  { name: 'Beauty Spa',   category: 'health',      bg: '#fff1f2', description: 'Soft rose & gold' },
-  // ── Technology
-  { name: 'Tech Startup', category: 'tech',        bg: '#0f0f23', description: 'Dark gradient purple' },
-  { name: 'Developer',    category: 'tech',        bg: '#0d1117', description: 'Terminal dark' },
-  // ── Real Estate & Architecture
-  { name: 'Realtor',      category: 'realestate',  bg: '#ffffff', description: 'Gold prestige' },
-  { name: 'Architect',    category: 'realestate',  bg: '#f8f8f8', description: 'Minimal grid lines' },
+  // ── Business / Professional (명함)
+  { name: 'Classic',            category: 'business',    bg: '#ffffff', description: 'Traditional layout',       products: BC },
+  { name: 'Corporate',          category: 'business',    bg: '#0f172a', description: 'Dark professional',        products: BC },
+  { name: 'Executive',          category: 'business',    bg: '#ffffff', description: 'Elegant & formal',         products: BC },
+  { name: 'Law Firm',           category: 'business',    bg: '#1c2a40', description: 'Dark navy, gold serif',    products: BC },
+  { name: 'Consultant',         category: 'business',    bg: '#ffffff', description: 'Clean blue accent',        products: BC },
+  { name: 'Finance',            category: 'business',    bg: '#0d1b2a', description: 'Midnight, gold stripe',    products: BC },
+  // ── Minimal (명함)
+  { name: 'Blank',              category: 'minimal',     bg: '#ffffff', description: 'Start from scratch',       products: BC },
+  { name: 'Minimal',            category: 'minimal',     bg: '#ffffff', description: 'Clean & simple',           products: BC },
+  { name: 'Dark',               category: 'minimal',     bg: '#1a1a1a', description: 'Dark with accent',         products: BC },
+  { name: 'Mono',               category: 'minimal',     bg: '#f5f5f5', description: 'Pure monochrome',          products: BC },
+  // ── Creative (명함)
+  { name: 'Bold',               category: 'creative',    bg: '#4f46e5', description: 'Vibrant accent',           products: BC },
+  { name: 'Creative',           category: 'creative',    bg: '#fef3c7', description: 'Warm tone',                products: BC },
+  { name: 'Photographer',       category: 'creative',    bg: '#111111', description: 'Dark portfolio',           products: BC },
+  { name: 'Artist',             category: 'creative',    bg: '#ffffff', description: 'Gallery white',            products: BC },
+  // ── Food & Hospitality (명함)
+  { name: 'Restaurant',         category: 'food',        bg: '#7b1d1d', description: 'Warm deep red',            products: BC },
+  { name: 'Cafe',               category: 'food',        bg: '#3b1f0a', description: 'Coffee & cream',           products: BC },
+  { name: 'Bakery',             category: 'food',        bg: '#fdf6e3', description: 'Soft warm beige',          products: BC },
+  // ── Health & Wellness (명함)
+  { name: 'Medical',            category: 'health',      bg: '#f0f9ff', description: 'Clean clinical blue',      products: BC },
+  { name: 'Fitness',            category: 'health',      bg: '#0f172a', description: 'Bold energy orange',       products: BC },
+  { name: 'Beauty Spa',         category: 'health',      bg: '#fff1f2', description: 'Soft rose & gold',         products: BC },
+  // ── Technology (명함)
+  { name: 'Tech Startup',       category: 'tech',        bg: '#0f0f23', description: 'Dark gradient purple',     products: BC },
+  { name: 'Developer',          category: 'tech',        bg: '#0d1117', description: 'Terminal dark',            products: BC },
+  // ── Real Estate & Architecture (명함)
+  { name: 'Realtor',            category: 'realestate',  bg: '#ffffff', description: 'Gold prestige',            products: BC },
+  { name: 'Architect',          category: 'realestate',  bg: '#f8f8f8', description: 'Minimal grid lines',       products: BC },
+
+  // ══ 신규 명함 +20 ════════════════════════════════════════════════════════════
+  // ── Business +5
+  { name: 'Event Planner',      category: 'business',    bg: '#2d1b69', description: 'Deep purple & gold',       products: BC },
+  { name: 'Travel Agent',       category: 'business',    bg: '#0c4a6e', description: 'Sky blue horizon',         products: BC },
+  { name: 'Investment Advisor', category: 'business',    bg: '#0a1628', description: 'Navy & gold premium',      products: BC },
+  { name: 'Marketing Agency',   category: 'business',    bg: '#ffffff', description: 'Bold red accent',          products: BC },
+  { name: 'Language School',    category: 'business',    bg: '#fefce8', description: 'Bright & academic',        products: BC },
+  // ── Minimal +1
+  { name: 'Editorial',          category: 'minimal',     bg: '#fafafa', description: 'Magazine-style serif',     products: BC },
+  // ── Creative +4
+  { name: 'Photographer Studio',category: 'creative',    bg: '#0a0a0a', description: 'Full-dark studio v2',      products: BC },
+  { name: 'Freelance Writer',   category: 'creative',    bg: '#fffbf5', description: 'Warm editorial',           products: BC },
+  { name: 'Music Teacher',      category: 'creative',    bg: '#1a0535', description: 'Deep violet music',        products: BC },
+  { name: 'Interior Designer',  category: 'creative',    bg: '#f5ede0', description: 'Warm minimal terracotta',  products: BC },
+  // ── Health +5
+  { name: 'Wellness Card',      category: 'health',      bg: '#f0fdf4', description: 'Soft green natural',       products: BC },
+  { name: 'Yoga Instructor',    category: 'health',      bg: '#fdf4ff', description: 'Calm lavender',            products: BC },
+  { name: 'Nutritionist',       category: 'health',      bg: '#f0fdf4', description: 'Fresh green health',       products: BC },
+  { name: 'Dental Clinic',      category: 'health',      bg: '#f0f9ff', description: 'Clinical mint & white',    products: BC },
+  { name: 'Pet Veterinarian',   category: 'health',      bg: '#fefce8', description: 'Friendly warm yellow',     products: BC },
+  // ── Tech +3
+  { name: 'Product Designer',   category: 'tech',        bg: '#0f172a', description: 'Dark design tool',         products: BC },
+  { name: 'Startup Founder',    category: 'tech',        bg: '#020617', description: 'Pitch-dark gradient',      products: BC },
+  { name: 'Software Engineer',  category: 'tech',        bg: '#111827', description: 'Code slate dark',          products: BC },
+  // ── Real Estate +2
+  { name: 'Real Estate v2',     category: 'realestate',  bg: '#1e293b', description: 'Dark slate prestige',      products: BC },
+  { name: 'Tutor',              category: 'minimal',     bg: '#ffffff', description: 'Clean academic white',      products: BC },
+
+  // ══ 스티커 10 (70×70mm) ══════════════════════════════════════════════════════
+  { name: 'Logo Round',         category: 'sticker',     bg: '#ffffff', description: '원형 로고 스티커',            products: ST },
+  { name: 'Quote Square',       category: 'sticker',     bg: '#fef9c3', description: '인용구 사각 스티커',          products: ST },
+  { name: 'Brand Badge',        category: 'sticker',     bg: '#1e293b', description: '브랜드 배지 다크',            products: ST },
+  { name: 'Event Promo',        category: 'sticker',     bg: '#dc2626', description: '이벤트 홍보 스티커',          products: ST },
+  { name: 'Caution Label',      category: 'sticker',     bg: '#fbbf24', description: '주의 경고 라벨',              products: ST },
+  { name: 'Thank You',          category: 'sticker',     bg: '#fdf2f8', description: '감사 선물 스티커',            products: ST },
+  { name: 'Handmade',           category: 'sticker',     bg: '#fefce8', description: '수공예 핸드메이드',           products: ST },
+  { name: 'Open Sign',          category: 'sticker',     bg: '#16a34a', description: '오픈 안내 스티커',            products: ST },
+  { name: 'Sale Badge',         category: 'sticker',     bg: '#7c3aed', description: '할인 세일 배지',              products: ST },
+  { name: 'Minimal Label',      category: 'sticker',     bg: '#f8fafc', description: '미니멀 라벨 흰색',            products: ST },
+
+  // ══ 도무송 스티커 8 (70×70mm, 비정형 컷) ════════════════════════════════════
+  { name: 'Circle Logo',        category: 'sticker',     bg: '#ffffff', description: '원형 도무송 — safe zone',    products: DC },
+  { name: 'Heart Love',         category: 'sticker',     bg: '#fdf2f8', description: '하트 도무송 스티커',          products: DC },
+  { name: 'Star Badge',         category: 'sticker',     bg: '#fef9c3', description: '별 모양 도무송',              products: DC },
+  { name: 'Speech Bubble',      category: 'sticker',     bg: '#eff6ff', description: '말풍선 도무송',               products: DC },
+  { name: 'Icon Text Round',    category: 'sticker',     bg: '#f0fdf4', description: '아이콘+텍스트 원형',          products: DC },
+  { name: 'Vintage Stamp',      category: 'sticker',     bg: '#fdf6e3', description: '빈티지 원형 스탬프',          products: DC },
+  { name: 'Character Card',     category: 'sticker',     bg: '#faf5ff', description: '캐릭터 카드 도무송',          products: DC },
+  { name: 'Hexagon Label',      category: 'sticker',     bg: '#f0f9ff', description: '헥사곤 라벨 도무송',          products: DC },
+
+  // ══ 엽서 10 (152×102mm 가로) ════════════════════════════════════════════════
+  { name: 'Greeting Card',      category: 'postcard',    bg: '#fff7ed', description: '따뜻한 인사 엽서',            products: PC },
+  { name: 'Invitation',         category: 'postcard',    bg: '#1e1b4b', description: '이벤트 초대장',               products: PC },
+  { name: 'Thank You Note',     category: 'postcard',    bg: '#fdf2f8', description: '감사 메시지 엽서',            products: PC },
+  { name: 'Business Postcard',  category: 'postcard',    bg: '#0f172a', description: '비즈니스 안내 엽서',          products: PC },
+  { name: 'Event Invite',       category: 'postcard',    bg: '#7c3aed', description: '파티·이벤트 초대',            products: PC },
+  { name: 'Holiday Card',       category: 'postcard',    bg: '#14532d', description: '시즌 인사 카드',              products: PC },
+  { name: 'Product Launch',     category: 'postcard',    bg: '#0c4a6e', description: '신제품 출시 프로모션',         products: PC },
+  { name: 'Welcome Card',       category: 'postcard',    bg: '#f0fdf4', description: '환영 온보딩 카드',            products: PC },
+  { name: 'Farewell Card',      category: 'postcard',    bg: '#fafafa', description: '작별 인사 카드',              products: PC },
+  { name: 'Congrats Card',      category: 'postcard',    bg: '#fefce8', description: '축하 기념 엽서',              products: PC },
 ]
 
 const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
@@ -268,6 +336,8 @@ const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
   health:     'Health',
   tech:       'Tech',
   realestate: 'Real Estate',
+  sticker:    'Sticker',
+  postcard:   'Postcard',
 }
 
 const DESIGNS_STORAGE_KEY = 'procardcrafters_saved_designs'
@@ -2112,17 +2182,68 @@ export default function EditorClient({ product, options }: Props) {
   // ── Phase 6: PDF export ────────────────────────────────────────────────────
 
   async function exportPdf() {
-    const dataUrl = getExportDataUrl(300)
+    // 블리드 포함 영역을 300dpi로 export → PDF 페이지 크기 = trim + 2×bleed
+    const dataUrl = getExportDataUrl(300, true)
     if (!dataUrl) return
-    const { PDFDocument } = await import('pdf-lib')
+    const { PDFDocument, rgb } = await import('pdf-lib')
     const pdfDoc = await PDFDocument.create()
     const MM_PER_PT = 2.8346
-    const pageW = dims.widthMm * MM_PER_PT
-    const pageH = dims.heightMm * MM_PER_PT
+    const bleedPt = dims.bleedMm * MM_PER_PT
+    const trimWpt = dims.widthMm * MM_PER_PT
+    const trimHpt = dims.heightMm * MM_PER_PT
+    const pageW = trimWpt + 2 * bleedPt
+    const pageH = trimHpt + 2 * bleedPt
     const page = pdfDoc.addPage([pageW, pageH])
+
+    // 캔버스 이미지(블리드 포함)를 페이지 전체에 깔기
     const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
     const image = await pdfDoc.embedPng(pngBytes)
     page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH })
+
+    // 재단선(crop marks): 4모서리에 trim 경계 외부로 가는 검정선
+    // 트림선에서 시작 → 블리드 영역을 지나 페이지 가장자리 방향으로 ~3mm 연장
+    // (block 인쇄 표준: 두께 0.25pt, 검정, trim 라인에서 약간 떨어진 gap 없음)
+    const markLenPt = Math.max(bleedPt, 3 * MM_PER_PT) // 최소 3mm, 블리드가 더 크면 페이지 가장자리까지
+    const markStroke = 0.25
+    const markColor = rgb(0, 0, 0)
+    // PDF 좌표: 원점(0,0) = 좌하단
+    // trim 박스 좌하단 = (bleedPt, bleedPt), 우상단 = (bleedPt+trimWpt, bleedPt+trimHpt)
+    const trimL = bleedPt
+    const trimB = bleedPt
+    const trimR = bleedPt + trimWpt
+    const trimT = bleedPt + trimHpt
+    // 페이지 경계
+    const pageMinX = 0
+    const pageMinY = 0
+    const pageMaxX = pageW
+    const pageMaxY = pageH
+    // 각 mark의 외측 끝 (trim 경계에서 markLenPt 만큼 외부, 단 페이지 밖으로 나가지 않게 clamp)
+    const outL = Math.max(pageMinX, trimL - markLenPt)
+    const outR = Math.min(pageMaxX, trimR + markLenPt)
+    const outB = Math.max(pageMinY, trimB - markLenPt)
+    const outT = Math.min(pageMaxY, trimT + markLenPt)
+
+    const drawMark = (x1: number, y1: number, x2: number, y2: number) => {
+      page.drawLine({
+        start: { x: x1, y: y1 },
+        end: { x: x2, y: y2 },
+        thickness: markStroke,
+        color: markColor,
+      })
+    }
+    // 좌하단 corner: 수평 mark (trim left → 페이지 좌측), 수직 mark (trim bottom → 페이지 하단)
+    drawMark(outL, trimB, trimL, trimB)
+    drawMark(trimL, outB, trimL, trimB)
+    // 우하단 corner
+    drawMark(trimR, trimB, outR, trimB)
+    drawMark(trimR, outB, trimR, trimB)
+    // 좌상단 corner
+    drawMark(outL, trimT, trimL, trimT)
+    drawMark(trimL, trimT, trimL, outT)
+    // 우상단 corner
+    drawMark(trimR, trimT, outR, trimT)
+    drawMark(trimR, trimT, trimR, outT)
+
     const pdfBytes = await pdfDoc.save()
     const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
     const link = document.createElement('a')
