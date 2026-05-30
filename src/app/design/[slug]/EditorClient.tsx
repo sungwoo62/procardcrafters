@@ -47,6 +47,13 @@ interface EditorDimensions {
   bleedMm: number
 }
 
+interface FieldDef {
+  key: string
+  label: string
+  placeholder: string
+  type: 'text' | 'multiline' | 'email' | 'phone'
+}
+
 interface SelectedProps {
   x: number
   y: number
@@ -99,6 +106,65 @@ const PRODUCT_DIMS: Record<string, EditorDimensions> = {
   banners:                 { widthMm: 200, heightMm: 300, bleedMm: 5 },
 }
 const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3 }
+
+// ─── Required fields per product ──────────────────────────────────────────────
+// 제품별 필수 입력 필드. 사용자가 입력하면 캔버스의 data.fieldKey가 일치하는
+// Textbox에 즉시 반영된다. 빈 캔버스에서는 신규 텍스트 박스가 자동 생성된다.
+
+const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
+  business_cards: [
+    { key: 'name',    label: '이름 (Name)',      placeholder: '홍길동',              type: 'text' },
+    { key: 'title',   label: '직책 (Title)',     placeholder: '대리',                type: 'text' },
+    { key: 'company', label: '회사 (Company)',   placeholder: '회사명',              type: 'text' },
+    { key: 'phone',   label: '전화 (Phone)',     placeholder: '010-1234-5678',       type: 'phone' },
+    { key: 'email',   label: '이메일 (Email)',   placeholder: 'name@company.com',    type: 'email' },
+  ],
+  premium_business_cards: [
+    { key: 'name',    label: '이름 (Name)',      placeholder: '홍길동',              type: 'text' },
+    { key: 'title',   label: '직책 (Title)',     placeholder: '대리',                type: 'text' },
+    { key: 'company', label: '회사 (Company)',   placeholder: '회사명',              type: 'text' },
+    { key: 'phone',   label: '전화 (Phone)',     placeholder: '010-1234-5678',       type: 'phone' },
+    { key: 'email',   label: '이메일 (Email)',   placeholder: 'name@company.com',    type: 'email' },
+  ],
+  stickers: [
+    { key: 'headline', label: '메인 문구 (Headline)', placeholder: '오픈 기념 50% 할인', type: 'text' },
+    { key: 'sub',      label: '서브 문구 (Sub)',     placeholder: '오늘부터 5월 30일까지', type: 'text' },
+  ],
+  die_cut_stickers: [
+    { key: 'headline', label: '메인 문구 (Headline)', placeholder: '오픈 기념 50% 할인', type: 'text' },
+    { key: 'sub',      label: '서브 문구 (Sub)',     placeholder: '오늘부터 5월 30일까지', type: 'text' },
+  ],
+  flyers: [
+    { key: 'headline', label: '헤드라인 (Headline)', placeholder: '이번 주 50% 할인',   type: 'text' },
+    { key: 'body',     label: '본문 (Body)',        placeholder: '할인 상세 내용...',   type: 'multiline' },
+    { key: 'cta',      label: 'CTA',                placeholder: '지금 방문하기',       type: 'text' },
+    { key: 'contact',  label: '연락처 (Contact)',   placeholder: '전화 / 주소',         type: 'multiline' },
+  ],
+  brochures: [
+    { key: 'company',  label: '회사명 (Company)',   placeholder: '회사명',              type: 'text' },
+    { key: 'tagline',  label: '슬로건 (Tagline)',   placeholder: '한 줄 슬로건',         type: 'text' },
+    { key: 'body',     label: '본문 (Body)',        placeholder: '소개 본문...',        type: 'multiline' },
+    { key: 'contact',  label: '연락처 (Contact)',   placeholder: '전화 / 이메일 / 웹사이트', type: 'multiline' },
+  ],
+  postcards: [
+    { key: 'greeting', label: '인사말 (Greeting)',  placeholder: '안녕하세요',          type: 'text' },
+    { key: 'body',     label: '본문 (Body)',        placeholder: '메시지 내용...',      type: 'multiline' },
+    { key: 'signature',label: '서명 (Signature)',   placeholder: '드림',                type: 'text' },
+  ],
+  posters: [
+    { key: 'headline', label: '메인 헤드라인 (Headline)', placeholder: '큰 글씨 한 줄',  type: 'text' },
+    { key: 'sub',      label: '서브타이틀 (Sub)',         placeholder: '부가 설명',      type: 'text' },
+    { key: 'body',     label: '본문 (Body)',             placeholder: '세부 정보...',   type: 'multiline' },
+    { key: 'date',     label: '날짜/장소 (Date/Place)',   placeholder: '2026.06.01 · 서울', type: 'text' },
+  ],
+  banners: [
+    { key: 'headline', label: '메인 문구 (Headline)',     placeholder: 'GRAND OPEN',     type: 'text' },
+    { key: 'sub',      label: '서브 문구 (Sub)',          placeholder: '5월 30일',       type: 'text' },
+    { key: 'contact',  label: '연락처 (Contact)',         placeholder: '02-1234-5678',   type: 'text' },
+  ],
+}
+
+const DEFAULT_REQUIRED_FIELDS: FieldDef[] = REQUIRED_FIELDS.business_cards
 
 const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
@@ -360,7 +426,8 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
-  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'contact'>('layers')
+  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'contact' | 'fields'>('fields')
+  const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
   const [bgColor, setBgColor] = useState('#ffffff')
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
@@ -384,6 +451,13 @@ export default function EditorClient({ product, options }: Props) {
   // Phase B: Contact smart fields
   const [contactFields, setContactFields] = useState({
     name: '', title: '', company: '', phone: '', email: '', website: '', linkedin: '',
+  })
+
+  // 필수 필드 값 (product 별 REQUIRED_FIELDS 스키마 기반)
+  const [requiredFieldValues, setRequiredFieldValues] = useState<Record<string, string>>(() => {
+    const init: Record<string, string> = {}
+    for (const f of productFields) init[f.key] = ''
+    return init
   })
 
   // Phase C: Brand palette
@@ -698,11 +772,11 @@ export default function EditorClient({ product, options }: Props) {
     if (name === 'Classic') {
       addTextbox(canvas, fabric, 'John Doe', bl + mmToPx(5, scale), bl + mmToPx(14, scale), mmToPx(75, scale), {
         fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#111111', textAlign: 'left',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Senior Designer', bl + mmToPx(5, scale), bl + mmToPx(27, scale), mmToPx(65, scale), {
         fontSize: mmToPx(3.2, scale), fill: '#555555', textAlign: 'left',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       canvas.add(new fabric.Rect({
         left: bl + mmToPx(5, scale), top: bl + mmToPx(36, scale),
@@ -711,16 +785,16 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'email@company.com\n+1 (555) 000-0000', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(75, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#444444', textAlign: 'left',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
     } else if (name === 'Minimal') {
       addTextbox(canvas, fabric, 'Your Name', bl + mmToPx(7.5, scale), bl + mmToPx(19, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fill: '#000000', textAlign: 'center', charSpacing: 200,
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Company · Title', bl + mmToPx(7.5, scale), bl + mmToPx(34, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#888888', textAlign: 'center', charSpacing: 100,
-        data: { id: makeId(), name: 'Company', layerType: 'text' },
+        data: { id: makeId(), name: 'Company', layerType: 'text' , fieldKey: 'company' },
       })
     } else if (name === 'Dark') {
       canvas.add(new fabric.Rect({
@@ -729,15 +803,15 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Your Name', bl + mmToPx(10, scale), bl + mmToPx(14, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'left',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Title • Company', bl + mmToPx(10, scale), bl + mmToPx(27, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#a5b4fc', textAlign: 'left',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'email@company.com', bl + mmToPx(10, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#9ca3af', textAlign: 'left',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
     } else if (name === 'Corporate') {
       // Dark header bar at top
@@ -747,15 +821,15 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'JANE SMITH', bl + mmToPx(5, scale), bl + mmToPx(3.5, scale), mmToPx(75, scale), {
         fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fill: '#ffffff', charSpacing: 150,
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Product Director', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(60, scale), {
         fontSize: mmToPx(3.5, scale), fill: '#475569', fontFamily: 'Lato',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'jane@company.com  ·  linkedin.com/in/jane', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(75, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#94a3b8',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
     } else if (name === 'Executive') {
       // Subtle border frame
@@ -767,15 +841,15 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Alexander Wright', bl + mmToPx(7.5, scale), bl + mmToPx(15, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#1a1a1a', textAlign: 'center',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, '— Managing Partner —', bl + mmToPx(7.5, scale), bl + mmToPx(26, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fontFamily: 'EB Garamond', fill: '#c0a060', textAlign: 'center', charSpacing: 100,
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'alex@firm.com', bl + mmToPx(7.5, scale), bl + mmToPx(37, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fontFamily: 'EB Garamond', fill: '#666666', textAlign: 'center',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
     } else if (name === 'Bold') {
       // Bold colored left panel
@@ -785,7 +859,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'ALEX', bl + mmToPx(3, scale), bl + mmToPx(10, scale), mmToPx(22, scale), {
         fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center',
-        data: { id: makeId(), name: 'First', layerType: 'text' },
+        data: { id: makeId(), name: 'First', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'TURNER', bl + mmToPx(3, scale), bl + mmToPx(22, scale), mmToPx(22, scale), {
         fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center',
@@ -793,11 +867,11 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'UX Designer', bl + mmToPx(32, scale), bl + mmToPx(12, scale), mmToPx(50, scale), {
         fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ffffff',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'hello@alexturner.io\n+1 (415) 000-1234', bl + mmToPx(32, scale), bl + mmToPx(27, scale), mmToPx(50, scale), {
         fontSize: mmToPx(2.8, scale), fill: 'rgba(255,255,255,0.8)',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
     } else if (name === 'Creative') {
       // Warm creative style
@@ -811,11 +885,11 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Sam Rivera', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5, scale), fontFamily: 'Pacifico', fill: '#1c1917',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Art Director & Illustrator', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fontFamily: 'Poppins', fill: '#57534e',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
 
     // ── New templates ─────────────────────────────────────────────────────
@@ -830,7 +904,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'MORRISON & ASSOCIATES', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(68, scale), {
         fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fontFamily: 'Playfair Display',
         fill: '#d4af6e', charSpacing: 120,
-        data: { id: makeId(), name: 'Firm', layerType: 'text' },
+        data: { id: makeId(), name: 'Firm', layerType: 'text' , fieldKey: 'company' },
       })
       canvas.add(new fabric.Rect({
         left: bl + mmToPx(5, scale), top: bl + mmToPx(21, scale),
@@ -839,15 +913,15 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Richard Morrison', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#f5f0e0',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Senior Partner', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(65, scale), {
         fontSize: mmToPx(3, scale), fill: '#b8860b', fontFamily: 'Lato',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'r.morrison@morrlaw.com  ·  +1 (212) 000-1234', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.4, scale), fill: '#9e9e8e',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Consultant') {
@@ -858,11 +932,11 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'David Chen', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fontWeight: 'bold', fontFamily: 'Montserrat', fill: '#1e293b',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Management Consultant', bl + mmToPx(5, scale), bl + mmToPx(23, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3.2, scale), fill: '#1d4ed8', fontFamily: 'Montserrat',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       canvas.add(new fabric.Rect({
         left: bl + mmToPx(5, scale), top: bl + mmToPx(32, scale),
@@ -871,7 +945,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'david.chen@firmname.com\n+1 (650) 000-5678', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#64748b',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Finance') {
@@ -886,19 +960,19 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'APEX CAPITAL', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
         fontSize: mmToPx(3.5, scale), fontWeight: 'bold', fill: '#d4af6e', charSpacing: 200,
-        data: { id: makeId(), name: 'Company', layerType: 'text' },
+        data: { id: makeId(), name: 'Company', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'Elena Voss', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5.5, scale), fontFamily: 'Playfair Display', fill: '#ffffff',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Private Wealth Manager', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#94a3b8',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'e.voss@apexcap.com  ·  +44 20 0000 1234', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.4, scale), fill: '#64748b',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Mono') {
@@ -910,7 +984,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'YOUR NAME', bl + mmToPx(5, scale), bl + mmToPx(16, scale), mmToPx(75, scale), {
         fontSize: mmToPx(5.5, scale), fontWeight: 'bold', fontFamily: 'Montserrat',
         fill: '#1a1a1a', charSpacing: 200,
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       canvas.add(new fabric.Rect({
         left: bl + mmToPx(5, scale), top: bl + mmToPx(28, scale),
@@ -919,11 +993,11 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Title  ·  Company', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#666666', charSpacing: 100,
-        data: { id: makeId(), name: 'Role', layerType: 'text' },
+        data: { id: makeId(), name: 'Role', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'email@company.com', bl + mmToPx(5, scale), bl + mmToPx(42, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#888888',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Photographer') {
@@ -939,15 +1013,15 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Oliver Kraft', bl + mmToPx(5, scale), bl + mmToPx(16, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Raleway',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Photography', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#111111',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'oliver@kraftstudio.com', bl + mmToPx(5, scale), bl + mmToPx(47, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.6, scale), fill: '#555555',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Artist') {
@@ -959,15 +1033,15 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Maya', bl + mmToPx(5, scale), bl + mmToPx(12, scale), mmToPx(60, scale), {
         fontSize: mmToPx(10, scale), fontFamily: 'Pacifico', fill: '#1a1a1a',
-        data: { id: makeId(), name: 'FirstName', layerType: 'text' },
+        data: { id: makeId(), name: 'FirstName', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Visual Artist & Illustrator', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#666666', fontFamily: 'Poppins',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'maya.art@studio.com', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#f97316',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Restaurant') {
@@ -979,19 +1053,19 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'LA CUCINA', bl + mmToPx(5, scale), bl + mmToPx(2.5, scale), mmToPx(75, scale), {
         fontSize: mmToPx(4.5, scale), fontWeight: 'bold', fontFamily: 'Playfair Display',
         fill: '#f5e6c8', charSpacing: 150,
-        data: { id: makeId(), name: 'Restaurant', layerType: 'text' },
+        data: { id: makeId(), name: 'Restaurant', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'Marco Rossi', bl + mmToPx(5, scale), bl + mmToPx(18, scale), mmToPx(70, scale), {
         fontSize: mmToPx(5, scale), fontFamily: 'Playfair Display', fill: '#f5e6c8',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Executive Chef', bl + mmToPx(5, scale), bl + mmToPx(29, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#e2b97a', fontFamily: 'Lora',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'marco@lacucina.com  ·  +39 02 000 1234', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#c4a882',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Cafe') {
@@ -1003,7 +1077,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'BEAN', bl + mmToPx(dims.widthMm - 19, scale), bl + mmToPx(10, scale), mmToPx(18, scale), {
         fontSize: mmToPx(5, scale), fontWeight: 'bold', fill: '#f5e6c8', textAlign: 'center', charSpacing: 100,
-        data: { id: makeId(), name: 'Brand1', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand1', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, '& CO', bl + mmToPx(dims.widthMm - 19, scale), bl + mmToPx(20, scale), mmToPx(18, scale), {
         fontSize: mmToPx(3.5, scale), fill: '#c4a882', textAlign: 'center',
@@ -1011,15 +1085,15 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Sofia Lane', bl + mmToPx(5, scale), bl + mmToPx(12, scale), mmToPx(55, scale), {
         fontSize: mmToPx(5.5, scale), fontFamily: 'Lora', fill: '#3b1f0a',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Head Barista', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(55, scale), {
         fontSize: mmToPx(3, scale), fill: '#6b3a1f',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'sofia@beanandco.com', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(55, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#8b6347',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Bakery') {
@@ -1031,7 +1105,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Sweet Crumbs', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
         fontSize: mmToPx(7, scale), fontFamily: 'Pacifico', fill: '#8b4513',
-        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'BAKERY & CAFÉ', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#d4956a', charSpacing: 200,
@@ -1039,11 +1113,11 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Claire Dubois', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
         fontSize: mmToPx(4, scale), fontFamily: 'Lora', fill: '#5c3317',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'claire@sweetcrumbs.com', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.6, scale), fill: '#a0704a',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Medical') {
@@ -1058,11 +1132,11 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Dr. Sarah Kim', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fontWeight: 'bold', fontFamily: 'Nunito', fill: '#0c1a2e',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'M.D. — Internal Medicine', bl + mmToPx(5, scale), bl + mmToPx(23, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#0284c7', fontFamily: 'Nunito',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       canvas.add(new fabric.Rect({
         left: bl + mmToPx(5, scale), top: bl + mmToPx(32, scale),
@@ -1071,7 +1145,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 's.kim@medcenter.com  ·  +1 (800) 000-1234', bl + mmToPx(5, scale), bl + mmToPx(36, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#475569',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Fitness') {
@@ -1082,19 +1156,19 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'IRON WILL', bl + mmToPx(5, scale), bl + mmToPx(10, scale), mmToPx(75, scale), {
         fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#ea580c', charSpacing: 250,
-        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'Jake Morrison', bl + mmToPx(5, scale), bl + mmToPx(22, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ffffff',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Certified Personal Trainer', bl + mmToPx(5, scale), bl + mmToPx(34, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#9ca3af',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'jake@ironwillfitness.com', bl + mmToPx(5, scale), bl + mmToPx(43, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#6b7280',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Beauty Spa') {
@@ -1109,7 +1183,7 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'Lumière', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(75, scale), {
         fontSize: mmToPx(8, scale), fontFamily: 'Playfair Display', fill: '#9d174d',
-        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'BEAUTY & SPA', bl + mmToPx(5, scale), bl + mmToPx(25, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#b8860b', charSpacing: 200,
@@ -1117,11 +1191,11 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Chloé Martin, Head Stylist', bl + mmToPx(5, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fontFamily: 'Lora', fill: '#881337',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'chloe@lumiere-spa.com', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.5, scale), fill: '#9d174d',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Tech Startup') {
@@ -1136,19 +1210,19 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'NEXUS', bl + mmToPx(8, scale), bl + mmToPx(7, scale), mmToPx(70, scale), {
         fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#7c3aed', charSpacing: 200,
-        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'Alex Park', bl + mmToPx(8, scale), bl + mmToPx(19, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fontWeight: 'bold', fill: '#ffffff', fontFamily: 'Inter',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Co-founder & CTO', bl + mmToPx(8, scale), bl + mmToPx(31, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#a78bfa',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'alex@nexus.io  ·  nexus.io', bl + mmToPx(8, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.6, scale), fill: '#6b7280',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Developer') {
@@ -1163,15 +1237,15 @@ export default function EditorClient({ product, options }: Props) {
       })
       addTextbox(canvas, fabric, 'Kim Juno', bl + mmToPx(5, scale), bl + mmToPx(17, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6.5, scale), fontWeight: 'bold', fill: '#f0f6fc', fontFamily: 'Courier New',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, '// Full-Stack Engineer', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#6e7681', fontFamily: 'Courier New',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'kim@devstudio.io\ngithub.com/kimjuno', bl + mmToPx(5, scale), bl + mmToPx(39, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.6, scale), fill: '#58a6ff', fontFamily: 'Courier New',
-        data: { id: makeId(), name: 'Links', layerType: 'text' },
+        data: { id: makeId(), name: 'Links', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Realtor') {
@@ -1182,19 +1256,19 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'PREMIER REALTY', bl + mmToPx(5, scale), bl + mmToPx(9, scale), mmToPx(75, scale), {
         fontSize: mmToPx(3, scale), fill: '#b8860b', charSpacing: 150, fontFamily: 'Montserrat', fontWeight: 'bold',
-        data: { id: makeId(), name: 'Agency', layerType: 'text' },
+        data: { id: makeId(), name: 'Agency', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'James Sullivan', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(70, scale), {
         fontSize: mmToPx(6, scale), fontFamily: 'Playfair Display', fill: '#1a1a1a',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Licensed Real Estate Agent', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#555555',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'j.sullivan@premierrealty.com  ·  +1 (310) 000-9876', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.4, scale), fill: '#777777',
-        data: { id: makeId(), name: 'Contact', layerType: 'text' },
+        data: { id: makeId(), name: 'Contact', layerType: 'text' , fieldKey: 'email' },
       })
 
     } else if (name === 'Architect') {
@@ -1209,19 +1283,19 @@ export default function EditorClient({ product, options }: Props) {
       }))
       addTextbox(canvas, fabric, 'FORMA', bl + mmToPx(5, scale), bl + mmToPx(8, scale), mmToPx(70, scale), {
         fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#111827', charSpacing: 300, fontFamily: 'Montserrat',
-        data: { id: makeId(), name: 'Brand', layerType: 'text' },
+        data: { id: makeId(), name: 'Brand', layerType: 'text' , fieldKey: 'company' },
       })
       addTextbox(canvas, fabric, 'Yuki Tanaka', bl + mmToPx(5, scale), bl + mmToPx(20, scale), mmToPx(65, scale), {
         fontSize: mmToPx(5.5, scale), fontFamily: 'Raleway', fill: '#1f2937',
-        data: { id: makeId(), name: 'Name', layerType: 'text' },
+        data: { id: makeId(), name: 'Name', layerType: 'text' , fieldKey: 'name' },
       })
       addTextbox(canvas, fabric, 'Principal Architect  ·  RIBA', bl + mmToPx(5, scale), bl + mmToPx(32, scale), mmToPx(70, scale), {
         fontSize: mmToPx(3, scale), fill: '#6b7280',
-        data: { id: makeId(), name: 'Title', layerType: 'text' },
+        data: { id: makeId(), name: 'Title', layerType: 'text' , fieldKey: 'title' },
       })
       addTextbox(canvas, fabric, 'y.tanaka@formaarch.com', bl + mmToPx(5, scale), bl + mmToPx(42, scale), mmToPx(70, scale), {
         fontSize: mmToPx(2.8, scale), fill: '#9ca3af',
-        data: { id: makeId(), name: 'Email', layerType: 'text' },
+        data: { id: makeId(), name: 'Email', layerType: 'text' , fieldKey: 'email' },
       })
     }
     // Blank: no user objects
@@ -1287,6 +1361,51 @@ export default function EditorClient({ product, options }: Props) {
     canvas.renderAll()
     syncLayers(canvas)
     saveHistory(canvas)
+  }
+
+  // ── 필수 필드 즉시 반영 ─────────────────────────────────────────────────
+  // 사용자가 좌측 패널에서 입력하면 캔버스의 data.fieldKey 또는
+  // data.fieldType이 일치하는 Textbox에 즉시 반영한다.
+  // 매칭되는 텍스트 박스가 없고 값이 비어있지 않다면 신규 박스를 생성한다.
+  async function applyRequiredField(key: string, value: string) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+    const def = productFields.find(f => f.key === key)
+    const fallback = def?.placeholder ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const matches = canvas.getObjects().filter((o: any) =>
+      o.data?.fieldKey === key || o.data?.fieldType === key
+    )
+
+    if (matches.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      matches.forEach((o: any) => {
+        if (o.set) o.set('text', value || fallback)
+      })
+    } else if (value) {
+      // 빈 캔버스에서 처음 입력하면 새 텍스트 박스 자동 생성
+      const orderIdx = productFields.findIndex(f => f.key === key)
+      const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
+      const fontSize = (def?.type === 'multiline')
+        ? mmToPx(2.8, scale)
+        : (orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale))
+      const obj = new fabric.Textbox(value, {
+        left: bl + mmToPx(5, scale),
+        top,
+        width: mmToPx(Math.max(dims.widthMm - 10, 30), scale),
+        fontSize,
+        fontWeight: orderIdx === 0 ? 'bold' : 'normal',
+        fill: orderIdx === 0 ? '#111111' : '#444444',
+        data: { id: makeId(), name: def?.label ?? key, layerType: 'text' as const, fieldKey: key, fieldType: key },
+      })
+      canvas.add(obj)
+    }
+
+    canvas.renderAll()
+    syncLayers(canvas)
   }
 
   // ── Phase C: Apply brand palette ─────────────────────────────────────────
@@ -1939,20 +2058,27 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Export ────────────────────────────────────────────────────────────────
 
-  // targetDpi: desired output DPI. 300 = print quality, 150 = preview
-  function getExportDataUrl(targetDpi = 150): string {
+  // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
+  // 블리드 포함 영역(= trim + 2×bleed)을 export 한다. 인쇄소 재단 기준을 맞추기 위함.
+  // includeBleed=false 인 경우 trim만 export (PNG 미리보기 등 호환용).
+  function getExportDataUrl(targetDpi = 150, includeBleed = true): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
-    const trimX = mmToPx(dims.bleedMm, scale)
-    const trimY = mmToPx(dims.bleedMm, scale)
+    const bleedPx = mmToPx(dims.bleedMm, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
+    const exportLeft = includeBleed ? 0 : bleedPx
+    const exportTop = includeBleed ? 0 : bleedPx
+    const exportW = includeBleed ? trimW + 2 * bleedPx : trimW
+    const exportH = includeBleed ? trimH + 2 * bleedPx : trimH
+    const exportWmm = includeBleed ? dims.widthMm + 2 * dims.bleedMm : dims.widthMm
+    const exportHmm = includeBleed ? dims.heightMm + 2 * dims.bleedMm : dims.heightMm
 
     // Compute multiplier dynamically from product dimensions to guarantee target DPI
     const MM_PER_INCH = 25.4
-    const needW = (dims.widthMm / MM_PER_INCH) * targetDpi
-    const needH = (dims.heightMm / MM_PER_INCH) * targetDpi
-    const multiplier = Math.max(1, Math.ceil(Math.max(needW / trimW, needH / trimH)))
+    const needW = (exportWmm / MM_PER_INCH) * targetDpi
+    const needH = (exportHmm / MM_PER_INCH) * targetDpi
+    const multiplier = Math.max(1, Math.ceil(Math.max(needW / exportW, needH / exportH)))
 
     // Save viewport, reset for export
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -1961,10 +2087,10 @@ export default function EditorClient({ product, options }: Props) {
 
     const dataUrl = canvas.toDataURL({
       format: 'png',
-      left: trimX,
-      top: trimY,
-      width: trimW,
-      height: trimH,
+      left: exportLeft,
+      top: exportTop,
+      width: exportW,
+      height: exportH,
       multiplier,
     })
 
@@ -1974,7 +2100,8 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   function exportPng() {
-    const dataUrl = getExportDataUrl(150)
+    // PNG 미리보기는 trim 영역만 (블리드 제외) — 디자인 시안 확인용
+    const dataUrl = getExportDataUrl(150, false)
     if (!dataUrl) return
     const link = document.createElement('a')
     link.download = `${product.slug}-design.png`
@@ -2417,6 +2544,7 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
+              { key: 'fields',     icon: FileText,       label: '필수' },
               { key: 'templates',  icon: LayoutTemplate, label: 'Tmpl' },
               { key: 'contact',    icon: Type,           label: 'Info' },
               { key: 'shapes',     icon: Star,           label: 'Shapes' },
@@ -2433,6 +2561,47 @@ export default function EditorClient({ product, options }: Props) {
               </button>
             ))}
           </div>
+
+          {/* 필수 필드 패널 — 제품별 스키마 기반, 입력 시 캔버스 즉시 반영 */}
+          {activePanel === 'fields' && (
+            <div className="flex-1 overflow-y-auto p-3 space-y-2">
+              <p className="text-[10px] text-gray-400 leading-tight">
+                필수 항목을 입력하면 캔버스에 즉시 반영됩니다.
+                템플릿에 미리 표시된 같은 항목이 있으면 그 글자가 바뀌고,
+                없으면 새 텍스트 박스가 자동으로 추가됩니다.
+              </p>
+              {productFields.map(f => (
+                <div key={f.key}>
+                  <label className="block text-[10px] text-gray-500 mb-0.5">{f.label}</label>
+                  {f.type === 'multiline' ? (
+                    <textarea
+                      value={requiredFieldValues[f.key] ?? ''}
+                      onChange={e => {
+                        const v = e.target.value
+                        setRequiredFieldValues(prev => ({ ...prev, [f.key]: v }))
+                        applyRequiredField(f.key, v)
+                      }}
+                      placeholder={f.placeholder}
+                      rows={3}
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 resize-none"
+                    />
+                  ) : (
+                    <input
+                      type={f.type === 'email' ? 'email' : f.type === 'phone' ? 'tel' : 'text'}
+                      value={requiredFieldValues[f.key] ?? ''}
+                      onChange={e => {
+                        const v = e.target.value
+                        setRequiredFieldValues(prev => ({ ...prev, [f.key]: v }))
+                        applyRequiredField(f.key, v)
+                      }}
+                      placeholder={f.placeholder}
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                    />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Contact smart fields panel */}
           {activePanel === 'contact' && (
