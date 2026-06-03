@@ -1,0 +1,28 @@
+# Railway worker 배포 설정
+# 이 파일을 별도 Railway 서비스로 배포하거나 동일 프로젝트에 worker 서비스 추가 시 사용
+#
+# Railway 배포 방법:
+#   1. railway login
+#   2. railway link (또는 railway init으로 새 프로젝트)
+#   3. railway service create --name factory-worker
+#   4. 아래 환경변수를 Railway 대시보드 또는 railway variables set으로 등록
+#   5. railway up --service factory-worker --dockerfile Dockerfile.worker
+
+[build]
+dockerfilePath = "Dockerfile.worker"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+
+# 환경변수는 Railway 대시보드에서 설정 (비밀값이므로 여기에 기록하지 않음)
+# 필수:
+#   NEXT_PUBLIC_SUPABASE_URL
+#   SUPABASE_SERVICE_ROLE_KEY
+#   SWADPIA_USERNAME
+#   SWADPIA_PASSWORD
+#   RESEND_API_KEY
+#   ADMIN_NOTIFICATION_EMAIL
+# 선택:
+#   NEXT_PUBLIC_SITE_URL  (기본값: https://procardcrafters.com)
+#   POLL_INTERVAL_SECONDS  (기본값: 300)
