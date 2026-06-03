@@ -36,6 +36,8 @@ export interface OptionValue {
   name: string;
   label: string;
   sort_order: number;
+  image_url?: string | null;
+  description?: string | null;
 }
 
 export interface PriceRule {
