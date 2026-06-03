@@ -68,6 +68,7 @@ const PRODUCT_FEATURES: Record<string, string[]> = {
   postcards: ['300gsm premium stock', 'Gloss or soft-touch finish', 'Perfect for direct mail', 'Standard & large formats'],
   posters: ['170gsm satin poster paper', 'Large format up to A0', 'Vivid color reproduction', 'Rolled or flat delivery'],
   banners: ['Mini banner 60×160cm or 80×200cm', 'Durable PVC material', 'Indoor & outdoor use', 'Retractable stand available'],
+  letterpress_cards: ['Crane Lettra 600gsm cotton stock', 'Deep-impression letterpress printing', '1 or 2-color designs', 'Artisan craftsmanship — 5–8 day production'],
 }
 
 const TRUST_ITEMS = [
