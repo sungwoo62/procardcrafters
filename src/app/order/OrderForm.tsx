@@ -102,7 +102,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           body: JSON.stringify({
             country: form.country,
             postalCode: form.postalCode,
-            items: [{ productId: product.id, quantity: 1, selectedOptions }],
+            items: [{ productId: product.id, quantity, selectedOptions }],
             subtotalUsd: itemPriceUsd,
           }),
         })
@@ -190,7 +190,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        items: [{ productId: product.id, selectedOptions, fileId: uploadedFileId ?? undefined }],
+        items: [{ productId: product.id, selectedOptions, quantity, fileId: uploadedFileId ?? undefined }],
         customer: {
           email: form.customerEmail,
           name: form.customerName,
@@ -253,7 +253,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     <div className="space-y-10">
       <div>
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Upload File & Place Order</h1>
-        <p className="text-gray-500 text-sm">{product.name_en} · {product.name_ko}</p>
+        <p className="text-gray-500 text-sm">{product.name_en}</p>
       </div>
 
       {/* Options Summary */}

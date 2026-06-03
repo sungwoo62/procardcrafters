@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createServerClient()
   const { data } = await supabase
     .from('print_products')
-    .select('name_en, description_ko, description_en')
+    .select('name_en, description_en')
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
@@ -30,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${data.name_en} — Procardcrafters`,
-    description: (data.description_en ?? data.description_ko) ?? undefined,
+    description: data.description_en ?? undefined,
   }
 }
 
@@ -138,11 +138,9 @@ export default async function ProductDetailPage({ params }: Props) {
                 </span>
               )}
             </div>
-            <p className="text-base text-gray-400 mb-4 font-medium">{product.name_ko}</p>
-
-            {(product.description_en || product.description_ko) && (
+            {product.description_en && (
               <p className="text-gray-600 leading-relaxed mb-4">
-                {product.description_en ?? product.description_ko}
+                {product.description_en}
               </p>
             )}
 
@@ -213,8 +211,19 @@ export default async function ProductDetailPage({ params }: Props) {
                 } : undefined}
               />
             ) : (
-              <div className="text-gray-500 text-sm py-8 text-center">
-                Loading options...
+              <div className="text-center py-10">
+                <div className="text-4xl mb-4">📦</div>
+                <p className="text-gray-800 font-semibold text-base mb-2">Custom Quote Required</p>
+                <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                  This product requires custom specifications.<br />
+                  Contact us for pricing and lead time.
+                </p>
+                <a
+                  href="mailto:hello@procardcrafters.com"
+                  className="inline-flex items-center justify-center px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold transition-colors"
+                >
+                  Get a Quote
+                </a>
               </div>
             )}
           </div>

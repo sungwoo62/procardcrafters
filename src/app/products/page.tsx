@@ -147,9 +147,9 @@ export default async function ProductsPage() {
                         </span>
                       )}
                     </div>
-                    {(product.description_en || product.description_ko) && (
+                    {product.description_en && (
                       <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
-                        {product.description_en ?? product.description_ko}
+                        {product.description_en}
                       </p>
                     )}
                     <div className="flex items-center justify-between pt-2 border-t border-gray-100">

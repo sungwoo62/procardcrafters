@@ -4,6 +4,8 @@ import { createServerClient } from '@/lib/supabase'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import RejectedFileUpload from '@/components/RejectedFileUpload'
+import DesignProofReview from '@/components/DesignProofReview'
+import ReorderButton from '@/components/ReorderButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -152,6 +154,9 @@ export default async function OrderTrackingPage({ params }: Props) {
         </section>
       )}
 
+      {/* Design Proof Review */}
+      <DesignProofReview orderNumber={order.order_number} />
+
       {/* Order Items */}
       <section>
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Order Items</h2>
@@ -160,7 +165,6 @@ export default async function OrderTrackingPage({ params }: Props) {
             <div key={item.id} className="border border-gray-200 rounded-xl p-4 flex justify-between items-start">
               <div>
                 <p className="font-medium text-gray-900">{item.product_name_en}</p>
-                <p className="text-sm text-gray-500">{item.product_name_ko}</p>
                 {Object.keys(item.selected_options).length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
                     {Object.entries(item.selected_options).map(([type, value]) => (
@@ -204,6 +208,16 @@ export default async function OrderTrackingPage({ params }: Props) {
           <p>{order.shipping_country}</p>
         </div>
       </section>
+
+      {/* 재주문 CTA */}
+      <div className="flex justify-center">
+        <ReorderButton
+          orderNumber={order.order_number}
+          variant="primary"
+          label="이 주문 다시 하기"
+          className="px-5 py-2.5 text-base"
+        />
+      </div>
 
       {/* Order Date */}
       <p className="text-xs text-gray-400 text-center">
