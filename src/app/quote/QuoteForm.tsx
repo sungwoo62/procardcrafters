@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
+import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2 } from "lucide-react";
 import { submitQuote } from "./actions";
 
 const PayPalCheckout = dynamic(
@@ -9,8 +10,12 @@ const PayPalCheckout = dynamic(
   { ssr: false }
 );
 
-// 데모용 기본 보증금 금액 (실제 운영 시 견적에 따라 동적으로 변경)
 const DEPOSIT_AMOUNT = "50.00";
+
+const inputClass =
+  "mt-1.5 w-full rounded-xl border border-border px-4 py-3 text-sm text-text placeholder:text-secondary/40 focus:border-primary focus:ring-2 focus:ring-primary/10 focus:outline-none transition-shadow bg-white";
+
+const labelClass = "flex items-center gap-1.5 text-sm font-semibold text-text";
 
 export default function QuoteForm({
   defaultProduct,
@@ -42,22 +47,23 @@ export default function QuoteForm({
 
   if (submitted) {
     return (
-      <div className="mt-10 space-y-6">
-        <div className="rounded-xl border border-border bg-bg-light p-8 text-center">
-          <p className="text-lg font-semibold text-text">
-            Thank you for your inquiry!
-          </p>
-          <p className="mt-2 text-sm text-secondary">
+      <div className="mt-10 space-y-5">
+        <div className="rounded-2xl border border-green-200 bg-green-50 p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <CheckCircle size={40} className="text-green-500" strokeWidth={1.5} />
+          </div>
+          <p className="text-lg font-bold text-text">Thank you for your inquiry!</p>
+          <p className="mt-2 text-sm text-secondary leading-6">
             We&apos;ll review your request and get back to you within 24 hours.
           </p>
         </div>
 
         {!paid && orderId && (
-          <div className="rounded-xl border border-border bg-bg-light p-6">
-            <p className="mb-1 text-sm font-semibold text-text">
+          <div className="rounded-2xl border border-border bg-bg-light p-6">
+            <p className="text-sm font-bold text-text">
               Optional: Pay a ${DEPOSIT_AMOUNT} Deposit
             </p>
-            <p className="mb-4 text-xs text-secondary">
+            <p className="mt-1 mb-5 text-xs leading-5 text-secondary">
               Secure your order slot with a deposit. The remainder will be invoiced after we finalize your quote.
             </p>
             <PayPalCheckout
@@ -70,8 +76,8 @@ export default function QuoteForm({
         )}
 
         {paid && (
-          <div className="rounded-xl border border-green-200 bg-green-50 p-6 text-center">
-            <p className="text-sm font-semibold text-green-800">
+          <div className="rounded-2xl border border-green-200 bg-green-50 p-6 text-center">
+            <p className="text-sm font-bold text-green-800">
               Deposit received — your order is confirmed!
             </p>
             <p className="mt-1 text-xs text-green-700">
@@ -86,85 +92,84 @@ export default function QuoteForm({
   return (
     <form onSubmit={handleSubmit} className="mt-10 space-y-5">
       {error && (
-        <div className="rounded-lg bg-red-50 p-3 text-sm text-red-700">
+        <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {error}
         </div>
       )}
 
       <div>
-        <label htmlFor="name" className="block text-sm font-medium text-text">
-          Full Name
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          required
-          className="mt-1.5 w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text placeholder:text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-          placeholder="John Smith"
-        />
-      </div>
-
-      <div>
-        <label htmlFor="email" className="block text-sm font-medium text-text">
-          Email Address
+        <label htmlFor="email" className={labelClass}>
+          <Mail size={14} className="text-secondary" />
+          Email Address{" "}
+          <span className="ml-0.5 text-red-500 font-bold">*</span>
         </label>
         <input
           id="email"
           name="email"
           type="email"
           required
-          className="mt-1.5 w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text placeholder:text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+          className={inputClass}
           placeholder="john@example.com"
         />
       </div>
 
       <div>
-        <label
-          htmlFor="product"
-          className="block text-sm font-medium text-text"
-        >
-          Product
+        <label htmlFor="name" className={labelClass}>
+          <User size={14} className="text-secondary" />
+          Full Name{" "}
+          <span className="ml-1 text-xs font-normal text-secondary">(optional)</span>
         </label>
         <input
-          id="product"
-          name="product"
+          id="name"
+          name="name"
           type="text"
-          defaultValue={defaultProduct ?? ""}
-          className="mt-1.5 w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text placeholder:text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-          placeholder="e.g. Standard Business Cards"
+          className={inputClass}
+          placeholder="John Smith"
         />
       </div>
 
-      <div>
-        <label
-          htmlFor="quantity"
-          className="block text-sm font-medium text-text"
-        >
-          Quantity
-        </label>
-        <input
-          id="quantity"
-          name="quantity"
-          type="number"
-          min={1}
-          className="mt-1.5 w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text placeholder:text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-          placeholder="500"
-        />
+      <div className="grid gap-5 sm:grid-cols-2">
+        <div>
+          <label htmlFor="product" className={labelClass}>
+            <Package size={14} className="text-secondary" />
+            Product
+          </label>
+          <input
+            id="product"
+            name="product"
+            type="text"
+            defaultValue={defaultProduct ?? ""}
+            className={inputClass}
+            placeholder="e.g. Standard Business Cards"
+          />
+        </div>
+
+        <div>
+          <label htmlFor="quantity" className={labelClass}>
+            <Hash size={14} className="text-secondary" />
+            Quantity
+          </label>
+          <input
+            id="quantity"
+            name="quantity"
+            type="number"
+            min={1}
+            className={inputClass}
+            placeholder="500"
+          />
+        </div>
       </div>
 
       <div>
-        <label
-          htmlFor="message"
-          className="block text-sm font-medium text-text"
-        >
+        <label htmlFor="message" className={labelClass}>
+          <MessageSquare size={14} className="text-secondary" />
           Message
         </label>
         <textarea
           id="message"
           name="message"
-          rows={4}
-          className="mt-1.5 w-full rounded-lg border border-border px-4 py-2.5 text-sm text-text placeholder:text-secondary/50 focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none resize-none"
+          rows={5}
+          className={`${inputClass} resize-none`}
           placeholder="Tell us about your project — size, material preferences, deadline, etc."
         />
       </div>
@@ -172,10 +177,21 @@ export default function QuoteForm({
       <button
         type="submit"
         disabled={pending}
-        className="w-full rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary-dark disabled:opacity-50 transition-colors"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-60 transition-all duration-200 shadow-md shadow-primary/20"
       >
-        {pending ? "Submitting..." : "Submit Quote Request"}
+        {pending ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Submitting...
+          </>
+        ) : (
+          "Submit Quote Request"
+        )}
       </button>
+
+      <p className="text-center text-xs text-secondary">
+        We typically respond within 24 hours. No commitment required.
+      </p>
     </form>
   );
 }

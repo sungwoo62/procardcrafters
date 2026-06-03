@@ -11,8 +11,8 @@ export async function submitQuote(
   const quantityRaw = formData.get("quantity") as string;
   const message = formData.get("message") as string;
 
-  if (!name || !email) {
-    return { error: "Name and email are required." };
+  if (!email) {
+    return { error: "Email address is required." };
   }
 
   const supabase = await createClient();
