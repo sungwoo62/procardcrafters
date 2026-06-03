@@ -4,7 +4,7 @@ export type ProductCategory =
   | 'flyers' | 'brochures'
   | 'postcards' | 'posters' | 'banners'
   | 'sample_pack'
-export type OptionType = 'quantity' | 'paper' | 'coating' | 'size' | 'finish' | 'corners' | 'sides' | 'pages'
+export type OptionType = 'quantity' | 'paper' | 'paper_code' | 'coating' | 'size' | 'finish' | 'corners' | 'sides' | 'pages'
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 export type FileStatus = 'uploaded' | 'approved' | 'rejected' | 'processing'
 export type DesignProofStatus = 'pending' | 'approved' | 'revision_requested'
@@ -47,6 +47,7 @@ export interface PrintProductOption {
   weight_modifier_g: number
   description_ko: string | null
   description_en: string | null
+  image_url: string | null
   is_default: boolean
   sort_order: number
   created_at: string

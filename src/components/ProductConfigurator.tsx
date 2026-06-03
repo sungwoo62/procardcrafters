@@ -6,6 +6,7 @@ import { ShoppingCart, Truck, BadgeCheck, Pencil } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption, OptionType } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
+import PaperPopup from '@/components/PaperPopup'
 
 interface SwadpiaClientData {
   papers: SwadpiaPaper[]
@@ -24,6 +25,7 @@ interface Props {
 const OPTION_LABEL: Record<OptionType, string> = {
   quantity: 'Quantity',
   paper: 'Paper',
+  paper_code: 'Paper',
   coating: 'Coating',
   size: 'Size',
   finish: 'Finish',
@@ -78,6 +80,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   }, [grouped])
 
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
+  const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
 
   // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
@@ -89,10 +92,8 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   }, [selections])
 
   // Determine paper_code for Swadpia print cost lookup
-  // Map selected paper option to Swadpia paper_code
   const swadpiaPaperCode = useMemo(() => {
     if (!swadpiaData) return null
-    // Use the first paper_code from print_info1 (default paper)
     const allCodes = [...new Set(swadpiaData.printEntries.map(e => e.paper_code))]
     return allCodes[0] ?? null
   }, [swadpiaData])
@@ -144,18 +145,28 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <div className="flex flex-wrap gap-2">
             {opts.map((opt) => {
               const isSelected = selections[type] === opt.value
+              const isPaperType = type === 'paper' || type === 'paper_code'
+
               return (
-                <button
-                  key={opt.value}
-                  onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
-                  className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                    isSelected
-                      ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                      : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                  }`}
-                >
-                  {opt.label_en}
-                </button>
+                <div key={opt.value} className="relative">
+                  {/* 용지 선택 팝업 */}
+                  {isPaperType && hoveredPaper === opt.value && (
+                    <PaperPopup option={opt} />
+                  )}
+
+                  <button
+                    onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
+                    onMouseEnter={() => isPaperType && setHoveredPaper(opt.value)}
+                    onMouseLeave={() => isPaperType && setHoveredPaper(null)}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {opt.label_en}
+                  </button>
+                </div>
               )
             })}
           </div>
