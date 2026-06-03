@@ -45,6 +45,7 @@ interface EditorDimensions {
   widthMm: number
   heightMm: number
   bleedMm: number
+  safeMm: number // 안전 영역: trim 안쪽 여백 (인쇄 시 잘릴 수 있는 경계)
 }
 
 interface FieldDef {
@@ -106,17 +107,17 @@ interface SelectedProps {
 // 4) products 배열이 비어 있는 템플릿은 모든 페이지에 노출됨 (범용)
 
 const PRODUCT_DIMS: Record<string, EditorDimensions> = {
-  business_cards:          { widthMm: 85,  heightMm: 55,  bleedMm: 3 },
-  premium_business_cards:  { widthMm: 85,  heightMm: 55,  bleedMm: 3 },
-  stickers:                { widthMm: 70,  heightMm: 70,  bleedMm: 3 },
-  die_cut_stickers:        { widthMm: 70,  heightMm: 70,  bleedMm: 3 },
-  flyers:                  { widthMm: 148, heightMm: 210, bleedMm: 3 },
-  brochures:               { widthMm: 148, heightMm: 210, bleedMm: 3 },
-  postcards:               { widthMm: 152, heightMm: 102, bleedMm: 3 },
-  posters:                 { widthMm: 210, heightMm: 297, bleedMm: 3 },
-  banners:                 { widthMm: 200, heightMm: 300, bleedMm: 5 },
+  business_cards:          { widthMm: 85,  heightMm: 55,  bleedMm: 3, safeMm: 3 },
+  premium_business_cards:  { widthMm: 85,  heightMm: 55,  bleedMm: 3, safeMm: 3 },
+  stickers:                { widthMm: 70,  heightMm: 70,  bleedMm: 3, safeMm: 3 },
+  die_cut_stickers:        { widthMm: 70,  heightMm: 70,  bleedMm: 3, safeMm: 5 },
+  flyers:                  { widthMm: 148, heightMm: 210, bleedMm: 3, safeMm: 5 },
+  brochures:               { widthMm: 148, heightMm: 210, bleedMm: 3, safeMm: 5 },
+  postcards:               { widthMm: 152, heightMm: 102, bleedMm: 3, safeMm: 3 },
+  posters:                 { widthMm: 210, heightMm: 297, bleedMm: 3, safeMm: 5 },
+  banners:                 { widthMm: 200, heightMm: 300, bleedMm: 5, safeMm: 10 },
 }
-const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3 }
+const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3, safeMm: 3 }
 
 // ─── Required fields per product ──────────────────────────────────────────────
 // 제품별 필수 입력 필드. 사용자가 입력하면 캔버스의 data.fieldKey가 일치하는
@@ -546,7 +547,7 @@ function mmToPx(mm: number, scale: number) { return mm * scale }
 
 function makeId() { return Math.random().toString(36).slice(2) }
 
-const BACKGROUND_ROLES = new Set(['bleed-bg', 'trim-bg', 'trim-border', 'guide'])
+const BACKGROUND_ROLES = new Set(['bleed-bg', 'trim-bg', 'trim-border', 'safe-border', 'guide'])
 
 function isBackground(obj: { data?: { role?: string } }) {
   return BACKGROUND_ROLES.has(obj.data?.role ?? '')
@@ -815,10 +816,11 @@ export default function EditorClient({ product, options }: Props) {
     const trimY = mmToPx(dims.bleedMm, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
+    const safePx = mmToPx(dims.safeMm, scale)
 
     const bleedBg = new fabric.Rect({
       left: 0, top: 0, width: canvasW, height: canvasH,
-      fill: '#e5e7eb', selectable: false, evented: false,
+      fill: '#cbd5e1', selectable: false, evented: false,
       data: { role: 'bleed-bg' },
     })
     const trimBg = new fabric.Rect({
@@ -826,16 +828,27 @@ export default function EditorClient({ product, options }: Props) {
       fill: bg, selectable: false, evented: false,
       data: { role: 'trim-bg' },
     })
+    // 재단선(trim): 빨간 실선 — 이 선에서 재단됨
     const trimBorder = new fabric.Rect({
       left: trimX, top: trimY, width: trimW, height: trimH,
-      fill: 'transparent', stroke: 'rgba(239,68,68,0.5)', strokeWidth: 1,
-      strokeDashArray: [6, 3], selectable: false, evented: false,
+      fill: 'transparent', stroke: 'rgba(239,68,68,0.85)', strokeWidth: 1.5,
+      selectable: false, evented: false,
       data: { role: 'trim-border' },
+    })
+    // 안전 영역(safe zone): 파란 점선 — 텍스트/중요 요소는 이 안에
+    const safeBorder = new fabric.Rect({
+      left: trimX + safePx, top: trimY + safePx,
+      width: trimW - 2 * safePx, height: trimH - 2 * safePx,
+      fill: 'transparent', stroke: 'rgba(59,130,246,0.7)', strokeWidth: 1,
+      strokeDashArray: [5, 4], selectable: false, evented: false,
+      data: { role: 'safe-border' },
     })
 
     canvas.add(bleedBg)
     canvas.add(trimBg)
     canvas.add(trimBorder)
+    canvas.add(safeBorder)
+    canvas.sendObjectToBack(safeBorder)
     canvas.sendObjectToBack(trimBorder)
     canvas.sendObjectToBack(trimBg)
     canvas.sendObjectToBack(bleedBg)
@@ -3285,7 +3298,8 @@ export default function EditorClient({ product, options }: Props) {
     setShowBleed(newShow)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     canvas.getObjects().forEach((o: any) => {
-      if (o.data?.role === 'bleed-bg') {
+      const role = o.data?.role
+      if (role === 'bleed-bg' || role === 'trim-border' || role === 'safe-border') {
         o.set('visible', newShow)
       }
     })
@@ -3300,20 +3314,22 @@ export default function EditorClient({ product, options }: Props) {
     if (!canvas) return results
 
     const bl = mmToPx(dims.bleedMm, scale)
-    const safeMargin = mmToPx(3, scale) // 3mm safe zone inside trim
+    const safeMargin = mmToPx(dims.safeMm, scale)
     const trimX = bl
     const trimY = bl
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
+    const MM_PER_INCH = 25.4
+    const MIN_DPI = 300
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const userObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop')
 
     if (userObjs.length === 0) {
-      results.push({ level: 'warn', message: 'Canvas is empty — add some content before ordering.' })
+      results.push({ level: 'warn', message: '캔버스가 비어 있습니다. 주문 전 디자인을 완성해 주세요.' })
     }
 
-    // Check objects near trim edges
+    // 안전 영역 침범 여부 확인
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let nearEdge = false
     userObjs.forEach((o: any) => {
@@ -3331,20 +3347,51 @@ export default function EditorClient({ product, options }: Props) {
       }
     })
     if (nearEdge) {
-      results.push({ level: 'warn', message: 'Some elements are within 3mm of the trim edge — they may be cut off.' })
+      results.push({ level: 'warn', message: `텍스트/요소가 안전 영역(trim 안쪽 ${dims.safeMm}mm) 을 벗어났습니다. 인쇄 시 잘릴 수 있습니다.` })
     } else if (userObjs.length > 0) {
-      results.push({ level: 'ok', message: 'All elements are within the safe zone.' })
+      results.push({ level: 'ok', message: `모든 요소가 안전 영역(${dims.safeMm}mm) 안에 있습니다.` })
     }
 
-    // Check background color
+    // 이미지 해상도 체크 (실제 픽셀 vs 출력 크기 기준 DPI 계산)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const imageObjs = userObjs.filter((o: any) => o.type === 'image')
+    if (imageObjs.length === 0 && userObjs.length > 0) {
+      results.push({ level: 'ok', message: '이미지 없음 — 벡터/텍스트 전용 디자인은 해상도 제한 없습니다.' })
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    imageObjs.forEach((o: any) => {
+      const naturalW = o.width as number  // Fabric.js 이미지의 원본 픽셀 너비
+      const naturalH = o.height as number
+      const renderedW = naturalW * (o.scaleX ?? 1)
+      const renderedH = naturalH * (o.scaleY ?? 1)
+      const widthMm = renderedW / scale
+      const heightMm = renderedH / scale
+      const effectiveDpiW = (naturalW / widthMm) * MM_PER_INCH
+      const effectiveDpiH = (naturalH / heightMm) * MM_PER_INCH
+      const effectiveDpi = Math.round(Math.min(effectiveDpiW, effectiveDpiH))
+      const name = (o.data?.name as string) || '이미지'
+      if (effectiveDpi < MIN_DPI) {
+        results.push({ level: 'warn', message: `"${name}" 해상도 약 ${effectiveDpi}dpi — 인쇄 품질 저하 우려. 300dpi 이상 이미지 사용을 권장합니다.` })
+      } else {
+        results.push({ level: 'ok', message: `"${name}" 해상도 약 ${effectiveDpi}dpi — 인쇄에 적합합니다.` })
+      }
+    })
+
+    // 배경색 확인
     if (bgColor === '#ffffff' || bgColor === '#fff') {
-      results.push({ level: 'ok', message: 'White background — suitable for print.' })
+      results.push({ level: 'ok', message: '흰 배경 — 인쇄에 적합합니다.' })
     } else {
-      results.push({ level: 'ok', message: `Background color ${bgColor} set.` })
+      results.push({ level: 'ok', message: `배경색 ${bgColor} 설정됨.` })
     }
 
-    // Resolution is always 300dpi via getExportDataUrl
-    results.push({ level: 'ok', message: 'Export resolution: 300 DPI (print-ready).' })
+    // 내보내기 해상도 (항상 300dpi)
+    results.push({ level: 'ok', message: `PDF 내보내기: 300 DPI (블리드 ${dims.bleedMm}mm 포함, 재단선 표시).` })
+
+    // CMYK 전환 안내
+    results.push({ level: 'warn', message: 'CMYK 안내: 모니터는 RGB 색상을 사용하지만 인쇄는 CMYK로 변환됩니다. 형광색·채도 높은 색상은 실제 인쇄 결과가 화면과 다소 다를 수 있습니다.' })
+
+    // 치수 정보
+    results.push({ level: 'ok', message: `제품 치수: ${dims.widthMm}×${dims.heightMm}mm (블리드 ${dims.bleedMm}mm, 안전 영역 ${dims.safeMm}mm).` })
 
     return results
   }
@@ -3493,31 +3540,40 @@ export default function EditorClient({ product, options }: Props) {
       {/* Preflight modal */}
       {showPreflight && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-96 p-5">
-            <div className="flex items-center justify-between mb-4">
+          <div className="bg-white rounded-xl shadow-2xl w-[420px] max-h-[80vh] flex flex-col p-5">
+            <div className="flex items-center justify-between mb-3 shrink-0">
               <h3 className="font-semibold text-gray-800 flex items-center gap-2">
-                <ShieldCheck className="w-5 h-5 text-indigo-600" /> Preflight Check
+                <ShieldCheck className="w-5 h-5 text-indigo-600" /> 인쇄 파일 점검
               </h3>
               <button onClick={() => setShowPreflight(false)} className="text-gray-400 hover:text-gray-600">
                 <XCircle className="w-5 h-5" />
               </button>
             </div>
-            <ul className="space-y-2">
+            <p className="text-[11px] text-gray-400 mb-3 shrink-0">주문 전 인쇄 파일 품질을 자동으로 점검합니다.</p>
+            <ul className="space-y-2 overflow-y-auto flex-1">
               {preflightResults.map((r, i) => (
-                <li key={i} className="flex items-start gap-2 text-sm">
+                <li key={i} className={`flex items-start gap-2 text-sm rounded-lg px-3 py-2 ${r.level === 'ok' ? 'bg-green-50' : r.level === 'warn' ? 'bg-amber-50' : 'bg-red-50'}`}>
                   {r.level === 'ok' && <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 shrink-0" />}
                   {r.level === 'warn' && <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />}
                   {r.level === 'error' && <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />}
-                  <span className={r.level === 'ok' ? 'text-gray-700' : r.level === 'warn' ? 'text-amber-700' : 'text-red-700'}>{r.message}</span>
+                  <span className={r.level === 'ok' ? 'text-green-800' : r.level === 'warn' ? 'text-amber-800' : 'text-red-800'}>{r.message}</span>
                 </li>
               ))}
             </ul>
-            <button
-              onClick={() => setShowPreflight(false)}
-              className="mt-4 w-full rounded-lg bg-indigo-600 text-white text-sm font-medium py-2 hover:bg-indigo-700"
-            >
-              Close
-            </button>
+            <div className="mt-4 shrink-0 flex gap-2">
+              <button
+                onClick={exportPdf}
+                className="flex-1 rounded-lg border border-indigo-300 text-indigo-700 text-sm font-medium py-2 hover:bg-indigo-50 flex items-center justify-center gap-1.5"
+              >
+                <FileText className="w-3.5 h-3.5" /> PDF 내보내기
+              </button>
+              <button
+                onClick={() => setShowPreflight(false)}
+                className="flex-1 rounded-lg bg-indigo-600 text-white text-sm font-medium py-2 hover:bg-indigo-700"
+              >
+                닫기
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -3591,18 +3647,18 @@ export default function EditorClient({ product, options }: Props) {
         </div>
 
         <div className="flex gap-1.5">
-          {/* Phase 6: Bleed toggle */}
+          {/* 인쇄 가이드 토글 (재단선/안전영역) */}
           <button
             onClick={toggleBleedGuides}
-            title={showBleed ? 'Hide bleed guides' : 'Show bleed guides'}
+            title={showBleed ? '인쇄 가이드 숨기기 (재단선·안전영역)' : '인쇄 가이드 표시 (재단선·안전영역)'}
             className={`w-8 h-8 flex items-center justify-center rounded-md border transition-colors ${showBleed ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-400'}`}
           >
             <FlipHorizontal2 className="w-4 h-4" />
           </button>
-          {/* Phase 6: Preflight */}
+          {/* 인쇄 파일 점검 */}
           <button
             onClick={() => { setPreflightResults(runPreflight()); setShowPreflight(true) }}
-            title="Run preflight check"
+            title="인쇄 파일 점검 (해상도·안전영역·CMYK)"
             className="w-8 h-8 flex items-center justify-center rounded-md border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-300"
           >
             <ShieldCheck className="w-4 h-4" />
