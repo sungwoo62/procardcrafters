@@ -3196,10 +3196,9 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Phase 6: PDF export ────────────────────────────────────────────────────
 
-  async function exportPdf() {
-    // 블리드 포함 영역을 300dpi로 export → PDF 페이지 크기 = trim + 2×bleed
+  async function buildPdfBlob(): Promise<Blob> {
     const dataUrl = getExportDataUrl(300, true)
-    if (!dataUrl) return
+    if (!dataUrl) throw new Error('Export failed')
     const { PDFDocument, rgb } = await import('pdf-lib')
     const pdfDoc = await PDFDocument.create()
     const MM_PER_PT = 2.8346
@@ -3210,57 +3209,41 @@ export default function EditorClient({ product, options }: Props) {
     const pageH = trimHpt + 2 * bleedPt
     const page = pdfDoc.addPage([pageW, pageH])
 
-    // 캔버스 이미지(블리드 포함)를 페이지 전체에 깔기
     const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
     const image = await pdfDoc.embedPng(pngBytes)
     page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH })
 
     // 재단선(crop marks): 4모서리에 trim 경계 외부로 가는 검정선
-    // 트림선에서 시작 → 블리드 영역을 지나 페이지 가장자리 방향으로 ~3mm 연장
-    // (block 인쇄 표준: 두께 0.25pt, 검정, trim 라인에서 약간 떨어진 gap 없음)
-    const markLenPt = Math.max(bleedPt, 3 * MM_PER_PT) // 최소 3mm, 블리드가 더 크면 페이지 가장자리까지
+    const markLenPt = Math.max(bleedPt, 3 * MM_PER_PT)
     const markStroke = 0.25
     const markColor = rgb(0, 0, 0)
-    // PDF 좌표: 원점(0,0) = 좌하단
-    // trim 박스 좌하단 = (bleedPt, bleedPt), 우상단 = (bleedPt+trimWpt, bleedPt+trimHpt)
     const trimL = bleedPt
     const trimB = bleedPt
     const trimR = bleedPt + trimWpt
     const trimT = bleedPt + trimHpt
-    // 페이지 경계
-    const pageMinX = 0
-    const pageMinY = 0
-    const pageMaxX = pageW
-    const pageMaxY = pageH
-    // 각 mark의 외측 끝 (trim 경계에서 markLenPt 만큼 외부, 단 페이지 밖으로 나가지 않게 clamp)
-    const outL = Math.max(pageMinX, trimL - markLenPt)
-    const outR = Math.min(pageMaxX, trimR + markLenPt)
-    const outB = Math.max(pageMinY, trimB - markLenPt)
-    const outT = Math.min(pageMaxY, trimT + markLenPt)
+    const outL = Math.max(0, trimL - markLenPt)
+    const outR = Math.min(pageW, trimR + markLenPt)
+    const outB = Math.max(0, trimB - markLenPt)
+    const outT = Math.min(pageH, trimT + markLenPt)
 
     const drawMark = (x1: number, y1: number, x2: number, y2: number) => {
-      page.drawLine({
-        start: { x: x1, y: y1 },
-        end: { x: x2, y: y2 },
-        thickness: markStroke,
-        color: markColor,
-      })
+      page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: markStroke, color: markColor })
     }
-    // 좌하단 corner: 수평 mark (trim left → 페이지 좌측), 수직 mark (trim bottom → 페이지 하단)
     drawMark(outL, trimB, trimL, trimB)
     drawMark(trimL, outB, trimL, trimB)
-    // 우하단 corner
     drawMark(trimR, trimB, outR, trimB)
     drawMark(trimR, outB, trimR, trimB)
-    // 좌상단 corner
     drawMark(outL, trimT, trimL, trimT)
     drawMark(trimL, trimT, trimL, outT)
-    // 우상단 corner
     drawMark(trimR, trimT, outR, trimT)
     drawMark(trimR, trimT, trimR, outT)
 
     const pdfBytes = await pdfDoc.save()
-    const blob = new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+    return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+  }
+
+  async function exportPdf() {
+    const blob = await buildPdfBlob()
     const link = document.createElement('a')
     link.download = `${product.slug}-300dpi.pdf`
     link.href = URL.createObjectURL(blob)
@@ -3478,12 +3461,9 @@ export default function EditorClient({ product, options }: Props) {
     setOrdering(true)
     setOrderError('')
     try {
-      const dataUrl = getExportDataUrl(300)
-      if (!dataUrl) throw new Error('Export failed')
-      const res = await fetch(dataUrl)
-      const blob = await res.blob()
+      const blob = await buildPdfBlob()
       const formData = new FormData()
-      formData.append('file', blob, `${product.slug}-design.png`)
+      formData.append('file', blob, `${product.slug}-design.pdf`)
       const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
       const data = await uploadRes.json()
       if (uploadRes.ok && data.fileId) {
