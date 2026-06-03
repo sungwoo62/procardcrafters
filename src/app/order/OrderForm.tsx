@@ -87,6 +87,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   // 실시간 배송비 견적 (국가/우편번호/소계 변경 시 자동 갱신)
   const [liveQuote, setLiveQuote] = useState<LiveQuote | null>(null)
   const [quoteLoading, setQuoteLoading] = useState(false)
+  const [fileAgreement, setFileAgreement] = useState(false)
   const effectiveShippingUsd = liveQuote?.costUsd ?? shippingUsd
   const totalUsd = itemPriceUsd + effectiveShippingUsd
 
@@ -144,7 +145,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
       !!form.city &&
       !!form.country &&
       !!form.postalCode &&
-      uploadStatus === 'done'
+      uploadStatus === 'done' &&
+      fileAgreement
     )
   }
 
@@ -558,6 +560,24 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           <span className="text-blue-600">${totalUsd.toFixed(2)} USD</span>
         </div>
         <p className="text-xs text-gray-400">Exchange rate: 1 KRW ≈ ${exchangeRate.toFixed(6)} USD</p>
+      </section>
+
+      {/* File Responsibility Agreement */}
+      <section className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={fileAgreement}
+            onChange={e => { setFileAgreement(e.target.checked); setFormTouched(true) }}
+            className="mt-0.5 w-4 h-4 rounded border-amber-400 accent-amber-600 shrink-0"
+          />
+          <span className="text-sm text-amber-900 leading-relaxed">
+            <strong className="block mb-1">File Responsibility Agreement (Required)</strong>
+            I confirm that I have reviewed my print file and it meets all technical requirements including correct resolution (300 DPI minimum), bleed area, safe zone, and color mode (CMYK). I understand that{' '}
+            <strong>Procardcrafters is not responsible for print quality issues arising from incorrect or low-quality files</strong>{' '}
+            — all file quality and content responsibility lies with the customer. By checking this box, I acknowledge this agreement and accept full responsibility for the uploaded file.
+          </span>
+        </label>
       </section>
 
       {/* PayPal Buttons */}
