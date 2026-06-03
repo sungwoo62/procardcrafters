@@ -8,17 +8,29 @@ export async function generateMetadata({
 }: {
   params: Promise<{ category: string; product: string }>;
 }) {
-  const { product: productSlug } = await params;
+  const { category: categorySlug, product: productSlug } = await params;
   const supabase = await createClient();
   const { data } = await supabase
     .from("products")
-    .select("name, description")
+    .select("name, description, base_price")
     .eq("slug", productSlug)
     .single();
 
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.com";
+  const canonicalUrl = `${SITE_URL}/products/${categorySlug}/${productSlug}`;
+  const title = data ? `${data.name} — ProCardCrafters` : "Product — ProCardCrafters";
+  const description = data?.description ?? "Order premium print products from ProCardCrafters. Fast turnaround and transparent pricing.";
+
   return {
-    title: data ? `${data.name} — ProCardCrafters` : "Product — ProCardCrafters",
-    description: data?.description ?? "",
+    title,
+    description,
+    alternates: { canonical: canonicalUrl },
+    openGraph: {
+      title,
+      description,
+      url: canonicalUrl,
+      type: "website",
+    },
   };
 }
 

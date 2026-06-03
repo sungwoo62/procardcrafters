@@ -6,9 +6,19 @@ import type { Category, Product } from "@/lib/types";
 
 export const revalidate = 3600;
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.com";
+
 export const metadata = {
   title: "All Products — ProCardCrafters",
-  description: "Browse our full range of premium print products.",
+  description:
+    "Browse business cards, flyers, banners, stickers, packaging, and more. Premium quality printing with transparent pricing and fast 3–5 day turnaround.",
+  alternates: { canonical: `${SITE_URL}/products` },
+  openGraph: {
+    title: "All Print Products — ProCardCrafters",
+    description:
+      "Browse our full range of premium print products. Business cards, flyers, banners, stickers, and more.",
+    url: `${SITE_URL}/products`,
+  },
 };
 
 export default async function ProductsPage({

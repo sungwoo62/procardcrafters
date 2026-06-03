@@ -1,8 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryCard from "@/components/ui/CategoryCard";
 import { Award, DollarSign, Zap, Star, Globe, Shield } from "lucide-react";
 
 export const revalidate = 3600;
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.com";
+
+export const metadata: Metadata = {
+  title: "ProCardCrafters — Professional Business Card Printing & More",
+  description:
+    "Order premium business cards, flyers, banners, stickers, and packaging online. Transparent pricing, fast 3–5 day turnaround, ships worldwide. Trusted by 50,000+ businesses.",
+  alternates: { canonical: SITE_URL },
+  openGraph: {
+    title: "ProCardCrafters — Professional Business Card Printing & More",
+    description:
+      "Order premium business cards, flyers, banners, stickers, and packaging online. Fast turnaround, transparent pricing.",
+    url: SITE_URL,
+  },
+};
 
 const CATEGORIES = [
   { name: "Business Cards", slug: "business-cards" },
