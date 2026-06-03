@@ -6,6 +6,7 @@ import ProductImage from '@/components/ProductImage'
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
+import { PCCF_PRODUCT_SLUGS } from '@/config/pccf-catalog'
 import type { PrintProduct } from '@/types/database'
 
 const PRODUCT_EMOJI: Record<string, string> = {
@@ -69,6 +70,7 @@ export default async function ProductsPage() {
     .from('print_products')
     .select('*')
     .eq('is_active', true)
+    .in('slug', [...PCCF_PRODUCT_SLUGS])
     .order('sort_order', { ascending: true })
 
   const items = (products as PrintProduct[] | null) ?? []

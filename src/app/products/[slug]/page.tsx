@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { isPccfSlug } from '@/config/pccf-catalog'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ViewItemTracker from '@/components/ViewItemTracker'
@@ -18,6 +19,7 @@ interface Props {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
+  if (!isPccfSlug(slug)) return { title: 'Product Not Found' }
   const supabase = createServerClient()
   const { data } = await supabase
     .from('print_products')
@@ -80,6 +82,7 @@ const TRUST_ITEMS = [
 
 export default async function ProductDetailPage({ params }: Props) {
   const { slug } = await params
+  if (!isPccfSlug(slug)) notFound()
   const supabase = createServerClient()
 
   const [{ data: productData }, exchangeRate, swadpiaData] = await Promise.all([
