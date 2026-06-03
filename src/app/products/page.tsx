@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import Image from 'next/image'
 import { ArrowRight, Star, Zap } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
 import ProductImage from '@/components/ProductImage'
@@ -158,10 +159,20 @@ export default async function ProductsPage() {
                         href={`/products/${product.slug}`}
                         className={`group relative border ${accent} rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}
                       >
-                        <div className={`h-44 bg-gradient-to-br ${gradient} flex items-center justify-center relative`}>
-                          <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
-                            <ProductImage category={product.category} />
-                          </div>
+                        <div className={`h-44 bg-gradient-to-br ${gradient} flex items-center justify-center relative overflow-hidden`}>
+                          {product.hero_image_url ? (
+                            <Image
+                              src={product.hero_image_url}
+                              alt={product.name_en}
+                              fill
+                              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                              className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                          ) : (
+                            <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
+                              <ProductImage category={product.category} />
+                            </div>
+                          )}
                           {tag && (
                             <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${tag.color}`}>
                               {tag.label}

@@ -11,6 +11,7 @@ import { isPccfSlug } from '@/config/pccf-catalog'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ViewItemTracker from '@/components/ViewItemTracker'
+import Image from 'next/image'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 interface Props {
@@ -125,10 +126,21 @@ export default async function ProductDetailPage({ params }: Props) {
           {/* Left: Product Info */}
           <div>
             {/* Product Visual */}
-            <div className={`h-80 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'} rounded-2xl flex items-center justify-center mb-6 border border-white shadow-sm`}>
-              <div className="w-64 h-64">
-                <ProductImage category={product.category} />
-              </div>
+            <div className={`relative h-80 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'} rounded-2xl flex items-center justify-center mb-6 border border-white shadow-sm overflow-hidden`}>
+              {product.hero_image_url ? (
+                <Image
+                  src={product.hero_image_url}
+                  alt={product.name_en}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  className="object-cover"
+                  priority
+                />
+              ) : (
+                <div className="w-64 h-64">
+                  <ProductImage category={product.category} />
+                </div>
+              )}
             </div>
 
             {/* Product Name + Badge */}
