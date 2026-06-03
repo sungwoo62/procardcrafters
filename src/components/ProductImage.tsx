@@ -6,24 +6,52 @@
 const illustrations: Record<string, React.ReactNode> = {
   business_cards: (
     <svg viewBox="0 0 200 140" fill="none" className="w-full h-full">
-      <rect x="30" y="35" width="120" height="72" rx="6" fill="white" stroke="#94a3b8" strokeWidth="1.5" />
-      <rect x="40" y="30" width="120" height="72" rx="6" fill="white" stroke="#3b82f6" strokeWidth="2" />
-      <rect x="52" y="46" width="40" height="4" rx="2" fill="#3b82f6" />
-      <rect x="52" y="56" width="60" height="3" rx="1.5" fill="#94a3b8" />
-      <rect x="52" y="64" width="48" height="3" rx="1.5" fill="#94a3b8" />
-      <rect x="52" y="72" width="55" height="3" rx="1.5" fill="#cbd5e1" />
-      <circle cx="140" cy="62" r="14" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1.5" />
-      <path d="M135 62l3 3 7-7" stroke="#3b82f6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <defs>
+        <linearGradient id="bcShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="100" cy="118" rx="60" ry="6" fill="url(#bcShadow)" />
+      <g transform="translate(0,4)">
+        <rect x="28" y="48" width="120" height="68" rx="4" fill="#e2e8f0" />
+        <rect x="34" y="42" width="120" height="68" rx="4" fill="#f1f5f9" />
+        <rect x="40" y="36" width="120" height="68" rx="4" fill="white" stroke="#cbd5e1" strokeWidth="0.5" />
+        <rect x="40" y="36" width="120" height="6" fill="#3b82f6" />
+        <text x="52" y="60" fill="#0f172a" fontSize="9" fontWeight="700" fontFamily="ui-sans-serif, system-ui">JANE DOE</text>
+        <text x="52" y="72" fill="#64748b" fontSize="6" fontFamily="ui-sans-serif, system-ui">Creative Director</text>
+        <rect x="52" y="80" width="60" height="2" rx="1" fill="#94a3b8" />
+        <rect x="52" y="86" width="48" height="2" rx="1" fill="#cbd5e1" />
+        <rect x="52" y="92" width="55" height="2" rx="1" fill="#cbd5e1" />
+        <circle cx="140" cy="78" r="10" fill="#dbeafe" stroke="#3b82f6" strokeWidth="1" />
+        <path d="M136 78l3 3 5-6" stroke="#3b82f6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
     </svg>
   ),
   premium_business_cards: (
     <svg viewBox="0 0 200 140" fill="none" className="w-full h-full">
-      <rect x="40" y="30" width="120" height="72" rx="6" fill="#f8fafc" stroke="#6366f1" strokeWidth="2" />
-      <rect x="40" y="30" width="120" height="20" rx="6" fill="#6366f1" />
-      <rect x="40" y="44" width="120" height="6" fill="#6366f1" />
-      <rect x="52" y="60" width="50" height="4" rx="2" fill="#6366f1" />
-      <rect x="52" y="70" width="70" height="3" rx="1.5" fill="#a5b4fc" />
-      <path d="M130 70l6-8 6 8h-3v8h-6v-8h-3z" fill="#eab308" />
+      <defs>
+        <linearGradient id="pbcShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="pbcCard" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stopColor="#1e1b4b" />
+          <stop offset="100%" stopColor="#312e81" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="100" cy="118" rx="60" ry="6" fill="url(#pbcShadow)" />
+      <g transform="translate(0,4)">
+        <rect x="28" y="48" width="120" height="68" rx="4" fill="#312e81" opacity="0.4" />
+        <rect x="34" y="42" width="120" height="68" rx="4" fill="#312e81" opacity="0.7" />
+        <rect x="40" y="36" width="120" height="68" rx="4" fill="url(#pbcCard)" />
+        <text x="52" y="62" fill="#fde68a" fontSize="9" fontWeight="700" fontFamily="serif" letterSpacing="1">A. MILLER</text>
+        <rect x="52" y="68" width="40" height="0.7" fill="#fbbf24" />
+        <text x="52" y="80" fill="#e0e7ff" fontSize="5.5" fontFamily="serif">Founder &amp; Principal</text>
+        <text x="52" y="92" fill="#a5b4fc" fontSize="4.5" fontFamily="serif">miller@studio.com</text>
+        <path d="M133 80l4-6 4 6h-2v6h-4v-6h-2z" fill="#fbbf24" />
+        <circle cx="137" cy="92" r="2.5" fill="#fde68a" />
+      </g>
     </svg>
   ),
   premium_foil_cards: (
@@ -31,25 +59,52 @@ const illustrations: Record<string, React.ReactNode> = {
       <defs>
         <linearGradient id="foil" x1="0" y1="0" x2="1" y2="1">
           <stop offset="0%" stopColor="#fbbf24" />
-          <stop offset="50%" stopColor="#fde68a" />
-          <stop offset="100%" stopColor="#f59e0b" />
+          <stop offset="30%" stopColor="#fde68a" />
+          <stop offset="60%" stopColor="#fbbf24" />
+          <stop offset="100%" stopColor="#d97706" />
+        </linearGradient>
+        <linearGradient id="foilShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.22" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
         </linearGradient>
       </defs>
-      <rect x="40" y="30" width="120" height="72" rx="6" fill="#1f2937" />
-      <rect x="52" y="46" width="60" height="6" rx="2" fill="url(#foil)" />
-      <rect x="52" y="58" width="40" height="3" rx="1.5" fill="#fde68a" />
-      <rect x="52" y="66" width="50" height="3" rx="1.5" fill="#fbbf24" opacity="0.6" />
-      <circle cx="135" cy="64" r="14" fill="url(#foil)" />
-      <path d="M130 64l3 3 7-7" stroke="#1f2937" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <ellipse cx="100" cy="118" rx="62" ry="6" fill="url(#foilShadow)" />
+      <g transform="translate(0,4)">
+        <rect x="28" y="48" width="120" height="68" rx="4" fill="#111827" opacity="0.6" />
+        <rect x="34" y="42" width="120" height="68" rx="4" fill="#1f2937" opacity="0.85" />
+        <rect x="40" y="36" width="120" height="68" rx="4" fill="#111827" />
+        <text x="52" y="64" fill="url(#foil)" fontSize="10" fontWeight="700" fontFamily="serif" letterSpacing="2">LUXE</text>
+        <rect x="52" y="70" width="45" height="0.8" fill="url(#foil)" />
+        <text x="52" y="82" fill="#9ca3af" fontSize="5" fontFamily="serif">Boutique Studio</text>
+        <text x="52" y="92" fill="#6b7280" fontSize="4.5" fontFamily="serif">est. 2024</text>
+        <circle cx="135" cy="78" r="11" fill="url(#foil)" opacity="0.95" />
+        <path d="M131 76l4 4 6-7" stroke="#111827" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </g>
     </svg>
   ),
   letterpress_cards: (
     <svg viewBox="0 0 200 140" fill="none" className="w-full h-full">
-      <rect x="40" y="30" width="120" height="72" rx="6" fill="#fafaf9" stroke="#78716c" strokeWidth="2" />
-      <rect x="52" y="48" width="55" height="6" rx="1" fill="#fafaf9" stroke="#0c0a09" strokeWidth="1" />
-      <rect x="52" y="60" width="70" height="3" rx="1" fill="#78716c" />
-      <rect x="52" y="68" width="50" height="3" rx="1" fill="#a8a29e" />
-      <text x="120" y="86" fill="#0c0a09" fontSize="9" fontWeight="700">L.P.</text>
+      <defs>
+        <linearGradient id="lpShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        </linearGradient>
+        <radialGradient id="lpEmboss" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0%" stopColor="#a8a29e" stopOpacity="0.25" />
+          <stop offset="100%" stopColor="#a8a29e" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+      <ellipse cx="100" cy="118" rx="62" ry="6" fill="url(#lpShadow)" />
+      <g transform="translate(0,4)">
+        <rect x="28" y="48" width="120" height="68" rx="3" fill="#e7e5e4" />
+        <rect x="34" y="42" width="120" height="68" rx="3" fill="#f5f5f4" />
+        <rect x="40" y="36" width="120" height="68" rx="3" fill="#fafaf9" stroke="#d6d3d1" strokeWidth="0.5" />
+        <ellipse cx="100" cy="70" rx="40" ry="20" fill="url(#lpEmboss)" />
+        <text x="100" y="65" fill="#1c1917" fontSize="11" fontWeight="700" fontFamily="serif" textAnchor="middle" letterSpacing="3">CRANE</text>
+        <rect x="80" y="69" width="40" height="0.6" fill="#1c1917" />
+        <text x="100" y="78" fill="#44403c" fontSize="4.5" fontFamily="serif" textAnchor="middle" letterSpacing="1.5">FINE PRINTING</text>
+        <text x="100" y="92" fill="#78716c" fontSize="4" fontFamily="serif" textAnchor="middle">600gsm · Cotton · Letterpress</text>
+      </g>
     </svg>
   ),
   stickers: (
@@ -75,10 +130,35 @@ const illustrations: Record<string, React.ReactNode> = {
   ),
   greeting_cards: (
     <svg viewBox="0 0 200 140" fill="none" className="w-full h-full">
-      <rect x="55" y="22" width="90" height="100" rx="4" fill="white" stroke="#ec4899" strokeWidth="2" />
-      <path d="M100 70c-6-9-18-9-18 0 0 9 18 18 18 18s18-9 18-18c0-9-12-9-18 0z" fill="#fbcfe8" stroke="#ec4899" strokeWidth="1.5" />
-      <rect x="68" y="96" width="64" height="3" rx="1" fill="#94a3b8" />
-      <rect x="74" y="104" width="52" height="3" rx="1" fill="#cbd5e1" />
+      <defs>
+        <linearGradient id="gcShadow" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#000" stopOpacity="0.18" />
+          <stop offset="100%" stopColor="#000" stopOpacity="0" />
+        </linearGradient>
+        <linearGradient id="gcCard" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%" stopColor="#fffaf5" />
+          <stop offset="100%" stopColor="#fde4d8" />
+        </linearGradient>
+      </defs>
+      <ellipse cx="100" cy="125" rx="55" ry="5" fill="url(#gcShadow)" />
+      <g transform="translate(0,2)">
+        <rect x="50" y="22" width="100" height="100" rx="3" fill="url(#gcCard)" stroke="#f9a8d4" strokeWidth="0.8" />
+        {/* 모서리 장식 — 청첩장/초청장 무드 */}
+        <path d="M62 32 Q70 26 80 32" stroke="#ec4899" strokeWidth="0.8" fill="none" opacity="0.5" />
+        <path d="M120 32 Q130 26 138 32" stroke="#ec4899" strokeWidth="0.8" fill="none" opacity="0.5" />
+        <path d="M62 112 Q70 118 80 112" stroke="#ec4899" strokeWidth="0.8" fill="none" opacity="0.5" />
+        <path d="M120 112 Q130 118 138 112" stroke="#ec4899" strokeWidth="0.8" fill="none" opacity="0.5" />
+        {/* 꽃잎 모티프 */}
+        <g opacity="0.75">
+          <path d="M100 48 Q92 52 96 60 Q104 56 100 48 Z" fill="#fbcfe8" />
+          <path d="M100 48 Q108 52 104 60 Q96 56 100 48 Z" fill="#f9a8d4" />
+          <circle cx="100" cy="56" r="2" fill="#ec4899" />
+        </g>
+        <text x="100" y="76" fill="#831843" fontSize="9" fontWeight="700" fontFamily="serif" textAnchor="middle" letterSpacing="2">FOREVER</text>
+        <text x="100" y="86" fill="#9d174d" fontSize="6" fontFamily="serif" textAnchor="middle" fontStyle="italic">Sarah &amp; James</text>
+        <rect x="80" y="92" width="40" height="0.5" fill="#ec4899" opacity="0.6" />
+        <text x="100" y="102" fill="#be185d" fontSize="4.5" fontFamily="serif" textAnchor="middle" letterSpacing="1">JUNE 14, 2026</text>
+      </g>
     </svg>
   ),
   labels: (
