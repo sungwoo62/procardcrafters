@@ -12,6 +12,7 @@ export type OrderEventType =
   | 'shipment_created'
   | 'shipped'
   | 'delivered'
+  | 'reorder'
 
 export interface PrintOrderEvent {
   id: string

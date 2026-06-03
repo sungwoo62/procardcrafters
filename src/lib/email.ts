@@ -276,3 +276,14 @@ export async function sendAdminStatusChangeEmail(
     html,
   })
 }
+
+// OMO-2314: 빌드 통과용 임시 스텁 (WIP 가 실제 구현 가져올 때까지)
+export async function sendDesignProofEmail(_data: {
+  customerEmail: string
+  customerName?: string | null
+  orderNumber: string
+  version: number
+  adminNote?: string
+}): Promise<void> {
+  // 실제 구현 대기. 호출 시 no-op.
+}

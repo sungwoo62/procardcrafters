@@ -111,6 +111,7 @@ const EVENT_TYPE_LABELS: Record<OrderEventType, string> = {
   shipment_created: '송장 생성',
   shipped: '발송',
   delivered: '배송 완료',
+  reorder: '재주문',
 }
 
 const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
@@ -125,6 +126,7 @@ const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
   shipment_created: 'bg-indigo-100 text-indigo-700',
   shipped: 'bg-purple-100 text-purple-700',
   delivered: 'bg-green-100 text-green-700',
+  reorder: 'bg-blue-100 text-blue-700',
 }
 
 const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
@@ -139,6 +141,7 @@ const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
   shipment_created: 'bg-indigo-500',
   shipped: 'bg-purple-500',
   delivered: 'bg-green-500',
+  reorder: 'bg-blue-500',
 }
 
 function formatEventTime(ts: string) {
