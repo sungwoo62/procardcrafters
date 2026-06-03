@@ -1,7 +1,13 @@
-export type ProductCategory = 'business_cards' | 'premium_business_cards' | 'stickers' | 'die_cut_stickers' | 'flyers' | 'brochures' | 'postcards' | 'posters' | 'banners'
-export type OptionType = 'quantity' | 'paper' | 'coating' | 'size' | 'finish'
+export type ProductCategory =
+  | 'business_cards' | 'premium_business_cards' | 'premium_foil_cards'
+  | 'stickers' | 'die_cut_stickers' | 'eco_stickers'
+  | 'flyers' | 'brochures'
+  | 'postcards' | 'posters' | 'banners'
+  | 'sample_pack'
+export type OptionType = 'quantity' | 'paper' | 'coating' | 'size' | 'finish' | 'corners' | 'sides' | 'pages'
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 export type FileStatus = 'uploaded' | 'approved' | 'rejected' | 'processing'
+export type DesignProofStatus = 'pending' | 'approved' | 'revision_requested'
 
 export interface PrintProduct {
   id: string
@@ -9,12 +15,23 @@ export interface PrintProduct {
   name_ko: string
   name_en: string
   description_ko: string | null
+  description_en: string | null
+  recommended_use_ko: string | null
+  recommended_use_en: string | null
   category: ProductCategory
   base_price_krw: number
   margin_multiplier: number
   is_active: boolean
+  is_premium: boolean
+  badge_text_ko: string | null
+  badge_text_en: string | null
+  production_days_min: number
+  production_days_max: number
+  min_order_quantity: number
   sort_order: number
   thumbnail_url: string | null
+  default_weight_kg: number
+  unit_weight_g: number
   created_at: string
   updated_at: string
 }
@@ -27,6 +44,9 @@ export interface PrintProductOption {
   label_en: string
   value: string
   extra_price_krw: number
+  weight_modifier_g: number
+  description_ko: string | null
+  description_en: string | null
   is_default: boolean
   sort_order: number
   created_at: string
@@ -83,4 +103,20 @@ export interface PrintFile {
   status: FileStatus
   rejection_reason: string | null
   uploaded_at: string
+}
+
+export interface PrintDesignProof {
+  id: string
+  order_id: string
+  storage_path: string
+  original_filename: string
+  file_size_bytes: number | null
+  mime_type: string | null
+  admin_note: string | null
+  status: DesignProofStatus
+  customer_comment: string | null
+  version: number
+  uploaded_by: string
+  uploaded_at: string
+  responded_at: string | null
 }

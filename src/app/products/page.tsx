@@ -135,12 +135,21 @@ export default async function ProductsPage() {
                   </div>
 
                   <div className="p-5">
-                    <h2 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-lg mb-1.5">
-                      {product.name_en}
-                    </h2>
-                    {product.description_ko && (
+                    <div className="flex items-start justify-between gap-2 mb-1.5">
+                      <h2 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-lg">
+                        {product.name_en}
+                      </h2>
+                      {product.badge_text_en && (
+                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                          product.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'
+                        }`}>
+                          {product.badge_text_en}
+                        </span>
+                      )}
+                    </div>
+                    {(product.description_en || product.description_ko) && (
                       <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
-                        {product.description_ko}
+                        {product.description_en ?? product.description_ko}
                       </p>
                     )}
                     <div className="flex items-center justify-between pt-2 border-t border-gray-100">

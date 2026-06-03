@@ -9,6 +9,7 @@ import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
+import ViewItemTracker from '@/components/ViewItemTracker'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 interface Props {
@@ -20,7 +21,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createServerClient()
   const { data } = await supabase
     .from('print_products')
-    .select('name_en, description_ko')
+    .select('name_en, description_ko, description_en')
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
@@ -29,7 +30,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${data.name_en} — Procardcrafters`,
-    description: data.description_ko ?? undefined,
+    description: (data.description_en ?? data.description_ko) ?? undefined,
   }
 }
 
@@ -109,6 +110,11 @@ export default async function ProductDetailPage({ params }: Props) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <ViewItemTracker
+        id={product.id}
+        name={product.name_en}
+        category={product.category}
+      />
       {/* Product Main Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
@@ -121,12 +127,46 @@ export default async function ProductDetailPage({ params }: Props) {
               </div>
             </div>
 
-            {/* Product Name */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-1">{product.name_en}</h1>
+            {/* Product Name + Badge */}
+            <div className="flex items-start justify-between mb-1">
+              <h1 className="text-3xl font-bold text-gray-900">{product.name_en}</h1>
+              {product.badge_text_en && (
+                <span className={`text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full whitespace-nowrap ${
+                  product.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'
+                }`}>
+                  {product.badge_text_en}
+                </span>
+              )}
+            </div>
             <p className="text-base text-gray-400 mb-4 font-medium">{product.name_ko}</p>
 
-            {product.description_ko && (
-              <p className="text-gray-600 leading-relaxed mb-6">{product.description_ko}</p>
+            {(product.description_en || product.description_ko) && (
+              <p className="text-gray-600 leading-relaxed mb-4">
+                {product.description_en ?? product.description_ko}
+              </p>
+            )}
+
+            {/* Recommended use + production time */}
+            {(product.recommended_use_en || product.production_days_max) && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6 text-xs">
+                {product.recommended_use_en && (
+                  <div className="bg-purple-50 border border-purple-100 rounded-lg p-3">
+                    <div className="font-semibold text-purple-800 mb-1">Best For</div>
+                    <div className="text-purple-700">{product.recommended_use_en}</div>
+                  </div>
+                )}
+                {product.production_days_max > 0 && (
+                  <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
+                    <div className="font-semibold text-orange-800 mb-1">Production Time</div>
+                    <div className="text-orange-700">
+                      {product.production_days_min === product.production_days_max
+                        ? `${product.production_days_max} business days`
+                        : `${product.production_days_min}-${product.production_days_max} business days`}
+                      <span className="text-orange-500"> + FedEx shipping</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
 
             {/* Product Features List */}

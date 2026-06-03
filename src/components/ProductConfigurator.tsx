@@ -27,6 +27,9 @@ const OPTION_LABEL: Record<OptionType, string> = {
   coating: 'Coating',
   size: 'Size',
   finish: 'Finish',
+  corners: 'Corners',
+  sides: 'Sides',
+  pages: 'Pages',
 }
 
 /**
