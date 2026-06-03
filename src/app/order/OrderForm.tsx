@@ -73,6 +73,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const quantity = parseInt(selectedOptions['quantity'] ?? '1', 10) || 1
+
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>(preloadedFileId ? 'done' : 'idle')
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(preloadedFileId ?? null)
@@ -100,7 +102,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           body: JSON.stringify({
             country: form.country,
             postalCode: form.postalCode,
-            items: [{ productId: product.id, quantity: 1 }],
+            items: [{ productId: product.id, quantity: 1, selectedOptions }],
             subtotalUsd: itemPriceUsd,
           }),
         })
@@ -123,7 +125,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
       finally { setQuoteLoading(false) }
     }, 350)
     return () => clearTimeout(timer)
-  }, [form.country, form.postalCode, itemPriceUsd, product.id])
+  }, [form.country, form.postalCode, itemPriceUsd, product.id, selectedOptions])
 
   useEffect(() => {
     trackBeginCheckout({

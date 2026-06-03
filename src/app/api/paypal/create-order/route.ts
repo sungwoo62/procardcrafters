@@ -8,6 +8,7 @@ import { createPaypalOrder } from '@/lib/paypal'
 interface OrderItemInput {
   productId: string
   selectedOptions: Record<string, string>
+  quantity?: number
   fileId?: string
 }
 
@@ -84,21 +85,26 @@ export async function POST(request: NextRequest) {
       return opt?.extra_price_krw ?? 0
     })
 
-    const unitPriceUsd = calculateItemPriceUsd({
+    const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,
       marginMultiplier: product.margin_multiplier,
       extraPricesKrw,
       exchangeRate,
     })
 
+    const pieceCount =
+      item.quantity ??
+      (parseInt(String(item.selectedOptions['quantity'] ?? '1'), 10) || 1)
+    const unitPriceUsd = batchPriceUsd / pieceCount
+
     orderItemsData.push({
       product_id: product.id,
       product_name_ko: product.name_ko,
       product_name_en: product.name_en,
       selected_options: item.selectedOptions,
-      quantity: 1,
+      quantity: pieceCount,
       unit_price_usd: unitPriceUsd,
-      subtotal_usd: unitPriceUsd,
+      subtotal_usd: batchPriceUsd,
     })
   }
 
@@ -106,7 +112,12 @@ export async function POST(request: NextRequest) {
   const weightKg = calculateOrderWeightKg(
     orderItemsData.map((it) => {
       const product = products.find((p) => p.id === it.product_id)
-      return { quantity: it.quantity, default_weight_kg: product?.default_weight_kg ?? 0.5 }
+      return {
+        quantity: it.quantity,
+        default_weight_kg: product?.default_weight_kg ?? 0.5,
+        unit_weight_g: product?.unit_weight_g ?? 0,
+        selected_options: it.selected_options,
+      }
     }),
   )
   const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)

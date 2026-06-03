@@ -21,20 +21,30 @@ export async function POST(request: NextRequest) {
   const supabase = createServerClient()
   let weightKg = Number(body.weightKg ?? 0)
 
-  // items 주어진 경우 제품 default_weight_kg 합으로 계산
+  // items 주어진 경우 제품 unit_weight_g × selected_options.quantity 또는 default_weight_kg 합
   if (!weightKg && Array.isArray(body.items) && body.items.length > 0) {
     const productIds = body.items.map((i: { productId: string }) => i.productId).filter(Boolean)
     if (productIds.length) {
       const { data: products } = await supabase
         .from('print_products')
-        .select('id, default_weight_kg')
+        .select('id, default_weight_kg, unit_weight_g')
         .in('id', productIds)
-      const productMap = new Map((products ?? []).map((p) => [p.id, Number(p.default_weight_kg ?? 0.5)]))
+      const productMap = new Map(
+        (products ?? []).map((p) => [
+          p.id,
+          { default_weight_kg: Number(p.default_weight_kg ?? 0.5), unit_weight_g: Number(p.unit_weight_g ?? 0) },
+        ]),
+      )
       weightKg = calculateOrderWeightKg(
-        body.items.map((i: { productId: string; quantity: number }) => ({
-          quantity: Number(i.quantity ?? 1),
-          default_weight_kg: productMap.get(i.productId) ?? 0.5,
-        })),
+        body.items.map((i: { productId: string; quantity: number; selectedOptions?: Record<string, string> }) => {
+          const meta = productMap.get(i.productId)
+          return {
+            quantity: Number(i.quantity ?? 1),
+            default_weight_kg: meta?.default_weight_kg ?? 0.5,
+            unit_weight_g: meta?.unit_weight_g ?? 0,
+            selected_options: i.selectedOptions ?? null,
+          }
+        }),
       )
     }
   }

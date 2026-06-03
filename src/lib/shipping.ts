@@ -321,10 +321,40 @@ function mapPreferredService(serviceCode?: string): 'INTERNATIONAL_PRIORITY' | '
   return undefined
 }
 
-export function calculateOrderWeightKg(
-  items: { quantity: number; default_weight_kg?: number | null }[],
-): number {
-  return items.reduce((sum, it) => sum + Number(it.default_weight_kg ?? 0.5) * (it.quantity ?? 1), 0)
+export interface OrderWeightItem {
+  quantity: number
+  default_weight_kg?: number | null
+  unit_weight_g?: number | null
+  selected_options?: Record<string, string> | null
+}
+
+/**
+ * 주문 총 무게(kg) 계산.
+ * 우선순위:
+ *   1) unit_weight_g × piece_count
+ *      piece_count = selected_options.quantity (있으면)
+ *                 또는 it.quantity (체크아웃 라우트는 이미 pieceCount 를 넣음)
+ *   2) default_weight_kg × it.quantity (legacy)
+ *   3) 0.5kg
+ */
+export function calculateOrderWeightKg(items: OrderWeightItem[]): number {
+  return items.reduce((sum, it) => {
+    const orderQty = it.quantity ?? 1
+    const unitG = Number(it.unit_weight_g ?? 0)
+    if (unitG > 0) {
+      const optionQty = parseQuantityOption(it.selected_options?.quantity)
+      const pieceCount = optionQty > 0 ? optionQty : orderQty
+      return sum + (unitG * pieceCount) / 1000
+    }
+    return sum + Number(it.default_weight_kg ?? 0.5) * orderQty
+  }, 0)
+}
+
+/** "500" / "500매" / "500 sheets" 등에서 숫자만 추출 */
+function parseQuantityOption(value: string | undefined): number {
+  if (!value) return 0
+  const match = String(value).match(/(\d+)/)
+  return match ? Number(match[1]) : 0
 }
 
 // 레거시 export
