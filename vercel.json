@@ -3,6 +3,14 @@
     {
       "path": "/api/cron/update-prices",
       "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/factory-orders",
+      "schedule": "0 0,5,8 * * 1-5"
+    },
+    {
+      "path": "/api/cron/cleanup-orphan-files",
+      "schedule": "0 3 * * *"
     }
   ]
 }
