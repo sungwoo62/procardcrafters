@@ -27,9 +27,16 @@ export async function GET(request: NextRequest) {
 }
 
 /**
- * 일괄 임포트:
- *   { serviceId, replaceExisting?: bool, rows: [{ zoneCode, weightKgMax, rateUsd, effectiveFrom? }, ...] }
- * FedEx 요금표를 권역×무게 매트릭스로 받아 들이는 진입점.
+ * 일괄 임포트 — 두 가지 모드:
+ *
+ *   1. 직접 USD 요금:
+ *      { serviceId, mode: 'direct', rows: [{ zoneCode, weightKgMax, rateUsd, effectiveFrom? }, ...] }
+ *
+ *   2. 할인 + list price 기반 (FedEx PricingAgreement):
+ *      { serviceId, mode: 'contract', rows: [{ zoneCode, weightKgMax, discountPct, listRateKrw?, effectiveFrom? }, ...] }
+ *      list_rate_krw 는 추후 FedEx Service Guide 에서 별도 임포트 가능
+ *
+ * replaceExisting=true → 해당 서비스의 모든 기존 행 삭제 후 신규 입력
  */
 export async function POST(request: NextRequest) {
   const user = await requireAdmin()
@@ -40,9 +47,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'serviceId, rows 필수' }, { status: 400 })
   }
 
+  const mode: 'direct' | 'contract' = body.mode === 'contract' ? 'contract' : 'direct'
   const supabase = createServerClient()
 
-  // 권역 코드 → id 매핑
   const { data: zones, error: zoneErr } = await supabase
     .from('print_shipping_zones')
     .select('id, code')
@@ -51,34 +58,40 @@ export async function POST(request: NextRequest) {
   const zoneByCode = new Map((zones ?? []).map((z) => [z.code, z.id]))
   const today = new Date().toISOString().slice(0, 10)
 
-  const inserts: {
-    service_id: string
-    zone_id: string
-    weight_kg_max: number
-    rate_usd: number
-    effective_from: string
-  }[] = []
+  const inserts: Record<string, unknown>[] = []
   const errors: string[] = []
 
   for (const r of body.rows) {
     const zoneId = zoneByCode.get(r.zoneCode)
-    if (!zoneId) {
-      errors.push(`Unknown zone: ${r.zoneCode}`)
-      continue
-    }
+    if (!zoneId) { errors.push(`Unknown zone: ${r.zoneCode}`); continue }
     const w = Number(r.weightKgMax)
-    const rate = Number(r.rateUsd)
-    if (!Number.isFinite(w) || w <= 0 || !Number.isFinite(rate) || rate < 0) {
-      errors.push(`Invalid row: ${JSON.stringify(r)}`)
-      continue
+    if (!Number.isFinite(w) || w <= 0) { errors.push(`Invalid weight: ${JSON.stringify(r)}`); continue }
+
+    if (mode === 'contract') {
+      const discount = Number(r.discountPct)
+      if (!Number.isFinite(discount) || discount < 0 || discount > 100) {
+        errors.push(`Invalid discount: ${JSON.stringify(r)}`); continue
+      }
+      inserts.push({
+        service_id: body.serviceId,
+        zone_id: zoneId,
+        weight_kg_max: w,
+        discount_pct: discount,
+        list_rate_krw: r.listRateKrw != null && Number.isFinite(Number(r.listRateKrw)) ? Number(r.listRateKrw) : null,
+        rate_usd: 0,
+        effective_from: r.effectiveFrom ?? today,
+      })
+    } else {
+      const rate = Number(r.rateUsd)
+      if (!Number.isFinite(rate) || rate < 0) { errors.push(`Invalid rateUsd: ${JSON.stringify(r)}`); continue }
+      inserts.push({
+        service_id: body.serviceId,
+        zone_id: zoneId,
+        weight_kg_max: w,
+        rate_usd: rate,
+        effective_from: r.effectiveFrom ?? today,
+      })
     }
-    inserts.push({
-      service_id: body.serviceId,
-      zone_id: zoneId,
-      weight_kg_max: w,
-      rate_usd: rate,
-      effective_from: r.effectiveFrom ?? today,
-    })
   }
 
   if (!inserts.length) {
@@ -99,5 +112,5 @@ export async function POST(request: NextRequest) {
 
   if (insErr) return NextResponse.json({ error: insErr.message, issues: errors }, { status: 500 })
 
-  return NextResponse.json({ inserted: inserts.length, skipped: errors.length, issues: errors })
+  return NextResponse.json({ inserted: inserts.length, skipped: errors.length, issues: errors, mode })
 }

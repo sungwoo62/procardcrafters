@@ -1,62 +1,64 @@
-// 배송비 계산: DB 기반 권역(zone) × 무게(weight) × 서비스(service) 조합
+// FedEx 계약 운임 v2 (할인 기반 모델)
 //
 // 정책
-// - 원산지: 한국 (FedEx Korea)
-// - VAT 가산: 요금에 +10% 마진 (보드 정책, print_shipping_config.vat_markup_percent)
-// - 요금표 미입력 시 fallback_rate_usd 사용 (보드가 FedEx 표 전달 후 임포트)
+// - 원산지: 한국 (계약: ALLPACKMEISTER CO., LTD. account 210839884, 2520066223-100)
+// - 청구 공식:
+//     final_krw = list_rate_krw × (1 - contract_discount/100) × (1 - automation_bonus/100)
+//     billable_usd = final_krw × krw→usd × (1 + vat_markup/100)
+// - rate_usd 가 직접 설정되어 있으면 그 값 사용 (수동 입력 케이스)
+// - 어느 항목도 없으면 fallback_rate_usd
+// - 자동 서비스 선택: 가장 싼 서비스를 무게 기반으로 자동 picking
 
 import { createServerClient } from '@/lib/supabase'
-
-// ===== 기본값 (DB 미로딩/SSR 초기 렌더 등에서만 사용) =====
+import { getKrwToUsdRate, krwToUsd } from '@/lib/exchange-rate'
 
 const DEFAULT_VAT_MARKUP_PCT = 10
 const DEFAULT_FALLBACK_USD = 35
 
 const FALLBACK_ZONES: { code: string; nameEn: string; countries: string[]; baseUsd: number }[] = [
-  { code: 'A', nameEn: 'Japan',                  countries: ['JP'],                                                           baseUsd: 20 },
-  { code: 'B', nameEn: 'East Asia',              countries: ['CN', 'HK', 'TW', 'MO'],                                          baseUsd: 22 },
-  { code: 'C', nameEn: 'Southeast Asia',         countries: ['SG', 'TH', 'MY', 'PH', 'ID', 'VN'],                              baseUsd: 25 },
-  { code: 'D', nameEn: 'Americas',               countries: ['US', 'CA', 'MX'],                                                baseUsd: 28 },
-  { code: 'E', nameEn: 'Europe',                 countries: ['GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'SE', 'NO', 'DK', 'FI', 'PL', 'PT', 'AT', 'CH', 'IE', 'CZ', 'HU', 'RO', 'GR'], baseUsd: 32 },
-  { code: 'F', nameEn: 'Oceania',                countries: ['AU', 'NZ'],                                                       baseUsd: 30 },
-  { code: 'G', nameEn: 'Middle East/S.Asia',     countries: ['AE', 'SA', 'QA', 'KW', 'IL', 'TR', 'IN', 'PK'],                  baseUsd: 35 },
-  { code: 'H', nameEn: 'Africa/Other',           countries: ['ZA', 'EG', 'NG', 'KE'],                                          baseUsd: 38 },
+  { code: 'A', nameEn: 'Japan',                  countries: ['JP'],                                                           baseUsd: 18 },
+  { code: 'D', nameEn: 'US & Canada',            countries: ['US', 'CA'],                                                      baseUsd: 15 },
+  { code: 'E', nameEn: 'China',                  countries: ['CN'],                                                            baseUsd: 22 },
+  { code: 'F', nameEn: 'HK / Macao',             countries: ['HK', 'MO'],                                                      baseUsd: 22 },
+  { code: 'G', nameEn: 'Taiwan',                 countries: ['TW'],                                                            baseUsd: 22 },
+  { code: 'I', nameEn: 'SE Asia',                countries: ['SG', 'TH', 'MY', 'PH', 'ID', 'VN'],                              baseUsd: 25 },
+  { code: 'K', nameEn: 'Europe (W)',             countries: ['GB', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'IE'],                  baseUsd: 32 },
+  { code: 'P', nameEn: 'Australia & NZ',         countries: ['AU', 'NZ'],                                                       baseUsd: 30 },
 ]
 
-// ===== Public API =====
-
 export interface ShippingQuote {
-  costUsd: number             // 고객 청구 금액 (FedEx 원가 + 10% VAT)
-  baseCostUsd: number         // FedEx 원가
-  markupPct: number           // 적용된 VAT 가산율
+  costUsd: number             // 고객 청구 금액 (FedEx 원가 + VAT)
+  baseCostUsd: number         // 원가 (할인+보너스 반영 후, VAT 미적용)
+  markupPct: number
   zoneCode: string
   zoneNameEn: string
-  serviceCode: string | null  // 사용된 서비스 (DB에 요율 있을 때만)
+  serviceCode: string | null
+  serviceNameEn: string | null
   weightKg: number
-  isFallback: boolean         // true = 요율표 미입력 → 기본 요금 사용
+  contractDiscountPct: number | null
+  automationBonusPct: number | null
+  listRateKrw: number | null
+  isFallback: boolean
+  reason: 'computed_from_contract' | 'direct_rate_usd' | 'fallback_no_rate' | 'fallback_no_zone' | 'fallback_no_list_price'
 }
 
-/** 동기 fallback (SSR 초기 렌더, 클라이언트 사이드 견적, 테스트용). */
+// ===== 동기 fallback (페이지 견적용) =====
 export function getShippingCost(countryCode: string): number {
-  const zone =
-    FALLBACK_ZONES.find((z) => z.countries.includes(countryCode.toUpperCase())) ??
-    FALLBACK_ZONES[FALLBACK_ZONES.length - 1]
-  return applyVatMarkup(zone.baseUsd, DEFAULT_VAT_MARKUP_PCT)
+  const zone = matchFallbackZone(countryCode)
+  return Math.round(zone.baseUsd * (1 + DEFAULT_VAT_MARKUP_PCT / 100) * 100) / 100
 }
 
 export function getShippingZoneName(countryCode: string): string {
-  const zone =
-    FALLBACK_ZONES.find((z) => z.countries.includes(countryCode.toUpperCase())) ??
-    FALLBACK_ZONES[FALLBACK_ZONES.length - 1]
+  const zone = matchFallbackZone(countryCode)
   return `Zone ${zone.code} - ${zone.nameEn}`
 }
 
-/**
- * DB 기반 정식 견적. 결제 생성 등 가격을 확정하는 곳에서 사용한다.
- * - country, weightKg, serviceCode(옵션) 를 받아
- * - print_shipping_zones / print_shipping_rates / print_shipping_config 를 조회
- * - VAT 가산을 적용한 최종 USD 금액을 돌려준다.
- */
+function matchFallbackZone(countryCode: string) {
+  const upper = countryCode.toUpperCase()
+  return FALLBACK_ZONES.find((z) => z.countries.includes(upper)) ?? FALLBACK_ZONES[FALLBACK_ZONES.length - 1]
+}
+
+// ===== 메인 DB-based quote (계약 적용) =====
 export async function quoteShipping(
   countryCode: string,
   weightKg: number,
@@ -66,7 +68,7 @@ export async function quoteShipping(
   const upperCountry = countryCode.toUpperCase()
   const effectiveWeight = weightKg > 0 ? weightKg : 0.5
 
-  const [{ data: config }, { data: zone }] = await Promise.all([
+  const [{ data: config }, { data: zone }, rate] = await Promise.all([
     supabase.from('print_shipping_config').select('*').eq('id', 1).maybeSingle(),
     supabase
       .from('print_shipping_zones')
@@ -74,87 +76,150 @@ export async function quoteShipping(
       .contains('countries', [upperCountry])
       .eq('is_active', true)
       .maybeSingle(),
+    Promise.resolve(null),
   ])
+
+  void rate
 
   const markupPct = Number(config?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
   const fallbackUsd = Number(config?.fallback_rate_usd ?? DEFAULT_FALLBACK_USD)
+  const autoPick = config?.auto_pick_service !== false
 
-  // 권역 미해석 → fallback flat rate
   if (!zone) {
-    const cost = applyVatMarkup(fallbackUsd, markupPct)
-    return {
-      costUsd: cost,
-      baseCostUsd: fallbackUsd,
-      markupPct,
-      zoneCode: 'OTHER',
-      zoneNameEn: 'Other (fallback rate)',
-      serviceCode: null,
-      weightKg: effectiveWeight,
-      isFallback: true,
-    }
+    return fallbackQuote('OTHER', 'Other (no zone match)', fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_zone')
   }
 
-  // 활성 서비스 선택 (요청 서비스 → 그 외 정렬 첫 번째)
-  const { data: services } = await supabase
-    .from('print_shipping_services')
-    .select('id, code')
-    .eq('is_active', true)
-    .order('sort_order', { ascending: true })
+  const krwPerUsd = Number(config?.krw_per_usd_override ?? 0) || await getKrwToUsdRate()
 
-  const service = serviceCode
-    ? services?.find((s) => s.code === serviceCode) ?? services?.[0]
-    : services?.[0]
-
-  if (!service) {
-    return fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight)
+  // 후보 서비스 결정
+  const wantedCode = serviceCode ?? (autoPick ? null : 'fedex_ip')
+  const candidates = await loadCandidateServices(wantedCode)
+  if (!candidates.length) {
+    return fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_rate')
   }
 
-  // 무게 구간 매칭: 입력 무게 이상의 가장 낮은 weight_kg_max
+  // 각 후보별 견적 계산 → 가장 싼 것 선택
   const today = new Date().toISOString().slice(0, 10)
+  const quotes: (ShippingQuote & { _krw: number })[] = []
+  for (const svc of candidates) {
+    const q = await quoteForService(supabase, zone, svc, effectiveWeight, krwPerUsd, markupPct, fallbackUsd, today)
+    if (q) quotes.push(q)
+  }
+
+  if (!quotes.length) {
+    return fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_rate')
+  }
+
+  // 가장 싼 KRW 기준 선택 (자동 서비스 선택 활성화 시)
+  quotes.sort((a, b) => a._krw - b._krw)
+  const best = quotes[0]
+  const { _krw, ...quote } = best
+  void _krw
+  return quote
+}
+
+interface ServiceRow {
+  id: string
+  code: string
+  name_en: string
+  is_active: boolean
+}
+
+async function loadCandidateServices(wantedCode: string | null): Promise<ServiceRow[]> {
+  const supabase = createServerClient()
+  if (wantedCode) {
+    const { data } = await supabase
+      .from('print_shipping_services')
+      .select('id, code, name_en, is_active')
+      .eq('code', wantedCode)
+      .eq('is_active', true)
+    return (data ?? []) as ServiceRow[]
+  }
+  // auto-pick: IP, IE, IP Pak, IP Envelope 만 후보 (Freight 은 무게 자동 진입)
+  const { data } = await supabase
+    .from('print_shipping_services')
+    .select('id, code, name_en, is_active')
+    .in('code', ['fedex_ip', 'fedex_ie', 'fedex_ipe', 'fedex_ip_pak', 'fedex_ipe_pak', 'fedex_ip_env', 'fedex_ipe_env'])
+    .eq('is_active', true)
+  return (data ?? []) as ServiceRow[]
+}
+
+async function quoteForService(
+  supabase: ReturnType<typeof createServerClient>,
+  zone: { id: string; code: string; name_en: string },
+  service: ServiceRow,
+  weightKg: number,
+  krwPerUsd: number,
+  markupPct: number,
+  fallbackUsd: number,
+  today: string,
+): Promise<(ShippingQuote & { _krw: number }) | null> {
   const { data: rates } = await supabase
     .from('print_shipping_rates')
-    .select('weight_kg_max, rate_usd, effective_from, effective_to')
+    .select('weight_kg_max, rate_usd, discount_pct, list_rate_krw, automation_bonus_pct, effective_from, effective_to')
     .eq('zone_id', zone.id)
     .eq('service_id', service.id)
     .lte('effective_from', today)
     .order('weight_kg_max', { ascending: true })
 
-  const activeRates = (rates ?? []).filter((r) => !r.effective_to || r.effective_to >= today)
-  const matchedRate =
-    activeRates.find((r) => Number(r.weight_kg_max) >= effectiveWeight) ??
-    activeRates[activeRates.length - 1]
+  const active = (rates ?? []).filter((r) => !r.effective_to || r.effective_to >= today)
+  const matched = active.find((r) => Number(r.weight_kg_max) >= weightKg) ?? active[active.length - 1]
+  if (!matched) return null
 
-  if (!matchedRate) {
-    return fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight, service.code)
+  // 자동발송시스템 보너스 (서비스별)
+  const { data: bonusRow } = await supabase
+    .from('print_shipping_service_bonuses')
+    .select('bonus_pct')
+    .eq('service_id', service.id)
+    .lte('effective_from', today)
+    .order('effective_from', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  const automationBonusPct = Number(matched.automation_bonus_pct ?? 0) || Number(bonusRow?.bonus_pct ?? 0)
+  const discountPct = matched.discount_pct == null ? null : Number(matched.discount_pct)
+  const listRateKrw = matched.list_rate_krw == null ? null : Number(matched.list_rate_krw)
+  const directRateUsd = Number(matched.rate_usd ?? 0)
+
+  let baseUsd: number
+  let reason: ShippingQuote['reason']
+  let finalKrw = 0
+
+  if (listRateKrw && discountPct != null) {
+    finalKrw = listRateKrw * (1 - discountPct / 100) * (1 - automationBonusPct / 100)
+    baseUsd = krwToUsd(finalKrw, krwPerUsd)
+    reason = 'computed_from_contract'
+  } else if (directRateUsd > 0) {
+    baseUsd = directRateUsd
+    finalKrw = directRateUsd / krwPerUsd
+    reason = 'direct_rate_usd'
+  } else if (discountPct != null) {
+    // 할인은 있지만 list_rate_krw 미입력 → fallback
+    baseUsd = fallbackUsd
+    finalKrw = fallbackUsd / krwPerUsd
+    reason = 'fallback_no_list_price'
+  } else {
+    return null
   }
 
-  const baseCostUsd = Number(matchedRate.rate_usd)
+  const costUsd = Math.round(baseUsd * (1 + markupPct / 100) * 100) / 100
+
   return {
-    costUsd: applyVatMarkup(baseCostUsd, markupPct),
-    baseCostUsd,
+    costUsd,
+    baseCostUsd: Math.round(baseUsd * 100) / 100,
     markupPct,
     zoneCode: zone.code,
     zoneNameEn: zone.name_en,
     serviceCode: service.code,
-    weightKg: effectiveWeight,
-    isFallback: false,
+    serviceNameEn: service.name_en,
+    weightKg,
+    contractDiscountPct: discountPct,
+    automationBonusPct: automationBonusPct || null,
+    listRateKrw: listRateKrw,
+    isFallback: reason !== 'computed_from_contract' && reason !== 'direct_rate_usd',
+    reason,
+    _krw: finalKrw,
   }
-}
-
-/** 주문 항목 배열에서 총 무게(kg) 계산. */
-export function calculateOrderWeightKg(
-  items: { quantity: number; default_weight_kg?: number | null }[],
-): number {
-  return items.reduce((sum, it) => {
-    const w = Number(it.default_weight_kg ?? 0.5)
-    return sum + w * (it.quantity ?? 1)
-  }, 0)
-}
-
-// ===== 내부 헬퍼 =====
-
-function applyVatMarkup(usd: number, markupPct: number): number {
-  return Math.round(usd * (1 + markupPct / 100) * 100) / 100
 }
 
 function fallbackQuote(
@@ -163,21 +228,33 @@ function fallbackQuote(
   fallbackUsd: number,
   markupPct: number,
   weightKg: number,
-  serviceCode?: string,
+  serviceCode: string | null,
+  reason: ShippingQuote['reason'],
 ): ShippingQuote {
   return {
-    costUsd: applyVatMarkup(fallbackUsd, markupPct),
+    costUsd: Math.round(fallbackUsd * (1 + markupPct / 100) * 100) / 100,
     baseCostUsd: fallbackUsd,
     markupPct,
     zoneCode,
     zoneNameEn,
-    serviceCode: serviceCode ?? null,
+    serviceCode,
+    serviceNameEn: null,
     weightKg,
+    contractDiscountPct: null,
+    automationBonusPct: null,
+    listRateKrw: null,
     isFallback: true,
+    reason,
   }
 }
 
-// 레거시 export (기존 import 경로 보존)
+export function calculateOrderWeightKg(
+  items: { quantity: number; default_weight_kg?: number | null }[],
+): number {
+  return items.reduce((sum, it) => sum + Number(it.default_weight_kg ?? 0.5) * (it.quantity ?? 1), 0)
+}
+
+// 레거시 export
 export const SHIPPING_ZONES = FALLBACK_ZONES.map((z) => ({
   name: `Zone ${z.code} - ${z.nameEn}`,
   baseUsd: z.baseUsd,
