@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       return { quantity: it.quantity, default_weight_kg: product?.default_weight_kg ?? 0.5 }
     }),
   )
-  const shippingQuote = await quoteShipping(shipping.country, weightKg)
+  const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)
   const shippingUsd = shippingQuote.costUsd
 
   lineItems.push({

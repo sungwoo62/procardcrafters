@@ -11,6 +11,7 @@
 
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate, krwToUsd } from '@/lib/exchange-rate'
+import { fetchFedexRates, fedexServiceToInternalCode, isFedexApiConfigured } from '@/lib/fedex-api'
 
 const DEFAULT_VAT_MARKUP_PCT = 10
 const DEFAULT_FALLBACK_USD = 35
@@ -39,7 +40,29 @@ export interface ShippingQuote {
   automationBonusPct: number | null
   listRateKrw: number | null
   isFallback: boolean
-  reason: 'computed_from_contract' | 'direct_rate_usd' | 'fallback_no_rate' | 'fallback_no_zone' | 'fallback_no_list_price'
+  reason:
+    | 'fedex_api'
+    | 'computed_from_contract'
+    | 'direct_rate_usd'
+    | 'fallback_no_rate'
+    | 'fallback_no_zone'
+    | 'fallback_no_list_price'
+    | 'fallback_api_error'
+}
+
+// 단순 in-memory 캐시: (country|postal|weight_bracket|service) → quote, 24h TTL
+interface CacheEntry { quote: ShippingQuote; expiresAt: number }
+const RATE_CACHE = new Map<string, CacheEntry>()
+const RATE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
+
+function cacheKey(country: string, postal: string, weightKg: number, serviceCode: string | undefined): string {
+  const bracket = bucketWeightKg(weightKg)
+  return `${country.toUpperCase()}|${postal}|${bracket}|${serviceCode ?? 'AUTO'}`
+}
+
+function bucketWeightKg(weightKg: number): number {
+  const brackets = [0.5, 2.5, 5, 10, 20.5, 44.5, 70.5, 99, 299, 499, 999]
+  return brackets.find((b) => weightKg <= b) ?? 9999
 }
 
 // ===== 동기 fallback (페이지 견적용) =====
@@ -58,17 +81,63 @@ function matchFallbackZone(countryCode: string) {
   return FALLBACK_ZONES.find((z) => z.countries.includes(upper)) ?? FALLBACK_ZONES[FALLBACK_ZONES.length - 1]
 }
 
-// ===== 메인 DB-based quote (계약 적용) =====
+// ===== 메인 quote: FedEx API 우선, 실패 시 DB 계약식 fallback =====
 export async function quoteShipping(
   countryCode: string,
   weightKg: number,
   serviceCode?: string,
+  recipientPostal?: string,
 ): Promise<ShippingQuote> {
   const supabase = createServerClient()
   const upperCountry = countryCode.toUpperCase()
   const effectiveWeight = weightKg > 0 ? weightKg : 0.5
 
-  const [{ data: config }, { data: zone }, rate] = await Promise.all([
+  // 1) FedEx API 우선 시도 (자격 설정 + 캐시 미스 시)
+  if (isFedexApiConfigured()) {
+    const key = cacheKey(upperCountry, recipientPostal ?? '', effectiveWeight, serviceCode)
+    const cached = RATE_CACHE.get(key)
+    if (cached && cached.expiresAt > Date.now()) {
+      return cached.quote
+    }
+    try {
+      const { data: cfg } = await supabase.from('print_shipping_config').select('vat_markup_percent').eq('id', 1).maybeSingle()
+      const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
+      const apiResult = await fetchFedexRates({
+        recipientCountryCode: upperCountry,
+        recipientPostalCode: recipientPostal ?? '00000',
+        recipientCity: 'CITY',
+        weightKg: effectiveWeight,
+        preferredService: mapPreferredService(serviceCode),
+      })
+      if (apiResult.cheapest) {
+        const baseUsd = apiResult.cheapest.totalNetCharge
+        const quote: ShippingQuote = {
+          costUsd: Math.round(baseUsd * (1 + markupPct / 100) * 100) / 100,
+          baseCostUsd: Math.round(baseUsd * 100) / 100,
+          markupPct,
+          zoneCode: 'API',
+          zoneNameEn: 'FedEx live rate',
+          serviceCode: fedexServiceToInternalCode(apiResult.cheapest.serviceType),
+          serviceNameEn: apiResult.cheapest.serviceName,
+          weightKg: effectiveWeight,
+          contractDiscountPct: null,
+          automationBonusPct: null,
+          listRateKrw: null,
+          isFallback: false,
+          reason: 'fedex_api',
+        }
+        RATE_CACHE.set(key, { quote, expiresAt: Date.now() + RATE_CACHE_TTL_MS })
+        return quote
+      }
+      // alerts 있고 cheapest 없음 → DB fallback 로 진입
+    } catch {
+      // API 오류 → DB fallback (로그는 silent — checkout 깨뜨리지 않음)
+    }
+  }
+
+  // 2) DB 계약식 (이전 구현 그대로)
+
+  const [{ data: config }, { data: zone }] = await Promise.all([
     supabase.from('print_shipping_config').select('*').eq('id', 1).maybeSingle(),
     supabase
       .from('print_shipping_zones')
@@ -76,10 +145,7 @@ export async function quoteShipping(
       .contains('countries', [upperCountry])
       .eq('is_active', true)
       .maybeSingle(),
-    Promise.resolve(null),
   ])
-
-  void rate
 
   const markupPct = Number(config?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
   const fallbackUsd = Number(config?.fallback_rate_usd ?? DEFAULT_FALLBACK_USD)
@@ -246,6 +312,13 @@ function fallbackQuote(
     isFallback: true,
     reason,
   }
+}
+
+function mapPreferredService(serviceCode?: string): 'INTERNATIONAL_PRIORITY' | 'INTERNATIONAL_ECONOMY' | undefined {
+  if (!serviceCode) return undefined
+  if (serviceCode === 'fedex_ip') return 'INTERNATIONAL_PRIORITY'
+  if (serviceCode === 'fedex_ie') return 'INTERNATIONAL_ECONOMY'
+  return undefined
 }
 
 export function calculateOrderWeightKg(
