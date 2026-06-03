@@ -7,59 +7,77 @@ export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { PCCF_PRODUCT_SLUGS } from '@/config/pccf-catalog'
+import { PRODUCT_GROUPS } from '@/config/product-nav'
 import type { PrintProduct } from '@/types/database'
 
-const PRODUCT_EMOJI: Record<string, string> = {
-  business_cards: '🪪',
-  premium_business_cards: '💎',
-  stickers: '⭐',
-  die_cut_stickers: '✂️',
-  flyers: '📄',
-  brochures: '📖',
-  postcards: '💌',
-  posters: '🖼️',
-  banners: '🏳️',
-}
-
-const PRODUCT_GRADIENT: Record<string, string> = {
+const CATEGORY_GRADIENT: Record<string, string> = {
   business_cards: 'from-blue-50 to-indigo-100',
   premium_business_cards: 'from-indigo-50 to-slate-100',
+  premium_foil_cards: 'from-amber-50 to-yellow-100',
+  letterpress_cards: 'from-stone-50 to-stone-100',
+  greeting_cards: 'from-pink-50 to-rose-100',
   stickers: 'from-yellow-50 to-orange-50',
   die_cut_stickers: 'from-amber-50 to-yellow-100',
+  eco_stickers: 'from-green-50 to-emerald-100',
+  labels: 'from-amber-50 to-orange-100',
   flyers: 'from-green-50 to-emerald-100',
   brochures: 'from-teal-50 to-cyan-100',
+  booklets: 'from-cyan-50 to-sky-100',
   postcards: 'from-pink-50 to-rose-100',
+  envelopes: 'from-violet-50 to-purple-100',
+  forms: 'from-gray-50 to-slate-100',
   posters: 'from-purple-50 to-violet-100',
   banners: 'from-red-50 to-orange-100',
+  pop: 'from-yellow-50 to-amber-100',
+  boxes: 'from-orange-50 to-red-100',
+  paper_bags: 'from-amber-50 to-yellow-100',
+  notebooks: 'from-yellow-50 to-amber-100',
+  memo_pads: 'from-yellow-50 to-yellow-100',
+  calendars: 'from-sky-50 to-blue-100',
+  sample_pack: 'from-blue-50 to-cyan-100',
 }
 
-const PRODUCT_ACCENT: Record<string, string> = {
+const CATEGORY_ACCENT: Record<string, string> = {
   business_cards: 'border-blue-200',
   premium_business_cards: 'border-indigo-200',
+  premium_foil_cards: 'border-amber-200',
+  letterpress_cards: 'border-stone-200',
+  greeting_cards: 'border-pink-200',
   stickers: 'border-yellow-200',
   die_cut_stickers: 'border-amber-200',
+  eco_stickers: 'border-green-200',
+  labels: 'border-amber-200',
   flyers: 'border-green-200',
   brochures: 'border-teal-200',
+  booklets: 'border-cyan-200',
   postcards: 'border-pink-200',
+  envelopes: 'border-violet-200',
+  forms: 'border-gray-200',
   posters: 'border-purple-200',
   banners: 'border-red-200',
+  pop: 'border-amber-200',
+  boxes: 'border-orange-200',
+  paper_bags: 'border-amber-200',
+  notebooks: 'border-yellow-200',
+  memo_pads: 'border-yellow-200',
+  calendars: 'border-sky-200',
+  sample_pack: 'border-blue-200',
 }
 
-const PRODUCT_TAG: Record<string, { label: string; color: string } | null> = {
+const CATEGORY_TAG: Record<string, { label: string; color: string } | null> = {
   business_cards: { label: 'Most Popular', color: 'bg-blue-100 text-blue-700' },
   premium_business_cards: { label: 'Premium', color: 'bg-indigo-100 text-indigo-700' },
+  premium_foil_cards: { label: 'Luxury', color: 'bg-amber-100 text-amber-800' },
+  letterpress_cards: { label: 'Artisan', color: 'bg-stone-200 text-stone-800' },
   stickers: { label: 'Fast Turnaround', color: 'bg-yellow-100 text-yellow-700' },
-  die_cut_stickers: null,
-  flyers: null,
-  brochures: null,
-  postcards: null,
+  eco_stickers: { label: 'Eco', color: 'bg-green-100 text-green-700' },
   posters: { label: 'Best Value', color: 'bg-purple-100 text-purple-700' },
-  banners: null,
+  sample_pack: { label: 'Free Shipping', color: 'bg-blue-100 text-blue-700' },
 }
 
 export const metadata = {
   title: 'Products — Procardcrafters',
-  description: 'Custom printing services: business cards, stickers, flyers, postcards, and posters — distributed from LA, delivered worldwide.',
+  description: 'Custom printing: business cards, stickers, flyers, postcards, posters, banners, and more — delivered worldwide.',
 }
 
 export default async function ProductsPage() {
@@ -74,8 +92,8 @@ export default async function ProductsPage() {
     query = query.in('slug', [...PCCF_PRODUCT_SLUGS])
   }
   const { data: products } = await query.order('sort_order', { ascending: true })
-
   const items = (products as PrintProduct[] | null) ?? []
+  const bySlug = new Map(items.map(p => [p.slug, p]))
 
   return (
     <>
@@ -104,74 +122,89 @@ export default async function ProductsPage() {
         </div>
       </section>
 
-      {/* Product Grid */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+      {/* Category Sections */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
         {items.length === 0 ? (
           <div className="text-center py-20 text-gray-400">Loading products...</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((product) => {
-              const baseUsd = calculateItemPriceUsd({
-                basePriceKrw: product.base_price_krw,
-                marginMultiplier: product.margin_multiplier,
-                extraPricesKrw: [],
-                exchangeRate,
-              })
-
-              const tag = PRODUCT_TAG[product.category]
-
-              return (
-                <Link
-                  key={product.slug}
-                  href={`/products/${product.slug}`}
-                  className={`group relative border ${PRODUCT_ACCENT[product.category] ?? 'border-gray-200'} rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}
-                >
-                  {/* Thumbnail */}
-                  <div className={`h-44 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-gray-50 to-gray-100'} flex items-center justify-center relative`}>
-                    <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
-                      <ProductImage category={product.category} />
-                    </div>
-                    {tag && (
-                      <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${tag.color}`}>
-                        {tag.label}
-                      </span>
-                    )}
+          PRODUCT_GROUPS.map(group => {
+            const groupProducts = group.items
+              .map(item => bySlug.get(item.slug))
+              .filter((p): p is PrintProduct => Boolean(p))
+            if (groupProducts.length === 0) return null
+            return (
+              <div key={group.key} id={group.key}>
+                <div className="flex items-end justify-between mb-5 border-b border-gray-100 pb-3">
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{group.title}</h2>
+                    <p className="text-sm text-gray-500 mt-1">{group.description}</p>
                   </div>
-
-                  <div className="p-5">
-                    <div className="flex items-start justify-between gap-2 mb-1.5">
-                      <h2 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-lg">
-                        {product.name_en}
-                      </h2>
-                      {product.badge_text_en && (
-                        <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
-                          product.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'
-                        }`}>
-                          {product.badge_text_en}
-                        </span>
-                      )}
-                    </div>
-                    {product.description_en && (
-                      <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
-                        {product.description_en}
-                      </p>
-                    )}
-                    <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                      <div>
-                        <div className="text-xs text-gray-400 mb-0.5">Starting from</div>
-                        <div className="text-xl font-bold text-blue-600">
-                          ${baseUsd.toFixed(2)}
+                  <span className="text-sm text-gray-400">{groupProducts.length} products</span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {groupProducts.map(product => {
+                    const baseUsd = calculateItemPriceUsd({
+                      basePriceKrw: product.base_price_krw,
+                      marginMultiplier: product.margin_multiplier,
+                      extraPricesKrw: [],
+                      exchangeRate,
+                    })
+                    const tag = CATEGORY_TAG[product.category]
+                    const gradient = CATEGORY_GRADIENT[product.category] ?? 'from-gray-50 to-gray-100'
+                    const accent = CATEGORY_ACCENT[product.category] ?? 'border-gray-200'
+                    return (
+                      <Link
+                        key={product.slug}
+                        href={`/products/${product.slug}`}
+                        className={`group relative border ${accent} rounded-2xl overflow-hidden bg-white hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5`}
+                      >
+                        <div className={`h-44 bg-gradient-to-br ${gradient} flex items-center justify-center relative`}>
+                          <div className="w-40 h-32 group-hover:scale-105 transition-transform duration-300">
+                            <ProductImage category={product.category} />
+                          </div>
+                          {tag && (
+                            <span className={`absolute top-3 right-3 text-xs font-semibold px-2.5 py-1 rounded-full ${tag.color}`}>
+                              {tag.label}
+                            </span>
+                          )}
                         </div>
-                      </div>
-                      <span className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold bg-blue-50 px-3 py-1.5 rounded-lg">
-                        Configure <ArrowRight className="w-3.5 h-3.5" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              )
-            })}
-          </div>
+                        <div className="p-5">
+                          <div className="flex items-start justify-between gap-2 mb-1.5">
+                            <h3 className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors text-lg">
+                              {product.name_en}
+                            </h3>
+                            {product.badge_text_en && (
+                              <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full whitespace-nowrap shrink-0 ${
+                                product.is_premium ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-700'
+                              }`}>
+                                {product.badge_text_en}
+                              </span>
+                            )}
+                          </div>
+                          {product.description_en && (
+                            <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
+                              {product.description_en}
+                            </p>
+                          )}
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <div>
+                              <div className="text-xs text-gray-400 mb-0.5">Starting from</div>
+                              <div className="text-xl font-bold text-blue-600">
+                                ${baseUsd.toFixed(2)}
+                              </div>
+                            </div>
+                            <span className="flex items-center gap-1.5 text-sm text-blue-600 font-semibold bg-blue-50 px-3 py-1.5 rounded-lg">
+                              Configure <ArrowRight className="w-3.5 h-3.5" />
+                            </span>
+                          </div>
+                        </div>
+                      </Link>
+                    )
+                  })}
+                </div>
+              </div>
+            )
+          })
         )}
       </section>
 
@@ -185,7 +218,7 @@ export default async function ProductsPage() {
           </div>
           <h3 className="font-bold text-gray-900 mb-2">Not sure which product to choose?</h3>
           <p className="text-gray-500 text-sm mb-4">
-            Our team is happy to help. Reach out via our contact page and we'll guide you.
+            Our team is happy to help. Reach out via our contact page and we&apos;ll guide you.
           </p>
           <Link
             href="/contact"
