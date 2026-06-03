@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryCard from "@/components/ui/CategoryCard";
-import { Award, DollarSign, Zap, Star, Globe, Shield } from "lucide-react";
+import { Award, DollarSign, Zap, Star, Globe, Shield, Quote } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -52,6 +52,30 @@ const TRUST_STATS = [
   { icon: Globe, value: "Ships Worldwide", label: "Global Delivery" },
   { icon: Shield, value: "50,000+", label: "Happy Customers" },
   { icon: Award, value: "500+", label: "Products" },
+];
+
+const TESTIMONIALS = [
+  {
+    quote:
+      "Ordered 1,000 business cards for our real estate team. The quality exceeded expectations — crisp, professional, and delivered in 4 days. Will definitely reorder.",
+    name: "Sarah M.",
+    title: "Managing Broker, Premier Realty",
+    stars: 5,
+  },
+  {
+    quote:
+      "We needed custom stickers for our restaurant's packaging on short notice. ProCardCrafters came through with fast turnaround and beautiful results. Our customers love them.",
+    name: "James K.",
+    title: "Owner, Harvest Kitchen",
+    stars: 5,
+  },
+  {
+    quote:
+      "The pricing is transparent and the quality is top-tier. I've used other print services before but ProCardCrafters is now my go-to for all our marketing materials.",
+    name: "Lisa T.",
+    title: "Marketing Director, Apex Tech",
+    stars: 5,
+  },
 ];
 
 export default function Home() {
@@ -177,6 +201,43 @@ export default function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent mb-4">
+            ★★★★★ Rated 4.9 / 5 by 50,000+ customers
+          </div>
+          <h2 className="text-2xl font-bold text-text sm:text-3xl lg:text-4xl">
+            What Our Customers Say
+          </h2>
+        </div>
+        <div className="mt-12 grid gap-6 sm:grid-cols-3">
+          {TESTIMONIALS.map((t) => (
+            <div
+              key={t.name}
+              className="relative flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <Quote size={22} className="text-accent/40" />
+              <p className="text-sm leading-7 text-secondary flex-1">{t.quote}</p>
+              <div className="flex items-center gap-3 pt-2 border-t border-border">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-sm font-bold flex-shrink-0">
+                  {t.name.charAt(0)}
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-text">{t.name}</p>
+                  <p className="text-[10px] text-secondary">{t.title}</p>
+                  <div className="flex gap-0.5 mt-0.5">
+                    {Array.from({ length: t.stars }).map((_, i) => (
+                      <Star key={i} size={10} className="fill-accent text-accent" />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

@@ -5,7 +5,7 @@ import Link from "next/link";
 import OptionSelector from "@/components/print/OptionSelector";
 import PriceCalculator from "@/components/print/PriceCalculator";
 import WishlistButton from "@/components/ui/WishlistButton";
-import { ImageOff, ChevronRight, ArrowRight } from "lucide-react";
+import { ImageOff, ChevronRight, ArrowRight, Zap, Shield, RotateCcw, Star } from "lucide-react";
 import type { Product, OptionGroup, OptionValue, PriceRule } from "@/lib/types";
 import { trackViewItem } from "@/lib/analytics";
 
@@ -124,33 +124,49 @@ export default function ProductDetail({
             selected={selected}
           />
 
+          {/* Social proof mini bar */}
+          <div className="flex items-center gap-2 rounded-xl bg-accent/8 border border-accent/20 px-4 py-2.5">
+            <div className="flex gap-0.5">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star key={i} size={12} className="fill-accent text-accent" />
+              ))}
+            </div>
+            <p className="text-xs text-text font-medium">
+              <span className="font-bold">4.9/5</span> · Ordered by 50,000+ businesses
+            </p>
+          </div>
+
           {/* CTA */}
-          <Link
-            href={`/quote?product=${encodeURIComponent(product.name)}`}
-            className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-sm font-bold text-white hover:bg-primary-dark transition-all duration-200 shadow-lg shadow-primary/20"
-          >
-            Request a Quote
-            <ArrowRight
-              size={16}
-              className="transition-transform group-hover:translate-x-0.5"
-            />
-          </Link>
+          <div>
+            <Link
+              href={`/quote?product=${encodeURIComponent(product.name)}`}
+              className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-6 py-4 text-sm font-bold text-white hover:bg-accent-dark transition-all duration-200 shadow-lg shadow-accent/30 hover:scale-[1.01] active:scale-[0.99]"
+            >
+              Get a Free Quote
+              <ArrowRight
+                size={16}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+            <p className="mt-2 text-center text-[11px] text-secondary">
+              <Zap size={10} className="inline mr-1 text-accent" />
+              Response within 24 hours · No commitment required
+            </p>
+          </div>
 
           {/* Trust badges */}
-          <div className="flex items-center justify-center gap-6 pt-2">
-            <div className="text-center">
-              <p className="text-xs font-bold text-text">Free Proof</p>
-              <p className="text-[10px] text-secondary">Digital proof included</p>
+          <div className="grid grid-cols-3 gap-3">
+            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-bg-light p-3 text-center">
+              <Shield size={18} className="text-primary" strokeWidth={1.5} />
+              <p className="text-[10px] font-bold text-text leading-tight">Free Digital<br />Proof</p>
             </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <p className="text-xs font-bold text-text">3–5 Days</p>
-              <p className="text-[10px] text-secondary">Standard turnaround</p>
+            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-bg-light p-3 text-center">
+              <Zap size={18} className="text-primary" strokeWidth={1.5} />
+              <p className="text-[10px] font-bold text-text leading-tight">3–5 Day<br />Turnaround</p>
             </div>
-            <div className="h-8 w-px bg-border" />
-            <div className="text-center">
-              <p className="text-xs font-bold text-text">Ships Worldwide</p>
-              <p className="text-[10px] text-secondary">Global delivery</p>
+            <div className="flex flex-col items-center gap-1.5 rounded-xl border border-border bg-bg-light p-3 text-center">
+              <RotateCcw size={18} className="text-primary" strokeWidth={1.5} />
+              <p className="text-[10px] font-bold text-text leading-tight">Satisfaction<br />Guarantee</p>
             </div>
           </div>
         </div>

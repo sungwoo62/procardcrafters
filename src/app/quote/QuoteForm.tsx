@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import dynamic from "next/dynamic";
-import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2 } from "lucide-react";
+import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2, Lock, Star, Zap } from "lucide-react";
 import { submitQuote } from "./actions";
 import { trackGenerateLead, trackPurchase } from "@/lib/analytics";
 
@@ -183,10 +183,28 @@ export default function QuoteForm({
         />
       </div>
 
+      {/* Pre-submit trust bar */}
+      <div className="flex items-center justify-center gap-4 rounded-xl border border-border bg-bg-light px-4 py-3">
+        <div className="flex items-center gap-1.5 text-[11px] text-secondary">
+          <Lock size={11} className="text-green-600" />
+          <span>Secure & Private</span>
+        </div>
+        <div className="h-3 w-px bg-border" />
+        <div className="flex items-center gap-1.5 text-[11px] text-secondary">
+          <Zap size={11} className="text-accent" />
+          <span>Reply within 24h</span>
+        </div>
+        <div className="h-3 w-px bg-border" />
+        <div className="flex items-center gap-1.5 text-[11px] text-secondary">
+          <Star size={11} className="fill-accent text-accent" />
+          <span>4.9★ Rated</span>
+        </div>
+      </div>
+
       <button
         type="submit"
         disabled={pending}
-        className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-white hover:bg-primary-dark disabled:opacity-60 transition-all duration-200 shadow-md shadow-primary/20"
+        className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-6 py-4 text-sm font-bold text-white hover:bg-accent-dark disabled:opacity-60 transition-all duration-200 shadow-md shadow-accent/30 hover:scale-[1.01] active:scale-[0.99]"
       >
         {pending ? (
           <>
@@ -194,12 +212,15 @@ export default function QuoteForm({
             Submitting...
           </>
         ) : (
-          "Submit Quote Request"
+          <>
+            Get My Free Quote
+            <span className="text-white/80">→</span>
+          </>
         )}
       </button>
 
       <p className="text-center text-xs text-secondary">
-        We typically respond within 24 hours. No commitment required.
+        No commitment required. We&apos;ll get back to you within 24 hours.
       </p>
     </form>
   );
