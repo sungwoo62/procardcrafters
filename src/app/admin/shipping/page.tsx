@@ -29,6 +29,8 @@ interface Config {
   origin_country: string
   default_weight_kg: number
   fallback_rate_usd: number
+  free_shipping_threshold_usd: number
+  free_shipping_max_weight_kg: number
 }
 
 type Tab = 'zones' | 'services' | 'rates' | 'shipments' | 'config'
@@ -436,6 +438,26 @@ function ConfigPanel({ config, reload, setMsg }: { config: Config | null; reload
             className="w-full rounded-lg border-gray-200 text-sm" />
         </Field>
       </div>
+
+      <div className="border-t border-gray-200 pt-4 mt-2">
+        <h3 className="text-xs font-semibold text-gray-700 uppercase mb-3">무료배송 프로모션</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="무료배송 임계 (USD, 0=비활성)">
+            <input type="number" step="0.01" value={merged.free_shipping_threshold_usd ?? 0}
+              onChange={(e) => setDraft((d) => ({ ...d, free_shipping_threshold_usd: Number(e.target.value) }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="무료배송 무게 상한 (kg, 0=무제한)">
+            <input type="number" step="0.001" value={merged.free_shipping_max_weight_kg ?? 0}
+              onChange={(e) => setDraft((d) => ({ ...d, free_shipping_max_weight_kg: Number(e.target.value) }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          예: 임계 $150 + 상한 3kg → 주문가 $150 이상이면서 무게 3kg 이하인 주문만 무료배송.
+        </p>
+      </div>
+
       <p className="text-xs text-gray-500">
         VAT 가산율은 FedEx 원가에 자동으로 더해져 고객 청구 금액이 됩니다.
         (예: 가산율 10%, 원가 $20 → 청구 $22.00)

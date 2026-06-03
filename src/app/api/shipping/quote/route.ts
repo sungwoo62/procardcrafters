@@ -42,24 +42,41 @@ export async function POST(request: NextRequest) {
 
   const quote = await quoteShipping(body.country, weightKg, body.serviceCode, body.postalCode)
 
-  // 무료배송 임계 적용
+  // 무료배송 임계 + 무게 상한 적용
   const { data: cfg } = await supabase
     .from('print_shipping_config')
-    .select('free_shipping_threshold_usd')
+    .select('free_shipping_threshold_usd, free_shipping_max_weight_kg')
     .eq('id', 1)
     .maybeSingle()
   const threshold = Number(cfg?.free_shipping_threshold_usd ?? 0)
+  const maxWeight = Number(cfg?.free_shipping_max_weight_kg ?? 0)
   const subtotalUsd = Number(body.subtotalUsd ?? 0)
-  const freeShipping = threshold > 0 && subtotalUsd >= threshold
+
+  const meetsSubtotal = threshold > 0 && subtotalUsd >= threshold
+  const meetsWeight = maxWeight === 0 || weightKg <= maxWeight
+  const freeShipping = meetsSubtotal && meetsWeight
 
   const responseQuote = freeShipping
     ? { ...quote, costUsd: 0, baseCostUsd: quote.baseCostUsd, reason: 'free_shipping_promo' as const }
     : quote
 
+  // 무료배송 자격 안내 메시지 (UI 가 그대로 노출 가능)
+  let freeShippingNote: string | null = null
+  if (threshold > 0) {
+    if (!meetsSubtotal) {
+      freeShippingNote = `Add $${(threshold - subtotalUsd).toFixed(2)} more for FREE shipping`
+    } else if (!meetsWeight) {
+      freeShippingNote = `Free shipping not available — package over ${maxWeight}kg limit`
+    }
+  }
+
   return NextResponse.json({
     quote: responseQuote,
     freeShipping,
     freeShippingThresholdUsd: threshold,
+    freeShippingMaxWeightKg: maxWeight,
     freeShippingShortageUsd: threshold > 0 ? Math.max(0, threshold - subtotalUsd) : 0,
+    overWeightLimit: maxWeight > 0 && weightKg > maxWeight,
+    freeShippingNote,
   })
 }

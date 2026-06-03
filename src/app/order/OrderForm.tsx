@@ -24,6 +24,9 @@ interface LiveQuote {
   freeShipping: boolean
   freeShippingThresholdUsd: number
   freeShippingShortageUsd: number
+  freeShippingMaxWeightKg: number
+  overWeightLimit: boolean
+  freeShippingNote: string | null
 }
 
 interface FormState {
@@ -111,6 +114,9 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
             freeShipping: !!data.freeShipping,
             freeShippingThresholdUsd: Number(data.freeShippingThresholdUsd ?? 0),
             freeShippingShortageUsd: Number(data.freeShippingShortageUsd ?? 0),
+            freeShippingMaxWeightKg: Number(data.freeShippingMaxWeightKg ?? 0),
+            overWeightLimit: !!data.overWeightLimit,
+            freeShippingNote: data.freeShippingNote ?? null,
           })
         }
       } catch { /* keep prior quote */ }
@@ -540,9 +546,9 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
             )}
           </span>
         </div>
-        {liveQuote && liveQuote.freeShippingThresholdUsd > 0 && !liveQuote.freeShipping && liveQuote.freeShippingShortageUsd > 0 && (
-          <p className="text-xs text-blue-700 bg-blue-50 rounded px-2 py-1">
-            Add ${liveQuote.freeShippingShortageUsd.toFixed(2)} more to qualify for FREE shipping (orders over ${liveQuote.freeShippingThresholdUsd.toFixed(0)})
+        {liveQuote?.freeShippingNote && !liveQuote.freeShipping && (
+          <p className={`text-xs rounded px-2 py-1 ${liveQuote.overWeightLimit ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+            {liveQuote.freeShippingNote}
           </p>
         )}
         <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">

@@ -136,14 +136,18 @@ export async function POST(request: NextRequest) {
   const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)
   const subtotalUsd = orderItemsData.reduce((sum, i) => sum + i.subtotal_usd, 0)
 
-  // 무료배송 임계값 (서버측 강제) — 클라이언트가 바꿔 보내도 여기서 0 처리
+  // 무료배송 임계 + 무게 상한 (서버측 강제)
   const { data: cfg } = await supabase
     .from('print_shipping_config')
-    .select('free_shipping_threshold_usd')
+    .select('free_shipping_threshold_usd, free_shipping_max_weight_kg')
     .eq('id', 1)
     .maybeSingle()
   const freeThreshold = Number(cfg?.free_shipping_threshold_usd ?? 0)
-  const shippingUsd = freeThreshold > 0 && subtotalUsd >= freeThreshold ? 0 : shippingQuote.costUsd
+  const maxWeight = Number(cfg?.free_shipping_max_weight_kg ?? 0)
+  const freeApplies =
+    freeThreshold > 0 && subtotalUsd >= freeThreshold &&
+    (maxWeight === 0 || weightKg <= maxWeight)
+  const shippingUsd = freeApplies ? 0 : shippingQuote.costUsd
 
   if (shippingUsd > 0) {
     lineItems.push({

@@ -30,6 +30,8 @@ export async function PATCH(request: NextRequest) {
   if (body.origin_country !== undefined)     update.origin_country = String(body.origin_country).toUpperCase()
   if (body.default_weight_kg !== undefined)  update.default_weight_kg = Number(body.default_weight_kg)
   if (body.fallback_rate_usd !== undefined)  update.fallback_rate_usd = Number(body.fallback_rate_usd)
+  if (body.free_shipping_threshold_usd !== undefined) update.free_shipping_threshold_usd = Number(body.free_shipping_threshold_usd)
+  if (body.free_shipping_max_weight_kg !== undefined) update.free_shipping_max_weight_kg = Number(body.free_shipping_max_weight_kg)
 
   const { data, error } = await supabase
     .from('print_shipping_config')
