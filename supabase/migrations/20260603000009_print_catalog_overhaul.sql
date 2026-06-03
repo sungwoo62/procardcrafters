@@ -27,17 +27,8 @@ ALTER TABLE print_product_options ADD COLUMN IF NOT EXISTS description_en    TEX
 COMMENT ON COLUMN print_product_options.weight_modifier_g IS
   '옵션 선택 시 1매당 무게 변경량(g). 양수=무거워짐. paper 350gsm vs 250gsm 등에서 사용.';
 
--- product category 확장
-ALTER TABLE print_products DROP CONSTRAINT IF EXISTS print_products_category_check;
-ALTER TABLE print_products ADD CONSTRAINT print_products_category_check
-  CHECK (category IN (
-    'business_cards', 'premium_business_cards', 'premium_foil_cards',
-    'stickers', 'die_cut_stickers', 'eco_stickers',
-    'flyers', 'brochures',
-    'postcards',
-    'posters', 'banners',
-    'sample_pack'
-  ));
+-- product category 확장은 별도 마이그레이션(20260603000010_print_catalog_categories_fix.sql)이 처리.
+-- 기존 booklets/boxes/calendars 등 모든 카테고리 보존 + 신규 추가.
 
 -- ============================================================
 -- 2. 가격 + 설명 보강 (기존 제품)
