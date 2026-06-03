@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import OptionSelector from "@/components/print/OptionSelector";
 import PriceCalculator from "@/components/print/PriceCalculator";
 import WishlistButton from "@/components/ui/WishlistButton";
 import { ImageOff, ChevronRight, ArrowRight } from "lucide-react";
 import type { Product, OptionGroup, OptionValue, PriceRule } from "@/lib/types";
+import { trackViewItem } from "@/lib/analytics";
 
 export default function ProductDetail({
   product,
@@ -27,6 +28,14 @@ export default function ProductDetail({
     }
     return init;
   });
+
+  useEffect(() => {
+    trackViewItem({
+      itemId: product.id,
+      itemName: product.name,
+      itemCategory: product.category_id ?? "print",
+    });
+  }, [product.id, product.name, product.category_id]);
 
   function handleChange(groupId: string, valueId: string) {
     setSelected((prev) => ({ ...prev, [groupId]: valueId }));

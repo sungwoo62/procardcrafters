@@ -4,6 +4,7 @@ import { useState } from "react";
 import dynamic from "next/dynamic";
 import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2 } from "lucide-react";
 import { submitQuote } from "./actions";
+import { trackGenerateLead, trackPurchase } from "@/lib/analytics";
 
 const PayPalCheckout = dynamic(
   () => import("@/components/PayPalCheckout"),
@@ -42,6 +43,7 @@ export default function QuoteForm({
     } else {
       setSubmitted(true);
       setOrderId(result.orderId ?? null);
+      trackGenerateLead({ value: 50, currency: "USD" });
     }
   }
 
@@ -70,7 +72,14 @@ export default function QuoteForm({
               orderId={orderId}
               amount={DEPOSIT_AMOUNT}
               currency="USD"
-              onSuccess={() => setPaid(true)}
+              onSuccess={(paypalOrderId) => {
+                setPaid(true);
+                trackPurchase({
+                  transactionId: paypalOrderId,
+                  value: parseFloat(DEPOSIT_AMOUNT),
+                  currency: "USD",
+                });
+              }}
             />
           </div>
         )}
