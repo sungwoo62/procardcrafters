@@ -134,18 +134,28 @@ export async function POST(request: NextRequest) {
     }),
   )
   const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)
-  const shippingUsd = shippingQuote.costUsd
-
-  lineItems.push({
-    price_data: {
-      currency: 'usd',
-      product_data: { name: `Shipping (FedEx ${shippingQuote.zoneCode})` },
-      unit_amount: Math.round(shippingUsd * 100),
-    },
-    quantity: 1,
-  })
-
   const subtotalUsd = orderItemsData.reduce((sum, i) => sum + i.subtotal_usd, 0)
+
+  // 무료배송 임계값 (서버측 강제) — 클라이언트가 바꿔 보내도 여기서 0 처리
+  const { data: cfg } = await supabase
+    .from('print_shipping_config')
+    .select('free_shipping_threshold_usd')
+    .eq('id', 1)
+    .maybeSingle()
+  const freeThreshold = Number(cfg?.free_shipping_threshold_usd ?? 0)
+  const shippingUsd = freeThreshold > 0 && subtotalUsd >= freeThreshold ? 0 : shippingQuote.costUsd
+
+  if (shippingUsd > 0) {
+    lineItems.push({
+      price_data: {
+        currency: 'usd',
+        product_data: { name: `Shipping (FedEx ${shippingQuote.zoneCode})` },
+        unit_amount: Math.round(shippingUsd * 100),
+      },
+      quantity: 1,
+    })
+  }
+
   const totalUsd = subtotalUsd + shippingUsd
 
   // Create order

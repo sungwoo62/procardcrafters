@@ -110,7 +110,13 @@ export async function POST(request: NextRequest) {
     }),
   )
   const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)
-  const shippingUsd = shippingQuote.costUsd
+  const { data: cfg } = await supabase
+    .from('print_shipping_config')
+    .select('free_shipping_threshold_usd')
+    .eq('id', 1)
+    .maybeSingle()
+  const freeThreshold = Number(cfg?.free_shipping_threshold_usd ?? 0)
+  const shippingUsd = freeThreshold > 0 && subtotalUsd >= freeThreshold ? 0 : shippingQuote.costUsd
   const totalUsd = subtotalUsd + shippingUsd
 
   const { data: order, error: orderError } = await supabase

@@ -1,17 +1,29 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
+import { trackBeginCheckout } from '@/lib/analytics'
 import type { PrintProduct } from '@/types/database'
 
 interface Props {
   product: PrintProduct
   selectedOptions: Record<string, string>
   itemPriceUsd: number
-  shippingUsd: number
+  shippingUsd: number            // 초기 표시값 (서버 SSR 기본 추정값)
   exchangeRate: number
+  preloadedFileId?: string | null
+}
+
+interface LiveQuote {
+  costUsd: number
+  zoneCode: string
+  serviceNameEn: string | null
+  reason: string
+  freeShipping: boolean
+  freeShippingThresholdUsd: number
+  freeShippingShortageUsd: number
 }
 
 interface FormState {
@@ -54,20 +66,66 @@ interface FileValidation {
   }
 }
 
-export default function OrderForm({ product, selectedOptions, itemPriceUsd, shippingUsd, exchangeRate }: Props) {
+export default function OrderForm({ product, selectedOptions, itemPriceUsd, shippingUsd, exchangeRate, preloadedFileId }: Props) {
   const router = useRouter()
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
-  const [uploadStatus, setUploadStatus] = useState<UploadStatus>('idle')
-  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
+  const [uploadStatus, setUploadStatus] = useState<UploadStatus>(preloadedFileId ? 'done' : 'idle')
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(preloadedFileId ?? null)
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(preloadedFileId ? '에디터 디자인 파일' : null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValidation, setFileValidation] = useState<FileValidation | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [formTouched, setFormTouched] = useState(false)
 
-  const totalUsd = itemPriceUsd + shippingUsd
+  // 실시간 배송비 견적 (국가/우편번호/소계 변경 시 자동 갱신)
+  const [liveQuote, setLiveQuote] = useState<LiveQuote | null>(null)
+  const [quoteLoading, setQuoteLoading] = useState(false)
+  const effectiveShippingUsd = liveQuote?.costUsd ?? shippingUsd
+  const totalUsd = itemPriceUsd + effectiveShippingUsd
+
+  // Debounced 견적 페치
+  useEffect(() => {
+    if (!form.country) return
+    const timer = setTimeout(async () => {
+      setQuoteLoading(true)
+      try {
+        const res = await fetch('/api/shipping/quote', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            country: form.country,
+            postalCode: form.postalCode,
+            items: [{ productId: product.id, quantity: 1 }],
+            subtotalUsd: itemPriceUsd,
+          }),
+        })
+        if (res.ok) {
+          const data = await res.json()
+          setLiveQuote({
+            costUsd: Number(data.quote?.costUsd ?? 0),
+            zoneCode: String(data.quote?.zoneCode ?? ''),
+            serviceNameEn: data.quote?.serviceNameEn ?? null,
+            reason: String(data.quote?.reason ?? ''),
+            freeShipping: !!data.freeShipping,
+            freeShippingThresholdUsd: Number(data.freeShippingThresholdUsd ?? 0),
+            freeShippingShortageUsd: Number(data.freeShippingShortageUsd ?? 0),
+          })
+        }
+      } catch { /* keep prior quote */ }
+      finally { setQuoteLoading(false) }
+    }, 350)
+    return () => clearTimeout(timer)
+  }, [form.country, form.postalCode, itemPriceUsd, product.id])
+
+  useEffect(() => {
+    trackBeginCheckout({
+      value: totalUsd,
+      productId: product.id,
+      productName: product.name_en,
+    })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function isFormValid(): boolean {
     return (
@@ -174,6 +232,10 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     }
 
     sessionStorage.removeItem('pccf_pending_order_id')
+    sessionStorage.setItem(
+      'pccf_purchase_data',
+      JSON.stringify({ value: totalUsd, productId: product.id, productName: product.name_en }),
+    )
     router.push(`/order/success?order=${data.orderNumber}`)
   }
 
@@ -463,9 +525,26 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           <span>${itemPriceUsd.toFixed(2)}</span>
         </div>
         <div className="flex justify-between text-sm text-gray-600">
-          <span>Shipping</span>
-          <span>${shippingUsd.toFixed(2)}</span>
+          <span>
+            Shipping
+            {liveQuote?.zoneCode && liveQuote.zoneCode !== 'API' && (
+              <span className="text-xs text-gray-400 ml-1">(FedEx Zone {liveQuote.zoneCode})</span>
+            )}
+            {quoteLoading && <Loader2 className="w-3 h-3 inline ml-1 animate-spin" />}
+          </span>
+          <span>
+            {liveQuote?.freeShipping ? (
+              <span className="text-green-600 font-semibold">FREE 🎉</span>
+            ) : (
+              <>${effectiveShippingUsd.toFixed(2)}</>
+            )}
+          </span>
         </div>
+        {liveQuote && liveQuote.freeShippingThresholdUsd > 0 && !liveQuote.freeShipping && liveQuote.freeShippingShortageUsd > 0 && (
+          <p className="text-xs text-blue-700 bg-blue-50 rounded px-2 py-1">
+            Add ${liveQuote.freeShippingShortageUsd.toFixed(2)} more to qualify for FREE shipping (orders over ${liveQuote.freeShippingThresholdUsd.toFixed(0)})
+          </p>
+        )}
         <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">
           <span>Total</span>
           <span className="text-blue-600">${totalUsd.toFixed(2)} USD</span>
