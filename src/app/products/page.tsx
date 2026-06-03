@@ -66,12 +66,14 @@ export default async function ProductsPage() {
   const supabase = createServerClient()
   const exchangeRate = await getKrwToUsdRate()
 
-  const { data: products } = await supabase
+  let query = supabase
     .from('print_products')
     .select('*')
     .eq('is_active', true)
-    .in('slug', [...PCCF_PRODUCT_SLUGS])
-    .order('sort_order', { ascending: true })
+  if (PCCF_PRODUCT_SLUGS) {
+    query = query.in('slug', [...PCCF_PRODUCT_SLUGS])
+  }
+  const { data: products } = await query.order('sort_order', { ascending: true })
 
   const items = (products as PrintProduct[] | null) ?? []
 
