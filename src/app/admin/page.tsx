@@ -11,6 +11,7 @@ import {
   Package,
   FileText,
   Users,
+  Truck,
 } from 'lucide-react'
 
 interface TrendPoint {
@@ -108,10 +109,10 @@ export default function AdminDashboardPage() {
             {[
               { href: '/admin', label: 'Dashboard', icon: BarChart2 },
               { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
+              { href: '/admin/shipping', label: 'Shipping', icon: Truck },
               { href: '/admin/files', label: 'File Review', icon: FileText },
               { href: '/admin/chats', label: 'Chat Logs', icon: MessageCircle },
               { href: '/admin/portfolio', label: 'Portfolio', icon: Package },
-              { href: '/admin/files', label: 'File Review', icon: FileText },
               { href: '/admin/customers', label: 'Customers', icon: Users },
             ].map(({ href, label, icon: Icon }) => (
               <Link

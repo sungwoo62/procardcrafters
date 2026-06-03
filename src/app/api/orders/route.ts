@@ -3,7 +3,7 @@ import Stripe from 'stripe'
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
-import { getShippingCost } from '@/lib/shipping'
+import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 
 interface OrderItemInput {
@@ -48,7 +48,6 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient()
   const exchangeRate = await getKrwToUsdRate()
-  const shippingUsd = getShippingCost(shipping.country)
 
   // Fetch product info
   const productIds = items.map((i) => i.productId)
@@ -127,11 +126,20 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  // Shipping line item
+  // Weight-based shipping quote (DB 권역 + 무게 매칭, +10% VAT 가산)
+  const weightKg = calculateOrderWeightKg(
+    orderItemsData.map((it) => {
+      const product = products.find((p) => p.id === it.product_id)
+      return { quantity: it.quantity, default_weight_kg: product?.default_weight_kg ?? 0.5 }
+    }),
+  )
+  const shippingQuote = await quoteShipping(shipping.country, weightKg)
+  const shippingUsd = shippingQuote.costUsd
+
   lineItems.push({
     price_data: {
       currency: 'usd',
-      product_data: { name: 'Shipping' },
+      product_data: { name: `Shipping (FedEx ${shippingQuote.zoneCode})` },
       unit_amount: Math.round(shippingUsd * 100),
     },
     quantity: 1,
@@ -168,21 +176,22 @@ export async function POST(request: NextRequest) {
   }
 
   // Create order items
-  const { error: itemsError } = await supabase.from('print_order_items').insert(
+  const { data: insertedItems, error: itemsError } = await supabase.from('print_order_items').insert(
     orderItemsData.map((i) => ({ ...i, order_id: order.id }))
-  )
+  ).select('id')
 
   if (itemsError) {
     return NextResponse.json({ error: `Failed to save order items: ${itemsError.message}` }, { status: 500 })
   }
 
-  // Link files to order
+  // Link files to order + order item
   for (let idx = 0; idx < items.length; idx++) {
     const fileId = items[idx].fileId
     if (fileId) {
+      const orderItemId = insertedItems?.[idx]?.id ?? null
       await supabase
         .from('print_files')
-        .update({ order_id: order.id })
+        .update({ order_id: order.id, order_item_id: orderItemId })
         .eq('id', fileId)
     }
   }

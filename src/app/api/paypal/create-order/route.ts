@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
-import { getShippingCost } from '@/lib/shipping'
+import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
 
 interface OrderItemInput {
@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient()
   const exchangeRate = await getKrwToUsdRate()
-  const shippingUsd = getShippingCost(shipping.country)
 
   const productIds = items.map((i) => i.productId)
   const { data: products, error: productError } = await supabase
@@ -104,6 +103,14 @@ export async function POST(request: NextRequest) {
   }
 
   const subtotalUsd = orderItemsData.reduce((sum, i) => sum + i.subtotal_usd, 0)
+  const weightKg = calculateOrderWeightKg(
+    orderItemsData.map((it) => {
+      const product = products.find((p) => p.id === it.product_id)
+      return { quantity: it.quantity, default_weight_kg: product?.default_weight_kg ?? 0.5 }
+    }),
+  )
+  const shippingQuote = await quoteShipping(shipping.country, weightKg)
+  const shippingUsd = shippingQuote.costUsd
   const totalUsd = subtotalUsd + shippingUsd
 
   const { data: order, error: orderError } = await supabase
@@ -133,9 +140,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: `Failed to create order: ${orderError?.message}` }, { status: 500 })
   }
 
-  const { error: itemsError } = await supabase.from('print_order_items').insert(
+  const { data: insertedItems, error: itemsError } = await supabase.from('print_order_items').insert(
     orderItemsData.map((i) => ({ ...i, order_id: order.id }))
-  )
+  ).select('id')
 
   if (itemsError) {
     return NextResponse.json({ error: `Failed to save order items: ${itemsError.message}` }, { status: 500 })
@@ -144,7 +151,11 @@ export async function POST(request: NextRequest) {
   for (let idx = 0; idx < items.length; idx++) {
     const fileId = items[idx].fileId
     if (fileId) {
-      await supabase.from('print_files').update({ order_id: order.id }).eq('id', fileId)
+      const orderItemId = insertedItems?.[idx]?.id ?? null
+      await supabase.from('print_files').update({
+        order_id: order.id,
+        order_item_id: orderItemId,
+      }).eq('id', fileId)
     }
   }
 
