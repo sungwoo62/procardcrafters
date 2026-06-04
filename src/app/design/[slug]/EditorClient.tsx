@@ -202,12 +202,6 @@ const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
 
 const DEFAULT_REQUIRED_FIELDS: FieldDef[] = REQUIRED_FIELDS.business_cards
 
-// 명함 전용 추가 정보 필드 (website/linkedin — optional)
-const CONTACT_EXTRA_FIELDS: FieldDef[] = [
-  { key: 'website',  label: 'Website',     placeholder: 'www.yoursite.com',    type: 'text' },
-  { key: 'linkedin', label: 'LinkedIn URL', placeholder: 'linkedin.com/in/you', type: 'text' },
-]
-
 const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
 const SNAP_THRESHOLD_MM = 2
@@ -625,11 +619,8 @@ export default function EditorClient({ product, options }: Props) {
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
   const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo'>('yourinfo')
   const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
-  const isBusinessCard = product.category === 'business_cards' || product.category === 'premium_business_cards'
-  const allFormFields: (FieldDef & { required: boolean })[] = [
-    ...productFields.map(f => ({ ...f, required: true })),
-    ...(isBusinessCard ? CONTACT_EXTRA_FIELDS.map(f => ({ ...f, required: false })) : []),
-  ]
+  const allFormFields: (FieldDef & { required: boolean })[] =
+    productFields.map(f => ({ ...f, required: f.required ?? true }))
   const [bgColor, setBgColor] = useState('#ffffff')
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
