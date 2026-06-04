@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
-import { Package, ShoppingCart, Menu, X, ChevronDown, ChevronRight, ArrowRight } from 'lucide-react'
+import { Package, ShoppingCart, Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
 import AuthButton from './AuthButton'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
@@ -53,7 +53,6 @@ export default function Header({ productImages = {} }: Props) {
     setMobileOpen(false)
   }, [pathname])
 
-  // 그룹 바뀌면 그 그룹 첫 아이템으로 활성 아이템 자동 이동
   const selectGroup = (key: string) => {
     const g = PRODUCT_GROUPS.find(x => x.key === key)
     if (!g) return
@@ -65,13 +64,11 @@ export default function Header({ productImages = {} }: Props) {
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 font-bold text-lg text-gray-900 shrink-0">
             <Package className="w-6 h-6 text-blue-600" />
             <span>Procardcrafters</span>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
             <div ref={productsRef} className="relative">
               <button
@@ -92,81 +89,92 @@ export default function Header({ productImages = {} }: Props) {
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(1040px,calc(100vw-2rem))] overflow-hidden"
+                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(1100px,calc(100vw-2rem))] overflow-hidden flex flex-col"
                 >
-                  <div className="grid grid-cols-[220px,260px,1fr]">
-                    {/* Col 1: 카테고리 */}
-                    <div className="bg-gray-50 border-r border-gray-100 py-3 flex flex-col">
-                      <div className="px-4 mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">Category</div>
-                      <div className="flex-1">
-                        {PRODUCT_GROUPS.map(group => {
-                          const isActive = activeGroupKey === group.key
-                          return (
-                            <button
-                              key={group.key}
-                              type="button"
-                              onMouseEnter={() => selectGroup(group.key)}
-                              onFocus={() => selectGroup(group.key)}
-                              onClick={() => selectGroup(group.key)}
-                              className={`w-full text-left flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                                isActive
-                                  ? 'bg-white text-blue-600 font-semibold'
-                                  : 'text-gray-700 hover:bg-white hover:text-gray-900'
-                              }`}
-                            >
-                              <div>
-                                <div className="leading-tight">{group.title}</div>
-                                <div className={`text-[11px] mt-0.5 ${isActive ? 'text-blue-500' : 'text-gray-400'}`}>{group.items.length} products</div>
-                              </div>
-                              <ChevronRight className={`w-3.5 h-3.5 shrink-0 transition-opacity ${isActive ? 'opacity-100 text-blue-500' : 'opacity-40'}`} />
-                            </button>
-                          )
-                        })}
-                      </div>
-                      <div className="border-t border-gray-100 mt-2 pt-2 px-4">
-                        <Link
-                          href="/products"
-                          onClick={closeMega}
-                          className="inline-flex items-center gap-1 text-xs font-semibold text-blue-600 hover:text-blue-700"
-                        >
-                          Shop all 61 →
-                        </Link>
-                      </div>
-                    </div>
+                  {/* 가로 3단 — 위에서 아래로 stack */}
 
-                    {/* Col 2: 활성 카테고리의 제품 리스트 */}
-                    <div className="border-r border-gray-100 py-3 flex flex-col overflow-hidden">
-                      <div className="px-4 mb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">{activeGroup.title}</div>
-                      <div className="flex-1 overflow-y-auto max-h-[440px]">
-                        {activeGroup.items.map(item => {
-                          const isActive = activeItemSlug === item.slug
-                          const onPath = pathname === `/products/${item.slug}`
-                          return (
-                            <Link
-                              key={item.slug}
-                              href={`/products/${item.slug}`}
-                              onMouseEnter={() => setActiveItemSlug(item.slug)}
-                              onFocus={() => setActiveItemSlug(item.slug)}
-                              onClick={closeMega}
-                              className={`flex items-center justify-between px-4 py-2 text-sm transition-colors ${
-                                onPath
-                                  ? 'text-blue-600 bg-blue-50 font-medium'
-                                  : isActive
-                                    ? 'text-blue-600 bg-blue-50/50'
-                                    : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-                              }`}
-                            >
-                              <span>{item.label}</span>
-                              {isActive && <ChevronRight className="w-3.5 h-3.5 shrink-0 text-blue-500" />}
-                            </Link>
-                          )
-                        })}
-                      </div>
+                  {/* 단 1: Category — 가로 탭 */}
+                  <div className="border-b border-gray-100 bg-gray-50/60">
+                    <div className="px-6 pt-4 pb-1 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">Category</div>
+                    <div className="px-3 pb-3 flex gap-1 overflow-x-auto">
+                      {PRODUCT_GROUPS.map(group => {
+                        const isActive = activeGroupKey === group.key
+                        return (
+                          <button
+                            key={group.key}
+                            type="button"
+                            onMouseEnter={() => selectGroup(group.key)}
+                            onFocus={() => selectGroup(group.key)}
+                            onClick={() => selectGroup(group.key)}
+                            className={`shrink-0 px-4 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap ${
+                              isActive
+                                ? 'bg-blue-600 text-white shadow-sm'
+                                : 'bg-white border border-gray-200 text-gray-700 hover:border-blue-300 hover:text-blue-600'
+                            }`}
+                          >
+                            {group.title}
+                            <span className={`ml-1.5 text-[11px] ${isActive ? 'text-blue-100' : 'text-gray-400'}`}>{group.items.length}</span>
+                          </button>
+                        )
+                      })}
                     </div>
+                  </div>
 
-                    {/* Col 3: 썸네일 + 정보 */}
-                    <div className="bg-gradient-to-br from-gray-50 to-white p-6 flex flex-col">
-                      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-3">Preview</div>
+                  {/* 단 2: Products — 가로 그리드 (활성 카테고리 제품들) */}
+                  <div className="px-6 pt-5 pb-2 border-b border-gray-100">
+                    <div className="mb-3 flex items-baseline justify-between">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">{activeGroup.title}</div>
+                      <div className="text-xs text-gray-500">{activeGroup.description}</div>
+                    </div>
+                    <div className="grid grid-cols-4 gap-2 max-h-[260px] overflow-y-auto pb-2">
+                      {activeGroup.items.map(item => {
+                        const isActive = activeItemSlug === item.slug
+                        const onPath = pathname === `/products/${item.slug}`
+                        const thumb = productImages[item.slug]
+                        return (
+                          <Link
+                            key={item.slug}
+                            href={`/products/${item.slug}`}
+                            onMouseEnter={() => setActiveItemSlug(item.slug)}
+                            onFocus={() => setActiveItemSlug(item.slug)}
+                            onClick={closeMega}
+                            className={`group flex items-center gap-2 p-2 rounded-lg border transition-all ${
+                              onPath
+                                ? 'border-blue-300 bg-blue-50'
+                                : isActive
+                                  ? 'border-blue-200 bg-blue-50/40'
+                                  : 'border-transparent hover:border-gray-200 hover:bg-gray-50'
+                            }`}
+                          >
+                            <div className="relative w-12 h-9 rounded bg-gray-100 overflow-hidden shrink-0">
+                              {thumb ? (
+                                <Image
+                                  src={thumb}
+                                  alt={item.label}
+                                  fill
+                                  sizes="48px"
+                                  className="object-cover"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                  <Package className="w-4 h-4" />
+                                </div>
+                              )}
+                            </div>
+                            <span className={`text-xs leading-tight ${
+                              onPath || isActive ? 'text-blue-700 font-medium' : 'text-gray-700 group-hover:text-blue-600'
+                            }`}>
+                              {item.label}
+                            </span>
+                          </Link>
+                        )
+                      })}
+                    </div>
+                  </div>
+
+                  {/* 단 3: Featured thumbnail */}
+                  <div className="px-6 py-5 bg-gradient-to-br from-gray-50 to-white">
+                    <div className="grid grid-cols-[260px,1fr] gap-5 items-center">
                       <div className="relative aspect-[4/3] w-full bg-white rounded-xl border border-gray-100 overflow-hidden shadow-md">
                         {previewImageUrl ? (
                           <Image
@@ -174,44 +182,40 @@ export default function Header({ productImages = {} }: Props) {
                             src={previewImageUrl}
                             alt={activeItem.label}
                             fill
-                            sizes="(max-width:1100px) 100vw, 460px"
+                            sizes="260px"
                             className="object-cover"
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center bg-gray-50">
                             <div className="text-center px-4">
-                              <Package className="w-10 h-10 mx-auto mb-2 text-gray-300" />
-                              <p className="text-xs text-gray-400">Photography in progress</p>
+                              <Package className="w-9 h-9 mx-auto mb-2 text-gray-300" />
+                              <p className="text-[11px] text-gray-400">Photography in progress</p>
                             </div>
                           </div>
                         )}
                       </div>
-                      <div className="mt-4">
-                        <div className="text-base font-bold text-gray-900">{activeItem.label}</div>
-                        <div className="text-xs text-gray-500 mt-0.5">{activeGroup.title} · {activeGroup.description}</div>
-                        <Link
-                          href={`/products/${activeItem.slug}`}
-                          onClick={closeMega}
-                          className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700"
-                        >
-                          View details <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                      <div>
+                        <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-1">Featured</div>
+                        <div className="text-xl font-bold text-gray-900">{activeItem.label}</div>
+                        <div className="text-sm text-gray-500 mt-1">{activeGroup.title} · {activeGroup.description}</div>
+                        <div className="mt-4 flex items-center gap-3">
+                          <Link
+                            href={`/products/${activeItem.slug}`}
+                            onClick={closeMega}
+                            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors"
+                          >
+                            View details <ArrowRight className="w-3.5 h-3.5" />
+                          </Link>
+                          <Link
+                            href="/products"
+                            onClick={closeMega}
+                            className="text-sm font-medium text-gray-600 hover:text-blue-600"
+                          >
+                            Shop all 61 →
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-
-                  {/* Footer strip */}
-                  <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
-                    <div className="text-xs text-gray-600">
-                      <span className="font-semibold text-gray-900">61 products</span> · printed in LA, delivered worldwide
-                    </div>
-                    <Link
-                      href="/products"
-                      onClick={closeMega}
-                      className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
-                    >
-                      Shop all products <ArrowRight className="w-3.5 h-3.5" />
-                    </Link>
                   </div>
                 </div>
               )}
@@ -232,7 +236,6 @@ export default function Header({ productImages = {} }: Props) {
             ))}
           </nav>
 
-          {/* Action Buttons */}
           <div className="flex items-center gap-2">
             <AuthButton />
             <Link
@@ -248,7 +251,6 @@ export default function Header({ productImages = {} }: Props) {
             >
               <ShoppingCart className="w-5 h-5" />
             </Link>
-
             <button
               type="button"
               className="md:hidden p-2 text-gray-600 hover:text-gray-900"
@@ -261,7 +263,6 @@ export default function Header({ productImages = {} }: Props) {
         </div>
       </div>
 
-      {/* Mobile Menu */}
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto">
           <nav className="flex flex-col py-2">
