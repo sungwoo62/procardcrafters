@@ -795,6 +795,7 @@ export default function EditorClient({ product, options }: Props) {
     isMutating.current = true
     await canvas.loadFromJSON(JSON.parse(json))
     isMutating.current = false
+    backfillFieldKeys(canvas)
     canvas.renderAll()
     syncLayers(canvas)
     syncSelected(canvas)
@@ -808,6 +809,7 @@ export default function EditorClient({ product, options }: Props) {
     isMutating.current = true
     await canvas.loadFromJSON(JSON.parse(json))
     isMutating.current = false
+    backfillFieldKeys(canvas)
     canvas.renderAll()
     syncLayers(canvas)
     syncSelected(canvas)
@@ -2453,79 +2455,36 @@ export default function EditorClient({ product, options }: Props) {
     if (trimBg) trimBg.set('fill', bg)
   }
 
-  // ── Phase B: Apply contact smart fields ──────────────────────────────────
+  // ── Smart field helpers ───────────────────────────────────────────────────
 
-  async function applyContactFields(fields: typeof contactFields) {
-    const fabric = fabricModRef.current ?? await import('fabric')
-    const canvas = fabricRef.current
-    if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
-
-    const fieldMap: Record<string, string> = {
-      name:     fields.name,
-      title:    fields.title,
-      company:  fields.company,
-      phone:    fields.phone,
-      email:    fields.email,
-      website:  fields.website,
-      linkedin: fields.linkedin,
-    }
-
-    // Update existing tagged layers first
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function getFieldObjects(canvas: any, key: string) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const existing = canvas.getObjects().filter((o: any) => o.data?.fieldType)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    existing.forEach((o: any) => {
-      const val = fieldMap[o.data.fieldType]
-      if (val !== undefined && o.set) o.set('text', val || `[${o.data.fieldType}]`)
-    })
-
-    // Add missing layers if none found at all (blank canvas case)
-    if (existing.length === 0) {
-      const rows: { fieldType: string; label: string; y: number; fs: number; fw?: string; color: string }[] = [
-        { fieldType: 'name',    label: fields.name    || 'Your Name',      y: 10, fs: 6, fw: 'bold', color: '#111111' },
-        { fieldType: 'title',   label: fields.title   || 'Your Title',     y: 22, fs: 3.5,            color: '#555555' },
-        { fieldType: 'company', label: fields.company || 'Company',        y: 29, fs: 3,              color: '#777777' },
-        { fieldType: 'email',   label: fields.email   || 'email@company.com', y: 38, fs: 2.8,        color: '#444444' },
-        { fieldType: 'phone',   label: fields.phone   || '+1 (000) 000-0000', y: 44, fs: 2.8,        color: '#444444' },
-        { fieldType: 'website', label: fields.website || 'www.yoursite.com',  y: 50, fs: 2.8,        color: '#4f46e5' },
-      ]
-      rows.forEach(row => {
-        const id = makeId()
-        const obj = new fabric.Textbox(row.label, {
-          left: bl + mmToPx(5, scale),
-          top: bl + mmToPx(row.y, scale),
-          width: mmToPx(75, scale),
-          fontSize: mmToPx(row.fs, scale),
-          fontWeight: row.fw ?? 'normal',
-          fill: row.color,
-          data: { id, name: row.fieldType, layerType: 'text' as const, fieldType: row.fieldType },
-        })
-        canvas.add(obj)
-      })
-    }
-
-    canvas.renderAll()
-    syncLayers(canvas)
-    saveHistory(canvas)
+    return canvas.getObjects().filter((o: any) =>
+      o.data?.fieldKey === key || o.data?.fieldType === key
+    )
   }
 
-  // ── 필수 필드 즉시 반영 ─────────────────────────────────────────────────
-  // 사용자가 좌측 패널에서 입력하면 캔버스의 data.fieldKey 또는
-  // data.fieldType이 일치하는 Textbox에 즉시 반영한다.
-  // 매칭되는 텍스트 박스가 없고 값이 비어있지 않다면 신규 박스를 생성한다.
-  async function applyRequiredField(key: string, value: string) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function backfillFieldKeys(canvas: any) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.getObjects().forEach((o: any) => {
+      if (o.data && !o.data.fieldKey && o.data.fieldType) {
+        o.data.fieldKey = o.data.fieldType
+      }
+    })
+  }
+
+  // 단일 필드 즉시 반영 — onChange 핸들러에서 키입력마다 호출
+  async function applyField(key: string, value: string) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
     const bl = mmToPx(dims.bleedMm, scale)
     const def = productFields.find(f => f.key === key)
-    const fallback = def?.placeholder ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
+    const fallback = def ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const matches = canvas.getObjects().filter((o: any) =>
-      o.data?.fieldKey === key || o.data?.fieldType === key
-    )
+    const matches = getFieldObjects(canvas, key)
 
     if (matches.length > 0) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -2533,12 +2492,11 @@ export default function EditorClient({ product, options }: Props) {
         if (o.set) o.set('text', value || fallback)
       })
     } else if (value) {
-      // 빈 캔버스에서 처음 입력하면 새 텍스트 박스 자동 생성
       const orderIdx = productFields.findIndex(f => f.key === key)
       const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
-      const fontSize = (def?.type === 'multiline')
+      const fontSize = def?.type === 'multiline'
         ? mmToPx(2.8, scale)
-        : (orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale))
+        : orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale)
       const obj = new fabric.Textbox(value, {
         left: bl + mmToPx(5, scale),
         top,
@@ -2546,13 +2504,55 @@ export default function EditorClient({ product, options }: Props) {
         fontSize,
         fontWeight: orderIdx === 0 ? 'bold' : 'normal',
         fill: orderIdx === 0 ? '#111111' : '#444444',
-        data: { id: makeId(), name: def?.label ?? key, layerType: 'text' as const, fieldKey: key, fieldType: key },
+        data: { id: makeId(), name: def?.label ?? key, layerType: 'text' as const, fieldKey: key },
       })
       canvas.add(obj)
     }
 
     canvas.renderAll()
     syncLayers(canvas)
+  }
+
+  // 전체 필드 일괄 동기화 — "Apply to design" 버튼에서 호출
+  async function applyAllFields(values: Record<string, string>) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+
+    productFields.forEach((def, orderIdx) => {
+      const value = values[def.key] ?? ''
+      const fallback = `[${def.label.replace(/\s*\(.*\)$/, '')}]`
+      const displayText = value || fallback
+
+      const existing = getFieldObjects(canvas, def.key)
+
+      if (existing.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        existing.forEach((o: any) => {
+          if (o.set) o.set('text', displayText)
+        })
+      } else {
+        const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
+        const fontSize = def.type === 'multiline'
+          ? mmToPx(2.8, scale)
+          : orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale)
+        const obj = new fabric.Textbox(displayText, {
+          left: bl + mmToPx(5, scale),
+          top,
+          width: mmToPx(Math.max(dims.widthMm - 10, 30), scale),
+          fontSize,
+          fontWeight: orderIdx === 0 ? 'bold' : 'normal',
+          fill: orderIdx === 0 ? '#111111' : '#444444',
+          data: { id: makeId(), name: def.label, layerType: 'text' as const, fieldKey: def.key },
+        })
+        canvas.add(obj)
+      }
+    })
+
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
   }
 
   // ── Phase C: Apply brand palette ─────────────────────────────────────────
@@ -3572,6 +3572,7 @@ export default function EditorClient({ product, options }: Props) {
     const targetJson = activeSide === 'front' ? design.frontJson : (design.backJson ?? design.frontJson)
     await canvas.loadFromJSON(targetJson)
     canvas.renderAll()
+    backfillFieldKeys(canvas)
     isMutating.current = false
     syncLayers(canvas)
     setSelectedId(null)
@@ -3872,9 +3873,8 @@ export default function EditorClient({ product, options }: Props) {
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
-              { key: 'fields',     icon: FileText,       label: 'Required' },
+              { key: 'yourinfo',   icon: FileText,       label: 'Your Info' },
               { key: 'templates',  icon: LayoutTemplate, label: 'Tmpl' },
-              { key: 'contact',    icon: Type,           label: 'Info' },
               { key: 'shapes',     icon: Star,           label: 'Shapes' },
               { key: 'layers',     icon: Layers,         label: 'Layers' },
               { key: 'properties', icon: null,           label: 'Props' },
@@ -3890,24 +3890,27 @@ export default function EditorClient({ product, options }: Props) {
             ))}
           </div>
 
-          {/* 필수 필드 패널 — 제품별 스키마 기반, 입력 시 캔버스 즉시 반영 */}
-          {activePanel === 'fields' && (
+          {/* Your Info — 통합 필드 패널 (Required + Optional) */}
+          {activePanel === 'yourinfo' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               <p className="text-[10px] text-gray-400 leading-tight">
-                Enter required fields and they update on the canvas immediately.
-                If the template already shows the same field, the existing text is replaced,
-                otherwise a new text box is added automatically.
+                Fill in your info and click "Apply to design". Typing also updates the canvas live.
               </p>
               {productFields.map(f => (
                 <div key={f.key}>
-                  <label className="block text-[10px] text-gray-500 mb-0.5">{f.label}</label>
+                  <label className="block text-[10px] text-gray-500 mb-0.5">
+                    {f.label}
+                    {f.required === false && (
+                      <span className="ml-1 text-gray-400">(optional)</span>
+                    )}
+                  </label>
                   {f.type === 'multiline' ? (
                     <textarea
-                      value={requiredFieldValues[f.key] ?? ''}
+                      value={fieldValues[f.key] ?? ''}
                       onChange={e => {
                         const v = e.target.value
-                        setRequiredFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyRequiredField(f.key, v)
+                        setFieldValues(prev => ({ ...prev, [f.key]: v }))
+                        applyField(f.key, v)
                       }}
                       placeholder={f.placeholder}
                       rows={3}
@@ -3916,11 +3919,11 @@ export default function EditorClient({ product, options }: Props) {
                   ) : (
                     <input
                       type={f.type === 'email' ? 'email' : f.type === 'phone' ? 'tel' : 'text'}
-                      value={requiredFieldValues[f.key] ?? ''}
+                      value={fieldValues[f.key] ?? ''}
                       onChange={e => {
                         const v = e.target.value
-                        setRequiredFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyRequiredField(f.key, v)
+                        setFieldValues(prev => ({ ...prev, [f.key]: v }))
+                        applyField(f.key, v)
                       }}
                       placeholder={f.placeholder}
                       className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
@@ -3928,37 +3931,8 @@ export default function EditorClient({ product, options }: Props) {
                   )}
                 </div>
               ))}
-            </div>
-          )}
-
-          {/* Contact smart fields panel */}
-          {activePanel === 'contact' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              <p className="text-[10px] text-gray-400 leading-tight">
-                Enter your contact and click "Apply to design" to place it on the canvas.
-              </p>
-              {([
-                { key: 'name',     label: 'Name',       placeholder: 'John Doe' },
-                { key: 'title',    label: 'Title',      placeholder: 'Senior Designer' },
-                { key: 'company',  label: 'Company',    placeholder: 'ACME Corp.' },
-                { key: 'phone',    label: 'Phone',      placeholder: '+1 (555) 000-0000' },
-                { key: 'email',    label: 'Email',    placeholder: 'you@company.com' },
-                { key: 'website',  label: 'Website',    placeholder: 'www.yoursite.com' },
-                { key: 'linkedin', label: 'LinkedIn URL',      placeholder: 'linkedin.com/in/you' },
-              ] as const).map(({ key, label, placeholder }) => (
-                <div key={key}>
-                  <label className="block text-[10px] text-gray-500 mb-0.5">{label}</label>
-                  <input
-                    type="text"
-                    value={contactFields[key]}
-                    onChange={e => setContactFields(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                  />
-                </div>
-              ))}
               <button
-                onClick={() => applyContactFields(contactFields)}
+                onClick={() => applyAllFields(fieldValues)}
                 className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
               >
                 Apply to design
