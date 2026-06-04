@@ -17,7 +17,7 @@
  */
 
 import { createClient } from '@supabase/supabase-js'
-import { placeSwadpiaOrder, type FactoryOrderRecord } from '../src/lib/swadpia-order.ts'
+import { placeSwadpiaOrder, type FactoryOrderRecord } from '../src/lib/swadpia-order'
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY!
@@ -87,13 +87,17 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
     return
   }
 
+  // 작업메모(주문명) 생성: 성원 측에서 우리 주문번호로 식별 가능하도록
+  const orderTitle = await buildOrderTitle(record)
+
   // Playwright 발주 실행
-  process.stdout.write(`  Playwright 발주 시작: ${record.category_code}\n`)
+  process.stdout.write(`  Playwright 발주 시작: ${record.category_code} / ${orderTitle}\n`)
   const result = await placeSwadpiaOrder({
     productSlugOrCategoryCode: record.category_code,
     selectedOptions: record.options_snapshot,
     quantity: record.quantity,
     fileUrl,
+    orderTitle,
   })
 
   if (result.success) {
@@ -163,6 +167,26 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
       process.stdout.write(`  재시도 예약 (${record.attempt_count + 1}/${MAX_ATTEMPTS}회 시도됨)\n`)
     }
   }
+}
+
+/**
+ * 성원애드피아 주문명(=공장 작업메모) 생성.
+ * 형식: {PCCF-주문번호} {수량}매
+ * 예시: PCCF-20260604-ABC123 500매
+ *
+ * 성원 측 작업자가 우리 주문번호로 즉시 식별 가능하도록 구성한다.
+ * orderTitle을 비우면 swadpia-order.ts가 임시 파일명(`print_file_<timestamp>.pdf`)을
+ * 그대로 넘기므로 절대 빈 값으로 두면 안 된다.
+ */
+async function buildOrderTitle(record: FactoryOrderRecord): Promise<string> {
+  const { data: order } = await supabase
+    .from('print_orders')
+    .select('order_number')
+    .eq('id', record.print_order_id)
+    .single()
+
+  const orderNumber = order?.order_number ?? record.print_order_id.slice(0, 8)
+  return `${orderNumber} ${record.quantity}매`
 }
 
 async function resolveFileUrl(record: FactoryOrderRecord): Promise<string | null> {
