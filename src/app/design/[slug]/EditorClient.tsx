@@ -3818,104 +3818,112 @@ export default function EditorClient({ product, options }: Props) {
         </div>
       )}
 
-      {/* DPI 동의 모달 */}
-      {showDpiModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-[440px] max-h-[80vh] flex flex-col p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-              <h3 className="font-semibold text-gray-800">인쇄 품질 경고</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">다음 이미지가 저해상도라 인쇄 시 흐리게 나올 수 있습니다:</p>
-            <ul className="mb-4 space-y-1">
-              {lowDpiImages.map((img, i) => (
-                <li key={i} className="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded px-3 py-1.5">
-                  <XCircle className="w-3.5 h-3.5 shrink-0" />
-                  {img.name} ({img.dpi} DPI)
-                </li>
-              ))}
-            </ul>
-            <label className="flex items-start gap-2 cursor-pointer mb-5 select-none">
-              <input
-                type="checkbox"
-                checked={dpiModalAgreed}
-                onChange={e => setDpiModalAgreed(e.target.checked)}
-                className="mt-0.5 accent-indigo-600"
-              />
-              <span className="text-sm text-gray-700">이 상태로 인쇄해도 괜찮다는 것에 동의합니다</span>
-            </label>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowDpiModal(false)}
-                className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                디자인 수정하러 가기
-              </button>
-              <button
-                disabled={!dpiModalAgreed}
-                onClick={async () => { setShowDpiModal(false); setOrdering(true); setOrderError(''); await proceedToOrderInternal() }}
-                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                동의하고 주문 진행
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 필수 정보 미입력 모달 (OMO-2326) */}
-      {showMissingModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-2xl w-[400px] p-6">
-            <div className="flex items-center gap-2 mb-3">
-              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
-              <h3 className="font-semibold text-gray-800">필수 정보 미입력</h3>
-            </div>
-            <p className="text-sm text-gray-600 mb-3">다음 항목을 입력해야 주문이 가능합니다</p>
-            <ul className="mb-5 space-y-1">
-              {getMissingRequired(fieldValues).map(f => (
-                <li key={f.key} className="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded px-3 py-1.5">
-                  <XCircle className="w-3.5 h-3.5 shrink-0" />
-                  {f.label}
-                </li>
-              ))}
-            </ul>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setShowMissingModal(false)}
-                className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-              >
-                닫기
-              </button>
-              <button
-                onClick={() => {
-                  setShowMissingModal(false)
-                  setActivePanel('yourinfo')
-                  setTimeout(() => {
-                    const missing = getMissingRequired(fieldValues)
-                    if (missing.length > 0) {
-                      const firstKey = missing[0].key
-                      setTouchedFields(prev => {
-                        const next = new Set(prev)
-                        allFormFields.filter(f => f.required).forEach(f => next.add(f.key))
-                        return next
-                      })
-                      const el = fieldInputRefs.current[firstKey]
-                      if (el) {
-                        el.focus()
-                        missingInfoPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-                      }
+      {/* 통합 Pre-flight 모달 (OMO-2328) */}
+      {showPreflightModal && (() => {
+        const blockIssues = preflightIssues.filter(i => i.level === 'block')
+        const warnIssues = preflightIssues.filter(i => i.level === 'warn')
+        const warnCategories = [...new Set(warnIssues.map(i => i.category))]
+        const allWarnsAcknowledged = warnCategories.every(c => preflightAcknowledged.has(c))
+        const canProceed = blockIssues.length === 0 && (warnCategories.length === 0 || allWarnsAcknowledged)
+        const WARN_LABELS: Record<string, string> = {
+          low_dpi: '저해상도 이미지 (동의 필요)',
+          safe_area: '안전영역 침범 (동의 필요)',
+        }
+        return (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-2xl w-[460px] max-h-[80vh] flex flex-col p-6">
+              <div className="flex items-center gap-2 mb-4 shrink-0">
+                <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0" />
+                <h3 className="font-semibold text-gray-800">주문 전 검사</h3>
+              </div>
+              <div className="overflow-y-auto flex-1 space-y-4">
+                {blockIssues.length > 0 && (
+                  <div>
+                    <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">차단 항목</p>
+                    <ul className="space-y-1.5">
+                      {blockIssues.map((issue, i) => (
+                        <li key={i} className="flex items-start gap-2 text-sm bg-red-50 rounded-lg px-3 py-2">
+                          <XCircle className="w-4 h-4 text-red-500 mt-0.5 shrink-0" />
+                          <span className="text-red-800">{issue.message}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                {warnCategories.map(category => {
+                  const items = warnIssues.filter(i => i.category === category)
+                  return (
+                    <div key={category}>
+                      <p className="text-xs font-semibold text-amber-600 uppercase tracking-wide mb-2">
+                        {WARN_LABELS[category] ?? category}
+                      </p>
+                      <ul className="space-y-1.5 mb-3">
+                        {items.map((issue, i) => (
+                          <li key={i} className="flex items-start gap-2 text-sm bg-amber-50 rounded-lg px-3 py-2">
+                            <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
+                            <span className="text-amber-800">{issue.message}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <label className="flex items-start gap-2 cursor-pointer select-none">
+                        <input
+                          type="checkbox"
+                          checked={preflightAcknowledged.has(category)}
+                          onChange={e => {
+                            setPreflightAcknowledged(prev => {
+                              const next = new Set(prev)
+                              if (e.target.checked) next.add(category)
+                              else next.delete(category)
+                              return next
+                            })
+                          }}
+                          className="mt-0.5 accent-indigo-600"
+                        />
+                        <span className="text-sm text-gray-700">이 상태로 진행합니다</span>
+                      </label>
+                    </div>
+                  )
+                })}
+              </div>
+              <div className="flex gap-2 mt-5 shrink-0">
+                <button
+                  onClick={() => {
+                    setShowPreflightModal(false)
+                    if (blockIssues.some(i => i.category === 'required')) {
+                      setActivePanel('yourinfo')
+                      setTimeout(() => {
+                        const missing = getMissingRequired(fieldValues)
+                        if (missing.length > 0) {
+                          setTouchedFields(prev => {
+                            const next = new Set(prev)
+                            allFormFields.filter(f => f.required).forEach(f => next.add(f.key))
+                            return next
+                          })
+                          const el = fieldInputRefs.current[missing[0].key]
+                          if (el) {
+                            el.focus()
+                            missingInfoPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                          }
+                        }
+                      }, 50)
                     }
-                  }, 50)
-                }}
-                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700"
-              >
-                입력하러 가기
-              </button>
+                  }}
+                  className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                >
+                  디자인 수정
+                </button>
+                <button
+                  disabled={!canProceed}
+                  onClick={() => { setShowPreflightModal(false); proceedToOrder({ preflightApproved: true }) }}
+                  className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  동의하고 주문 진행
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      })()}
 
       {/* Preflight modal */}
       {showPreflight && (
@@ -4070,7 +4078,7 @@ export default function EditorClient({ product, options }: Props) {
             ))}
           </select>
           <button
-            onClick={proceedToOrder}
+            onClick={() => proceedToOrder()}
             disabled={ordering}
             className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
