@@ -670,6 +670,18 @@ export default function EditorClient({ product, options }: Props) {
   const [lowDpiImages, setLowDpiImages] = useState<Array<{ name: string; dpi: number }>>([])
   const imageToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // Phase C (OMO-2326): Required field gate
+  const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
+  const [showMissingModal, setShowMissingModal] = useState(false)
+  const missingInfoPanelRef = useRef<HTMLDivElement>(null)
+  const fieldInputRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({})
+
+  function getMissingRequired(values: Record<string, string>) {
+    return allFormFields
+      .filter(f => f.required && !values[f.key]?.trim())
+      .map(f => ({ key: f.key, label: f.label }))
+  }
+
   function showUploadToast(msg: string) {
     if (imageToastTimerRef.current) clearTimeout(imageToastTimerRef.current)
     setImageToast(msg)
@@ -3604,6 +3616,13 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   async function proceedToOrder() {
+    // Required field gate (OMO-2326)
+    const missing = getMissingRequired(fieldValues)
+    if (missing.length > 0) {
+      setShowMissingModal(true)
+      return
+    }
+
     const canvas = fabricRef.current
     if (canvas) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3681,6 +3700,60 @@ export default function EditorClient({ product, options }: Props) {
                 className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 동의하고 주문 진행
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 필수 정보 미입력 모달 (OMO-2326) */}
+      {showMissingModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-[400px] p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+              <h3 className="font-semibold text-gray-800">필수 정보 미입력</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">다음 항목을 입력해야 주문이 가능합니다</p>
+            <ul className="mb-5 space-y-1">
+              {getMissingRequired(fieldValues).map(f => (
+                <li key={f.key} className="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded px-3 py-1.5">
+                  <XCircle className="w-3.5 h-3.5 shrink-0" />
+                  {f.label}
+                </li>
+              ))}
+            </ul>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowMissingModal(false)}
+                className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                닫기
+              </button>
+              <button
+                onClick={() => {
+                  setShowMissingModal(false)
+                  setActivePanel('yourinfo')
+                  setTimeout(() => {
+                    const missing = getMissingRequired(fieldValues)
+                    if (missing.length > 0) {
+                      const firstKey = missing[0].key
+                      setTouchedFields(prev => {
+                        const next = new Set(prev)
+                        allFormFields.filter(f => f.required).forEach(f => next.add(f.key))
+                        return next
+                      })
+                      const el = fieldInputRefs.current[firstKey]
+                      if (el) {
+                        el.focus()
+                        missingInfoPanelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }
+                    }
+                  }, 50)
+                }}
+                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700"
+              >
+                입력하러 가기
               </button>
             </div>
           </div>
@@ -3883,52 +3956,97 @@ export default function EditorClient({ product, options }: Props) {
             ))}
           </div>
 
-          {/* Your Info 통합 패널 */}
-          {activePanel === 'yourinfo' && (
-            <div className="flex-1 overflow-y-auto p-3 space-y-2">
-              <p className="text-[10px] text-gray-400 leading-tight">
-                Fill in your info. Fields update the canvas immediately. Click &quot;Apply to design&quot; to also create boxes for any missing fields.
-              </p>
-              {allFormFields.map(f => (
-                <div key={f.key}>
-                  <label className="block text-[10px] text-gray-500 mb-0.5">
-                    {f.label}{f.required && <span className="text-red-400 ml-0.5">*</span>}
-                  </label>
-                  {f.type === 'multiline' ? (
-                    <textarea
-                      value={fieldValues[f.key] ?? ''}
-                      onChange={e => {
-                        const v = e.target.value
-                        setFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyRequiredField(f.key, v)
-                      }}
-                      placeholder={f.placeholder}
-                      rows={3}
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 resize-none"
-                    />
-                  ) : (
-                    <input
-                      type={f.type === 'email' ? 'email' : f.type === 'phone' ? 'tel' : 'text'}
-                      value={fieldValues[f.key] ?? ''}
-                      onChange={e => {
-                        const v = e.target.value
-                        setFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyRequiredField(f.key, v)
-                      }}
-                      placeholder={f.placeholder}
-                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
-                    />
+          {/* Your Info 통합 패널 (OMO-2326: Required gate) */}
+          {activePanel === 'yourinfo' && (() => {
+            const missing = getMissingRequired(fieldValues)
+            const requiredTotal = allFormFields.filter(f => f.required).length
+            const requiredFilled = requiredTotal - missing.length
+            const applyDisabled = missing.length > 0
+            return (
+              <div ref={missingInfoPanelRef} className="flex-1 overflow-y-auto p-3 space-y-2">
+                {/* 상단 진행 배너 */}
+                {requiredTotal > 0 && (
+                  <div className={`rounded-lg px-3 py-2 text-[10px] font-medium ${missing.length === 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+                    {missing.length === 0
+                      ? <span className="flex items-center gap-1"><CheckCircle className="w-3 h-3" /> All {requiredTotal} required fields filled</span>
+                      : <>{requiredFilled}/{requiredTotal} required filled — <span className="font-semibold">{missing.length} missing</span></>
+                    }
+                  </div>
+                )}
+                <p className="text-[10px] text-gray-400 leading-tight">
+                  Fill in your info. Fields update the canvas immediately. Click &quot;Apply to design&quot; to also create boxes for any missing fields.
+                </p>
+                {allFormFields.map(f => {
+                  const isEmpty = !fieldValues[f.key]?.trim()
+                  const showError = f.required && isEmpty && touchedFields.has(f.key)
+                  const borderClass = showError
+                    ? 'border-red-400 focus:ring-red-300'
+                    : 'border-gray-200 focus:ring-indigo-400'
+                  return (
+                    <div key={f.key}>
+                      <label className="flex items-center justify-between text-[10px] text-gray-500 mb-0.5">
+                        <span>{f.label}{f.required && <span className="text-red-400 ml-0.5">*</span>}</span>
+                        {showError && <span className="text-red-500 font-medium">필수</span>}
+                      </label>
+                      {f.type === 'multiline' ? (
+                        <textarea
+                          ref={el => { fieldInputRefs.current[f.key] = el }}
+                          value={fieldValues[f.key] ?? ''}
+                          onChange={e => {
+                            const v = e.target.value
+                            setFieldValues(prev => ({ ...prev, [f.key]: v }))
+                            applyRequiredField(f.key, v)
+                          }}
+                          onBlur={() => {
+                            if (f.required) setTouchedFields(prev => { const s = new Set(prev); s.add(f.key); return s })
+                          }}
+                          placeholder={f.placeholder}
+                          rows={3}
+                          className={`w-full border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 resize-none ${borderClass}`}
+                        />
+                      ) : (
+                        <input
+                          ref={el => { fieldInputRefs.current[f.key] = el }}
+                          type={f.type === 'email' ? 'email' : f.type === 'phone' ? 'tel' : 'text'}
+                          value={fieldValues[f.key] ?? ''}
+                          onChange={e => {
+                            const v = e.target.value
+                            setFieldValues(prev => ({ ...prev, [f.key]: v }))
+                            applyRequiredField(f.key, v)
+                            if (f.required && v.trim()) setTouchedFields(prev => { const s = new Set(prev); s.add(f.key); return s })
+                          }}
+                          onBlur={() => {
+                            if (f.required) setTouchedFields(prev => { const s = new Set(prev); s.add(f.key); return s })
+                          }}
+                          placeholder={f.placeholder}
+                          className={`w-full border rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 ${borderClass}`}
+                        />
+                      )}
+                    </div>
+                  )
+                })}
+                <div className="relative group">
+                  <button
+                    onClick={() => {
+                      if (applyDisabled) {
+                        setTouchedFields(new Set(allFormFields.filter(f => f.required).map(f => f.key)))
+                        return
+                      }
+                      applyAllFields(fieldValues)
+                    }}
+                    className={`w-full rounded-lg py-2 text-xs font-medium transition-colors ${applyDisabled ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                  >
+                    Apply to design
+                  </button>
+                  {applyDisabled && (
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 px-2 py-1 bg-gray-800 text-white text-[10px] rounded whitespace-nowrap opacity-0 group-hover:opacity-100 pointer-events-none transition-opacity">
+                      Fill the required fields first
+                    </div>
                   )}
                 </div>
-              ))}
-              <button
-                onClick={() => applyAllFields(fieldValues)}
-                className="w-full rounded-lg bg-indigo-600 py-2 text-xs font-medium text-white hover:bg-indigo-700 transition-colors"
-              >
-                Apply to design
-              </button>
-            </div>
-          )}
+              </div>
+            )
+          })()}
 
           {/* Templates panel */}
           {activePanel === 'templates' && (
