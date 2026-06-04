@@ -33,6 +33,13 @@ interface PreflightResult {
   message: string
 }
 
+// OMO-2328: 통합 Pre-flight 이슈
+interface PreflightIssue {
+  level: 'block' | 'warn'
+  category: 'required' | 'low_dpi' | 'safe_area' | 'empty_canvas'
+  message: string
+}
+
 interface ImageQuality {
   dpi: number
   level: 'high' | 'medium' | 'low'
@@ -671,15 +678,16 @@ export default function EditorClient({ product, options }: Props) {
   const [saveDesignName, setSaveDesignName] = useState('')
 
   const [imageToast, setImageToast] = useState<string | null>(null)
-  const [showDpiModal, setShowDpiModal] = useState(false)
-  const [dpiModalAgreed, setDpiModalAgreed] = useState(false)
-  const [lowDpiImages, setLowDpiImages] = useState<Array<{ name: string; dpi: number }>>([])
   const imageToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // Phase C (OMO-2326): Required field gate
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
-  const [showMissingModal, setShowMissingModal] = useState(false)
   const missingInfoPanelRef = useRef<HTMLDivElement>(null)
+
+  // OMO-2328: 통합 Pre-flight 모달
+  const [showPreflightModal, setShowPreflightModal] = useState(false)
+  const [preflightIssues, setPreflightIssues] = useState<PreflightIssue[]>([])
+  const [preflightAcknowledged, setPreflightAcknowledged] = useState<Set<string>>(new Set())
   const fieldInputRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({})
 
   // OMO-2325: Custom fields (동적 추가/삭제)
@@ -1949,7 +1957,7 @@ export default function EditorClient({ product, options }: Props) {
     // safe zone: bleed 5mm. fieldKey: main, sub, date, contact
     // y 좌표 = bleed + mm 값. 헤드라인은 큰 폰트 위주로 배치한다.
 
-    } else if (name === '') {
+    } else if (name === 'Banner Grand Open') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e40af', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl + mmToPx(8, scale), top: bl + mmToPx(8, scale), width: mmToPx(dims.widthMm - 16, scale), height: mmToPx(dims.heightMm - 16, scale), fill: 'transparent', stroke: '#93c5fd', strokeWidth: 1.5, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
       addTextbox(canvas, fabric, 'GRAND OPEN', bl + mmToPx(10, scale), bl + mmToPx(75, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Oswald', fill: '#ffffff', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -1957,7 +1965,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(195, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#dbeafe', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6, scale), fill: '#93c5fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Big Sale') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#dc2626', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(100, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(100, scale), fill: '#b91c1c', data: { id: makeId(), name: 'Mid Band', layerType: 'rect' } }))
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(18, scale), fontWeight: 'bold', fontFamily: 'Bebas Neue', fill: '#ffffff', textAlign: 'center', charSpacing: 80, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -1965,7 +1973,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(180, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#fca5a5', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#fee2e2', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Green Event') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#065f46', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(88, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1.5, scale), fill: '#34d399', data: { id: makeId(), name: 'Line1', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(175, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1.5, scale), fill: '#34d399', data: { id: makeId(), name: 'Line2', layerType: 'rect' } }))
@@ -1974,7 +1982,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(182, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#6ee7b7', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#a7f3d0', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Purple Event') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#7c3aed', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(80, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(80, scale), fill: '#6d28d9', data: { id: makeId(), name: 'Band', layerType: 'rect' } }))
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(45, scale), mmToPx(180, scale), { fontSize: mmToPx(19, scale), fontWeight: 'bold', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -1982,7 +1990,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(180, scale), mmToPx(180, scale), { fontSize: mmToPx(7, scale), fill: '#c4b5fd', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#ede9fe', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Welcome') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#ffffff', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(130, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#e2e8f0', data: { id: makeId(), name: 'Line', layerType: 'rect' } }))
       addTextbox(canvas, fabric, 'WELCOME', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Raleway', fill: '#1e293b', textAlign: 'center', charSpacing: 200, data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -1990,7 +1998,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '2026. 06. 01', bl + mmToPx(10, scale), bl + mmToPx(142, scale), mmToPx(180, scale), { fontSize: mmToPx(7.5, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6, scale), fill: '#94a3b8', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Premium') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl + mmToPx(15, scale), top: bl + mmToPx(130, scale), width: mmToPx(dims.widthMm - 30, scale), height: mmToPx(1, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Gold Line', layerType: 'rect' } }))
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(55, scale), mmToPx(180, scale), { fontSize: mmToPx(22, scale), fontWeight: 'bold', fontFamily: 'Playfair Display', fill: '#f59e0b', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -1998,7 +2006,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(142, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#fbbf24', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#64748b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Seasonal') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#fef3c7', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(20, scale), fill: '#d97706', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 20, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(20, scale), fill: '#d97706', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
@@ -2007,7 +2015,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(160, scale), mmToPx(180, scale), { fontSize: mmToPx(8, scale), fill: '#b45309', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, 'recruit@company.com', bl + mmToPx(10, scale), bl + mmToPx(235, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#78350f', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    } else if (name === '') {
+    } else if (name === 'Banner Season Sale') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#831843', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
       canvas.add(new fabric.Rect({ left: bl + mmToPx(10, scale), top: bl + mmToPx(10, scale), width: mmToPx(dims.widthMm - 20, scale), height: mmToPx(dims.heightMm - 20, scale), fill: 'transparent', stroke: '#f9a8d4', strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
       addTextbox(canvas, fabric, 'SEASON SALE', bl + mmToPx(10, scale), bl + mmToPx(50, scale), mmToPx(180, scale), { fontSize: mmToPx(19, scale), fontWeight: 'bold', fontFamily: 'Bebas Neue', fill: '#ffffff', textAlign: 'center', data: { id: makeId(), name: 'Main', layerType: 'text', fieldKey: 'main' } })
@@ -2988,6 +2996,16 @@ export default function EditorClient({ product, options }: Props) {
     setBgColor(bg)
     bgColorRef.current = bg
     buildTemplate(canvas, fabric, name, bg)
+
+    // Smart Fill: 이미 입력된 필드값을 새 템플릿 박스에 자동 반영
+    for (const [key, val] of Object.entries(fieldValues)) {
+      if (!val) continue
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      getFieldObjects(canvas, key).forEach((o: any) => {
+        if (o.set) o.set('text', val)
+      })
+    }
+
     canvas.discardActiveObject()
     canvas.renderAll()
     isMutating.current = false
@@ -3695,30 +3713,89 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
-  async function proceedToOrder() {
-    // Required field gate (OMO-2326)
-    const missing = getMissingRequired(fieldValues)
-    if (missing.length > 0) {
-      setShowMissingModal(true)
-      return
+  // ── OMO-2328: Pre-flight 검증 헬퍼 ───────────────────────────────────────────
+
+  function isCanvasEmpty(): boolean {
+    const canvas = fabricRef.current
+    if (!canvas) return true
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop').length === 0
+  }
+
+  function getLowQualityImages(): Array<{ name: string; dpi: number }> {
+    const canvas = fabricRef.current
+    if (!canvas) return []
+    return canvas.getObjects()
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .filter((o: any) => !isBackground(o) && o.type === 'image')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .map((o: any) => {
+        const q: ImageQuality | undefined = o.data?.imageQuality
+        return q && q.level === 'low' ? { name: o.data?.name ?? '이미지', dpi: q.dpi } : null
+      })
+      .filter(Boolean) as Array<{ name: string; dpi: number }>
+  }
+
+  function getSafeAreaViolations(): string[] {
+    const canvas = fabricRef.current
+    if (!canvas) return []
+    const bl = mmToPx(dims.bleedMm, scale)
+    const safeMargin = mmToPx(dims.safeMm, scale)
+    const trimX = bl
+    const trimY = bl
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const userObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop')
+    const violations: string[] = []
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userObjs.forEach((o: any) => {
+      const oLeft = o.left ?? 0
+      const oTop = o.top ?? 0
+      const oRight = oLeft + (o.getScaledWidth?.() ?? o.width ?? 0)
+      const oBottom = oTop + (o.getScaledHeight?.() ?? o.height ?? 0)
+      if (
+        oLeft < trimX + safeMargin ||
+        oTop < trimY + safeMargin ||
+        oRight > trimX + trimW - safeMargin ||
+        oBottom > trimY + trimH - safeMargin
+      ) {
+        violations.push(o.data?.name ?? '요소')
+      }
+    })
+    return violations
+  }
+
+  function gatherPreflightIssues(): PreflightIssue[] {
+    const issues: PreflightIssue[] = []
+
+    if (isCanvasEmpty()) {
+      issues.push({ level: 'block', category: 'empty_canvas', message: '캔버스가 비어 있습니다. 텍스트나 이미지를 추가하세요.' })
+      return issues
     }
 
-    const canvas = fabricRef.current
-    if (canvas) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const lowObjs: Array<{ name: string; dpi: number }> = canvas.getObjects()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .filter((o: any) => !isBackground(o) && o.type === 'image')
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .map((o: any) => {
-          const q: ImageQuality | undefined = o.data?.imageQuality
-          return q && q.level === 'low' ? { name: o.data?.name ?? '이미지', dpi: q.dpi } : null
-        })
-        .filter(Boolean) as Array<{ name: string; dpi: number }>
-      if (lowObjs.length > 0) {
-        setLowDpiImages(lowObjs)
-        setDpiModalAgreed(false)
-        setShowDpiModal(true)
+    getMissingRequired(fieldValues).forEach(f => {
+      issues.push({ level: 'block', category: 'required', message: `"${f.label}" 이(가) 비어 있습니다.` })
+    })
+
+    getLowQualityImages().forEach(img => {
+      issues.push({ level: 'warn', category: 'low_dpi', message: `${img.name} (${img.dpi} DPI) — 인쇄 시 흐리게 나올 수 있습니다.` })
+    })
+
+    getSafeAreaViolations().forEach(name => {
+      issues.push({ level: 'warn', category: 'safe_area', message: `"${name}" 이(가) 안전영역 밖에 있습니다.` })
+    })
+
+    return issues
+  }
+
+  async function proceedToOrder({ preflightApproved = false }: { preflightApproved?: boolean } = {}) {
+    if (!preflightApproved) {
+      const issues = gatherPreflightIssues()
+      if (issues.length > 0) {
+        setPreflightIssues(issues)
+        setPreflightAcknowledged(new Set())
+        setShowPreflightModal(true)
         return
       }
     }
