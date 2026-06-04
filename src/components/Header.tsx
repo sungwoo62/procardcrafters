@@ -2,8 +2,8 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Package, ShoppingCart, Menu, X, ChevronDown, ChevronRight } from 'lucide-react'
-import { useState } from 'react'
+import { Package, ShoppingCart, Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import AuthButton from './AuthButton'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
 
@@ -14,14 +14,37 @@ const NAV_LINKS = [
   { href: '/contact', label: 'Contact' },
 ]
 
+const ITEMS_PER_GROUP = 6
+
 export default function Header() {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [productsOpen, setProductsOpen] = useState(false)
-  const [hoveredGroup, setHoveredGroup] = useState<string | null>(PRODUCT_GROUPS[0]?.key ?? null)
   const [mobileGroupOpen, setMobileGroupOpen] = useState<string | null>(null)
   const pathname = usePathname()
+  const productsRef = useRef<HTMLDivElement>(null)
 
-  const activeGroup = PRODUCT_GROUPS.find(g => g.key === hoveredGroup) ?? PRODUCT_GROUPS[0]
+  const closeMega = useCallback(() => setProductsOpen(false), [])
+
+  // 클릭 바깥 + Escape 시 닫기
+  useEffect(() => {
+    if (!productsOpen) return
+    const onDown = (e: MouseEvent) => {
+      if (productsRef.current && !productsRef.current.contains(e.target as Node)) closeMega()
+    }
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') closeMega() }
+    document.addEventListener('mousedown', onDown)
+    document.addEventListener('keydown', onKey)
+    return () => {
+      document.removeEventListener('mousedown', onDown)
+      document.removeEventListener('keydown', onKey)
+    }
+  }, [productsOpen, closeMega])
+
+  // 라우트 변경 시 메뉴 닫기
+  useEffect(() => {
+    setProductsOpen(false)
+    setMobileOpen(false)
+  }, [pathname])
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -35,14 +58,15 @@ export default function Header() {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-1">
-            <div
-              className="relative"
-              onMouseEnter={() => setProductsOpen(true)}
-              onMouseLeave={() => setProductsOpen(false)}
-            >
+            <div ref={productsRef} className="relative">
               <button
+                type="button"
+                onClick={() => setProductsOpen(v => !v)}
+                onMouseEnter={() => setProductsOpen(true)}
+                aria-expanded={productsOpen}
+                aria-haspopup="true"
                 className={`flex items-center gap-1 px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname.startsWith('/products')
+                  productsOpen || pathname.startsWith('/products')
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                 }`}
@@ -51,61 +75,66 @@ export default function Header() {
               </button>
 
               {productsOpen && (
-                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 bg-white border border-gray-200 rounded-xl shadow-2xl shadow-gray-200/60 z-50 w-[820px] max-w-[calc(100vw-2rem)] overflow-hidden">
-                  <div className="grid grid-cols-[220px,1fr]">
-                    {/* 좌측: 상위 그룹 리스트 */}
-                    <div className="bg-gray-50 border-r border-gray-100 py-3">
-                      {PRODUCT_GROUPS.map(group => (
-                        <button
-                          key={group.key}
-                          type="button"
-                          onMouseEnter={() => setHoveredGroup(group.key)}
-                          onFocus={() => setHoveredGroup(group.key)}
-                          className={`w-full text-left flex items-center justify-between px-4 py-2.5 text-sm transition-colors ${
-                            hoveredGroup === group.key
-                              ? 'bg-white text-blue-600 font-semibold'
-                              : 'text-gray-700 hover:bg-white hover:text-gray-900'
-                          }`}
-                        >
-                          <div>
-                            <div className="leading-tight">{group.title}</div>
-                            <div className={`text-[11px] mt-0.5 ${hoveredGroup === group.key ? 'text-blue-500' : 'text-gray-400'}`}>{group.description}</div>
+                <div
+                  onMouseLeave={() => setProductsOpen(false)}
+                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(960px,calc(100vw-2rem))] overflow-hidden"
+                >
+                  {/* 1px invisible bridge to keep hover continuous between trigger and panel */}
+                  <div className="grid grid-cols-3 gap-x-6 gap-y-8 p-7">
+                    {PRODUCT_GROUPS.map(group => {
+                      const items = group.items.slice(0, ITEMS_PER_GROUP)
+                      const remaining = group.items.length - items.length
+                      return (
+                        <div key={group.key}>
+                          <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-gray-100">
+                            <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-900">
+                              {group.title}
+                            </h3>
+                            <span className="text-[10px] text-gray-400">{group.items.length}</span>
                           </div>
-                          <ChevronRight className="w-3.5 h-3.5 shrink-0 opacity-50" />
-                        </button>
-                      ))}
-                    </div>
+                          <ul className="space-y-0.5">
+                            {items.map(item => (
+                              <li key={item.slug}>
+                                <Link
+                                  href={`/products/${item.slug}`}
+                                  onClick={closeMega}
+                                  className={`block py-1 text-sm transition-colors ${
+                                    pathname === `/products/${item.slug}`
+                                      ? 'text-blue-600 font-medium'
+                                      : 'text-gray-600 hover:text-blue-600'
+                                  }`}
+                                >
+                                  {item.label}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                          {remaining > 0 && (
+                            <Link
+                              href={`/products#${group.key}`}
+                              onClick={closeMega}
+                              className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+                            >
+                              +{remaining} more <ArrowRight className="w-3 h-3" />
+                            </Link>
+                          )}
+                        </div>
+                      )
+                    })}
+                  </div>
 
-                    {/* 우측: 활성 그룹의 하위 슬러그 */}
-                    <div className="p-5">
-                      <div className="mb-3">
-                        <div className="text-xs font-semibold uppercase tracking-wider text-gray-400">{activeGroup.title}</div>
-                        <div className="text-sm text-gray-500 mt-0.5">{activeGroup.description}</div>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                        {activeGroup.items.map(item => (
-                          <Link
-                            key={item.slug}
-                            href={`/products/${item.slug}`}
-                            className={`block px-3 py-1.5 text-sm rounded-md transition-colors ${
-                              pathname === `/products/${item.slug}`
-                                ? 'text-blue-600 bg-blue-50 font-medium'
-                                : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600'
-                            }`}
-                          >
-                            {item.label}
-                          </Link>
-                        ))}
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-gray-100">
-                        <Link
-                          href="/products"
-                          className="inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700"
-                        >
-                          View all products <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
-                      </div>
+                  {/* Bottom strip — Moo 식 footer CTA */}
+                  <div className="bg-gray-50 border-t border-gray-100 px-7 py-4 flex items-center justify-between">
+                    <div className="text-sm text-gray-600">
+                      <span className="font-semibold text-gray-900">61 products</span> · printed in LA, delivered worldwide
                     </div>
+                    <Link
+                      href="/products"
+                      onClick={closeMega}
+                      className="inline-flex items-center gap-1.5 text-sm font-semibold text-blue-600 hover:text-blue-700"
+                    >
+                      Shop all products <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
                   </div>
                 </div>
               )}
@@ -144,6 +173,7 @@ export default function Header() {
             </Link>
 
             <button
+              type="button"
               className="md:hidden p-2 text-gray-600 hover:text-gray-900"
               onClick={() => setMobileOpen(!mobileOpen)}
               aria-label="Menu"
@@ -196,7 +226,7 @@ export default function Header() {
               className="block px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-50 border-t border-gray-100 mt-1"
               onClick={() => setMobileOpen(false)}
             >
-              View all products
+              Shop all products
             </Link>
             <div className="border-t border-gray-100 mt-1 pt-1">
               {NAV_LINKS.map(link => (
