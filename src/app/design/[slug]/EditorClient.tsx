@@ -2475,14 +2475,57 @@ export default function EditorClient({ product, options }: Props) {
     })
   }
 
-  // 단일 필드 즉시 반영 — onChange 핸들러에서 키입력마다 호출
-  async function applyField(key: string, value: string) {
+  // ── 모든 필드 일괄 동기화 (Apply to design 버튼) ─────────────────────────
+  async function applyAllFields(values: Record<string, string>) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
     const bl = mmToPx(dims.bleedMm, scale)
-    const def = productFields.find(f => f.key === key)
-    const fallback = def ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
+
+    let newBoxIdx = 0
+    for (const fieldDef of allFormFields) {
+      const { key } = fieldDef
+      const val = values[key] ?? ''
+      const matches = getFieldObjects(canvas, key)
+
+      if (matches.length > 0) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        matches.forEach((o: any) => {
+          if (o.set) o.set('text', val || `[${key}]`)
+        })
+      } else if (val) {
+        // 해당 fieldKey 박스 없을 때만 신규 생성
+        const top = bl + mmToPx(8 + newBoxIdx * 8, scale)
+        const fontSize = fieldDef.type === 'multiline'
+          ? mmToPx(2.8, scale)
+          : (newBoxIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale))
+        const obj = new fabric.Textbox(val, {
+          left: bl + mmToPx(5, scale),
+          top,
+          width: mmToPx(Math.max(dims.widthMm - 10, 30), scale),
+          fontSize,
+          fontWeight: newBoxIdx === 0 ? 'bold' : 'normal',
+          fill: newBoxIdx === 0 ? '#111111' : '#444444',
+          data: { id: makeId(), name: fieldDef.label, layerType: 'text' as const, fieldKey: key },
+        })
+        canvas.add(obj)
+        newBoxIdx++
+      }
+    }
+
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+  }
+
+  // ── 필드 즉시 반영 (입력 시 캔버스 실시간 업데이트) ─────────────────────
+  async function applyRequiredField(key: string, value: string) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+    const def = allFormFields.find(f => f.key === key)
+    const fallback = def?.placeholder ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
 
     const matches = getFieldObjects(canvas, key)
 
@@ -2492,11 +2535,12 @@ export default function EditorClient({ product, options }: Props) {
         if (o.set) o.set('text', value || fallback)
       })
     } else if (value) {
-      const orderIdx = productFields.findIndex(f => f.key === key)
+      // 빈 캔버스에서 처음 입력하면 새 텍스트 박스 자동 생성
+      const orderIdx = allFormFields.findIndex(f => f.key === key)
       const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
-      const fontSize = def?.type === 'multiline'
+      const fontSize = (def?.type === 'multiline')
         ? mmToPx(2.8, scale)
-        : orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale)
+        : (orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale))
       const obj = new fabric.Textbox(value, {
         left: bl + mmToPx(5, scale),
         top,
@@ -2511,48 +2555,6 @@ export default function EditorClient({ product, options }: Props) {
 
     canvas.renderAll()
     syncLayers(canvas)
-  }
-
-  // 전체 필드 일괄 동기화 — "Apply to design" 버튼에서 호출
-  async function applyAllFields(values: Record<string, string>) {
-    const fabric = fabricModRef.current ?? await import('fabric')
-    const canvas = fabricRef.current
-    if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
-
-    productFields.forEach((def, orderIdx) => {
-      const value = values[def.key] ?? ''
-      const fallback = `[${def.label.replace(/\s*\(.*\)$/, '')}]`
-      const displayText = value || fallback
-
-      const existing = getFieldObjects(canvas, def.key)
-
-      if (existing.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        existing.forEach((o: any) => {
-          if (o.set) o.set('text', displayText)
-        })
-      } else {
-        const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
-        const fontSize = def.type === 'multiline'
-          ? mmToPx(2.8, scale)
-          : orderIdx === 0 ? mmToPx(6, scale) : mmToPx(3.2, scale)
-        const obj = new fabric.Textbox(displayText, {
-          left: bl + mmToPx(5, scale),
-          top,
-          width: mmToPx(Math.max(dims.widthMm - 10, 30), scale),
-          fontSize,
-          fontWeight: orderIdx === 0 ? 'bold' : 'normal',
-          fill: orderIdx === 0 ? '#111111' : '#444444',
-          data: { id: makeId(), name: def.label, layerType: 'text' as const, fieldKey: def.key },
-        })
-        canvas.add(obj)
-      }
-    })
-
-    canvas.renderAll()
-    syncLayers(canvas)
-    saveHistory(canvas)
   }
 
   // ── Phase C: Apply brand palette ─────────────────────────────────────────
@@ -3890,19 +3892,16 @@ export default function EditorClient({ product, options }: Props) {
             ))}
           </div>
 
-          {/* Your Info — 통합 필드 패널 (Required + Optional) */}
+          {/* Your Info 통합 패널 */}
           {activePanel === 'yourinfo' && (
             <div className="flex-1 overflow-y-auto p-3 space-y-2">
               <p className="text-[10px] text-gray-400 leading-tight">
-                Fill in your info and click "Apply to design". Typing also updates the canvas live.
+                Fill in your info. Fields update the canvas immediately. Click &quot;Apply to design&quot; to also create boxes for any missing fields.
               </p>
-              {productFields.map(f => (
+              {allFormFields.map(f => (
                 <div key={f.key}>
                   <label className="block text-[10px] text-gray-500 mb-0.5">
-                    {f.label}
-                    {f.required === false && (
-                      <span className="ml-1 text-gray-400">(optional)</span>
-                    )}
+                    {f.label}{f.required && <span className="text-red-400 ml-0.5">*</span>}
                   </label>
                   {f.type === 'multiline' ? (
                     <textarea
@@ -3910,7 +3909,7 @@ export default function EditorClient({ product, options }: Props) {
                       onChange={e => {
                         const v = e.target.value
                         setFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyField(f.key, v)
+                        applyRequiredField(f.key, v)
                       }}
                       placeholder={f.placeholder}
                       rows={3}
@@ -3923,7 +3922,7 @@ export default function EditorClient({ product, options }: Props) {
                       onChange={e => {
                         const v = e.target.value
                         setFieldValues(prev => ({ ...prev, [f.key]: v }))
-                        applyField(f.key, v)
+                        applyRequiredField(f.key, v)
                       }}
                       placeholder={f.placeholder}
                       className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400"
