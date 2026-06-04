@@ -10,7 +10,7 @@ import {
   AlignCenter, AlignRight, ArrowLeft, Plus, LayoutTemplate,
   RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
   FileText, Save, FolderOpen, QrCode, ShieldCheck, CopyPlus,
-  AlertTriangle, CheckCircle, XCircle, FlipHorizontal2,
+  AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -63,6 +63,12 @@ interface FieldDef {
   placeholder: string
   type: 'text' | 'multiline' | 'email' | 'phone'
   required?: boolean
+}
+
+interface CustomField {
+  id: string   // 'custom_<uuid>'
+  label: string
+  value: string
 }
 
 interface SelectedProps {
@@ -368,14 +374,14 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Congrats Card',      category: 'postcard',    bg: '#fefce8', description: '',              products: PC },
 
   // ══ 배너 8 (200×300mm, 세로형) ══════════════════════════════════════════════
-  { name: '',      category: 'banner',      bg: '#1e40af', description: '', products: BN },
-  { name: '',      category: 'banner',      bg: '#dc2626', description: '',           products: BN },
-  { name: '',    category: 'banner',      bg: '#065f46', description: '',       products: BN },
-  { name: '',    category: 'banner',      bg: '#7c3aed', description: '',          products: BN },
-  { name: '',           category: 'banner',      bg: '#ffffff', description: '',          products: BN },
-  { name: '',      category: 'banner',      bg: '#0f172a', description: '',       products: BN },
-  { name: '',      category: 'banner',      bg: '#fef3c7', description: '',          products: BN },
-  { name: '',      category: 'banner',      bg: '#831843', description: '',         products: BN },
+  { name: 'Banner Grand Open',  category: 'banner', bg: '#1e40af', description: 'Blue grand opening', products: BN },
+  { name: 'Banner Big Sale',    category: 'banner', bg: '#dc2626', description: 'Red bold sale',       products: BN },
+  { name: 'Banner Green Event', category: 'banner', bg: '#065f46', description: 'Forest green event',  products: BN },
+  { name: 'Banner Purple Event',category: 'banner', bg: '#7c3aed', description: 'Purple event band',   products: BN },
+  { name: 'Banner Welcome',     category: 'banner', bg: '#ffffff', description: 'Clean white welcome', products: BN },
+  { name: 'Banner Premium',     category: 'banner', bg: '#0f172a', description: 'Dark gold premium',   products: BN },
+  { name: 'Banner Seasonal',    category: 'banner', bg: '#fef3c7', description: 'Warm seasonal',       products: BN },
+  { name: 'Banner Season Sale', category: 'banner', bg: '#831843', description: 'Deep pink season sale', products: BN },
 
   // ══ 고급명함 8 (85×55mm, 고급 마감) ════════════════════════════════════════
   { name: 'Luxe Black',          category: 'luxury',      bg: '#0a0a0a', description: '',           products: PB },
@@ -676,10 +682,81 @@ export default function EditorClient({ product, options }: Props) {
   const missingInfoPanelRef = useRef<HTMLDivElement>(null)
   const fieldInputRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({})
 
+  // OMO-2325: Custom fields (동적 추가/삭제)
+  const [customFields, setCustomFields] = useState<CustomField[]>([])
+
   function getMissingRequired(values: Record<string, string>) {
     return allFormFields
       .filter(f => f.required && !values[f.key]?.trim())
       .map(f => ({ key: f.key, label: f.label }))
+  }
+
+  // ── OMO-2325: Custom field 캔버스 동기화 ──────────────────────────────────
+
+  async function applyCustomFieldToCanvas(field: CustomField) {
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const bl = mmToPx(dims.bleedMm, scale)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const existing = canvas.getObjects().find((o: any) => o.data?.fieldKey === field.id)
+    if (existing) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const obj = existing as any
+      obj.set('text', field.value || `[${field.label || field.id}]`)
+      if (field.label && obj.data) obj.data.name = field.label || field.id
+    } else if (field.value || field.label) {
+      // 빈 캔버스에 신규 생성 — 기존 커스텀 박스 갯수 기반으로 배치
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const existingCustomCount = canvas.getObjects().filter((o: any) => o.data?.isCustom).length
+      const top = bl + mmToPx(8 + (allFormFields.length + existingCustomCount) * 8, scale)
+      const obj = new fabric.Textbox(field.value || `[${field.label || field.id}]`, {
+        left: bl + mmToPx(5, scale),
+        top,
+        width: mmToPx(Math.max(dims.widthMm - 10, 30), scale),
+        fontSize: mmToPx(3.2, scale),
+        fontWeight: 'normal',
+        fill: '#444444',
+        data: {
+          id: makeId(),
+          name: field.label || field.id,
+          layerType: 'text' as const,
+          fieldKey: field.id,
+          isCustom: true,
+        },
+      })
+      canvas.add(obj)
+    }
+
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+  }
+
+  function removeCustomFieldFromCanvas(fieldId: string) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.fieldKey === fieldId)
+    if (obj) {
+      canvas.remove(obj)
+      canvas.renderAll()
+      syncLayers(canvas)
+      saveHistory(canvas)
+    }
+  }
+
+  function rebuildCustomFieldsFromCanvas(canvas: { getObjects: () => unknown[] }) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const custom = (canvas.getObjects() as any[])
+      .filter(o => o.data?.isCustom === true && o.data?.fieldKey)
+      .map(o => ({
+        id: o.data.fieldKey as string,
+        label: (o.data.name as string) || '',
+        value: (o.text as string) || '',
+      }))
+    setCustomFields(custom)
   }
 
   function showUploadToast(msg: string) {
@@ -802,6 +879,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.renderAll()
     syncLayers(canvas)
     syncSelected(canvas)
+    rebuildCustomFieldsFromCanvas(canvas)
   }, [])
 
   const redo = useCallback(async () => {
@@ -816,6 +894,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.renderAll()
     syncLayers(canvas)
     syncSelected(canvas)
+    rebuildCustomFieldsFromCanvas(canvas)
   }, [])
 
   // ── Keyboard shortcuts ─────────────────────────────────────────────────────
@@ -3580,6 +3659,7 @@ export default function EditorClient({ product, options }: Props) {
     backfillFieldKeys(canvas)
     isMutating.current = false
     syncLayers(canvas)
+    rebuildCustomFieldsFromCanvas(canvas)
     setSelectedId(null)
     setSelectedProps(null)
   }
@@ -4025,6 +4105,66 @@ export default function EditorClient({ product, options }: Props) {
                     </div>
                   )
                 })}
+
+                {/* ── OMO-2325: 커스텀 필드 목록 ── */}
+                {customFields.map(cf => (
+                  <div key={cf.id} className="rounded-lg border border-dashed border-indigo-200 p-2 space-y-1.5 bg-indigo-50/40">
+                    <div className="flex items-center gap-1">
+                      <input
+                        type="text"
+                        value={cf.label}
+                        onChange={e => {
+                          const newLabel = e.target.value
+                          const updated = customFields.map(f => f.id === cf.id ? { ...f, label: newLabel } : f)
+                          setCustomFields(updated)
+                          // 캔버스 data.name 즉시 갱신
+                          const canvas = fabricRef.current
+                          if (canvas) {
+                            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                            const obj = (canvas.getObjects() as any[]).find(o => o.data?.fieldKey === cf.id)
+                            if (obj?.data) { obj.data.name = newLabel; canvas.renderAll(); syncLayers(canvas) }
+                          }
+                        }}
+                        placeholder="Tagline / Hours / Slogan…"
+                        className="flex-1 border border-gray-200 rounded px-2 py-1 text-[10px] focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white"
+                      />
+                      <button
+                        onClick={() => {
+                          removeCustomFieldFromCanvas(cf.id)
+                          setCustomFields(prev => prev.filter(f => f.id !== cf.id))
+                        }}
+                        className="p-0.5 text-gray-400 hover:text-red-500 transition-colors"
+                        title="Remove field"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={cf.value}
+                      onChange={e => {
+                        const newVal = e.target.value
+                        const updated = customFields.map(f => f.id === cf.id ? { ...f, value: newVal } : f)
+                        setCustomFields(updated)
+                        applyCustomFieldToCanvas({ ...cf, value: newVal })
+                      }}
+                      placeholder="Type your text"
+                      className="w-full border border-gray-200 rounded px-2 py-1 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-400 bg-white"
+                    />
+                  </div>
+                ))}
+
+                {/* + Add custom field 버튼 */}
+                <button
+                  onClick={() => {
+                    const newId = `custom_${Math.random().toString(36).slice(2)}`
+                    setCustomFields(prev => [...prev, { id: newId, label: '', value: '' }])
+                  }}
+                  className="w-full flex items-center justify-center gap-1 rounded-lg border border-dashed border-indigo-300 py-1.5 text-[11px] text-indigo-500 hover:border-indigo-500 hover:text-indigo-700 transition-colors"
+                >
+                  <Plus className="w-3 h-3" /> Add custom field
+                </button>
+
                 <div className="relative group">
                   <button
                     onClick={() => {
