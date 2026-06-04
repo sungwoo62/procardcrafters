@@ -1,8 +1,11 @@
 const BASE_URL = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
 
 async function getAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID!
-  const secret = process.env.PAYPAL_SECRET!
+  const clientId = process.env.PAYPAL_CLIENT_ID ?? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
+  const secret = process.env.PAYPAL_SECRET
+  if (!clientId || !secret) {
+    throw new Error('PayPal credentials are not configured (PAYPAL_CLIENT_ID / PAYPAL_SECRET)')
+  }
   const credentials = Buffer.from(`${clientId}:${secret}`).toString('base64')
 
   const res = await fetch(`${BASE_URL}/v1/oauth2/token`, {

@@ -1,11 +1,12 @@
 'use client'
 
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { trackBeginCheckout } from '@/lib/analytics'
 import type { PrintProduct } from '@/types/database'
+import { COUNTRIES, STATES_BY_COUNTRY, getCountry, isPostalCodeValid } from '@/lib/intl-address'
 
 interface Props {
   product: PrintProduct
@@ -136,23 +137,39 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const country = useMemo(() => getCountry(form.country), [form.country])
+  const stateOptions = STATES_BY_COUNTRY[form.country] ?? null
+  const stateRequired = country?.statesRequired ?? false
+  const postalValid = form.postalCode ? isPostalCodeValid(form.country, form.postalCode) : false
+
   function isFormValid(): boolean {
-    return (
-      !!form.customerName &&
-      !!form.customerEmail &&
-      !!form.shippingName &&
-      !!form.addressLine1 &&
-      !!form.city &&
-      !!form.country &&
-      !!form.postalCode &&
-      uploadStatus === 'done' &&
-      fileAgreement
-    )
+    if (
+      !form.customerName ||
+      !form.customerEmail ||
+      !form.shippingName ||
+      !form.addressLine1 ||
+      !form.city ||
+      !form.country ||
+      !form.postalCode ||
+      uploadStatus !== 'done' ||
+      !fileAgreement
+    ) {
+      return false
+    }
+    if (stateRequired && !form.state) return false
+    if (!postalValid) return false
+    return true
   }
 
   function handleFieldChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     const { name, value } = e.target
-    setForm((prev) => ({ ...prev, [name]: value }))
+    setForm((prev) => {
+      // Wipe state/province + postal when country switches — formats differ per country
+      if (name === 'country' && value !== prev.country) {
+        return { ...prev, country: value, state: '', postalCode: '' }
+      }
+      return { ...prev, [name]: value }
+    })
     setFormTouched(true)
   }
 
@@ -384,7 +401,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               value={form.customerName}
               onChange={handleFieldChange}
               required
-              placeholder="Hong Gildong"
+              placeholder="Full name"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -409,7 +426,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               name="customerPhone"
               value={form.customerPhone}
               onChange={handleFieldChange}
-              placeholder="+1 (555) 000-0000"
+              placeholder={country?.phonePlaceholder ?? '+1 (555) 000-0000'}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -430,13 +447,13 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               value={form.shippingName}
               onChange={handleFieldChange}
               required
-              placeholder="Hong Gildong"
+              placeholder="Recipient's full name"
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Address <span className="text-red-500">*</span>
+              Street Address <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
@@ -444,7 +461,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               value={form.addressLine1}
               onChange={handleFieldChange}
               required
-              placeholder="123 Main Street"
+              placeholder={form.country === 'GB' ? '10 Downing Street' : form.country === 'JP' ? '1-1-1 Chiyoda' : '123 Main Street'}
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -459,6 +476,21 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Country <span className="text-red-500">*</span>
+            </label>
+            <select
+              name="country"
+              value={form.country}
+              onChange={handleFieldChange}
+              className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              {COUNTRIES.map((c) => (
+                <option key={c.code} value={c.code}>{c.name}</option>
+              ))}
+            </select>
+          </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -470,59 +502,59 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
                 value={form.city}
                 onChange={handleFieldChange}
                 required
-                placeholder="New York"
+                placeholder={form.country === 'GB' ? 'London' : form.country === 'CA' ? 'Toronto' : form.country === 'AU' ? 'Sydney' : form.country === 'JP' ? 'Tokyo' : 'City'}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">State / Province (optional)</label>
-              <input
-                type="text"
-                name="state"
-                value={form.state}
-                onChange={handleFieldChange}
-                placeholder="NY"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                {country?.stateLabel ?? 'State / Province'}
+                {stateRequired ? <span className="text-red-500"> *</span> : <span className="text-gray-400 text-xs"> (optional)</span>}
+              </label>
+              {stateOptions ? (
+                <select
+                  name="state"
+                  value={form.state}
+                  onChange={handleFieldChange}
+                  required={stateRequired}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Select {country?.stateLabel ?? 'state'}…</option>
+                  {stateOptions.map((s) => (
+                    <option key={s.code} value={s.code}>{s.name}</option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  name="state"
+                  value={form.state}
+                  onChange={handleFieldChange}
+                  required={stateRequired}
+                  placeholder={country?.stateLabel ?? ''}
+                  className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              )}
             </div>
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Country <span className="text-red-500">*</span>
-              </label>
-              <select
-                name="country"
-                value={form.country}
-                onChange={handleFieldChange}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="US">United States</option>
-                <option value="CA">Canada</option>
-                <option value="AU">Australia</option>
-                <option value="GB">United Kingdom</option>
-                <option value="DE">Germany</option>
-                <option value="FR">France</option>
-                <option value="JP">Japan</option>
-                <option value="KR">South Korea</option>
-                <option value="SG">Singapore</option>
-                <option value="HK">Hong Kong</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                ZIP / Postal Code <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                name="postalCode"
-                value={form.postalCode}
-                onChange={handleFieldChange}
-                required
-                placeholder="10001"
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {country?.postalLabel ?? 'Postal Code'} <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="text"
+              name="postalCode"
+              value={form.postalCode}
+              onChange={handleFieldChange}
+              required
+              placeholder={country?.postalPlaceholder ?? '00000'}
+              className={`w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 ${form.postalCode && !postalValid ? 'border-red-300' : 'border-gray-300'}`}
+            />
+            {form.postalCode && !postalValid && (
+              <p className="mt-1 text-xs text-red-600">
+                Format should look like <span className="font-mono">{country?.postalPlaceholder}</span>
+              </p>
+            )}
           </div>
         </div>
       </section>
