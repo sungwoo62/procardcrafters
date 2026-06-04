@@ -36,17 +36,21 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-async function fetchProductImages(): Promise<Record<string, string>> {
+export interface ProductCardData {
+  image: string | null
+  description: string | null
+}
+
+async function fetchProductCardData(): Promise<Record<string, ProductCardData>> {
   try {
     const supabase = createServerClient()
     const { data } = await supabase
       .from('print_products')
-      .select('slug, hero_image_url')
+      .select('slug, hero_image_url, description_en')
       .eq('is_active', true)
-      .not('hero_image_url', 'is', null)
     if (!data) return {}
     return Object.fromEntries(
-      data.filter(r => r.hero_image_url).map(r => [r.slug, r.hero_image_url as string])
+      data.map(r => [r.slug, { image: r.hero_image_url ?? null, description: r.description_en ?? null }])
     )
   } catch {
     return {}
@@ -54,11 +58,11 @@ async function fetchProductImages(): Promise<Record<string, string>> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const productImages = await fetchProductImages()
+  const productData = await fetchProductCardData()
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-gray-900 antialiased">
-        <Header productImages={productImages} />
+        <Header productData={productData} />
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />
