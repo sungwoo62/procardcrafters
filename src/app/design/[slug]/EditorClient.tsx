@@ -33,12 +33,21 @@ interface PreflightResult {
   message: string
 }
 
+interface ImageQuality {
+  dpi: number
+  level: 'high' | 'medium' | 'low'
+  originalWidth: number
+  originalHeight: number
+  fileBytes: number
+}
+
 interface LayerInfo {
   id: string
   name: string
   type: LayerType
   visible: boolean
   locked: boolean
+  imageQuality?: ImageQuality
 }
 
 interface EditorDimensions {
@@ -53,6 +62,7 @@ interface FieldDef {
   label: string
   placeholder: string
   type: 'text' | 'multiline' | 'email' | 'phone'
+  required?: boolean
 }
 
 interface SelectedProps {
@@ -125,18 +135,22 @@ const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3, 
 
 const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
   business_cards: [
-    { key: 'name',    label: 'Name',          placeholder: 'Jane Doe',                type: 'text' },
-    { key: 'title',   label: 'Title',         placeholder: 'Creative Director',       type: 'text' },
-    { key: 'company', label: 'Company',       placeholder: 'ACME Studio',             type: 'text' },
-    { key: 'phone',   label: 'Phone',         placeholder: '+1 (555) 123-4567',       type: 'phone' },
-    { key: 'email',   label: 'Email',         placeholder: 'jane@studio.com',         type: 'email' },
+    { key: 'name',     label: 'Name',         placeholder: 'Jane Doe',                type: 'text',  required: true },
+    { key: 'title',    label: 'Title',        placeholder: 'Creative Director',       type: 'text',  required: true },
+    { key: 'company',  label: 'Company',      placeholder: 'ACME Studio',             type: 'text',  required: true },
+    { key: 'phone',    label: 'Phone',        placeholder: '+1 (555) 123-4567',       type: 'phone', required: true },
+    { key: 'email',    label: 'Email',        placeholder: 'jane@studio.com',         type: 'email', required: true },
+    { key: 'website',  label: 'Website',      placeholder: 'www.yoursite.com',        type: 'text',  required: false },
+    { key: 'linkedin', label: 'LinkedIn URL', placeholder: 'linkedin.com/in/you',     type: 'text',  required: false },
   ],
   premium_business_cards: [
-    { key: 'name',    label: 'Name',          placeholder: 'Jane Doe',                type: 'text' },
-    { key: 'title',   label: 'Title',         placeholder: 'Creative Director',       type: 'text' },
-    { key: 'company', label: 'Company',       placeholder: 'ACME Studio',             type: 'text' },
-    { key: 'phone',   label: 'Phone',         placeholder: '+1 (555) 123-4567',       type: 'phone' },
-    { key: 'email',   label: 'Email',         placeholder: 'jane@studio.com',         type: 'email' },
+    { key: 'name',     label: 'Name',         placeholder: 'Jane Doe',                type: 'text',  required: true },
+    { key: 'title',    label: 'Title',        placeholder: 'Creative Director',       type: 'text',  required: true },
+    { key: 'company',  label: 'Company',      placeholder: 'ACME Studio',             type: 'text',  required: true },
+    { key: 'phone',    label: 'Phone',        placeholder: '+1 (555) 123-4567',       type: 'phone', required: true },
+    { key: 'email',    label: 'Email',        placeholder: 'jane@studio.com',         type: 'email', required: true },
+    { key: 'website',  label: 'Website',      placeholder: 'www.yoursite.com',        type: 'text',  required: false },
+    { key: 'linkedin', label: 'LinkedIn URL', placeholder: 'linkedin.com/in/you',     type: 'text',  required: false },
   ],
   stickers: [
     { key: 'headline', label: 'Headline',     placeholder: 'Grand Opening 50% Off',   type: 'text' },
@@ -187,6 +201,12 @@ const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
 }
 
 const DEFAULT_REQUIRED_FIELDS: FieldDef[] = REQUIRED_FIELDS.business_cards
+
+// 명함 전용 추가 정보 필드 (website/linkedin — optional)
+const CONTACT_EXTRA_FIELDS: FieldDef[] = [
+  { key: 'website',  label: 'Website',     placeholder: 'www.yoursite.com',    type: 'text' },
+  { key: 'linkedin', label: 'LinkedIn URL', placeholder: 'linkedin.com/in/you', type: 'text' },
+]
 
 const MAX_CANVAS_W = 620
 const MAX_CANVAS_H = 520
@@ -553,6 +573,21 @@ function isBackground(obj: { data?: { role?: string } }) {
   return BACKGROUND_ROLES.has(obj.data?.role ?? '')
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function calcImageQuality(imgObj: any, scale: number, fileBytes = 0): ImageQuality {
+  const nw: number = imgObj.width ?? 1
+  const nh: number = imgObj.height ?? 1
+  const sx: number = imgObj.scaleX ?? 1
+  const sy: number = imgObj.scaleY ?? 1
+  const widthMm = (nw * sx) / scale
+  const heightMm = (nh * sy) / scale
+  const dpiW = widthMm > 0 ? (nw / widthMm) * 25.4 : 0
+  const dpiH = heightMm > 0 ? (nh / heightMm) * 25.4 : 0
+  const dpi = Math.round(Math.min(dpiW, dpiH))
+  const level: 'high' | 'medium' | 'low' = dpi >= 300 ? 'high' : dpi >= 150 ? 'medium' : 'low'
+  return { dpi, level, originalWidth: nw, originalHeight: nh, fileBytes }
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -588,8 +623,13 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
-  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'contact' | 'fields'>('fields')
+  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo'>('yourinfo')
   const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
+  const isBusinessCard = product.category === 'business_cards' || product.category === 'premium_business_cards'
+  const allFormFields: (FieldDef & { required: boolean })[] = [
+    ...productFields.map(f => ({ ...f, required: true })),
+    ...(isBusinessCard ? CONTACT_EXTRA_FIELDS.map(f => ({ ...f, required: false })) : []),
+  ]
   const [bgColor, setBgColor] = useState('#ffffff')
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
@@ -610,15 +650,10 @@ export default function EditorClient({ product, options }: Props) {
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory | 'all'>('all')
   const [templateSearch, setTemplateSearch] = useState('')
 
-  // Phase B: Contact smart fields
-  const [contactFields, setContactFields] = useState({
-    name: '', title: '', company: '', phone: '', email: '', website: '', linkedin: '',
-  })
-
-  // 필수 필드 값 (product 별 REQUIRED_FIELDS 스키마 기반)
-  const [requiredFieldValues, setRequiredFieldValues] = useState<Record<string, string>>(() => {
+  // 통합 필드 값 (Required + Optional 통합 패널)
+  const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
-    for (const f of productFields) init[f.key] = ''
+    for (const f of allFormFields) init[f.key] = ''
     return init
   })
 
@@ -638,6 +673,18 @@ export default function EditorClient({ product, options }: Props) {
   })
   const [saveDesignName, setSaveDesignName] = useState('')
 
+  const [imageToast, setImageToast] = useState<string | null>(null)
+  const [showDpiModal, setShowDpiModal] = useState(false)
+  const [dpiModalAgreed, setDpiModalAgreed] = useState(false)
+  const [lowDpiImages, setLowDpiImages] = useState<Array<{ name: string; dpi: number }>>([])
+  const imageToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function showUploadToast(msg: string) {
+    if (imageToastTimerRef.current) clearTimeout(imageToastTimerRef.current)
+    setImageToast(msg)
+    imageToastTimerRef.current = setTimeout(() => setImageToast(null), 4000)
+  }
+
   // Keep ref in sync with state for canvas event handlers
   useEffect(() => { toolRef.current = tool }, [tool])
   const bgColorRef = useRef(bgColor)
@@ -649,7 +696,8 @@ export default function EditorClient({ product, options }: Props) {
   function syncLayers(canvas: any) {
     const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o) && o.data?.role !== 'crop')
     const layerList: LayerInfo[] = [...objs].reverse().map((o: {
-      data?: { id?: string; name?: string; layerType?: LayerType }
+      type?: string
+      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality }
       visible?: boolean
       selectable?: boolean
     }) => ({
@@ -658,6 +706,7 @@ export default function EditorClient({ product, options }: Props) {
       type: (o.data?.layerType ?? 'rect') as LayerType,
       visible: o.visible ?? true,
       locked: !(o.selectable ?? true),
+      imageQuality: o.type === 'image' ? (o.data?.imageQuality ?? undefined) : undefined,
     }))
     setLayers(layerList)
   }
@@ -2534,6 +2583,8 @@ export default function EditorClient({ product, options }: Props) {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
+    if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
@@ -2555,6 +2606,10 @@ export default function EditorClient({ product, options }: Props) {
         data: { id, name: 'Logo', layerType: 'image' },
       })
       canvas.add(img)
+      const q = calcImageQuality(img, scale, file.size)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(img as any).set('data', { ...(img as any).data, imageQuality: q })
+      if (q.level === 'low') showUploadToast(`Logo 해상도 경고: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
       canvas.setActiveObject(img)
       canvas.renderAll()
       syncLayers(canvas)
@@ -2615,6 +2670,16 @@ export default function EditorClient({ product, options }: Props) {
         if (!isMutating.current) {
           syncLayers(canvas)
           saveHistory(canvas)
+        }
+      })
+
+      // Recalculate DPI quality when an image is resized
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      canvas.on('object:scaling', (e: { target: any }) => {
+        const obj = e.target
+        if (obj?.type === 'image') {
+          const q = calcImageQuality(obj, scale, (obj.data?.imageQuality as ImageQuality | undefined)?.fileBytes ?? 0)
+          obj.set('data', { ...obj.data, imageQuality: q })
         }
       })
 
@@ -2753,6 +2818,8 @@ export default function EditorClient({ product, options }: Props) {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
+    else if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
     const url = URL.createObjectURL(file)
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
@@ -2772,8 +2839,14 @@ export default function EditorClient({ product, options }: Props) {
       data: { id, name: file.name.slice(0, 20), layerType: 'image' },
     })
     canvas.add(img)
+    const q = calcImageQuality(img, scale, file.size)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(img as any).set('data', { ...(img as any).data, imageQuality: q })
+    if (q.level === 'low') showUploadToast(`저해상도 이미지: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
     canvas.setActiveObject(img)
     canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
     e.target.value = ''
   }
 
@@ -2785,6 +2858,9 @@ export default function EditorClient({ product, options }: Props) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const oldImg: any = canvas.getActiveObject()
     if (!oldImg || oldImg.type !== 'image') return
+
+    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
+    else if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
 
     const url = URL.createObjectURL(file)
     const fabric = fabricModRef.current ?? await import('fabric')
@@ -2805,6 +2881,10 @@ export default function EditorClient({ product, options }: Props) {
 
     canvas.remove(oldImg)
     canvas.add(newImg)
+    const q = calcImageQuality(newImg, scale, file.size)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(newImg as any).set('data', { ...(newImg as any).data, imageQuality: q })
+    if (q.level === 'low') showUploadToast(`저해상도 이미지: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
     canvas.setActiveObject(newImg)
     canvas.renderAll()
     syncLayers(canvas)
@@ -3504,9 +3584,7 @@ export default function EditorClient({ product, options }: Props) {
     setSavedDesigns(updated)
   }
 
-  async function proceedToOrder() {
-    setOrdering(true)
-    setOrderError('')
+  async function proceedToOrderInternal() {
     try {
       const blob = await buildPdfBlob()
       const formData = new FormData()
@@ -3531,12 +3609,90 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
+  async function proceedToOrder() {
+    const canvas = fabricRef.current
+    if (canvas) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const lowObjs: Array<{ name: string; dpi: number }> = canvas.getObjects()
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .filter((o: any) => !isBackground(o) && o.type === 'image')
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .map((o: any) => {
+          const q: ImageQuality | undefined = o.data?.imageQuality
+          return q && q.level === 'low' ? { name: o.data?.name ?? '이미지', dpi: q.dpi } : null
+        })
+        .filter(Boolean) as Array<{ name: string; dpi: number }>
+      if (lowObjs.length > 0) {
+        setLowDpiImages(lowObjs)
+        setDpiModalAgreed(false)
+        setShowDpiModal(true)
+        return
+      }
+    }
+    setOrdering(true)
+    setOrderError('')
+    await proceedToOrderInternal()
+  }
+
   // ─── Render ────────────────────────────────────────────────────────────────
 
   const selectedLayer = layers.find(l => l.id === selectedId) ?? null
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
+      {/* Upload toast */}
+      {imageToast && (
+        <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm text-white shadow-xl pointer-events-none">
+          <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+          {imageToast}
+        </div>
+      )}
+
+      {/* DPI 동의 모달 */}
+      {showDpiModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-2xl w-[440px] max-h-[80vh] flex flex-col p-6">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-red-500 shrink-0" />
+              <h3 className="font-semibold text-gray-800">인쇄 품질 경고</h3>
+            </div>
+            <p className="text-sm text-gray-600 mb-3">다음 이미지가 저해상도라 인쇄 시 흐리게 나올 수 있습니다:</p>
+            <ul className="mb-4 space-y-1">
+              {lowDpiImages.map((img, i) => (
+                <li key={i} className="flex items-center gap-2 text-sm text-red-700 bg-red-50 rounded px-3 py-1.5">
+                  <XCircle className="w-3.5 h-3.5 shrink-0" />
+                  {img.name} ({img.dpi} DPI)
+                </li>
+              ))}
+            </ul>
+            <label className="flex items-start gap-2 cursor-pointer mb-5 select-none">
+              <input
+                type="checkbox"
+                checked={dpiModalAgreed}
+                onChange={e => setDpiModalAgreed(e.target.checked)}
+                className="mt-0.5 accent-indigo-600"
+              />
+              <span className="text-sm text-gray-700">이 상태로 인쇄해도 괜찮다는 것에 동의합니다</span>
+            </label>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowDpiModal(false)}
+                className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                디자인 수정하러 가기
+              </button>
+              <button
+                disabled={!dpiModalAgreed}
+                onClick={async () => { setShowDpiModal(false); setOrdering(true); setOrderError(''); await proceedToOrderInternal() }}
+                className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                동의하고 주문 진행
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Preflight modal */}
       {showPreflight && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
@@ -4024,6 +4180,21 @@ export default function EditorClient({ product, options }: Props) {
                     >
                       <span className="text-gray-300 text-[10px] w-4 shrink-0">{idx + 1}</span>
                       <span className="truncate flex-1 font-medium text-gray-700">{layer.name}</span>
+                      {layer.imageQuality && (
+                        <span
+                          title={`${layer.imageQuality.dpi} DPI`}
+                          className={`shrink-0 text-[9px] font-semibold px-1 rounded ${
+                            layer.imageQuality.level === 'high'
+                              ? 'bg-green-100 text-green-700'
+                              : layer.imageQuality.level === 'medium'
+                                ? 'bg-amber-100 text-amber-700'
+                                : 'bg-red-100 text-red-700'
+                          }`}
+                        >
+                          {layer.imageQuality.level === 'high' ? '✓' : layer.imageQuality.level === 'medium' ? '!' : '✗'}{' '}
+                          {layer.imageQuality.dpi}dpi
+                        </span>
+                      )}
                       <button onClick={e => { e.stopPropagation(); toggleVisibility(layer.id) }} className="text-gray-400 hover:text-gray-600">
                         {layer.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       </button>
