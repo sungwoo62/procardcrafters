@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
+import { createServerClient } from '@/lib/supabase'
 
 const geist = Geist({
   variable: '--font-geist',
@@ -35,11 +36,29 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+async function fetchProductImages(): Promise<Record<string, string>> {
+  try {
+    const supabase = createServerClient()
+    const { data } = await supabase
+      .from('print_products')
+      .select('slug, hero_image_url')
+      .eq('is_active', true)
+      .not('hero_image_url', 'is', null)
+    if (!data) return {}
+    return Object.fromEntries(
+      data.filter(r => r.hero_image_url).map(r => [r.slug, r.hero_image_url as string])
+    )
+  } catch {
+    return {}
+  }
+}
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const productImages = await fetchProductImages()
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-gray-900 antialiased">
-        <Header />
+        <Header productImages={productImages} />
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />

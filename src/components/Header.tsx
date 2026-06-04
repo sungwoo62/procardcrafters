@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Package, ShoppingCart, Menu, X, ChevronDown, ArrowRight } from 'lucide-react'
 import { useState, useEffect, useRef, useCallback } from 'react'
@@ -16,16 +17,25 @@ const NAV_LINKS = [
 
 const ITEMS_PER_GROUP = 6
 
-export default function Header() {
+interface Props {
+  productImages?: Record<string, string>
+}
+
+export default function Header({ productImages = {} }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [productsOpen, setProductsOpen] = useState(false)
   const [mobileGroupOpen, setMobileGroupOpen] = useState<string | null>(null)
+  const [previewSlug, setPreviewSlug] = useState<string | null>(null)
+  const [previewLabel, setPreviewLabel] = useState<string | null>(null)
   const pathname = usePathname()
   const productsRef = useRef<HTMLDivElement>(null)
 
-  const closeMega = useCallback(() => setProductsOpen(false), [])
+  const closeMega = useCallback(() => {
+    setProductsOpen(false)
+    setPreviewSlug(null)
+    setPreviewLabel(null)
+  }, [])
 
-  // 클릭 바깥 + Escape 시 닫기
   useEffect(() => {
     if (!productsOpen) return
     const onDown = (e: MouseEvent) => {
@@ -40,11 +50,14 @@ export default function Header() {
     }
   }, [productsOpen, closeMega])
 
-  // 라우트 변경 시 메뉴 닫기
   useEffect(() => {
     setProductsOpen(false)
     setMobileOpen(false)
+    setPreviewSlug(null)
+    setPreviewLabel(null)
   }, [pathname])
+
+  const previewImageUrl = previewSlug ? productImages[previewSlug] : null
 
   return (
     <header className="sticky top-0 z-50 bg-white border-b border-gray-200">
@@ -77,53 +90,92 @@ export default function Header() {
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(960px,calc(100vw-2rem))] overflow-hidden"
+                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(1100px,calc(100vw-2rem))] overflow-hidden"
                 >
-                  {/* 1px invisible bridge to keep hover continuous between trigger and panel */}
-                  <div className="grid grid-cols-3 gap-x-6 gap-y-8 p-7">
-                    {PRODUCT_GROUPS.map(group => {
-                      const items = group.items.slice(0, ITEMS_PER_GROUP)
-                      const remaining = group.items.length - items.length
-                      return (
-                        <div key={group.key}>
-                          <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-gray-100">
-                            <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-900">
-                              {group.title}
-                            </h3>
-                            <span className="text-[10px] text-gray-400">{group.items.length}</span>
+                  <div className="grid grid-cols-[1fr,260px]">
+                    {/* 좌: 3×2 그룹 그리드 */}
+                    <div className="grid grid-cols-3 gap-x-6 gap-y-7 p-7">
+                      {PRODUCT_GROUPS.map(group => {
+                        const items = group.items.slice(0, ITEMS_PER_GROUP)
+                        const remaining = group.items.length - items.length
+                        return (
+                          <div key={group.key}>
+                            <div className="flex items-baseline justify-between mb-3 pb-2 border-b border-gray-100">
+                              <h3 className="text-[11px] font-bold uppercase tracking-[0.12em] text-gray-900">
+                                {group.title}
+                              </h3>
+                              <span className="text-[10px] text-gray-400">{group.items.length}</span>
+                            </div>
+                            <ul className="space-y-0.5">
+                              {items.map(item => (
+                                <li key={item.slug}>
+                                  <Link
+                                    href={`/products/${item.slug}`}
+                                    onClick={closeMega}
+                                    onMouseEnter={() => { setPreviewSlug(item.slug); setPreviewLabel(item.label) }}
+                                    onFocus={() => { setPreviewSlug(item.slug); setPreviewLabel(item.label) }}
+                                    className={`block py-1 text-sm transition-colors ${
+                                      pathname === `/products/${item.slug}`
+                                        ? 'text-blue-600 font-medium'
+                                        : previewSlug === item.slug
+                                          ? 'text-blue-600'
+                                          : 'text-gray-600 hover:text-blue-600'
+                                    }`}
+                                  >
+                                    {item.label}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                            {remaining > 0 && (
+                              <Link
+                                href={`/products#${group.key}`}
+                                onClick={closeMega}
+                                className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
+                              >
+                                +{remaining} more <ArrowRight className="w-3 h-3" />
+                              </Link>
+                            )}
                           </div>
-                          <ul className="space-y-0.5">
-                            {items.map(item => (
-                              <li key={item.slug}>
-                                <Link
-                                  href={`/products/${item.slug}`}
-                                  onClick={closeMega}
-                                  className={`block py-1 text-sm transition-colors ${
-                                    pathname === `/products/${item.slug}`
-                                      ? 'text-blue-600 font-medium'
-                                      : 'text-gray-600 hover:text-blue-600'
-                                  }`}
-                                >
-                                  {item.label}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                          {remaining > 0 && (
-                            <Link
-                              href={`/products#${group.key}`}
-                              onClick={closeMega}
-                              className="inline-flex items-center gap-1 mt-2 text-xs font-medium text-blue-600 hover:text-blue-700"
-                            >
-                              +{remaining} more <ArrowRight className="w-3 h-3" />
-                            </Link>
-                          )}
+                        )
+                      })}
+                    </div>
+
+                    {/* 우: 호버 미리보기 */}
+                    <div className="border-l border-gray-100 bg-gradient-to-br from-gray-50 to-white p-5 flex flex-col">
+                      <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400 mb-3">Preview</div>
+                      <div className="relative aspect-[4/3] w-full bg-white rounded-lg border border-gray-100 overflow-hidden shadow-sm">
+                        {previewImageUrl ? (
+                          <Image
+                            key={previewSlug}
+                            src={previewImageUrl}
+                            alt={previewLabel ?? ''}
+                            fill
+                            sizes="260px"
+                            className="object-cover animate-fade-in"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center text-gray-300 text-xs">
+                            Hover a product
+                          </div>
+                        )}
+                      </div>
+                      {previewLabel && (
+                        <div className="mt-3">
+                          <div className="text-sm font-semibold text-gray-900">{previewLabel}</div>
+                          <Link
+                            href={`/products/${previewSlug}`}
+                            onClick={closeMega}
+                            className="inline-flex items-center gap-1 mt-1 text-xs font-medium text-blue-600 hover:text-blue-700"
+                          >
+                            View details <ArrowRight className="w-3 h-3" />
+                          </Link>
                         </div>
-                      )
-                    })}
+                      )}
+                    </div>
                   </div>
 
-                  {/* Bottom strip — Moo 식 footer CTA */}
+                  {/* 하단 footer strip */}
                   <div className="bg-gray-50 border-t border-gray-100 px-7 py-4 flex items-center justify-between">
                     <div className="text-sm text-gray-600">
                       <span className="font-semibold text-gray-900">61 products</span> · printed in LA, delivered worldwide
