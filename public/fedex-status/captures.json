@@ -1,0 +1,32 @@
+[
+  {
+    "name": "01-home.png",
+    "url": "/",
+    "note": "홈 — Pro Card Crafters"
+  },
+  {
+    "name": "02-products.png",
+    "url": "/products",
+    "note": "제품 카탈로그"
+  },
+  {
+    "name": "03-product-detail.png",
+    "url": "/products/business-cards",
+    "note": "제품 상세 (BIZ)"
+  },
+  {
+    "name": "04-admin-shipping.png",
+    "url": "/admin/shipping",
+    "note": "관리자: 권역/요금표 (로그인 필요 — 리다이렉트 캡처)"
+  },
+  {
+    "name": "05-admin-orders.png",
+    "url": "/admin/orders",
+    "note": "관리자: 주문 목록 (로그인 필요 — 리다이렉트 캡처)"
+  },
+  {
+    "name": "06-fedex-status.png",
+    "url": "/fedex-status",
+    "note": "/fedex-status 페이지 (이번에 빌드)"
+  }
+]
