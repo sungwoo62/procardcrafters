@@ -595,6 +595,19 @@ function calcImageQuality(imgObj: any, scale: number, fileBytes = 0): ImageQuali
   return { dpi, level, originalWidth: nw, originalHeight: nh, fileBytes }
 }
 
+// 다운로드 파일 식별 코드: YYMMDD-HHMM-RAND4 (예: 260605-1438-K3F9)
+// 동일 디자인을 여러 번 받아도 시점·랜덤 토큰으로 파일을 구별할 수 있게 한다.
+function generateDownloadCode() {
+  const now = new Date()
+  const yy = (now.getFullYear() % 100).toString().padStart(2, '0')
+  const mm = (now.getMonth() + 1).toString().padStart(2, '0')
+  const dd = now.getDate().toString().padStart(2, '0')
+  const hh = now.getHours().toString().padStart(2, '0')
+  const mi = now.getMinutes().toString().padStart(2, '0')
+  const rand = Math.random().toString(36).slice(2, 6).toUpperCase()
+  return `${yy}${mm}${dd}-${hh}${mi}-${rand}`
+}
+
 // ─── Main component ────────────────────────────────────────────────────────────
 
 interface Props {
@@ -3384,7 +3397,7 @@ export default function EditorClient({ product, options }: Props) {
     const dataUrl = getExportDataUrl(150, false)
     if (!dataUrl) return
     const link = document.createElement('a')
-    link.download = `${product.slug}-design.png`
+    link.download = `pcc-${product.slug}-${generateDownloadCode()}.png`
     link.href = dataUrl
     link.click()
   }
@@ -3440,7 +3453,7 @@ export default function EditorClient({ product, options }: Props) {
   async function exportPdf() {
     const blob = await buildPdfBlob()
     const link = document.createElement('a')
-    link.download = `${product.slug}-300dpi.pdf`
+    link.download = `pcc-${product.slug}-${generateDownloadCode()}-300dpi.pdf`
     link.href = URL.createObjectURL(blob)
     link.click()
   }
@@ -3692,7 +3705,7 @@ export default function EditorClient({ product, options }: Props) {
     try {
       const blob = await buildPdfBlob()
       const formData = new FormData()
-      formData.append('file', blob, `${product.slug}-design.pdf`)
+      formData.append('file', blob, `pcc-${product.slug}-${generateDownloadCode()}-design.pdf`)
       const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
       const data = await uploadRes.json()
       if (uploadRes.ok && data.fileId) {
