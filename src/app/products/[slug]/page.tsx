@@ -15,6 +15,8 @@ import ProductGallery from '@/components/ProductGallery'
 import ViewItemTracker from '@/components/ViewItemTracker'
 import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
+import ProductReviews from '@/components/ProductReviews'
+import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -108,14 +110,40 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const product = productData as PrintProduct
 
-  const { data: optionsData } = await supabase
-    .from('print_product_options')
-    .select('*')
-    .eq('product_id', product.id)
-    .order('option_type', { ascending: true })
-    .order('sort_order', { ascending: true })
+  const [
+    { data: optionsData },
+    { data: reviewStats },
+    { data: reviewsData, count: reviewsCount },
+  ] = await Promise.all([
+    supabase
+      .from('print_product_options')
+      .select('*')
+      .eq('product_id', product.id)
+      .order('option_type', { ascending: true })
+      .order('sort_order', { ascending: true }),
+    supabase
+      .from('print_product_review_stats')
+      .select('*')
+      .eq('product_id', product.id)
+      .maybeSingle(),
+    supabase
+      .from('print_reviews')
+      .select('id, reviewer_name, rating, title, body, source, disclosure_note, helpful_count, photos, created_at', { count: 'exact' })
+      .eq('product_id', product.id)
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .range(0, 9),
+  ])
 
   const options = (optionsData as PrintProductOption[] | null) ?? []
+  const initialStats = reviewStats as ReviewStats | null
+  const initialReviews = (reviewsData ?? []) as Review[]
+  const initialPagination: ReviewPagination = {
+    page: 1,
+    pageSize: 10,
+    total: reviewsCount ?? 0,
+    totalPages: Math.ceil((reviewsCount ?? 0) / 10),
+  }
 
   const shippingUsd = getShippingCost('US')
   const features = PRODUCT_FEATURES[product.category] ?? []
@@ -262,6 +290,16 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="border-t border-gray-100 bg-gray-50">
+        <ProductReviews
+          slug={product.slug}
+          initialStats={initialStats}
+          initialReviews={initialReviews}
+          initialPagination={initialPagination}
+        />
       </div>
     </div>
   )

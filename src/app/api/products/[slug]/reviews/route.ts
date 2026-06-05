@@ -47,7 +47,7 @@ export async function GET(
   const { data: reviews, count, error } = await supabase
     .from('print_reviews')
     .select(
-      'id, reviewer_name, rating, title, body, source, disclosure_note, helpful_count, created_at',
+      'id, reviewer_name, rating, title, body, source, disclosure_note, helpful_count, photos, created_at',
       { count: 'exact' }
     )
     .eq('product_id', product.id)
