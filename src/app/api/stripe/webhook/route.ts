@@ -11,7 +11,10 @@ function getSupabase() {
   );
 }
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+function getStripe(): Stripe {
+  if (!process.env.STRIPE_SECRET_KEY) throw new Error("STRIPE_SECRET_KEY 미설정")
+  return new Stripe(process.env.STRIPE_SECRET_KEY)
+}
 
 // App Router는 body를 자동 파싱하지 않으므로 raw body 직접 읽기
 export async function POST(req: NextRequest) {
@@ -26,6 +29,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const stripe = getStripe();
   let event: Stripe.Event;
   try {
     event = stripe.webhooks.constructEvent(rawBody, sig, webhookSecret);
