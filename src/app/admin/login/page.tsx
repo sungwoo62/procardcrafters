@@ -54,17 +54,19 @@ function AdminLoginForm() {
         <div className="mb-4">
           <input
             type="email"
+            name="email"
             placeholder="이메일"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-            autoComplete="email"
+            autoComplete="username"
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-gray-400"
           />
         </div>
-        <div className="mb-6">
+        <div className="mb-3">
           <input
             type="password"
+            name="password"
             placeholder="비밀번호"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -73,6 +75,10 @@ function AdminLoginForm() {
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-gray-400"
           />
         </div>
+        <label className="mb-6 flex cursor-pointer items-center gap-2 text-xs text-gray-600">
+          <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
+          로그인 정보 저장 (다음 방문 시 자동 입력)
+        </label>
         <button
           type="submit"
           disabled={loading}

@@ -107,8 +107,9 @@ function LoginForm() {
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   id="email"
+                  name="email"
                   type="email"
-                  autoComplete="email"
+                  autoComplete="username"
                   required
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -126,6 +127,7 @@ function LoginForm() {
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
                   id="password"
+                  name="password"
                   type="password"
                   autoComplete="current-password"
                   required
@@ -136,6 +138,11 @@ function LoginForm() {
                 />
               </div>
             </div>
+
+            <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
+              <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+              로그인 정보 저장 (Remember me)
+            </label>
 
             <button
               type="submit"
