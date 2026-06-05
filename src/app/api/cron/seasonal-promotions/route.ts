@@ -143,16 +143,36 @@ async function runSeasonalPromotions(request: NextRequest): Promise<NextResponse
   // ─── Step 3: live → ended ──────────────────────────────────────
   const { data: toEnd } = await supabase
     .from('print_promotion_campaigns')
-    .select('id')
+    .select('id, year, calendar:print_promotion_calendar(name_ko, name_en, key)')
     .eq('status', 'live')
     .lt('promo_end_at', now.toISOString())
 
-  const endedIds = (toEnd ?? []).map((c: { id: string }) => c.id)
+  type EndingCampaignRaw = {
+    id: string
+    year: number
+    calendar: { name_ko: string; name_en: string; key: string }[] | null
+  }
+  type EndingCampaign = {
+    id: string
+    year: number
+    calendar: { name_ko: string; name_en: string; key: string } | null
+  }
+
+  const endingCampaigns: EndingCampaign[] = ((toEnd ?? []) as unknown as EndingCampaignRaw[]).map(
+    (c) => ({ ...c, calendar: Array.isArray(c.calendar) ? (c.calendar[0] ?? null) : c.calendar })
+  )
+  const endedIds = endingCampaigns.map((c) => c.id)
+
   if (endedIds.length > 0) {
     await supabase
       .from('print_promotion_campaigns')
       .update({ status: 'ended' })
       .in('id', endedIds)
+
+    // retrospective 코멘트 비동기 발송 (fire-and-forget)
+    await Promise.allSettled(
+      endingCampaigns.map((campaign) => postRetrospective(supabase, campaign))
+    )
   }
 
   return NextResponse.json({
@@ -161,6 +181,112 @@ async function runSeasonalPromotions(request: NextRequest): Promise<NextResponse
     activated: activatedIds.length,
     ended: endedIds.length,
     ...(errors.length > 0 && { errors }),
+  })
+}
+
+// ─── Retrospective 자동 코멘트 ─────────────────────────────────
+
+// OMO-2388 이슈 UUID (시즌 프로모션 epic)
+const OMO_2388_ISSUE_ID = '66b28a92-f295-483a-9eec-6a3cf64d74d2'
+
+async function postRetrospective(
+  supabase: ReturnType<typeof createServerClient>,
+  campaign: { id: string; year: number; calendar: { name_ko: string; name_en: string; key: string } | null },
+): Promise<void> {
+  const apiUrl = process.env.PAPERCLIP_API_URL
+  const apiKey = process.env.PAPERCLIP_API_KEY
+  if (!apiUrl || !apiKey) return
+
+  // funnel 이벤트 집계
+  const { data: eventRows } = await supabase
+    .from('print_promotion_events')
+    .select('event_type, user_id, session_id')
+    .eq('campaign_id', campaign.id)
+
+  const counts: Record<string, number> = {}
+  const uvSet = new Set<string>()
+  for (const r of eventRows ?? []) {
+    counts[r.event_type] = (counts[r.event_type] ?? 0) + 1
+    if (r.event_type === 'promo_impression') {
+      uvSet.add(r.user_id ?? r.session_id ?? '')
+    }
+  }
+
+  const impressions = counts['promo_impression'] ?? 0
+  const clicks = counts['promo_click'] ?? 0
+  const redeems = counts['promo_code_redeem'] ?? 0
+  const uniqueVisitors = uvSet.size
+
+  const ctrPct = impressions > 0 ? ((clicks / impressions) * 100).toFixed(1) : '0.0'
+  const redemptionPct = uniqueVisitors > 0 ? ((redeems / uniqueVisitors) * 100).toFixed(2) : '0.00'
+  const redemptionRate = Number(redemptionPct)
+
+  // 매출 집계
+  const { data: codeRows } = await supabase
+    .from('print_promo_codes')
+    .select('id')
+    .eq('campaign_id', campaign.id)
+
+  const codeIds = (codeRows ?? []).map((c: { id: string }) => c.id)
+  let totalRevenue = 0
+  let aov = 0
+  let orderCount = 0
+
+  if (codeIds.length > 0) {
+    const { data: redemptions } = await supabase
+      .from('print_promo_code_redemptions')
+      .select('order_id')
+      .in('code_id', codeIds)
+
+    const orderIds = [...new Set((redemptions ?? []).map((r: { order_id: string }) => r.order_id).filter(Boolean))]
+    if (orderIds.length > 0) {
+      const { data: orders } = await supabase
+        .from('print_orders')
+        .select('total_usd')
+        .in('id', orderIds)
+
+      orderCount = orders?.length ?? 0
+      totalRevenue = (orders ?? []).reduce((s, o: { total_usd: string }) => s + Number(o.total_usd), 0)
+      aov = orderCount > 0 ? totalRevenue / orderCount : 0
+    }
+  }
+
+  // top product
+  const { data: atcRows } = await supabase
+    .from('print_promotion_events')
+    .select('product_slug')
+    .eq('campaign_id', campaign.id)
+    .eq('event_type', 'promo_add_to_cart')
+    .not('product_slug', 'is', null)
+
+  const slugCounts: Record<string, number> = {}
+  for (const r of atcRows ?? []) {
+    if (r.product_slug) slugCounts[r.product_slug] = (slugCounts[r.product_slug] ?? 0) + 1
+  }
+  const topProduct = Object.entries(slugCounts).sort((a, b) => b[1] - a[1])[0]?.[0] ?? '데이터 부족'
+
+  const recommendedAdjust =
+    redemptionRate < 0.5 ? '+5%' : redemptionRate > 5 ? '-2%' : '유지'
+
+  const seasonName = campaign.calendar?.name_ko ?? campaign.calendar?.name_en ?? campaign.calendar?.key ?? '시즌'
+
+  const body = `## ${seasonName} ${campaign.year} 시즌 retrospective
+
+- **Impression**: ${impressions.toLocaleString()}
+- **Click-through**: ${clicks.toLocaleString()} (${ctrPct}%)
+- **Redemption**: ${redeems.toLocaleString()} (${redemptionPct}%)
+- **Revenue**: $${totalRevenue.toFixed(2)} (${orderCount}건)
+- **AOV**: $${aov.toFixed(2)}
+- **Top product**: ${topProduct}
+- **권장 다음 해 할인 조정**: ${recommendedAdjust} (현재 redemption rate ${redemptionPct}%)`
+
+  await fetch(`${apiUrl}/api/issues/${OMO_2388_ISSUE_ID}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ body }),
   })
 }
 
