@@ -31,6 +31,15 @@ interface Config {
   fallback_rate_usd: number
   free_shipping_threshold_usd: number
   free_shipping_max_weight_kg: number
+  origin_company_ko: string
+  origin_company_en: string
+  origin_address_line1: string
+  origin_address_line2: string | null
+  origin_city: string
+  origin_state: string | null
+  origin_postal_code: string
+  origin_phone: string | null
+  origin_email: string | null
 }
 
 type Tab = 'zones' | 'services' | 'rates' | 'shipments' | 'config'
@@ -462,6 +471,60 @@ function ConfigPanel({ config, reload, setMsg }: { config: Config | null; reload
         VAT 가산율은 FedEx 원가에 자동으로 더해져 고객 청구 금액이 됩니다.
         (예: 가산율 10%, 원가 $20 → 청구 $22.00)
       </p>
+
+      <div className="border-t border-gray-200 pt-4 mt-2">
+        <h3 className="text-xs font-semibold text-gray-700 uppercase mb-3">발신지 (Origin / 패킹슬립 인쇄용)</h3>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field label="회사명 (한국어)">
+            <input value={merged.origin_company_ko ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_company_ko: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="Company (English)">
+            <input value={merged.origin_company_en ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_company_en: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="주소 (Line 1)">
+            <input value={merged.origin_address_line1 ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_address_line1: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="주소 (Line 2)">
+            <input value={merged.origin_address_line2 ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_address_line2: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="시 (City)">
+            <input value={merged.origin_city ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_city: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="도/주 (State)">
+            <input value={merged.origin_state ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_state: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="우편번호">
+            <input value={merged.origin_postal_code ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_postal_code: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="전화번호">
+            <input value={merged.origin_phone ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_phone: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+          <Field label="이메일">
+            <input value={merged.origin_email ?? ''}
+              onChange={(e) => setDraft((d) => ({ ...d, origin_email: e.target.value }))}
+              className="w-full rounded-lg border-gray-200 text-sm" />
+          </Field>
+        </div>
+        <p className="text-xs text-gray-500 mt-2">
+          패킹슬립의 FROM 박스에 자동 표시됩니다.
+        </p>
+      </div>
       <button
         onClick={save}
         disabled={Object.keys(draft).length === 0}

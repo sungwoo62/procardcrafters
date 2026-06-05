@@ -45,19 +45,29 @@ interface Shipment {
   print_shipping_zones: { code: string; name_en: string } | null
 }
 
-const ORIGIN = {
-  company_ko: '오뭉뭉 / Omoongmoo',
-  company_en: 'Omoongmoo',
-  address_ko: '서울시 (주소 보드 설정)',
-  address_en: 'Seoul, Republic of Korea',
-  phone: '+82-2-XXXX-XXXX',
-  email: 'orders@omoongmoo.com',
+interface OriginConfig {
+  company_ko: string
+  company_en: string
+  address_ko: string
+  address_en: string
+  phone: string | null
+  email: string | null
+}
+
+const ORIGIN_FALLBACK: OriginConfig = {
+  company_ko: 'ALLPACKMEISTER CO., LTD.',
+  company_en: 'ALLPACKMEISTER CO., LTD.',
+  address_ko: '20, GILJU-RO 411BEON-GIL, 618HO, BUCHEON',
+  address_en: '20, GILJU-RO 411BEON-GIL, 618HO, BUCHEON, KR 14488',
+  phone: null,
+  email: null,
 }
 
 export default function PackingSlipPage() {
   const { id } = useParams<{ id: string }>()
   const [order, setOrder] = useState<Order | null>(null)
   const [shipments, setShipments] = useState<Shipment[]>([])
+  const [origin, setOrigin] = useState<OriginConfig>(ORIGIN_FALLBACK)
   const [err, setErr] = useState('')
 
   useEffect(() => {
@@ -65,10 +75,23 @@ export default function PackingSlipPage() {
     Promise.all([
       fetch(`/api/admin/orders/${id}`).then((r) => r.json()),
       fetch(`/api/admin/orders/${id}/shipments`).then((r) => r.json()),
-    ]).then(([o, s]) => {
+      fetch(`/api/admin/shipping/config`).then((r) => r.json()).catch(() => null),
+    ]).then(([o, s, c]) => {
       if (o.error) setErr(o.error)
       else setOrder(o.order)
       setShipments(s.shipments ?? [])
+      if (c?.config) {
+        const cfg = c.config
+        const addrParts = [cfg.origin_address_line1, cfg.origin_address_line2, cfg.origin_city, cfg.origin_state, cfg.origin_postal_code].filter(Boolean).join(', ')
+        setOrigin({
+          company_ko: cfg.origin_company_ko || ORIGIN_FALLBACK.company_ko,
+          company_en: cfg.origin_company_en || ORIGIN_FALLBACK.company_en,
+          address_ko: addrParts || ORIGIN_FALLBACK.address_ko,
+          address_en: addrParts ? `${addrParts}, ${cfg.origin_country || 'KR'}` : ORIGIN_FALLBACK.address_en,
+          phone: cfg.origin_phone || null,
+          email: cfg.origin_email || null,
+        })
+      }
     })
   }, [id])
 
@@ -103,20 +126,19 @@ export default function PackingSlipPage() {
               </p>
             </div>
             <div className="text-right">
-              <p className="font-semibold">{ORIGIN.company_en}</p>
-              <p className="text-xs text-gray-600">{ORIGIN.address_en}</p>
-              <p className="text-xs text-gray-600">{ORIGIN.phone}</p>
-              <p className="text-xs text-gray-600">{ORIGIN.email}</p>
+              <p className="font-semibold">{origin.company_en}</p>
+              <p className="text-xs text-gray-600">{origin.address_en}</p>
+              {origin.phone && <p className="text-xs text-gray-600">{origin.phone}</p>}
+              {origin.email && <p className="text-xs text-gray-600">{origin.email}</p>}
             </div>
           </header>
 
           {/* 주소 박스 */}
           <section className="grid grid-cols-2 gap-6 mb-6">
             <AddressBox title="FROM (보낸 사람)">
-              <p className="font-semibold">{ORIGIN.company_ko}</p>
-              <p>{ORIGIN.address_ko}</p>
-              <p>{ORIGIN.address_en}</p>
-              <p className="mt-1 text-sm">Tel: {ORIGIN.phone}</p>
+              <p className="font-semibold">{origin.company_ko}</p>
+              <p>{origin.address_ko}</p>
+              {origin.phone && <p className="mt-1 text-sm">Tel: {origin.phone}</p>}
             </AddressBox>
             <AddressBox title="TO (받는 사람)">
               <p className="font-semibold text-lg">{order.shipping_name}</p>

@@ -30,6 +30,7 @@ export interface PrintProduct {
   min_order_quantity: number
   sort_order: number
   thumbnail_url: string | null
+  hero_image_url: string | null
   default_weight_kg: number
   unit_weight_g: number
   created_at: string

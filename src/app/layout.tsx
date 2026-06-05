@@ -4,6 +4,7 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
+import FreeShippingBanner from '@/components/FreeShippingBanner'
 import { createServerClient } from '@/lib/supabase'
 
 const geist = Geist({
@@ -62,6 +63,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <body className="min-h-full flex flex-col bg-white text-gray-900 antialiased">
+        <FreeShippingBanner />
         <Header productData={productData} />
         <main className="flex-1">{children}</main>
         <Footer />

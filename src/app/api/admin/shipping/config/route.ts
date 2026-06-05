@@ -32,6 +32,15 @@ export async function PATCH(request: NextRequest) {
   if (body.fallback_rate_usd !== undefined)  update.fallback_rate_usd = Number(body.fallback_rate_usd)
   if (body.free_shipping_threshold_usd !== undefined) update.free_shipping_threshold_usd = Number(body.free_shipping_threshold_usd)
   if (body.free_shipping_max_weight_kg !== undefined) update.free_shipping_max_weight_kg = Number(body.free_shipping_max_weight_kg)
+  if (body.origin_company_ko    !== undefined) update.origin_company_ko = String(body.origin_company_ko || '')
+  if (body.origin_company_en    !== undefined) update.origin_company_en = String(body.origin_company_en || '')
+  if (body.origin_address_line1 !== undefined) update.origin_address_line1 = String(body.origin_address_line1 || '')
+  if (body.origin_address_line2 !== undefined) update.origin_address_line2 = body.origin_address_line2 || null
+  if (body.origin_city          !== undefined) update.origin_city = String(body.origin_city || '')
+  if (body.origin_state         !== undefined) update.origin_state = body.origin_state || null
+  if (body.origin_postal_code   !== undefined) update.origin_postal_code = String(body.origin_postal_code || '')
+  if (body.origin_phone         !== undefined) update.origin_phone = body.origin_phone || null
+  if (body.origin_email         !== undefined) update.origin_email = body.origin_email || null
 
   const { data, error } = await supabase
     .from('print_shipping_config')
