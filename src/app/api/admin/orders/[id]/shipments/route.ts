@@ -30,16 +30,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   const body = await request.json().catch(() => ({}))
   const supabase = createServerClient()
 
-  // 주문 조회 (국가 → 권역)
+  // 주문 조회 (국가 → 권역, 고객 선택 서비스)
   const { data: order, error: orderErr } = await supabase
     .from('print_orders')
-    .select('id, shipping_country')
+    .select('id, shipping_country, shipping_postal_code, shipping_service_code')
     .eq('id', id)
     .maybeSingle()
   if (orderErr || !order) return NextResponse.json({ error: orderErr?.message ?? 'order not found' }, { status: 404 })
 
   const weightKg = Number(body.weightKg ?? body.weight_kg ?? 1.0)
-  const quote = await quoteShipping(order.shipping_country, weightKg, body.serviceCode)
+  // 관리자가 serviceCode를 명시하면 그것을 사용, 없으면 고객 선택값 사용
+  const effectiveServiceCode = body.serviceCode ?? order.shipping_service_code ?? undefined
+  const quote = await quoteShipping(order.shipping_country, weightKg, effectiveServiceCode, order.shipping_postal_code ?? undefined)
 
   // 권역/서비스 id 조회 (송장에 FK 저장)
   const [{ data: zone }, { data: service }] = await Promise.all([
@@ -85,7 +87,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     },
   })
 
-  return NextResponse.json({ shipment: data, quote })
+  return NextResponse.json({
+    shipment: data,
+    quote,
+    customerServiceChoice: order.shipping_service_code ?? null,
+  })
 }
 
 // PATCH: 송장 업데이트 (tracking, status, weight 등) - body.shipmentId 필수

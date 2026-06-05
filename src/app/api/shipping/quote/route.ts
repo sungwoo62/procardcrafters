@@ -1,17 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
+import { quoteShippingOptions, calculateOrderWeightKg } from '@/lib/shipping'
 import { createServerClient } from '@/lib/supabase'
 
 // 공개 견적 엔드포인트
 //   POST body: {
 //     country: string (ISO-2),
 //     postalCode?: string,
-//     weightKg?: number,                 // 직접 지정 시 사용
-//     items?: [{ productId, quantity }], // 없으면 weightKg 사용 / 둘 다 없으면 0.5kg
-//     subtotalUsd?: number,              // 무료배송 임계 비교용
-//     serviceCode?: string,
+//     weightKg?: number,
+//     items?: [{ productId, quantity, selectedOptions? }],
+//     subtotalUsd?: number,
 //   }
-//   응답: { quote: ShippingQuote, freeShipping: bool, freeShippingThresholdUsd, freeShippingShortageUsd }
+//   응답:
+//     quote: 최저가 옵션 (backward compat)
+//     options: ShippingQuote[] (전체 옵션 배열, costUsd 오름차순)
+//     defaultOptionIndex: number
+//     freeShipping: bool
+//     freeShippingThresholdUsd, freeShippingShortageUsd, ...
 export async function POST(request: NextRequest) {
   const body = await request.json().catch(() => null)
   if (!body?.country) {
@@ -21,7 +25,6 @@ export async function POST(request: NextRequest) {
   const supabase = createServerClient()
   let weightKg = Number(body.weightKg ?? 0)
 
-  // items 주어진 경우 제품 unit_weight_g × selected_options.quantity 또는 default_weight_kg 합
   if (!weightKg && Array.isArray(body.items) && body.items.length > 0) {
     const productIds = body.items.map((i: { productId: string }) => i.productId).filter(Boolean)
     if (productIds.length) {
@@ -50,7 +53,7 @@ export async function POST(request: NextRequest) {
   }
   if (!weightKg || weightKg <= 0) weightKg = 0.5
 
-  const quote = await quoteShipping(body.country, weightKg, body.serviceCode, body.postalCode)
+  const { options, defaultOptionIndex } = await quoteShippingOptions(body.country, weightKg, body.postalCode)
 
   // 무료배송 임계 + 무게 상한 적용
   const { data: cfg } = await supabase
@@ -66,11 +69,25 @@ export async function POST(request: NextRequest) {
   const meetsWeight = maxWeight === 0 || weightKg <= maxWeight
   const freeShipping = meetsSubtotal && meetsWeight
 
-  const responseQuote = freeShipping
-    ? { ...quote, costUsd: 0, baseCostUsd: quote.baseCostUsd, reason: 'free_shipping_promo' as const }
-    : quote
+  // 최저가 옵션 기준 가격 (differential 계산용)
+  const cheapestCostUsd = options[defaultOptionIndex]?.costUsd ?? 0
 
-  // 무료배송 자격 안내 메시지 (UI 가 그대로 노출 가능)
+  // 각 옵션에 effectiveCostUsd 추가
+  // - freeShipping: cheapest → 0, 나머지 → 원가 - cheapest (differential)
+  // - 일반: 그대로
+  const enrichedOptions = options.map((opt, i) => {
+    const effectiveCostUsd = freeShipping
+      ? Math.max(0, Math.round((opt.costUsd - cheapestCostUsd) * 100) / 100)
+      : opt.costUsd
+    return { ...opt, effectiveCostUsd, isDefault: i === defaultOptionIndex }
+  })
+
+  // backward compat: quote 필드 (cheapest, free shipping 적용)
+  const cheapestOpt = enrichedOptions[defaultOptionIndex]
+  const responseQuote = cheapestOpt
+    ? { ...cheapestOpt, costUsd: cheapestOpt.effectiveCostUsd, reason: freeShipping ? 'free_shipping_promo' : cheapestOpt.reason }
+    : null
+
   let freeShippingNote: string | null = null
   if (threshold > 0) {
     if (!meetsSubtotal) {
@@ -82,6 +99,8 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json({
     quote: responseQuote,
+    options: enrichedOptions,
+    defaultOptionIndex,
     freeShipping,
     freeShippingThresholdUsd: threshold,
     freeShippingMaxWeightKg: maxWeight,

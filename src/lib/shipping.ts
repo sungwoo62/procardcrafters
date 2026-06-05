@@ -48,6 +48,18 @@ export interface ShippingQuote {
     | 'fallback_no_zone'
     | 'fallback_no_list_price'
     | 'fallback_api_error'
+  // 서비스 설명 (print_shipping_services 또는 FedEx API에서 조회)
+  descriptionEn?: string | null
+  descriptionKo?: string | null
+  transitTimeLabelEn?: string | null
+  transitTimeLabelKo?: string | null
+  deliveryDayOfWeek?: string | null
+  deliveryTimestamp?: string | null
+}
+
+export interface ShippingQuoteOptions {
+  options: ShippingQuote[]
+  defaultOptionIndex: number
 }
 
 // 단순 in-memory 캐시: (country|postal|weight_bracket|service) → quote, 24h TTL
@@ -55,9 +67,17 @@ interface CacheEntry { quote: ShippingQuote; expiresAt: number }
 const RATE_CACHE = new Map<string, CacheEntry>()
 const RATE_CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
+interface OptionsCacheEntry { options: ShippingQuote[]; expiresAt: number }
+const OPTIONS_CACHE = new Map<string, OptionsCacheEntry>()
+
 function cacheKey(country: string, postal: string, weightKg: number, serviceCode: string | undefined): string {
   const bracket = bucketWeightKg(weightKg)
   return `${country.toUpperCase()}|${postal}|${bracket}|${serviceCode ?? 'AUTO'}`
+}
+
+function optionsCacheKey(country: string, postal: string, weightKg: number): string {
+  const bracket = bucketWeightKg(weightKg)
+  return `OPT|${country.toUpperCase()}|${postal}|${bracket}`
 }
 
 function bucketWeightKg(weightKg: number): number {
@@ -189,14 +209,21 @@ interface ServiceRow {
   code: string
   name_en: string
   is_active: boolean
+  description_en?: string | null
+  description_ko?: string | null
+  transit_time_label_en?: string | null
+  transit_time_label_ko?: string | null
 }
+
+const SERVICE_SELECT = 'id, code, name_en, is_active, description_en, description_ko, transit_time_label_en, transit_time_label_ko'
+const AUTO_SERVICE_CODES = ['fedex_ip', 'fedex_ie', 'fedex_ipe', 'fedex_ip_pak', 'fedex_ipe_pak', 'fedex_ip_env', 'fedex_ipe_env']
 
 async function loadCandidateServices(wantedCode: string | null): Promise<ServiceRow[]> {
   const supabase = createServerClient()
   if (wantedCode) {
     const { data } = await supabase
       .from('print_shipping_services')
-      .select('id, code, name_en, is_active')
+      .select(SERVICE_SELECT)
       .eq('code', wantedCode)
       .eq('is_active', true)
     return (data ?? []) as ServiceRow[]
@@ -204,8 +231,8 @@ async function loadCandidateServices(wantedCode: string | null): Promise<Service
   // auto-pick: IP, IE, IP Pak, IP Envelope 만 후보 (Freight 은 무게 자동 진입)
   const { data } = await supabase
     .from('print_shipping_services')
-    .select('id, code, name_en, is_active')
-    .in('code', ['fedex_ip', 'fedex_ie', 'fedex_ipe', 'fedex_ip_pak', 'fedex_ipe_pak', 'fedex_ip_env', 'fedex_ipe_env'])
+    .select(SERVICE_SELECT)
+    .in('code', AUTO_SERVICE_CODES)
     .eq('is_active', true)
   return (data ?? []) as ServiceRow[]
 }
@@ -284,6 +311,10 @@ async function quoteForService(
     listRateKrw: listRateKrw,
     isFallback: reason !== 'computed_from_contract' && reason !== 'direct_rate_usd',
     reason,
+    descriptionEn: service.description_en ?? null,
+    descriptionKo: service.description_ko ?? null,
+    transitTimeLabelEn: service.transit_time_label_en ?? null,
+    transitTimeLabelKo: service.transit_time_label_ko ?? null,
     _krw: finalKrw,
   }
 }
@@ -312,6 +343,127 @@ function fallbackQuote(
     isFallback: true,
     reason,
   }
+}
+
+// ===== 모든 배송 옵션 배열 반환 (고객 선택 UI용) =====
+export async function quoteShippingOptions(
+  countryCode: string,
+  weightKg: number,
+  recipientPostal?: string,
+): Promise<ShippingQuoteOptions> {
+  const supabase = createServerClient()
+  const upperCountry = countryCode.toUpperCase()
+  const effectiveWeight = weightKg > 0 ? weightKg : 0.5
+
+  if (isFedexApiConfigured()) {
+    const key = optionsCacheKey(upperCountry, recipientPostal ?? '', effectiveWeight)
+    const cached = OPTIONS_CACHE.get(key)
+    if (cached && cached.expiresAt > Date.now()) {
+      return { options: cached.options, defaultOptionIndex: 0 }
+    }
+    try {
+      const { data: cfg } = await supabase
+        .from('print_shipping_config')
+        .select('vat_markup_percent')
+        .eq('id', 1)
+        .maybeSingle()
+      const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
+      const apiResult = await fetchFedexRates({
+        recipientCountryCode: upperCountry,
+        recipientPostalCode: recipientPostal ?? '00000',
+        recipientCity: 'CITY',
+        weightKg: effectiveWeight,
+      })
+      if (apiResult.options.length > 0) {
+        const allCodes = apiResult.options.map((o) => fedexServiceToInternalCode(o.serviceType))
+        const { data: services } = await supabase
+          .from('print_shipping_services')
+          .select('code, description_en, description_ko, transit_time_label_en, transit_time_label_ko')
+          .in('code', allCodes)
+        const svcMap = new Map(services?.map((s) => [s.code, s]) ?? [])
+
+        const options: ShippingQuote[] = apiResult.options.map((opt) => {
+          const baseUsd = opt.totalNetCharge
+          const code = fedexServiceToInternalCode(opt.serviceType)
+          const svc = svcMap.get(code)
+          return {
+            costUsd: Math.round(baseUsd * (1 + markupPct / 100) * 100) / 100,
+            baseCostUsd: Math.round(baseUsd * 100) / 100,
+            markupPct,
+            zoneCode: 'API',
+            zoneNameEn: 'FedEx live rate',
+            serviceCode: code,
+            serviceNameEn: opt.serviceName,
+            weightKg: effectiveWeight,
+            contractDiscountPct: null,
+            automationBonusPct: null,
+            listRateKrw: null,
+            isFallback: false,
+            reason: 'fedex_api' as const,
+            descriptionEn: svc?.description_en ?? null,
+            descriptionKo: svc?.description_ko ?? null,
+            transitTimeLabelEn: svc?.transit_time_label_en ?? null,
+            transitTimeLabelKo: svc?.transit_time_label_ko ?? null,
+            deliveryDayOfWeek: opt.deliveryDayOfWeek ?? null,
+            deliveryTimestamp: opt.deliveryTimestamp ?? null,
+          }
+        })
+        options.sort((a, b) => a.costUsd - b.costUsd)
+        OPTIONS_CACHE.set(key, { options, expiresAt: Date.now() + RATE_CACHE_TTL_MS })
+        return { options, defaultOptionIndex: 0 }
+      }
+    } catch {
+      // fall through to DB fallback
+    }
+  }
+
+  // DB fallback: 모든 후보 서비스 견적 → 배열 반환
+  const [{ data: config }, { data: zone }] = await Promise.all([
+    supabase.from('print_shipping_config').select('*').eq('id', 1).maybeSingle(),
+    supabase
+      .from('print_shipping_zones')
+      .select('id, code, name_en, countries, is_active')
+      .contains('countries', [upperCountry])
+      .eq('is_active', true)
+      .maybeSingle(),
+  ])
+
+  const markupPct = Number(config?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
+  const fallbackUsd = Number(config?.fallback_rate_usd ?? DEFAULT_FALLBACK_USD)
+
+  if (!zone) {
+    return {
+      options: [fallbackQuote('OTHER', 'Other (no zone match)', fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_zone')],
+      defaultOptionIndex: 0,
+    }
+  }
+
+  const krwPerUsd = Number(config?.krw_per_usd_override ?? 0) || await getKrwToUsdRate()
+  const candidates = await loadCandidateServices(null)
+  if (!candidates.length) {
+    return {
+      options: [fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_rate')],
+      defaultOptionIndex: 0,
+    }
+  }
+
+  const today = new Date().toISOString().slice(0, 10)
+  const quotes: (ShippingQuote & { _krw: number })[] = []
+  for (const svc of candidates) {
+    const q = await quoteForService(supabase, zone, svc, effectiveWeight, krwPerUsd, markupPct, fallbackUsd, today)
+    if (q) quotes.push(q)
+  }
+
+  if (!quotes.length) {
+    return {
+      options: [fallbackQuote(zone.code, zone.name_en, fallbackUsd, markupPct, effectiveWeight, null, 'fallback_no_rate')],
+      defaultOptionIndex: 0,
+    }
+  }
+
+  quotes.sort((a, b) => a._krw - b._krw)
+  const options: ShippingQuote[] = quotes.map(({ _krw, ...q }) => { void _krw; return q })
+  return { options, defaultOptionIndex: 0 }
 }
 
 function mapPreferredService(serviceCode?: string): 'INTERNATIONAL_PRIORITY' | 'INTERNATIONAL_ECONOMY' | undefined {

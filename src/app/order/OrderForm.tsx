@@ -17,11 +17,24 @@ interface Props {
   preloadedFileId?: string | null
 }
 
-interface LiveQuote {
-  costUsd: number
-  zoneCode: string
+interface ShippingOption {
+  serviceCode: string | null
   serviceNameEn: string | null
-  reason: string
+  costUsd: number
+  effectiveCostUsd: number
+  isDefault: boolean
+  descriptionEn?: string | null
+  descriptionKo?: string | null
+  transitTimeLabelEn?: string | null
+  transitTimeLabelKo?: string | null
+  deliveryDayOfWeek?: string | null
+  zoneCode: string
+  isFallback: boolean
+}
+
+interface LiveQuoteResponse {
+  options: ShippingOption[]
+  defaultOptionIndex: number
   freeShipping: boolean
   freeShippingThresholdUsd: number
   freeShippingShortageUsd: number
@@ -86,13 +99,16 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const [formTouched, setFormTouched] = useState(false)
 
   // 실시간 배송비 견적 (국가/우편번호/소계 변경 시 자동 갱신)
-  const [liveQuote, setLiveQuote] = useState<LiveQuote | null>(null)
+  const [liveQuoteResponse, setLiveQuoteResponse] = useState<LiveQuoteResponse | null>(null)
+  const [selectedOptionIndex, setSelectedOptionIndex] = useState(0)
   const [quoteLoading, setQuoteLoading] = useState(false)
   const [fileAgreement, setFileAgreement] = useState(false)
-  const effectiveShippingUsd = liveQuote?.costUsd ?? shippingUsd
+
+  const selectedOption = liveQuoteResponse?.options[selectedOptionIndex] ?? null
+  const effectiveShippingUsd = selectedOption?.effectiveCostUsd ?? shippingUsd
   const totalUsd = itemPriceUsd + effectiveShippingUsd
 
-  // Debounced 견적 페치
+  // Debounced 견적 페치 — 국가/우편번호/소계 변경 시 모든 옵션 갱신
   useEffect(() => {
     if (!form.country) return
     const timer = setTimeout(async () => {
@@ -110,11 +126,22 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         })
         if (res.ok) {
           const data = await res.json()
-          setLiveQuote({
-            costUsd: Number(data.quote?.costUsd ?? 0),
-            zoneCode: String(data.quote?.zoneCode ?? ''),
-            serviceNameEn: data.quote?.serviceNameEn ?? null,
-            reason: String(data.quote?.reason ?? ''),
+          setLiveQuoteResponse({
+            options: (data.options ?? []).map((o: ShippingOption) => ({
+              serviceCode: o.serviceCode,
+              serviceNameEn: o.serviceNameEn,
+              costUsd: Number(o.costUsd ?? 0),
+              effectiveCostUsd: Number(o.effectiveCostUsd ?? o.costUsd ?? 0),
+              isDefault: !!o.isDefault,
+              descriptionEn: o.descriptionEn ?? null,
+              descriptionKo: o.descriptionKo ?? null,
+              transitTimeLabelEn: o.transitTimeLabelEn ?? null,
+              transitTimeLabelKo: o.transitTimeLabelKo ?? null,
+              deliveryDayOfWeek: o.deliveryDayOfWeek ?? null,
+              zoneCode: String(o.zoneCode ?? ''),
+              isFallback: !!o.isFallback,
+            })),
+            defaultOptionIndex: Number(data.defaultOptionIndex ?? 0),
             freeShipping: !!data.freeShipping,
             freeShippingThresholdUsd: Number(data.freeShippingThresholdUsd ?? 0),
             freeShippingShortageUsd: Number(data.freeShippingShortageUsd ?? 0),
@@ -122,6 +149,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
             overWeightLimit: !!data.overWeightLimit,
             freeShippingNote: data.freeShippingNote ?? null,
           })
+          // 국가/우편 변경 시 기본 선택(cheapest)으로 리셋
+          setSelectedOptionIndex(Number(data.defaultOptionIndex ?? 0))
         }
       } catch { /* keep prior quote */ }
       finally { setQuoteLoading(false) }
@@ -223,6 +252,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           state: form.state || undefined,
           country: form.country,
           postalCode: form.postalCode,
+          shippingServiceCode: selectedOption?.serviceCode ?? undefined,
         },
       }),
     })
@@ -559,6 +589,87 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         </div>
       </section>
 
+      {/* Shipping Options */}
+      <section>
+        <h2 className="text-lg font-semibold text-gray-900 mb-3">
+          4. Shipping Service
+          {quoteLoading && <Loader2 className="w-4 h-4 inline ml-2 animate-spin text-gray-400" />}
+        </h2>
+        {liveQuoteResponse && liveQuoteResponse.options.length > 0 ? (
+          <div className="space-y-2">
+            {liveQuoteResponse.options.map((opt, idx) => {
+              const isSelected = idx === selectedOptionIndex
+              const isCheapest = idx === liveQuoteResponse.defaultOptionIndex
+              const isFree = liveQuoteResponse.freeShipping && isCheapest
+              const isDifferential = liveQuoteResponse.freeShipping && !isCheapest
+
+              return (
+                <label
+                  key={opt.serviceCode ?? idx}
+                  className={`flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-colors ${
+                    isSelected
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="shippingOption"
+                    checked={isSelected}
+                    onChange={() => setSelectedOptionIndex(idx)}
+                    className="mt-1 w-4 h-4 accent-blue-600 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm text-gray-900">
+                        {opt.serviceNameEn ?? opt.serviceCode ?? 'FedEx'}
+                      </span>
+                      {isCheapest && (
+                        <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                          추천
+                        </span>
+                      )}
+                    </div>
+                    {(opt.transitTimeLabelKo || opt.transitTimeLabelEn) && (
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        {opt.transitTimeLabelKo ?? opt.transitTimeLabelEn}
+                      </p>
+                    )}
+                    {(opt.descriptionKo || opt.descriptionEn) && (
+                      <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
+                        {opt.descriptionKo ?? opt.descriptionEn}
+                      </p>
+                    )}
+                  </div>
+                  <div className="text-right shrink-0">
+                    {isFree ? (
+                      <span className="text-green-600 font-bold text-sm">FREE</span>
+                    ) : isDifferential ? (
+                      <span className="font-semibold text-sm text-gray-900">
+                        +${opt.effectiveCostUsd.toFixed(2)}
+                      </span>
+                    ) : (
+                      <span className="font-semibold text-sm text-gray-900">
+                        ${opt.effectiveCostUsd.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
+                </label>
+              )
+            })}
+          </div>
+        ) : (
+          <div className="rounded-xl border border-gray-200 p-4 text-sm text-gray-500">
+            {quoteLoading ? 'Calculating shipping rates…' : 'Enter your shipping address to see options.'}
+          </div>
+        )}
+        {liveQuoteResponse?.freeShippingNote && !liveQuoteResponse.freeShipping && (
+          <p className={`mt-2 text-xs rounded px-2 py-1 ${liveQuoteResponse.overWeightLimit ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+            {liveQuoteResponse.freeShippingNote}
+          </p>
+        )}
+      </section>
+
       {/* Order Summary */}
       <section className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-3">
         <h2 className="font-semibold text-gray-900">Order Summary</h2>
@@ -569,22 +680,22 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         <div className="flex justify-between text-sm text-gray-600">
           <span>
             Shipping
-            {liveQuote?.zoneCode && liveQuote.zoneCode !== 'API' && (
-              <span className="text-xs text-gray-400 ml-1">(FedEx Zone {liveQuote.zoneCode})</span>
+            {selectedOption?.serviceNameEn && (
+              <span className="text-xs text-gray-400 ml-1">({selectedOption.serviceNameEn})</span>
             )}
             {quoteLoading && <Loader2 className="w-3 h-3 inline ml-1 animate-spin" />}
           </span>
           <span>
-            {liveQuote?.freeShipping ? (
-              <span className="text-green-600 font-semibold">FREE 🎉</span>
+            {liveQuoteResponse?.freeShipping && selectedOptionIndex === liveQuoteResponse.defaultOptionIndex ? (
+              <span className="text-green-600 font-semibold">FREE</span>
             ) : (
               <>${effectiveShippingUsd.toFixed(2)}</>
             )}
           </span>
         </div>
-        {liveQuote?.freeShippingNote && !liveQuote.freeShipping && (
-          <p className={`text-xs rounded px-2 py-1 ${liveQuote.overWeightLimit ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
-            {liveQuote.freeShippingNote}
+        {liveQuoteResponse?.freeShippingNote && !liveQuoteResponse.freeShipping && (
+          <p className={`text-xs rounded px-2 py-1 ${liveQuoteResponse.overWeightLimit ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
+            {liveQuoteResponse.freeShippingNote}
           </p>
         )}
         <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">

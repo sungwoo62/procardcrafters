@@ -27,6 +27,7 @@ interface OrderRequest {
     state?: string
     country: string
     postalCode: string
+    shippingServiceCode?: string
   }
 }
 
@@ -120,7 +121,7 @@ export async function POST(request: NextRequest) {
       }
     }),
   )
-  const shippingQuote = await quoteShipping(shipping.country, weightKg, undefined, shipping.postalCode)
+  const shippingQuote = await quoteShipping(shipping.country, weightKg, shipping.shippingServiceCode, shipping.postalCode)
   const { data: cfg } = await supabase
     .from('print_shipping_config')
     .select('free_shipping_threshold_usd, free_shipping_max_weight_kg')
@@ -153,6 +154,8 @@ export async function POST(request: NextRequest) {
       exchange_rate_krw_usd: exchangeRate,
       status: 'pending',
       payment_provider: 'paypal',
+      shipping_service_code: shippingQuote.serviceCode ?? null,
+      shipping_service_name_en: shippingQuote.serviceNameEn ?? null,
     })
     .select()
     .single()
