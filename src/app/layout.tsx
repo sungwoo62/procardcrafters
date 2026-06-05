@@ -6,8 +6,9 @@ import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import FreeShippingBanner from '@/components/FreeShippingBanner'
+import SeasonalToast from '@/components/SeasonalToast'
 import { createServerClient } from '@/lib/supabase'
-import { getActiveCampaigns, getCampaignPriority } from '@/lib/promotion-engine'
+import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
 import type { Campaign } from '@/lib/promotion-engine'
 
 // 마케팅 트래킹 env (NEXT_PUBLIC_* 라야 브라우저 노출).
@@ -78,6 +79,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const activeCampaigns = [...rawCampaigns].sort(
     (a, b) => getCampaignPriority(b.calendar.key) - getCampaignPriority(a.calendar.key),
   )
+  const primaryCampaign = activeCampaigns[0] ?? null
+  const primaryPromoCode = primaryCampaign
+    ? await getTopPromoCode(primaryCampaign.id).catch(() => null)
+    : null
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <head>
@@ -176,6 +181,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />
+        {primaryCampaign && (
+          <SeasonalToast campaign={primaryCampaign} promoCode={primaryPromoCode?.code ?? null} />
+        )}
       </body>
     </html>
   )
