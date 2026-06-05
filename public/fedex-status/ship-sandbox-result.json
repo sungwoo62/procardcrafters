@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-06-05T02:32:51.969Z",
+  "sandbox": true,
+  "transactionId": "a0103937-2bfe-4ca3-ab18-28d98a777161",
+  "masterTrackingNumber": "794825497150",
+  "serviceType": "INTERNATIONAL_PRIORITY",
+  "serviceName": "International Priority®",
+  "pieces": 1,
+  "completedShipmentDetail": {
+    "shipmentRating": [
+      {
+        "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+        "rateScale": "KR001OFB_01_YOUR_PACKAGING",
+        "rateZone": "KR001O",
+        "pricingCode": "",
+        "ratedWeightMethod": "ACTUAL",
+        "currencyExchangeRate": {
+          "fromCurrency": "USD",
+          "intoCurrency": "USD",
+          "rate": 1
+        },
+        "dimDivisor": 139,
+        "fuelSurchargePercent": 16,
+        "totalBillingWeight": {
+          "units": "KG",
+          "value": 1
+        },
+        "totalBaseCharge": 131.7,
+        "totalFreightDiscounts": 0,
+        "totalNetFreight": 131.7,
+        "totalSurcharges": 22.23,
+        "totalNetFedExCharge": 153.93,
+        "totalTaxes": 0,
+        "totalNetCharge": 153.93,
+        "totalRebates": 0,
+        "totalDutiesAndTaxes": 0,
+        "totalAncillaryFeesAndTaxes": 0,
+        "totalDutiesTaxesAndFees": 0,
+        "totalNetChargeWithDutiesAndTaxes": 153.93,
+        "surcharges": [
+          {
+            "surchargeType": "DEMAND",
+            "level": "SHIPMENT",
+            "description": "Demand Surcharge",
+            "amount": 1
+          },
+          {
+            "surchargeType": "FUEL",
+            "level": "SHIPMENT",
+            "description": "Fuel",
+            "amount": 21.23
+          }
+        ],
+        "freightDiscounts": [],
+        "taxes": [],
+        "currency": "USD"
+      }
+    ]
+  }
+}

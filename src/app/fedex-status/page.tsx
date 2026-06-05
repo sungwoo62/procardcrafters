@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import Link from 'next/link'
-import { CheckCircle2, XCircle, Clock, ExternalLink, Truck, FileText, Package } from 'lucide-react'
+import { CheckCircle2, XCircle, Clock, ExternalLink, Truck, FileText, Package, Download, ShieldCheck } from 'lucide-react'
 
 export const metadata = {
   title: 'FedEx 통합 상태 — OMO-2365',
@@ -31,6 +31,25 @@ function loadResults(): Captured | null {
   }
 }
 
+function loadShipResult(): { masterTrackingNumber?: string; serviceType?: string; transactionId?: string; capturedAt?: string } | null {
+  try {
+    const p = path.join(process.cwd(), 'public/fedex-status/ship-sandbox-result.json')
+    return JSON.parse(fs.readFileSync(p, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+const VALIDATION_PIPELINE = [
+  { step: 1, title: '웹 API 개발 + 테스트 키로 검증', status: 'done', note: 'OAuth + Rate API + Ship API 모두 샌드박스 OK' },
+  { step: 2, title: '테스트 라벨 생성 + label@fedex.com 제출', status: 'in_progress', note: '샌드박스 PDF 생성 완료 — 600 DPI 인쇄 + 라벨 표지 작성 필요 (보드 액션)' },
+  { step: 3, title: 'Developer Portal 에서 프로덕션 이전', status: 'done', note: '운영 키 받음 (l7330...09696) + 계정 210839884 활성' },
+  { step: 4, title: '라벨 표지(Cover Sheet) 작성 + 우편/이메일 제출', status: 'todo', note: 'PDF 다운로드 → 작성 → 우편 (Collierville TN) + label@fedex.com' },
+  { step: 5, title: 'FedEx 라벨 평가 (3 영업일)', status: 'todo', note: '바코드 분석 그룹 승인 대기 — 우리 코드 액션 없음' },
+  { step: 6, title: '애플리케이션 활성화 (FedEx → 우리)', status: 'todo', note: '평가 통과 시 production 자격증명 활성 통지' },
+  { step: 7, title: 'URL/자격증명 → 프로덕션 전환', status: 'todo', note: 'Vercel env 에 prod 키 주입 + 운영 트래픽 활성' },
+] as const
+
 const DONE = [
   { area: 'FedEx Rate API 라이브 견적', detail: 'OAuth2 + /rate/v1/rates/quotes, 계약 ACCOUNT rate 우선 → LIST 폴백' },
   { area: '4단 폴백 체인', detail: 'API → DB 계약식(할인%×자동화%) → direct USD → 고정 $35' },
@@ -55,6 +74,7 @@ const NOT_DONE = [
 
 export default function Page() {
   const data = loadResults()
+  const ship = loadShipResult()
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 text-gray-900">
       <header className="mb-8 border-b border-gray-200 pb-6">
@@ -64,12 +84,62 @@ export default function Page() {
         </div>
         <p className="text-sm text-gray-600">
           OMO-2365 · 한국출 FedEx 배송 시스템의 「무엇이 되고 무엇이 안 됐는지」 라이브 보고.
-          현재 단계: <strong>Rate API 라이브 + 수기 송장</strong>.
+          현재 단계: <strong>운영 키 적용 + Ship API 샌드박스 라벨 발급 검증 완료</strong>.
         </p>
         <p className="text-xs text-gray-500 mt-2">
-          데이터 캡처 시각: {data?.capturedAt ?? '없음'} · 샌드박스 계정: {data?.fedex.account ?? '?'} · {data?.fedex.base ?? '?'}
+          데이터 캡처 시각: {data?.capturedAt ?? '없음'} · 운영 계정: 210839884 (ALLPACKMEISTER) · API base: apis.fedex.com (prod) / apis-sandbox.fedex.com (Ship)
         </p>
       </header>
+
+      {/* 검증 파이프라인 7단계 */}
+      <section className="mb-10 rounded-2xl border border-purple-200 bg-purple-50/40 p-5">
+        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-purple-900">
+          <ShieldCheck className="h-5 w-5" /> FedEx 라벨 검증 파이프라인 (보드 가이드 7단계)
+        </h2>
+        <p className="text-xs text-purple-800 mb-4">
+          Open Ship / 발송 / 통합 API 는 라벨 평가 후에만 prod 활성화 가능. 보드의 가이드 그대로 진척도 시각화.
+        </p>
+        <ol className="space-y-2">
+          {VALIDATION_PIPELINE.map((s) => (
+            <li key={s.step} className={`rounded-lg p-3 border ${s.status === 'done' ? 'bg-green-50 border-green-200' : s.status === 'in_progress' ? 'bg-blue-50 border-blue-200' : 'bg-white border-gray-200'}`}>
+              <div className="flex items-center gap-2 text-sm">
+                <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold ${s.status === 'done' ? 'bg-green-600 text-white' : s.status === 'in_progress' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-600'}`}>
+                  {s.status === 'done' ? '✓' : s.step}
+                </span>
+                <p className="font-medium flex-1">{s.title}</p>
+                <span className="text-xs uppercase tracking-wider text-gray-500">{s.status === 'done' ? '완료' : s.status === 'in_progress' ? '진행' : '대기'}</span>
+              </div>
+              <p className="text-xs text-gray-600 mt-1 ml-8">{s.note}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      {/* 샘플 라벨 (Ship API 검증) */}
+      {ship?.masterTrackingNumber && (
+        <section className="mb-10 rounded-2xl border border-blue-200 bg-blue-50/40 p-5">
+          <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-blue-900">
+            <FileText className="h-5 w-5" /> Ship API 샘플 라벨 (검증 단계 2)
+          </h2>
+          <p className="text-xs text-blue-800 mb-3">
+            샌드박스 발급 — KR Bucheon → JP Tokyo, INTERNATIONAL PRIORITY, 1kg. 라벨 자체에 「TEST LABEL - DO NOT SHIP」 표시.
+            이 PDF 는 FedEx 라벨 평가팀 제출용 후보 (600 DPI 인쇄 후 우편).
+          </p>
+          <dl className="grid grid-cols-2 gap-2 text-xs mb-3">
+            <div><dt className="text-gray-500">Master Tracking</dt><dd className="font-mono font-semibold">{ship.masterTrackingNumber}</dd></div>
+            <div><dt className="text-gray-500">Service</dt><dd className="font-semibold">{ship.serviceType}</dd></div>
+            <div><dt className="text-gray-500">Transaction ID</dt><dd className="font-mono text-xs">{ship.transactionId}</dd></div>
+            <div><dt className="text-gray-500">발급 시각</dt><dd>{ship.capturedAt}</dd></div>
+          </dl>
+          <a
+            href={`/fedex-status/sample-label-${ship.masterTrackingNumber}.pdf`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-2 text-sm font-medium text-white hover:bg-blue-700"
+          >
+            <Download className="h-4 w-4" /> 샘플 라벨 PDF 다운로드 (4 페이지: 메인 + AWB 3매)
+          </a>
+        </section>
+      )}
 
       {/* 요약 카드 */}
       <section className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10">

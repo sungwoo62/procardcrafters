@@ -1,8 +1,8 @@
 {
-  "capturedAt": "2026-06-05T02:11:05.455Z",
+  "capturedAt": "2026-06-05T02:32:06.892Z",
   "fedex": {
-    "base": "https://apis-sandbox.fedex.com",
-    "account": "740561073",
+    "base": "https://apis.fedex.com",
+    "account": "210839884",
     "env": "sandbox"
   },
   "summary": {
@@ -24,19 +24,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 168.19,
-            "totalNetCharge": 176.6,
-            "totalNetFedExCharge": 176.6,
+            "totalNetCharge": 219.91,
+            "totalNetFedExCharge": 219.91,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 8.41,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 51.72,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 8.41
+                  "amount": 51.72
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -56,10 +56,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 168.19,
                   "netFreight": 168.19,
-                  "totalSurcharges": 8.41,
-                  "netFedExCharge": 176.6,
+                  "totalSurcharges": 51.72,
+                  "netFedExCharge": 219.91,
                   "totalTaxes": 0,
-                  "netCharge": 176.6,
+                  "netCharge": 219.91,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -70,7 +70,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 8.41
+                      "amount": 51.72
                     }
                   ],
                   "currency": "USD"
@@ -89,19 +89,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 137.19,
-            "totalNetCharge": 144.05,
-            "totalNetFedExCharge": 144.05,
+            "totalNetCharge": 179.38,
+            "totalNetFedExCharge": 179.38,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 6.86,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 42.19,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 6.86
+                  "amount": 42.19
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -121,10 +121,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 137.19,
                   "netFreight": 137.19,
-                  "totalSurcharges": 6.86,
-                  "netFedExCharge": 144.05,
+                  "totalSurcharges": 42.19,
+                  "netFedExCharge": 179.38,
                   "totalTaxes": 0,
-                  "netCharge": 144.05,
+                  "netCharge": 179.38,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -135,7 +135,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 6.86
+                      "amount": 42.19
                     }
                   ],
                   "currency": "USD"
@@ -154,19 +154,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 119.15,
-            "totalNetCharge": 125.11,
-            "totalNetFedExCharge": 125.11,
+            "totalNetCharge": 155.79,
+            "totalNetFedExCharge": 155.79,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 5.96,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 36.64,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 5.96
+                  "amount": 36.64
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -186,10 +186,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 119.15,
                   "netFreight": 119.15,
-                  "totalSurcharges": 5.96,
-                  "netFedExCharge": 125.11,
+                  "totalSurcharges": 36.64,
+                  "netFedExCharge": 155.79,
                   "totalTaxes": 0,
-                  "netCharge": 125.11,
+                  "netCharge": 155.79,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -200,7 +200,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 5.96
+                      "amount": 36.64
                     }
                   ],
                   "currency": "USD"
@@ -219,13 +219,13 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 61.77,
-            "totalNetCharge": 81.66,
-            "totalNetFedExCharge": 81.66,
+            "totalNetCharge": 101.68,
+            "totalNetFedExCharge": 101.68,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 19.89,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 39.91,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
@@ -236,7 +236,7 @@
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 3.89
+                  "amount": 23.91
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -256,10 +256,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 61.77,
                   "netFreight": 61.77,
-                  "totalSurcharges": 19.89,
-                  "netFedExCharge": 81.66,
+                  "totalSurcharges": 39.91,
+                  "netFedExCharge": 101.68,
                   "totalTaxes": 0,
-                  "netCharge": 81.66,
+                  "netCharge": 101.68,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -275,7 +275,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 3.89
+                      "amount": 23.91
                     }
                   ],
                   "currency": "USD"
@@ -294,19 +294,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 69.45,
-            "totalNetCharge": 72.92,
-            "totalNetFedExCharge": 72.92,
+            "totalNetCharge": 90.81,
+            "totalNetFedExCharge": 90.81,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 3.47,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 21.36,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 3.47
+                  "amount": 21.36
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -326,10 +326,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 69.45,
                   "netFreight": 69.45,
-                  "totalSurcharges": 3.47,
-                  "netFedExCharge": 72.92,
+                  "totalSurcharges": 21.36,
+                  "netFedExCharge": 90.81,
                   "totalTaxes": 0,
-                  "netCharge": 72.92,
+                  "netCharge": 90.81,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -340,7 +340,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 3.47
+                      "amount": 21.36
                     }
                   ],
                   "currency": "USD"
@@ -359,19 +359,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 61.77,
-            "totalNetCharge": 64.86,
-            "totalNetFedExCharge": 64.86,
+            "totalNetCharge": 80.76,
+            "totalNetFedExCharge": 80.76,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 3.09,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 18.99,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 3.09
+                  "amount": 18.99
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -391,10 +391,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 61.77,
                   "netFreight": 61.77,
-                  "totalSurcharges": 3.09,
-                  "netFedExCharge": 64.86,
+                  "totalSurcharges": 18.99,
+                  "netFedExCharge": 80.76,
                   "totalTaxes": 0,
-                  "netCharge": 64.86,
+                  "netCharge": 80.76,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -405,7 +405,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 3.09
+                      "amount": 18.99
                     }
                   ],
                   "currency": "USD"
@@ -424,19 +424,19 @@
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
             "totalBaseCharge": 46.77,
-            "totalNetCharge": 49.11,
-            "totalNetFedExCharge": 49.11,
+            "totalNetCharge": 61.15,
+            "totalNetFedExCharge": 61.15,
             "shipmentRateDetail": {
               "rateZone": "07",
               "dimDivisor": 0,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 2.34,
+              "fuelSurchargePercent": 30.75,
+              "totalSurcharges": 14.38,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
-                  "amount": 2.34
+                  "amount": 14.38
                 }
               ],
               "pricingCode": "PACKAGE",
@@ -456,10 +456,10 @@
                   "ratedWeightMethod": "ACTUAL",
                   "baseCharge": 46.77,
                   "netFreight": 46.77,
-                  "totalSurcharges": 2.34,
-                  "netFedExCharge": 49.11,
+                  "totalSurcharges": 14.38,
+                  "netFedExCharge": 61.15,
                   "totalTaxes": 0,
-                  "netCharge": 49.11,
+                  "netCharge": 61.15,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -470,77 +470,7 @@
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
-                      "amount": 2.34
-                    }
-                  ],
-                  "currency": "USD"
-                },
-                "sequenceNumber": 1
-              }
-            ],
-            "currency": "USD"
-          }
-        },
-        {
-          "serviceType": "FEDEX_GROUND",
-          "serviceName": "FedEx Ground®",
-          "rated": {
-            "rateType": "ACCOUNT",
-            "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 18.21,
-            "totalNetCharge": 19.21,
-            "totalNetFedExCharge": 19.21,
-            "shipmentRateDetail": {
-              "rateZone": "7",
-              "dimDivisor": 139,
-              "fuelSurchargePercent": 5.5,
-              "totalSurcharges": 1,
-              "totalFreightDiscount": 0,
-              "surCharges": [
-                {
-                  "type": "FUEL",
-                  "description": "Fuel Surcharge",
-                  "level": "PACKAGE",
-                  "amount": 1
-                }
-              ],
-              "totalBillingWeight": {
-                "units": "KG",
-                "value": 1
-              },
-              "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 3
-              }
-            },
-            "ratedPackages": [
-              {
-                "groupNumber": 0,
-                "effectiveNetDiscount": 0,
-                "packageRateDetail": {
-                  "rateType": "PAYOR_ACCOUNT_PACKAGE",
-                  "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 18.21,
-                  "netFreight": 18.21,
-                  "totalSurcharges": 1,
-                  "netFedExCharge": 19.21,
-                  "totalTaxes": 0,
-                  "netCharge": 19.21,
-                  "totalRebates": 0,
-                  "billingWeight": {
-                    "units": "KG",
-                    "value": 1
-                  },
-                  "totalFreightDiscounts": 0,
-                  "surcharges": [
-                    {
-                      "type": "FUEL",
-                      "description": "Fuel Surcharge",
-                      "level": "PACKAGE",
-                      "amount": 1
+                      "amount": 14.38
                     }
                   ],
                   "currency": "USD"
@@ -566,39 +496,47 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 166.4,
-            "totalNetCharge": 194.18,
+            "totalDiscounts": 87240,
+            "totalBaseCharge": 145100,
+            "totalNetCharge": 31860,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 194.18,
+            "totalNetFedExCharge": 31860,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 194.18,
+            "totalNetChargeWithDutiesAndTaxes": 31860,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "B",
+              "rateZone": "P",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 27.78,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 10510,
+              "totalFreightDiscount": 123750,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 118240,
+                  "percent": 81.49
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 5510,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 26.78
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 1
+                  "amount": 10510
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -606,8 +544,8 @@
                 "value": 1
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFB_2P_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FP_2P_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1
@@ -616,42 +554,160 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 87240,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 166.4,
-                  "netFreight": 166.4,
-                  "totalSurcharges": 27.78,
-                  "netFedExCharge": 194.18,
+                  "baseCharge": 145100,
+                  "netFreight": 21350,
+                  "totalSurcharges": 10510,
+                  "netFedExCharge": 31860,
                   "totalTaxes": 0,
-                  "netCharge": 194.18,
+                  "netCharge": 31860,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 1
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 123750,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 118240,
+                      "percent": 81.49
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 5510,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 26.78
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 1
+                      "amount": 10510
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
+          }
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rated": {
+            "rateType": "ACCOUNT",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 86790,
+            "totalBaseCharge": 141300,
+            "totalNetCharge": 29190,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 29190,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 29190,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "KR638F",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 9630,
+              "totalFreightDiscount": 121740,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 115240,
+                  "percent": 81.56
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 6500,
+                  "percent": 4.6
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 9630
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR638FP_03_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 1
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 86790,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 141300,
+                  "netFreight": 19560,
+                  "totalSurcharges": 9630,
+                  "netFedExCharge": 29190,
+                  "totalTaxes": 0,
+                  "netCharge": 29190,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 1
+                  },
+                  "totalFreightDiscounts": 121740,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 115240,
+                      "percent": 81.56
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 6500,
+                      "percent": 4.6
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 9630
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
           }
         },
         {
@@ -661,53 +717,41 @@
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
-            "totalBaseCharge": 158.1,
-            "totalNetCharge": 183.4,
+            "totalBaseCharge": 245240,
+            "totalNetCharge": 366020,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 183.4,
+            "totalNetFedExCharge": 366020,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 183.4,
+            "totalNetChargeWithDutiesAndTaxes": 366020,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
               "rateZone": "B",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 25.3,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 120780,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 25.3
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 0
-                },
-                {
-                  "type": "OTHER",
-                  "description": "Other",
-                  "level": "SHIPMENT",
-                  "amount": 0
+                  "amount": 120780
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
                 "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
+                "intoCurrency": "KRW",
+                "rate": 1551.2
               },
               "totalBillingWeight": {
                 "units": "KG",
                 "value": 1
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KRALLFB_EC_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KRALLFB_EC_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1
@@ -720,12 +764,12 @@
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 158.1,
-                  "netFreight": 158.1,
-                  "totalSurcharges": 25.3,
-                  "netFedExCharge": 183.4,
+                  "baseCharge": 245240,
+                  "netFreight": 245240,
+                  "totalSurcharges": 120780,
+                  "netFedExCharge": 366020,
                   "totalTaxes": 0,
-                  "netCharge": 183.4,
+                  "netCharge": 366020,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -737,121 +781,15 @@
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 25.3
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 0
-                    },
-                    {
-                      "type": "OTHER",
-                      "description": "Other",
-                      "level": "SHIPMENT",
-                      "amount": 0
+                      "amount": 120780
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
-          }
-        },
-        {
-          "serviceType": "INTERNATIONAL_ECONOMY",
-          "serviceName": "FedEx International Economy®",
-          "rated": {
-            "rateType": "ACCOUNT",
-            "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 162.1,
-            "totalNetCharge": 189.2,
-            "totalVatCharge": 0,
-            "totalNetFedExCharge": 189.2,
-            "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 189.2,
-            "totalDutiesTaxesAndFees": 0,
-            "totalAncillaryFeesAndTaxes": 0,
-            "shipmentRateDetail": {
-              "rateZone": "KR001O",
-              "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 27.1,
-              "totalFreightDiscount": 0,
-              "surCharges": [
-                {
-                  "type": "FUEL",
-                  "description": "Fuel Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 26.1
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 1
-                }
-              ],
-              "pricingCode": "",
-              "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
-              },
-              "totalBillingWeight": {
-                "units": "KG",
-                "value": 1
-              },
-              "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFB_03_YOUR_PACKAGING",
-              "totalRateScaleWeight": {
-                "units": "KG",
-                "value": 1
-              }
-            },
-            "ratedPackages": [
-              {
-                "groupNumber": 0,
-                "effectiveNetDiscount": 0,
-                "packageRateDetail": {
-                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
-                  "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 162.1,
-                  "netFreight": 162.1,
-                  "totalSurcharges": 27.1,
-                  "netFedExCharge": 189.2,
-                  "totalTaxes": 0,
-                  "netCharge": 189.2,
-                  "totalRebates": 0,
-                  "billingWeight": {
-                    "units": "KG",
-                    "value": 1
-                  },
-                  "totalFreightDiscounts": 0,
-                  "surcharges": [
-                    {
-                      "type": "FUEL",
-                      "description": "Fuel Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 26.1
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 1
-                    }
-                  ],
-                  "currency": "USD"
-                },
-                "sequenceNumber": 1
-              }
-            ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         }
       ],
@@ -869,51 +807,65 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 349.39,
-            "totalNetCharge": 388.67,
+            "totalDiscounts": 78790,
+            "totalBaseCharge": 198600,
+            "totalNetCharge": 120050,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 388.67,
+            "totalNetFedExCharge": 120050,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 388.67,
+            "totalNetChargeWithDutiesAndTaxes": 120050,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "E",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 39.28,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 63610,
+              "totalFreightDiscount": 142160,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 134610,
+                  "percent": 67.78
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7550,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "SATURDAY_DELIVERY",
                   "description": "Saturday Delivery",
                   "level": "SHIPMENT",
-                  "amount": 16
+                  "amount": 20100
                 },
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 18.38
+                  "amount": 38330
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 2.25
+                  "amount": 1280
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 2.65
+                  "amount": 3900
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -921,64 +873,78 @@
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_2A_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FE_2A_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
+                "units": "KG",
+                "value": 2
               }
             },
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 78790,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 349.39,
-                  "netFreight": 349.39,
-                  "totalSurcharges": 39.28,
-                  "netFedExCharge": 388.67,
+                  "baseCharge": 198600,
+                  "netFreight": 56440,
+                  "totalSurcharges": 63610,
+                  "netFedExCharge": 120050,
                   "totalTaxes": 0,
-                  "netCharge": 388.67,
+                  "netCharge": 120050,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 2
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 142160,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 134610,
+                      "percent": 67.78
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7550,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "SATURDAY_DELIVERY",
                       "description": "Saturday Delivery",
                       "level": "SHIPMENT",
-                      "amount": 16
+                      "amount": 20100
                     },
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 18.38
+                      "amount": 38330
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 2.25
+                      "amount": 1280
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 2.65
+                      "amount": 3900
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -987,51 +953,65 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 332.76,
-            "totalNetCharge": 371.21,
+            "totalDiscounts": 75160,
+            "totalBaseCharge": 189500,
+            "totalNetCharge": 116200,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 371.21,
+            "totalNetFedExCharge": 116200,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 371.21,
+            "totalNetChargeWithDutiesAndTaxes": 116200,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "E",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 38.45,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 62340,
+              "totalFreightDiscount": 135640,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 128440,
+                  "percent": 67.78
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7200,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "SATURDAY_DELIVERY",
                   "description": "Saturday Delivery",
                   "level": "SHIPMENT",
-                  "amount": 16
+                  "amount": 20100
                 },
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 17.55
+                  "amount": 37060
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 2.25
+                  "amount": 1280
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 2.65
+                  "amount": 3900
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1039,64 +1019,78 @@
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_2P_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FE_2P_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
+                "units": "KG",
+                "value": 2
               }
             },
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 75160,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 332.76,
-                  "netFreight": 332.76,
-                  "totalSurcharges": 38.45,
-                  "netFedExCharge": 371.21,
+                  "baseCharge": 189500,
+                  "netFreight": 53860,
+                  "totalSurcharges": 62340,
+                  "netFedExCharge": 116200,
                   "totalTaxes": 0,
-                  "netCharge": 371.21,
+                  "netCharge": 116200,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 2
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 135640,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 128440,
+                      "percent": 67.78
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7200,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "SATURDAY_DELIVERY",
                       "description": "Saturday Delivery",
                       "level": "SHIPMENT",
-                      "amount": 16
+                      "amount": 20100
                     },
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 17.55
+                      "amount": 37060
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 2.25
+                      "amount": 1280
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 2.65
+                      "amount": 3900
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -1106,44 +1100,44 @@
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
-            "totalBaseCharge": 389.39,
-            "totalNetCharge": 413.87,
+            "totalBaseCharge": 237000,
+            "totalNetCharge": 359530,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 413.87,
+            "totalNetFedExCharge": 359530,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 413.87,
+            "totalNetChargeWithDutiesAndTaxes": 359530,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "US001D",
+              "rateZone": "KR001O",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 24.48,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 122530,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 19.58
+                  "amount": 117350
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 2.25
+                  "amount": 1280
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 2.65
+                  "amount": 3900
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1151,11 +1145,11 @@
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_06_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR001OFE_06_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
+                "units": "KG",
+                "value": 2
               }
             },
             "ratedPackages": [
@@ -1165,12 +1159,12 @@
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 389.39,
-                  "netFreight": 389.39,
-                  "totalSurcharges": 24.48,
-                  "netFedExCharge": 413.87,
+                  "baseCharge": 237000,
+                  "netFreight": 237000,
+                  "totalSurcharges": 122530,
+                  "netFedExCharge": 359530,
                   "totalTaxes": 0,
-                  "netCharge": 413.87,
+                  "netCharge": 359530,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -1182,27 +1176,27 @@
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 19.58
+                      "amount": 117350
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 2.25
+                      "amount": 1280
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 2.65
+                      "amount": 3900
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -1211,45 +1205,59 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 349.39,
-            "totalNetCharge": 371.87,
+            "totalDiscounts": 78790,
+            "totalBaseCharge": 198600,
+            "totalNetCharge": 90050,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 371.87,
+            "totalNetFedExCharge": 90050,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 371.87,
+            "totalNetChargeWithDutiesAndTaxes": 90050,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "E",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 22.48,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 33610,
+              "totalFreightDiscount": 142160,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 134610,
+                  "percent": 67.78
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7550,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 17.58
+                  "amount": 28430
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 2.25
+                  "amount": 1280
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 2.65
+                  "amount": 3900
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1257,58 +1265,72 @@
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_2A_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FE_2A_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
+                "units": "KG",
+                "value": 2
               }
             },
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 78790,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 349.39,
-                  "netFreight": 349.39,
-                  "totalSurcharges": 22.48,
-                  "netFedExCharge": 371.87,
+                  "baseCharge": 198600,
+                  "netFreight": 56440,
+                  "totalSurcharges": 33610,
+                  "netFedExCharge": 90050,
                   "totalTaxes": 0,
-                  "netCharge": 371.87,
+                  "netCharge": 90050,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 2
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 142160,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 134610,
+                      "percent": 67.78
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7550,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 17.58
+                      "amount": 28430
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 2.25
+                      "amount": 1280
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 2.65
+                      "amount": 3900
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -1317,45 +1339,59 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 332.76,
-            "totalNetCharge": 354.41,
+            "totalDiscounts": 75160,
+            "totalBaseCharge": 189500,
+            "totalNetCharge": 86200,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 354.41,
+            "totalNetFedExCharge": 86200,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 354.41,
+            "totalNetChargeWithDutiesAndTaxes": 86200,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "E",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 21.65,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 32340,
+              "totalFreightDiscount": 135640,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 128440,
+                  "percent": 67.78
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7200,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 16.75
+                  "amount": 27160
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 2.25
+                  "amount": 1280
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 2.65
+                  "amount": 3900
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1363,164 +1399,72 @@
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_2P_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FE_2P_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
-              }
-            },
-            "ratedPackages": [
-              {
-                "groupNumber": 0,
-                "effectiveNetDiscount": 0,
-                "packageRateDetail": {
-                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
-                  "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 332.76,
-                  "netFreight": 332.76,
-                  "totalSurcharges": 21.65,
-                  "netFedExCharge": 354.41,
-                  "totalTaxes": 0,
-                  "netCharge": 354.41,
-                  "totalRebates": 0,
-                  "billingWeight": {
-                    "units": "KG",
-                    "value": 2
-                  },
-                  "totalFreightDiscounts": 0,
-                  "surcharges": [
-                    {
-                      "type": "FUEL",
-                      "description": "Fuel Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 16.75
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 2.25
-                    },
-                    {
-                      "type": "ANCILLARY_FEE",
-                      "description": "US Inbound Processing Fee",
-                      "level": "SHIPMENT",
-                      "amount": 2.65
-                    }
-                  ],
-                  "currency": "USD"
-                },
-                "sequenceNumber": 1
-              }
-            ],
-            "currency": "USD"
-          }
-        },
-        {
-          "serviceType": "INTERNATIONAL_ECONOMY",
-          "serviceName": "FedEx International Economy®",
-          "rated": {
-            "rateType": "ACCOUNT",
-            "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 326.24,
-            "totalNetCharge": 347.56,
-            "totalVatCharge": 0,
-            "totalNetFedExCharge": 347.56,
-            "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 347.56,
-            "totalDutiesTaxesAndFees": 0,
-            "totalAncillaryFeesAndTaxes": 0,
-            "shipmentRateDetail": {
-              "rateZone": "US001D",
-              "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 21.32,
-              "totalFreightDiscount": 0,
-              "surCharges": [
-                {
-                  "type": "FUEL",
-                  "description": "Fuel Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 16.42
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 2.25
-                },
-                {
-                  "type": "ANCILLARY_FEE",
-                  "description": "US Inbound Processing Fee",
-                  "level": "SHIPMENT",
-                  "amount": 2.65
-                }
-              ],
-              "pricingCode": "",
-              "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
-              },
-              "totalBillingWeight": {
                 "units": "KG",
                 "value": 2
-              },
-              "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "US001DFG_03_YOUR_PACKAGING",
-              "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
               }
             },
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 75160,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 326.24,
-                  "netFreight": 326.24,
-                  "totalSurcharges": 21.32,
-                  "netFedExCharge": 347.56,
+                  "baseCharge": 189500,
+                  "netFreight": 53860,
+                  "totalSurcharges": 32340,
+                  "netFedExCharge": 86200,
                   "totalTaxes": 0,
-                  "netCharge": 347.56,
+                  "netCharge": 86200,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 2
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 135640,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 128440,
+                      "percent": 67.78
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7200,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 16.42
+                      "amount": 27160
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 2.25
+                      "amount": 1280
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 2.65
+                      "amount": 3900
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -1530,50 +1474,56 @@
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
-            "totalBaseCharge": 284.39,
-            "totalNetCharge": 299.61,
+            "totalBaseCharge": 359570,
+            "totalNetCharge": 540240,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 299.61,
+            "totalNetFedExCharge": 540240,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 299.61,
+            "totalNetChargeWithDutiesAndTaxes": 540240,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "E",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 5,
-              "totalSurcharges": 15.22,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 180670,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 14.22
+                  "amount": 177750
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1370
                 },
                 {
                   "type": "ANCILLARY_FEE",
                   "description": "US Inbound Processing Fee",
                   "level": "SHIPMENT",
-                  "amount": 1
+                  "amount": 1550
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
                 "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
+                "intoCurrency": "KRW",
+                "rate": 1551.2
               },
               "totalBillingWeight": {
                 "units": "KG",
                 "value": 2
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "USALLFG_EC_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KRALLFE_EC_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
-                "units": "LB",
-                "value": 5
+                "units": "KG",
+                "value": 2
               }
             },
             "ratedPackages": [
@@ -1583,12 +1533,12 @@
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 284.39,
-                  "netFreight": 284.39,
-                  "totalSurcharges": 15.22,
-                  "netFedExCharge": 299.61,
+                  "baseCharge": 359570,
+                  "netFreight": 359570,
+                  "totalSurcharges": 180670,
+                  "netFedExCharge": 540240,
                   "totalTaxes": 0,
-                  "netCharge": 299.61,
+                  "netCharge": 540240,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -1600,21 +1550,161 @@
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 14.22
+                      "amount": 177750
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1370
                     },
                     {
                       "type": "ANCILLARY_FEE",
                       "description": "US Inbound Processing Fee",
                       "level": "SHIPMENT",
-                      "amount": 1
+                      "amount": 1550
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
+          }
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rated": {
+            "rateType": "ACCOUNT",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 73300,
+            "totalBaseCharge": 186600,
+            "totalNetCharge": 85690,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 85690,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 85690,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "KR638F",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 32170,
+              "totalFreightDiscount": 133080,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 124500,
+                  "percent": 66.72
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 8580,
+                  "percent": 4.6
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 26990
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1280
+                },
+                {
+                  "type": "ANCILLARY_FEE",
+                  "description": "US Inbound Processing Fee",
+                  "level": "SHIPMENT",
+                  "amount": 3900
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 2
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR638FE_03_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 2
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 73300,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 186600,
+                  "netFreight": 53520,
+                  "totalSurcharges": 32170,
+                  "netFedExCharge": 85690,
+                  "totalTaxes": 0,
+                  "netCharge": 85690,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 2
+                  },
+                  "totalFreightDiscounts": 133080,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 124500,
+                      "percent": 66.72
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 8580,
+                      "percent": 4.6
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 26990
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1280
+                    },
+                    {
+                      "type": "ANCILLARY_FEE",
+                      "description": "US Inbound Processing Fee",
+                      "level": "SHIPMENT",
+                      "amount": 3900
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
           }
         }
       ],
@@ -1627,44 +1717,180 @@
       "attempts": 1,
       "options": [
         {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rated": {
+            "rateType": "ACCOUNT",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 94960,
+            "totalBaseCharge": 153400,
+            "totalNetCharge": 32160,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 32160,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 32160,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "M",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 11410,
+              "totalFreightDiscount": 132650,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 126820,
+                  "percent": 82.67
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 5830,
+                  "percent": 3.8
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 10610
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 800
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 0.5
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR638FM_2A_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 0.5
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 94960,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 153400,
+                  "netFreight": 20750,
+                  "totalSurcharges": 11410,
+                  "netFedExCharge": 32160,
+                  "totalTaxes": 0,
+                  "netCharge": 32160,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 0.5
+                  },
+                  "totalFreightDiscounts": 132650,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 126820,
+                      "percent": 82.67
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 5830,
+                      "percent": 3.8
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 10610
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 800
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
+          }
+        },
+        {
           "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
           "serviceName": "FedEx International Priority®",
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 185.7,
-            "totalNetCharge": 216.05,
+            "totalDiscounts": 90610,
+            "totalBaseCharge": 146400,
+            "totalNetCharge": 30760,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 216.05,
+            "totalNetFedExCharge": 30760,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 216.05,
+            "totalNetChargeWithDutiesAndTaxes": 30760,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "M",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 30.35,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 10950,
+              "totalFreightDiscount": 126590,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 121030,
+                  "percent": 82.67
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 5560,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 29.8
+                  "amount": 10150
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 0.55
+                  "amount": 800
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1672,8 +1898,8 @@
                 "value": 0.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFG_2P_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FM_2P_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 0.5
@@ -1682,136 +1908,56 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 90610,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 185.7,
-                  "netFreight": 185.7,
-                  "totalSurcharges": 30.35,
-                  "netFedExCharge": 216.05,
+                  "baseCharge": 146400,
+                  "netFreight": 19810,
+                  "totalSurcharges": 10950,
+                  "netFedExCharge": 30760,
                   "totalTaxes": 0,
-                  "netCharge": 216.05,
+                  "netCharge": 30760,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 0.5
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 126590,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 121030,
+                      "percent": 82.67
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 5560,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 29.8
+                      "amount": 10150
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 0.55
+                      "amount": 800
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
-          }
-        },
-        {
-          "serviceType": "INTERNATIONAL_ECONOMY",
-          "serviceName": "FedEx International Economy®",
-          "rated": {
-            "rateType": "ACCOUNT",
-            "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 181.5,
-            "totalNetCharge": 211.18,
-            "totalVatCharge": 0,
-            "totalNetFedExCharge": 211.18,
-            "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 211.18,
-            "totalDutiesTaxesAndFees": 0,
-            "totalAncillaryFeesAndTaxes": 0,
-            "shipmentRateDetail": {
-              "rateZone": "KR001O",
-              "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 29.68,
-              "totalFreightDiscount": 0,
-              "surCharges": [
-                {
-                  "type": "FUEL",
-                  "description": "Fuel Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 29.13
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 0.55
-                }
-              ],
-              "pricingCode": "",
-              "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
-              },
-              "totalBillingWeight": {
-                "units": "KG",
-                "value": 0.5
-              },
-              "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFG_03_YOUR_PACKAGING",
-              "totalRateScaleWeight": {
-                "units": "KG",
-                "value": 0.5
-              }
-            },
-            "ratedPackages": [
-              {
-                "groupNumber": 0,
-                "effectiveNetDiscount": 0,
-                "packageRateDetail": {
-                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
-                  "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 181.5,
-                  "netFreight": 181.5,
-                  "totalSurcharges": 29.68,
-                  "netFedExCharge": 211.18,
-                  "totalTaxes": 0,
-                  "netCharge": 211.18,
-                  "totalRebates": 0,
-                  "billingWeight": {
-                    "units": "KG",
-                    "value": 0.5
-                  },
-                  "totalFreightDiscounts": 0,
-                  "surcharges": [
-                    {
-                      "type": "FUEL",
-                      "description": "Fuel Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 29.13
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 0.55
-                    }
-                  ],
-                  "currency": "USD"
-                },
-                "sequenceNumber": 1
-              }
-            ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -1821,53 +1967,47 @@
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
-            "totalBaseCharge": 176.3,
-            "totalNetCharge": 205.15,
+            "totalBaseCharge": 273480,
+            "totalNetCharge": 409440,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 205.15,
+            "totalNetFedExCharge": 409440,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 205.15,
+            "totalNetChargeWithDutiesAndTaxes": 409440,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
               "rateZone": "G",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 28.85,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 135960,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 28.3
+                  "amount": 135110
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 0.55
-                },
-                {
-                  "type": "OTHER",
-                  "description": "Other",
-                  "level": "SHIPMENT",
-                  "amount": 0
+                  "amount": 850
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
                 "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
+                "intoCurrency": "KRW",
+                "rate": 1551.2
               },
               "totalBillingWeight": {
                 "units": "KG",
                 "value": 0.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KRALLFG_EC_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KRALLFG_EC_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 0.5
@@ -1880,12 +2020,12 @@
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 176.3,
-                  "netFreight": 176.3,
-                  "totalSurcharges": 28.85,
-                  "netFedExCharge": 205.15,
+                  "baseCharge": 273480,
+                  "netFreight": 273480,
+                  "totalSurcharges": 135960,
+                  "netFedExCharge": 409440,
                   "totalTaxes": 0,
-                  "netCharge": 205.15,
+                  "netCharge": 409440,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -1897,68 +2037,76 @@
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 28.3
+                      "amount": 135110
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 0.55
-                    },
-                    {
-                      "type": "OTHER",
-                      "description": "Other",
-                      "level": "SHIPMENT",
-                      "amount": 0
+                      "amount": 850
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
-          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
-          "serviceName": "FedEx International Priority® Express",
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 194.7,
-            "totalNetCharge": 226.49,
+            "totalDiscounts": 87950,
+            "totalBaseCharge": 143500,
+            "totalNetCharge": 31030,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 226.49,
+            "totalNetFedExCharge": 31030,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 226.49,
+            "totalNetChargeWithDutiesAndTaxes": 31030,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "G",
+              "rateZone": "KR638F",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 31.79,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 11040,
+              "totalFreightDiscount": 123510,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 116910,
+                  "percent": 81.47
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 6600,
+                  "percent": 4.6
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 31.24
+                  "amount": 10240
                 },
                 {
                   "type": "DEMAND",
                   "description": "Demand Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 0.55
+                  "amount": 800
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -1966,8 +2114,8 @@
                 "value": 0.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFG_2A_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FM_03_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 0.5
@@ -1976,42 +2124,56 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 87950,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 194.7,
-                  "netFreight": 194.7,
-                  "totalSurcharges": 31.79,
-                  "netFedExCharge": 226.49,
+                  "baseCharge": 143500,
+                  "netFreight": 19990,
+                  "totalSurcharges": 11040,
+                  "netFedExCharge": 31030,
                   "totalTaxes": 0,
-                  "netCharge": 226.49,
+                  "netCharge": 31030,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 0.5
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 123510,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 116910,
+                      "percent": 81.47
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 6600,
+                      "percent": 4.6
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 31.24
+                      "amount": 10240
                     },
                     {
                       "type": "DEMAND",
                       "description": "Demand Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 0.55
+                      "amount": 800
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         }
       ],
@@ -2035,33 +2197,47 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 239.3,
-            "totalNetCharge": 277.59,
+            "totalDiscounts": 99520,
+            "totalBaseCharge": 185500,
+            "totalNetCharge": 52740,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 277.59,
+            "totalNetFedExCharge": 52740,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 277.59,
+            "totalNetChargeWithDutiesAndTaxes": 52740,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "F",
+              "rateZone": "U",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 38.29,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 17400,
+              "totalFreightDiscount": 150160,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 143110,
+                  "percent": 77.15
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7050,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 38.29
+                  "amount": 17400
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -2069,8 +2245,8 @@
                 "value": 1.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFF_2A_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FU_2A_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1.5
@@ -2079,36 +2255,50 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 99520,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 239.3,
-                  "netFreight": 239.3,
-                  "totalSurcharges": 38.29,
-                  "netFedExCharge": 277.59,
+                  "baseCharge": 185500,
+                  "netFreight": 35340,
+                  "totalSurcharges": 17400,
+                  "netFedExCharge": 52740,
                   "totalTaxes": 0,
-                  "netCharge": 277.59,
+                  "netCharge": 52740,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 1.5
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 150160,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 143110,
+                      "percent": 77.15
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7050,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 38.29
+                      "amount": 17400
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -2117,33 +2307,47 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 227.7,
-            "totalNetCharge": 264.13,
+            "totalDiscounts": 94480,
+            "totalBaseCharge": 176100,
+            "totalNetCharge": 50070,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 264.13,
+            "totalNetFedExCharge": 50070,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 264.13,
+            "totalNetChargeWithDutiesAndTaxes": 50070,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "F",
+              "rateZone": "U",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 36.43,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 16520,
+              "totalFreightDiscount": 142550,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 135860,
+                  "percent": 77.15
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 6690,
+                  "percent": 3.8
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 36.43
+                  "amount": 16520
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -2151,8 +2355,8 @@
                 "value": 1.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFF_2P_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FU_2P_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1.5
@@ -2161,36 +2365,50 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 94480,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 227.7,
-                  "netFreight": 227.7,
-                  "totalSurcharges": 36.43,
-                  "netFedExCharge": 264.13,
+                  "baseCharge": 176100,
+                  "netFreight": 33550,
+                  "totalSurcharges": 16520,
+                  "netFedExCharge": 50070,
                   "totalTaxes": 0,
-                  "netCharge": 264.13,
+                  "netCharge": 50070,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 1.5
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 142550,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 135860,
+                      "percent": 77.15
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 6690,
+                      "percent": 3.8
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 36.43
+                      "amount": 16520
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -2200,53 +2418,41 @@
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
             "totalDiscounts": 0,
-            "totalBaseCharge": 216,
-            "totalNetCharge": 250.56,
+            "totalBaseCharge": 335060,
+            "totalNetCharge": 500080,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 250.56,
+            "totalNetFedExCharge": 500080,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 250.56,
+            "totalNetChargeWithDutiesAndTaxes": 500080,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
               "rateZone": "F",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 34.56,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 165020,
               "totalFreightDiscount": 0,
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 34.56
-                },
-                {
-                  "type": "DEMAND",
-                  "description": "Demand Surcharge",
-                  "level": "SHIPMENT",
-                  "amount": 0
-                },
-                {
-                  "type": "OTHER",
-                  "description": "Other",
-                  "level": "SHIPMENT",
-                  "amount": 0
+                  "amount": 165020
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
                 "fromCurrency": "USD",
-                "intoCurrency": "USD",
-                "rate": 1
+                "intoCurrency": "KRW",
+                "rate": 1551.2
               },
               "totalBillingWeight": {
                 "units": "KG",
                 "value": 1.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KRALLFF_EC_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KRALLFF_EC_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1.5
@@ -2259,12 +2465,12 @@
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 216,
-                  "netFreight": 216,
-                  "totalSurcharges": 34.56,
-                  "netFedExCharge": 250.56,
+                  "baseCharge": 335060,
+                  "netFreight": 335060,
+                  "totalSurcharges": 165020,
+                  "netFedExCharge": 500080,
                   "totalTaxes": 0,
-                  "netCharge": 250.56,
+                  "netCharge": 500080,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
@@ -2276,27 +2482,15 @@
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 34.56
-                    },
-                    {
-                      "type": "DEMAND",
-                      "description": "Demand Surcharge",
-                      "level": "SHIPMENT",
-                      "amount": 0
-                    },
-                    {
-                      "type": "OTHER",
-                      "description": "Other",
-                      "level": "SHIPMENT",
-                      "amount": 0
+                      "amount": 165020
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         },
         {
@@ -2305,33 +2499,47 @@
           "rated": {
             "rateType": "ACCOUNT",
             "ratedWeightMethod": "ACTUAL",
-            "totalDiscounts": 0,
-            "totalBaseCharge": 223.4,
-            "totalNetCharge": 259.14,
+            "totalDiscounts": 91030,
+            "totalBaseCharge": 173100,
+            "totalNetCharge": 51060,
             "totalVatCharge": 0,
-            "totalNetFedExCharge": 259.14,
+            "totalNetFedExCharge": 51060,
             "totalDutiesAndTaxes": 0,
-            "totalNetChargeWithDutiesAndTaxes": 259.14,
+            "totalNetChargeWithDutiesAndTaxes": 51060,
             "totalDutiesTaxesAndFees": 0,
             "totalAncillaryFeesAndTaxes": 0,
             "shipmentRateDetail": {
-              "rateZone": "KR001O",
+              "rateZone": "KR638F",
               "dimDivisor": 139,
-              "fuelSurchargePercent": 16,
-              "totalSurcharges": 35.74,
-              "totalFreightDiscount": 0,
+              "fuelSurchargePercent": 49.25,
+              "totalSurcharges": 16850,
+              "totalFreightDiscount": 138890,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 130930,
+                  "percent": 75.64
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7960,
+                  "percent": 4.6
+                }
+              ],
               "surCharges": [
                 {
                   "type": "FUEL",
                   "description": "Fuel Surcharge",
                   "level": "SHIPMENT",
-                  "amount": 35.74
+                  "amount": 16850
                 }
               ],
               "pricingCode": "",
               "currencyExchangeRate": {
-                "fromCurrency": "USD",
-                "intoCurrency": "USD",
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
                 "rate": 1
               },
               "totalBillingWeight": {
@@ -2339,8 +2547,8 @@
                 "value": 1.5
               },
               "dimDivisorType": "COUNTRY",
-              "currency": "USD",
-              "rateScale": "KR001OFF_03_YOUR_PACKAGING",
+              "currency": "KRW",
+              "rateScale": "KR638FU_03_CUSTOMER_PACKAGING",
               "totalRateScaleWeight": {
                 "units": "KG",
                 "value": 1.5
@@ -2349,36 +2557,50 @@
             "ratedPackages": [
               {
                 "groupNumber": 0,
-                "effectiveNetDiscount": 0,
+                "effectiveNetDiscount": 91030,
                 "packageRateDetail": {
                   "rateType": "PAYOR_ACCOUNT_SHIPMENT",
                   "ratedWeightMethod": "ACTUAL",
-                  "baseCharge": 223.4,
-                  "netFreight": 223.4,
-                  "totalSurcharges": 35.74,
-                  "netFedExCharge": 259.14,
+                  "baseCharge": 173100,
+                  "netFreight": 34210,
+                  "totalSurcharges": 16850,
+                  "netFedExCharge": 51060,
                   "totalTaxes": 0,
-                  "netCharge": 259.14,
+                  "netCharge": 51060,
                   "totalRebates": 0,
                   "billingWeight": {
                     "units": "KG",
                     "value": 1.5
                   },
-                  "totalFreightDiscounts": 0,
+                  "totalFreightDiscounts": 138890,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 130930,
+                      "percent": 75.64
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7960,
+                      "percent": 4.6
+                    }
+                  ],
                   "surcharges": [
                     {
                       "type": "FUEL",
                       "description": "Fuel Surcharge",
                       "level": "SHIPMENT",
-                      "amount": 35.74
+                      "amount": 16850
                     }
                   ],
-                  "currency": "USD"
+                  "currency": "KRW"
                 },
                 "sequenceNumber": 1
               }
             ],
-            "currency": "USD"
+            "currency": "KRW"
           }
         }
       ],
