@@ -3,13 +3,14 @@ import Image from 'next/image'
 import { ArrowRight, Star, Zap } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
 import ProductImage from '@/components/ProductImage'
+import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { PCCF_PRODUCT_SLUGS } from '@/config/pccf-catalog'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
-import type { PrintProduct } from '@/types/database'
+import type { PrintProduct, CompetitorPriceSummary } from '@/types/database'
 
 const CATEGORY_GRADIENT: Record<string, string> = {
   business_cards: 'from-blue-50 to-indigo-100',
@@ -92,9 +93,22 @@ export default async function ProductsPage() {
   if (PCCF_PRODUCT_SLUGS) {
     query = query.in('slug', [...PCCF_PRODUCT_SLUGS])
   }
-  const { data: products } = await query.order('sort_order', { ascending: true })
+  const [{ data: products }, { data: competitorRows }] = await Promise.all([
+    query.order('sort_order', { ascending: true }),
+    supabase
+      .from('print_competitor_price_summary')
+      .select('*')
+      .eq('is_fresh', true),
+  ])
   const items = (products as PrintProduct[] | null) ?? []
   const bySlug = new Map(items.map(p => [p.slug, p]))
+  // slug → fresh competitor prices (best deal per product)
+  const competitorBySlug = new Map<string, CompetitorPriceSummary[]>()
+  for (const row of (competitorRows as CompetitorPriceSummary[] | null) ?? []) {
+    const list = competitorBySlug.get(row.sku_slug) ?? []
+    list.push(row)
+    competitorBySlug.set(row.sku_slug, list)
+  }
 
   return (
     <>
@@ -153,6 +167,7 @@ export default async function ProductsPage() {
                     const tag = CATEGORY_TAG[product.category]
                     const gradient = CATEGORY_GRADIENT[product.category] ?? 'from-gray-50 to-gray-100'
                     const accent = CATEGORY_ACCENT[product.category] ?? 'border-gray-200'
+                    const cardCompetitorPrices = competitorBySlug.get(product.slug) ?? []
                     return (
                       <Link
                         key={product.slug}
@@ -193,9 +208,14 @@ export default async function ProductsPage() {
                             )}
                           </div>
                           {product.description_en && (
-                            <p className="text-sm text-gray-500 mb-4 line-clamp-2 leading-relaxed">
+                            <p className="text-sm text-gray-500 mb-3 line-clamp-2 leading-relaxed">
                               {product.description_en}
                             </p>
+                          )}
+                          {cardCompetitorPrices.length > 0 && (
+                            <div className="mb-3">
+                              <CompetitorPriceBadge prices={cardCompetitorPrices} />
+                            </div>
                           )}
                           <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                             <div>

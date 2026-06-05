@@ -122,3 +122,26 @@ export interface PrintDesignProof {
   uploaded_at: string
   responded_at: string | null
 }
+
+export type CompetitorName = 'vistaprint' | 'moo'
+
+export interface CompetitorPrice {
+  id: string
+  sku_slug: string
+  competitor: CompetitorName
+  sku_variant: string
+  quantity: number | null
+  competitor_price_usd: number
+  our_price_usd: number
+  spec_notes: string | null
+  captured_at: string
+  source_url: string
+  captured_by: string
+  created_at: string
+}
+
+export interface CompetitorPriceSummary extends CompetitorPrice {
+  is_fresh: boolean
+  savings_pct: number
+  captured_date: string
+}

@@ -13,7 +13,8 @@ import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ProductGallery from '@/components/ProductGallery'
 import ViewItemTracker from '@/components/ViewItemTracker'
-import type { PrintProduct, PrintProductOption } from '@/types/database'
+import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
+import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -87,7 +88,7 @@ export default async function ProductDetailPage({ params }: Props) {
   if (!isPccfSlug(slug)) notFound()
   const supabase = createServerClient()
 
-  const [{ data: productData }, exchangeRate, swadpiaData] = await Promise.all([
+  const [{ data: productData }, exchangeRate, swadpiaData, { data: competitorData }] = await Promise.all([
     supabase
       .from('print_products')
       .select('*')
@@ -96,6 +97,11 @@ export default async function ProductDetailPage({ params }: Props) {
       .single(),
     getKrwToUsdRate(),
     fetchSwadpiaCategoryData(slug),
+    supabase
+      .from('print_competitor_price_summary')
+      .select('*')
+      .eq('sku_slug', slug)
+      .eq('is_fresh', true),
   ])
 
   if (!productData) notFound()
@@ -113,6 +119,7 @@ export default async function ProductDetailPage({ params }: Props) {
 
   const shippingUsd = getShippingCost('US')
   const features = PRODUCT_FEATURES[product.category] ?? []
+  const competitorPrices = (competitorData as CompetitorPriceSummary[] | null) ?? []
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -148,6 +155,11 @@ export default async function ProductDetailPage({ params }: Props) {
                 </span>
               )}
             </div>
+            {competitorPrices.length > 0 && (
+              <div className="mb-3">
+                <CompetitorPriceBadge prices={competitorPrices} />
+              </div>
+            )}
             {product.description_en && (
               <p className="text-gray-600 leading-relaxed mb-4">
                 {product.description_en}

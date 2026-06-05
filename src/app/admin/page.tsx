@@ -12,6 +12,7 @@ import {
   FileText,
   Users,
   Truck,
+  TrendingDown,
 } from 'lucide-react'
 
 interface TrendPoint {
@@ -114,6 +115,7 @@ export default function AdminDashboardPage() {
               { href: '/admin/chats', label: 'Chat Logs', icon: MessageCircle },
               { href: '/admin/portfolio', label: 'Portfolio', icon: Package },
               { href: '/admin/customers', label: 'Customers', icon: Users },
+              { href: '/admin/competitor-prices', label: 'Competitor Prices', icon: TrendingDown },
             ].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}
