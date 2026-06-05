@@ -62,9 +62,9 @@ export default function Footer() {
             </ul>
             <div className="mt-6 bg-blue-600/20 border border-blue-500/30 rounded-xl p-3.5">
               <p className="text-xs text-blue-300 leading-relaxed">
-                <span className="font-semibold block mb-1">Production Hours</span>
-                Mon–Fri 9:00–18:00 KST<br />
-                Orders placed before 15:00 start same day.
+                <span className="font-semibold block mb-1">Production Lead Time</span>
+                7–10 business days standard<br />
+                Express upgrade available at checkout. Shipping billed separately.
               </p>
             </div>
           </div>

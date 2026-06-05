@@ -33,7 +33,7 @@ const STATS = [
   { value: '10,000+', label: 'Orders Delivered' },
   { value: '40+', label: 'Countries Served' },
   { value: '4.9★', label: 'Average Rating' },
-  { value: '3–5 Days', label: 'Production Time' },
+  { value: '7–10 Days', label: 'Production Lead Time' },
 ]
 
 const FEATURES = [
@@ -45,7 +45,7 @@ const FEATURES = [
   {
     icon: Truck,
     title: 'Global FedEx Delivery',
-    desc: 'Express shipping from Los Angeles. Most destinations receive orders in 7–12 business days door-to-door.',
+    desc: 'Express shipping from Los Angeles. Production 7–10 business days, then FedEx ship 5–8 business days. Worldwide door-to-door.',
   },
   {
     icon: Star,
@@ -58,7 +58,7 @@ const HOW_IT_WORKS = [
   { icon: Settings, step: '1', title: 'Configure', desc: 'Choose product, size, quantity, and finish options. Price updates in real time.' },
   { icon: Upload, step: '2', title: 'Upload', desc: 'Upload your design file (PDF, AI, or PSD). We verify print-readiness.' },
   { icon: CreditCard, step: '3', title: 'Pay', desc: 'Secure Stripe checkout. Production begins as soon as payment clears.' },
-  { icon: CheckCircle, step: '4', title: 'Receive', desc: 'Printed and delivered worldwide in 7–12 business days.' },
+  { icon: CheckCircle, step: '4', title: 'Receive', desc: 'Production 7–10 business days, then ships worldwide via FedEx (shipping billed separately).' },
 ]
 
 const TESTIMONIALS = [

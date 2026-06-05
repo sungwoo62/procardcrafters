@@ -8,6 +8,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import { isPccfSlug } from '@/config/pccf-catalog'
+import { formatProductionWindow } from '@/config/lead-time'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ViewItemTracker from '@/components/ViewItemTracker'
@@ -171,12 +172,10 @@ export default async function ProductDetailPage({ params }: Props) {
                 )}
                 {product.production_days_max > 0 && (
                   <div className="bg-orange-50 border border-orange-100 rounded-lg p-3">
-                    <div className="font-semibold text-orange-800 mb-1">Production Time</div>
+                    <div className="font-semibold text-orange-800 mb-1">Production Lead Time</div>
                     <div className="text-orange-700">
-                      {product.production_days_min === product.production_days_max
-                        ? `${product.production_days_max} business days`
-                        : `${product.production_days_min}-${product.production_days_max} business days`}
-                      <span className="text-orange-500"> + FedEx shipping</span>
+                      {formatProductionWindow(product, 'standard')}
+                      <span className="text-orange-500"> · shipping calculated separately</span>
                     </div>
                   </div>
                 )}

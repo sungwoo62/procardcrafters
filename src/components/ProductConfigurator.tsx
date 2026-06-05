@@ -2,11 +2,12 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { ShoppingCart, Truck, BadgeCheck, Pencil } from 'lucide-react'
+import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption, OptionType } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
+import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
 interface SwadpiaClientData {
   papers: SwadpiaPaper[]
@@ -81,6 +82,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
   const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
+  const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
 
   // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
@@ -124,7 +126,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     })
   }, [product, grouped, selections, exchangeRate, useSwadpia, swadpiaData, swadpiaPaperCode, selectedQty])
 
-  const totalUsd = itemPriceUsd + shippingUsd
+  const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
+  const totalUsd = itemPriceUsd + rushUsd + shippingUsd
+  const productionWindow = formatProductionWindow(product, leadTier)
 
   return (
     <div className="space-y-6">
@@ -173,12 +177,66 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </div>
       ))}
 
+      {/* Production speed */}
+      <div>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">
+          Production Speed
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {LEAD_TIME_TIERS.map(tier => {
+            const isSelected = leadTier === tier.key
+            const [tMin, tMax] = (() => {
+              const min = (product.production_days_min ?? 2) + tier.bufferDays
+              const max = (product.production_days_max ?? 4) + tier.bufferDays
+              return [min, max]
+            })()
+            const surcharge = rushSurcharge(itemPriceUsd, tier.key)
+            return (
+              <button
+                key={tier.key}
+                type="button"
+                onClick={() => setLeadTier(tier.key)}
+                className={`text-left p-3 rounded-lg border transition-all ${
+                  isSelected
+                    ? 'border-orange-400 bg-orange-50 shadow-sm'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  {tier.key === 'express' && <Zap className="w-3.5 h-3.5 text-orange-600" />}
+                  <span className={`text-sm font-semibold ${isSelected ? 'text-orange-700' : 'text-gray-800'}`}>
+                    {tier.label}
+                  </span>
+                </div>
+                <div className="text-xs text-gray-500">
+                  {tMin === tMax ? `${tMax} business days` : `${tMin}–${tMax} business days`}
+                </div>
+                <div className={`text-xs mt-1 ${surcharge > 0 ? 'text-orange-700 font-medium' : 'text-green-700'}`}>
+                  {surcharge > 0 ? `+ $${surcharge.toFixed(2)} surcharge` : 'No surcharge'}
+                </div>
+              </button>
+            )
+          })}
+        </div>
+        <p className="text-[11px] text-gray-400 mt-2">
+          Production starts after we approve your file (typically within 24 h). Shipping time is calculated separately at checkout.
+        </p>
+      </div>
+
       {/* Price Summary */}
       <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-3">
         <div className="flex justify-between text-sm text-gray-600">
           <span>Print Cost ({selectedQty} pcs)</span>
           <span>${itemPriceUsd.toFixed(2)}</span>
         </div>
+        {rushUsd > 0 && (
+          <div className="flex justify-between text-sm text-orange-700">
+            <span className="flex items-center gap-1">
+              <Zap className="w-4 h-4" /> Express upgrade
+            </span>
+            <span>+ ${rushUsd.toFixed(2)}</span>
+          </div>
+        )}
         <div className="flex justify-between text-sm text-gray-600">
           <span className="flex items-center gap-1">
             <Truck className="w-4 h-4" /> Shipping (US)
@@ -189,15 +247,18 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <span>Total</span>
           <span className="text-blue-600">${totalUsd.toFixed(2)}</span>
         </div>
-        <p className="text-xs text-gray-400">
-          * Exchange rate: 1 KRW = ${exchangeRate.toFixed(6)} USD (live)
+        <div className="text-xs text-gray-500 border-t border-gray-200 pt-2">
+          Production: <span className="font-medium text-gray-700">{productionWindow}</span> · then ships separately
+        </div>
+        <p className="text-[11px] text-gray-400">
+          Exchange rate: 1 KRW = ${exchangeRate.toFixed(6)} USD (live)
         </p>
       </div>
 
       {/* Order / Editor Buttons */}
       <div className="space-y-2">
         <Link
-          href={`/design/${product.slug}?${new URLSearchParams(selections).toString()}`}
+          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
           className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
@@ -206,7 +267,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           </span>
         </Link>
         <Link
-          href={`/order?product=${product.slug}&${new URLSearchParams(selections).toString()}`}
+          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
           className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
