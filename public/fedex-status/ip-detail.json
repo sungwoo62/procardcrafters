@@ -1,0 +1,401 @@
+{
+  "capturedAt": "2026-06-05T03:49:38.507Z",
+  "case": "KR Bucheon 14488 → US Beverly Hills 90210, 1.0kg, FEDEX_INTERNATIONAL_PRIORITY, ship 2026-06-08 (Mon)",
+  "website_reference": {
+    "base_charge": 191400,
+    "surcharges": {
+      "fuel": 24520,
+      "us_inbound": 3900,
+      "out_of_area": 4200,
+      "peak_demand": 1280,
+      "total": 33900
+    },
+    "discount": 131910,
+    "bonus_discount": 7270,
+    "total": 86120,
+    "effective_discount_pct": 72.7,
+    "currency": "KRW"
+  },
+  "api": {
+    "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+    "serviceName": "FedEx International Priority®",
+    "packagingType": "YOUR_PACKAGING",
+    "commit": {
+      "dateDetail": {
+        "dayOfWeek": "Tue",
+        "dayFormat": "2026-06-09T17:00:00"
+      },
+      "commodityName": "CATALOGS",
+      "deliveryMessages": [
+        " 5:00 P.M. IF NO CUSTOMS DELAY"
+      ],
+      "requiredDocuments": [
+        "INTERNATIONAL_AIRWAY_BILL"
+      ],
+      "derivedOriginDetail": {
+        "countryCode": "KR",
+        "postalCode": "14488",
+        "serviceArea": "PM",
+        "locationId": "OSNA ",
+        "locationNumber": 0
+      },
+      "derivedDestinationDetail": {
+        "countryCode": "US",
+        "stateOrProvinceCode": "CA",
+        "postalCode": "90210",
+        "serviceArea": "A1",
+        "locationId": "BABA ",
+        "locationNumber": 0,
+        "airportId": "LAX"
+      },
+      "saturdayDelivery": false
+    },
+    "customerMessages": [
+      {
+        "code": "SERVICE.TYPE.INTERNATIONAL.MESSAGE",
+        "message": "Rate does not include duties & taxes, clearance entry fees or other import fees.  The payor of duties/taxes/fees will be responsible for any applicable Clearance Entry Fees."
+      },
+      {
+        "code": "REQUEST.IS.COMPLETED",
+        "message": "Request Is Completed."
+      }
+    ],
+    "ratedShipmentDetails": [
+      {
+        "rateType": "ACCOUNT",
+        "ratedWeightMethod": "ACTUAL",
+        "totalDiscounts": 59790,
+        "totalBaseCharge": 157900,
+        "totalNetCharge": 68770,
+        "totalVatCharge": 0,
+        "totalNetFedExCharge": 68770,
+        "totalDutiesAndTaxes": 0,
+        "totalNetChargeWithDutiesAndTaxes": 68770,
+        "totalDutiesTaxesAndFees": 0,
+        "totalAncillaryFeesAndTaxes": 0,
+        "shipmentRateDetail": {
+          "rateZone": "E",
+          "dimDivisor": 139,
+          "fuelSurchargePercent": 42.5,
+          "totalSurcharges": 23890,
+          "totalFreightDiscount": 113020,
+          "freightDiscount": [
+            {
+              "type": "VOLUME",
+              "description": "Volume discount",
+              "amount": 107020,
+              "percent": 67.78
+            },
+            {
+              "type": "BONUS",
+              "description": "Bonus discount",
+              "amount": 6000,
+              "percent": 3.8
+            }
+          ],
+          "surCharges": [
+            {
+              "type": "FUEL",
+              "description": "Fuel Surcharge",
+              "level": "SHIPMENT",
+              "amount": 19350
+            },
+            {
+              "type": "DEMAND",
+              "description": "Demand Surcharge",
+              "level": "SHIPMENT",
+              "amount": 640
+            },
+            {
+              "type": "ANCILLARY_FEE",
+              "description": "US Inbound Processing Fee",
+              "level": "SHIPMENT",
+              "amount": 3900
+            }
+          ],
+          "pricingCode": "",
+          "currencyExchangeRate": {
+            "fromCurrency": "KRW",
+            "intoCurrency": "KRW",
+            "rate": 1
+          },
+          "totalBillingWeight": {
+            "units": "KG",
+            "value": 1
+          },
+          "dimDivisorType": "COUNTRY",
+          "currency": "KRW",
+          "rateScale": "KR638FE_2P_CUSTOMER_PACKAGING",
+          "totalRateScaleWeight": {
+            "units": "KG",
+            "value": 1
+          }
+        },
+        "ratedPackages": [
+          {
+            "groupNumber": 0,
+            "effectiveNetDiscount": 59790,
+            "packageRateDetail": {
+              "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+              "ratedWeightMethod": "ACTUAL",
+              "baseCharge": 157900,
+              "netFreight": 44880,
+              "totalSurcharges": 23890,
+              "netFedExCharge": 68770,
+              "totalTaxes": 0,
+              "netCharge": 68770,
+              "totalRebates": 0,
+              "billingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "totalFreightDiscounts": 113020,
+              "freightDiscounts": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume",
+                  "amount": 107020,
+                  "percent": 67.78
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus Discount",
+                  "amount": 6000,
+                  "percent": 3.8
+                }
+              ],
+              "surcharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 19350
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 640
+                },
+                {
+                  "type": "ANCILLARY_FEE",
+                  "description": "US Inbound Processing Fee",
+                  "level": "SHIPMENT",
+                  "amount": 3900
+                }
+              ],
+              "currency": "KRW"
+            },
+            "sequenceNumber": 1
+          }
+        ],
+        "currency": "KRW"
+      },
+      {
+        "rateType": "LIST",
+        "ratedWeightMethod": "ACTUAL",
+        "totalDiscounts": 0,
+        "totalBaseCharge": 157900,
+        "totalNetCharge": 128560,
+        "totalVatCharge": 0,
+        "totalNetFedExCharge": 128560,
+        "totalDutiesAndTaxes": 0,
+        "totalNetChargeWithDutiesAndTaxes": 128560,
+        "totalDutiesTaxesAndFees": 0,
+        "totalAncillaryFeesAndTaxes": 0,
+        "shipmentRateDetail": {
+          "rateZone": "E",
+          "dimDivisor": 139,
+          "fuelSurchargePercent": 42.5,
+          "totalSurcharges": 41720,
+          "totalFreightDiscount": 71060,
+          "freightDiscount": [
+            {
+              "type": "VOLUME",
+              "description": "Volume discount",
+              "amount": 71060,
+              "percent": 45
+            }
+          ],
+          "surCharges": [
+            {
+              "type": "FUEL",
+              "description": "Fuel Surcharge",
+              "level": "SHIPMENT",
+              "amount": 37180
+            },
+            {
+              "type": "DEMAND",
+              "description": "Demand Surcharge",
+              "level": "SHIPMENT",
+              "amount": 640
+            },
+            {
+              "type": "ANCILLARY_FEE",
+              "description": "US Inbound Processing Fee",
+              "level": "SHIPMENT",
+              "amount": 3900
+            }
+          ],
+          "pricingCode": "",
+          "currencyExchangeRate": {
+            "fromCurrency": "KRW",
+            "intoCurrency": "KRW",
+            "rate": 1
+          },
+          "totalBillingWeight": {
+            "units": "KG",
+            "value": 1
+          },
+          "dimDivisorType": "COUNTRY",
+          "currency": "KRW",
+          "rateScale": "KR528FE_2P_CUSTOMER_PACKAGING",
+          "totalRateScaleWeight": {
+            "units": "KG",
+            "value": 1
+          }
+        },
+        "ratedPackages": [
+          {
+            "groupNumber": 0,
+            "effectiveNetDiscount": 0,
+            "packageRateDetail": {
+              "rateType": "PAYOR_LIST_SHIPMENT",
+              "ratedWeightMethod": "ACTUAL",
+              "baseCharge": 157900,
+              "netFreight": 86840,
+              "totalSurcharges": 41720,
+              "netFedExCharge": 128560,
+              "totalTaxes": 0,
+              "netCharge": 128560,
+              "totalRebates": 0,
+              "billingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "totalFreightDiscounts": 71060,
+              "freightDiscounts": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume",
+                  "amount": 71060,
+                  "percent": 45
+                }
+              ],
+              "surcharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 37180
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 640
+                },
+                {
+                  "type": "ANCILLARY_FEE",
+                  "description": "US Inbound Processing Fee",
+                  "level": "SHIPMENT",
+                  "amount": 3900
+                }
+              ],
+              "currency": "KRW"
+            },
+            "sequenceNumber": 1
+          }
+        ],
+        "currency": "KRW"
+      }
+    ],
+    "operationalDetail": {
+      "originLocationIds": [
+        "OSNA "
+      ],
+      "originLocationNumbers": [
+        0
+      ],
+      "originServiceAreas": [
+        "PM"
+      ],
+      "destinationLocationIds": [
+        "BABA "
+      ],
+      "destinationLocationNumbers": [
+        0
+      ],
+      "destinationServiceAreas": [
+        "A1"
+      ],
+      "destinationLocationStateOrProvinceCodes": [
+        "CA"
+      ],
+      "deliveryDate": "2026-06-09T17:00:00",
+      "deliveryDay": "TUE",
+      "commitDate": "2026-06-09T17:00:00",
+      "commitDays": [
+        "TUE"
+      ],
+      "ineligibleForMoneyBackGuarantee": false,
+      "astraDescription": "IP EOD",
+      "originPostalCodes": [
+        "14488"
+      ],
+      "countryCodes": [
+        "KR"
+      ],
+      "airportId": "LAX",
+      "serviceCode": "2P",
+      "destinationPostalCode": "90210"
+    },
+    "signatureOptionType": "SERVICE_DEFAULT",
+    "serviceDescription": {
+      "serviceId": "EP1000000300",
+      "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+      "code": "2P",
+      "names": [
+        {
+          "type": "long",
+          "encoding": "utf-8",
+          "value": "FedEx International Priority®"
+        },
+        {
+          "type": "long",
+          "encoding": "ascii",
+          "value": "FedEx International Priority"
+        },
+        {
+          "type": "medium",
+          "encoding": "utf-8",
+          "value": "FedEx International Priority"
+        },
+        {
+          "type": "medium",
+          "encoding": "ascii",
+          "value": "FedEx International Priority"
+        },
+        {
+          "type": "short",
+          "encoding": "utf-8",
+          "value": "IPED"
+        },
+        {
+          "type": "short",
+          "encoding": "ascii",
+          "value": "IPED"
+        },
+        {
+          "type": "abbrv",
+          "encoding": "ascii",
+          "value": "OA"
+        }
+      ],
+      "serviceCategory": "parcel",
+      "description": "International Priority EOD (IP EOD)",
+      "astraDescription": "IP EOD"
+    },
+    "deliveryStation": "BABA "
+  }
+}

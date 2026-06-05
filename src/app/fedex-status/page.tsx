@@ -131,70 +131,60 @@ export default function Page() {
         </p>
       </header>
 
-      {/* 계약 할인 격차 — PDF 입수 후 업데이트 */}
-      <section className="mb-10 rounded-2xl border border-rose-300 bg-rose-50/60 p-5">
-        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-rose-900">
-          <XCircle className="h-5 w-5" /> ⚠ 계약 할인 격차 — PDF 76.29% vs API 46.6%
+      {/* 계약 활성 확인 — itemized */}
+      <section className="mb-10 rounded-2xl border border-emerald-300 bg-emerald-50/60 p-5">
+        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-emerald-900">
+          <CheckCircle2 className="h-5 w-5" /> ✅ 계약 활성 확인 — 약 70% 할인 적용 중
         </h2>
-        <p className="text-sm text-rose-900 mb-3">
-          보드가 첨부한 <strong>PricingAgreement 2520066223-100.pdf</strong> (
-          <a href="/fedex-status/PricingAgreement-2520066223-100.pdf" target="_blank" className="underline font-semibold">PDF 보기</a>
-          ) 기준 KR→US Zone D, IP, <strong>1.0-2.5kg 할인 = 76.29%</strong>.
-          하지만 FedEx Rate API (운영) 는 <strong>46.6% 할인</strong> 만 적용 중. 1kg 약 <strong>₩42,000</strong> 더 비쌈.
+        <p className="text-sm text-emerald-900 mb-3">
+          API 응답을 itemize 한 결과 <strong>Volume 67.78% + Bonus 3.8%</strong> = 기본 운임 70% 할인이 정상 적용됨.
+          rateScale 코드 <code className="bg-white px-1 rounded">KR638FE_2P</code> 가 우리 PA 2520066223-100 활성 상태 증명 (LIST 는 <code className="bg-white px-1 rounded">KR528FE_2P</code> 라는 다른 default 코드).
+          「2P」 가 보드가 말한 그 서비스 코드 = FedEx Korea International Priority.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-gray-500 text-xs uppercase tracking-wider">
-              <tr className="border-b border-rose-200">
-                <th className="py-2 text-left">노선 (1kg IP)</th>
-                <th className="text-right">PDF 할인율</th>
-                <th className="text-right">LIST</th>
-                <th className="text-right">계약 기대 (=LIST×(1−할인))</th>
-                <th className="text-right">API 실측 (ACCOUNT)</th>
-                <th className="text-right">격차</th>
+              <tr className="border-b border-emerald-200">
+                <th className="py-2 text-left">항목 (KR Bucheon → US LA, 1kg IP, Mon 발송)</th>
+                <th className="text-right">KRW</th>
+                <th className="text-right">기본 대비</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-rose-100">
-                <td className="py-2 font-medium">KR Bucheon → US LA (Zone D)</td>
-                <td className="text-right tabular-nums">76.29%</td>
-                <td className="text-right text-gray-500 tabular-nums">₩134,460</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩31,889</td>
-                <td className="text-right font-semibold text-rose-700 tabular-nums">₩71,840</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩39,951</td>
-              </tr>
-              <tr className="border-b border-rose-100">
-                <td className="py-2 font-medium">KR Bucheon → JP Tokyo (Zone A)</td>
-                <td className="text-right tabular-nums">81.49%</td>
-                <td className="text-right text-gray-500 tabular-nums">₩119,100</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩22,034</td>
-                <td className="text-right font-semibold text-rose-700 tabular-nums">₩31,860</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩9,826</td>
-              </tr>
-              <tr>
-                <td className="py-2 font-medium">KR Bucheon → GB London (Zone K)</td>
-                <td className="text-right tabular-nums">79.71%</td>
-                <td className="text-right text-gray-500 tabular-nums">₩144,640</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩29,346</td>
-                <td className="text-right font-semibold text-rose-700 tabular-nums">₩38,540</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩9,194</td>
-              </tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 font-medium">기본 요금 (base freight)</td><td className="text-right tabular-nums">₩157,900</td><td className="text-right text-gray-500">100%</td></tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 text-emerald-700">Volume 할인 (계약)</td><td className="text-right tabular-nums text-emerald-700">-₩107,020</td><td className="text-right text-emerald-700">-67.78%</td></tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 text-emerald-700">Bonus 할인 (자동발송)</td><td className="text-right tabular-nums text-emerald-700">-₩6,000</td><td className="text-right text-emerald-700">-3.8%</td></tr>
+              <tr className="border-b border-emerald-100 bg-white"><td className="py-2 font-semibold">순 운임</td><td className="text-right tabular-nums font-semibold">₩44,880</td><td className="text-right text-gray-500">28.4%</td></tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 text-gray-600">Fuel Surcharge (42.5%)</td><td className="text-right tabular-nums">+₩19,350</td><td></td></tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 text-gray-600">Demand Surcharge</td><td className="text-right tabular-nums">+₩640</td><td></td></tr>
+              <tr className="border-b border-emerald-100"><td className="py-2 text-gray-600">US Inbound Processing Fee</td><td className="text-right tabular-nums">+₩3,900</td><td></td></tr>
+              <tr className="bg-emerald-100/50"><td className="py-2 font-bold text-base">Total Customer Pays</td><td className="text-right tabular-nums font-bold text-base">₩68,770</td><td className="text-right text-gray-600">≈ $50</td></tr>
             </tbody>
           </table>
         </div>
-        <div className="mt-4 rounded-lg bg-white border border-rose-200 p-3 text-xs text-gray-800">
-          <p className="font-semibold mb-1">🎯 원인 가설 (확률 순)</p>
-          <ol className="space-y-1 list-decimal list-inside">
-            <li><strong>FedEx 측 Pricing Agreement 미동기화</strong> — 계약 발효 2026-03-11 이지만 Rate API rating system 에는 아직 활성 안 됨. FedEx 영업 ping 필요.</li>
-            <li><strong>적립할인(ED) 후정산</strong> — PDF p11 명시: ED 는 월별 rebate 로 따로 들어옴. 라이브 견적에는 base discount 만 적용. (그래도 46.6%는 너무 낮음)</li>
-            <li><strong>API 가 published rate 다른 layer 사용</strong> — API LIST 가 PDF 기준 LIST 가 아닐 수 있음 (즉 PDF % 가 다른 base 에 적용)</li>
-          </ol>
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+          <div className="rounded-lg bg-white border border-emerald-200 p-3">
+            <p className="font-semibold mb-1">📍 API (계약)</p>
+            <p>₩68,770</p>
+            <p className="text-gray-500">70.0% combined off base</p>
+          </div>
+          <div className="rounded-lg bg-white border border-emerald-200 p-3">
+            <p className="font-semibold mb-1">🌐 FedEx 웹사이트</p>
+            <p>₩86,120</p>
+            <p className="text-gray-500">72.7% combined off base</p>
+          </div>
+          <div className="rounded-lg bg-white border border-emerald-200 p-3">
+            <p className="font-semibold mb-1">📄 PDF 기대</p>
+            <p>76.29%</p>
+            <p className="text-gray-500">차이는 ED 후정산 가능성</p>
+          </div>
         </div>
-        <div className="mt-3 rounded-lg bg-yellow-50 border border-yellow-300 p-3 text-xs">
-          <p className="font-semibold text-yellow-900">📞 FedEx Korea 영업 담당 (PDF p3 서명)</p>
-          <p className="mt-1"><strong>Yoon-Seok Gil</strong> · Acct Exec-Snr · 사원번호 <code>3502633</code></p>
-          <p className="mt-1 text-yellow-800">→ 보드/CEO 가 직접 콜해서 「Account 210839884 PA 2520066223-100 활성 상태 + Rate API rating sync 확인」 요청 권장.</p>
-        </div>
+        <p className="text-xs text-gray-700 mt-4">
+          PDF
+          <a href="/fedex-status/PricingAgreement-2520066223-100.pdf" target="_blank" className="underline mx-1 text-emerald-700 font-semibold">PricingAgreement-2520066223-100</a>
+          기준 76.29% 와 API 70% 사이의 약 6%p 차이는 <strong>적립할인(ED) 월별 후정산</strong> 으로 설명됨 (PDF p11 명시).
+          ED 까지 라이브에 반영하려면 Yoon-Seok Gil (사번 3502633) 콜 옵션 가능하지만 필수 아님.
+        </p>
       </section>
 
       {/* 운영 라이브 요율 — ACCOUNT vs LIST 비교 (보드 질문 응답) */}
