@@ -131,6 +131,58 @@ export default function Page() {
         </p>
       </header>
 
+      {/* 계약 할인 격차 (보드 2차 응답) */}
+      <section className="mb-10 rounded-2xl border border-rose-300 bg-rose-50/60 p-5">
+        <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-rose-900">
+          <XCircle className="h-5 w-5" /> ⚠ 계약 할인 격차 — API 가 풀 할인을 안 적용 중
+        </h2>
+        <p className="text-sm text-rose-900 mb-3">
+          계약서(PricingAgreement 2520066223-100) 기준 KR→US IP 1kg 은 <strong>~78% 할인</strong> 이어야 하는데
+          FedEx API 응답은 <strong>46.6% 할인</strong> 에 그침. <strong>대략 ₩42,000 만큼 더 비쌈</strong>.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="text-gray-500 text-xs uppercase tracking-wider">
+              <tr className="border-b border-rose-200">
+                <th className="py-2 text-left">노선 (1kg)</th>
+                <th className="text-right">LIST</th>
+                <th className="text-right">계약 기대</th>
+                <th className="text-right">API 실측</th>
+                <th className="text-right">격차</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border-b border-rose-100">
+                <td className="py-2 font-medium">KR Bucheon → US LA, IP</td>
+                <td className="text-right text-gray-500 tabular-nums">₩134,460</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩29,294</td>
+                <td className="text-right font-semibold text-rose-700 tabular-nums">₩71,840</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩42,546</td>
+              </tr>
+              <tr className="border-b border-rose-100">
+                <td className="py-2 font-medium">KR Bucheon → JP Tokyo, IP</td>
+                <td className="text-right text-gray-500 tabular-nums">₩119,100</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩20,366</td>
+                <td className="text-right font-semibold text-rose-700 tabular-nums">₩31,860</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩11,494</td>
+              </tr>
+              <tr>
+                <td className="py-2 font-medium">KR Bucheon → GB London, IP</td>
+                <td className="text-right text-gray-500 tabular-nums">₩144,640</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩26,758</td>
+                <td className="text-right font-semibold text-rose-700 tabular-nums">₩38,540</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩11,782</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-rose-900 mt-3">
+          원인 가설: (a) FedEx 측 Pricing Agreement 활성화 지연, (b) earned discount 후정산
+          (월말 rebate), (c) 우리 DB 시드와 계약서 PDF 실제값 차이.
+          → 보드 PDF 1장 + FedEx 영업 담당자 ping 필요.
+        </p>
+      </section>
+
       {/* 운영 라이브 요율 — ACCOUNT vs LIST 비교 (보드 질문 응답) */}
       {prod && (
         <section className="mb-10 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5">
