@@ -13,7 +13,9 @@ const inter = Inter({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.com";
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
-const META_PIXEL_ID = "1421706653319003";
+// PCCF Auto Pixel (OMO-2376) — env override 가능, fallback 하드코딩 유지
+const META_PIXEL_ID =
+  process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "1421706653319003";
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
