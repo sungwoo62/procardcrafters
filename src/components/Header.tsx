@@ -218,7 +218,7 @@ export default function Header({ productData = {} }: Props) {
                   {/* Footer */}
                   <div className="bg-gray-50 border-t border-gray-100 px-6 py-3 flex items-center justify-between">
                     <div className="text-xs text-gray-600">
-                      <span className="font-semibold text-gray-900">61 products</span> · printed in LA, delivered worldwide
+                      <span className="font-semibold text-gray-900">61 products</span> · delivered worldwide with FedEx
                     </div>
                     <Link
                       href="/products"

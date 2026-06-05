@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — Procardcrafters',
-  description: 'Learn about Procardcrafters — premium printing distributed from Los Angeles and delivered worldwide.',
+  description: 'Learn about Procardcrafters — premium printing from our global production network, delivered worldwide with FedEx.',
 }
 
 const VALUES = [
@@ -47,11 +47,12 @@ export default function AboutPage() {
             <Package className="w-7 h-7 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Premium Print, Distributed from LA
+            Premium Print, Delivered Worldwide
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed">
             Procardcrafters was built to give businesses everywhere access to high-quality
-            printing — at fair prices, with no guesswork. Distributed from our Los Angeles facility.
+            printing — at fair prices, with no guesswork. Produced through our global production
+            network and shipped worldwide with FedEx.
           </p>
         </div>
       </section>
@@ -73,8 +74,8 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-600 leading-relaxed">
           <p>
-            We use professional-grade printing equipment and premium materials. Our LA distribution
-            center ensures fast delivery across the United States and worldwide.
+            We use professional-grade printing equipment and premium materials. FedEx International
+            handles the last mile — fast, tracked delivery across the United States and worldwide.
           </p>
           <p>
             Procardcrafters handles all the logistics and delivers your finished prints wherever
