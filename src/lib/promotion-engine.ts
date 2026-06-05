@@ -345,6 +345,134 @@ export async function applyCode(
   return redemption
 }
 
+// ============================================================
+// 캠페인 우선순위 (홈 hero 선택용)
+// BF > Christmas > Valentine(top) > 기타 시즌 > wedding(always_on)
+// ============================================================
+
+export function getCampaignPriority(calendarKey: string): number {
+  if (calendarKey === 'black_friday') return 100
+  if (calendarKey === 'christmas_new_year') return 90
+  if (calendarKey === 'valentine') return 80
+  if (['graduation', 'halloween', 'back_to_school'].includes(calendarKey)) return 60
+  if (calendarKey === 'wedding_boost') return 10
+  return 50
+}
+
+// ============================================================
+// 단일 캠페인 조회 (LP 페이지용)
+// ============================================================
+
+export interface CampaignDetail extends Campaign {
+  promoCode: PromoCode | null
+  productDetails: Array<{
+    slug: string
+    name_en: string
+    hero_image_url: string | null
+    description_en: string | null
+    sort_order: number
+  }>
+}
+
+/**
+ * calendar.key = slug인 라이브 캠페인 + 프로모 코드 + 상품 상세 반환.
+ * 없으면 null.
+ */
+export async function getCampaignBySlug(slug: string): Promise<CampaignDetail | null> {
+  const supabase = createServerClient()
+  const now = new Date().toISOString()
+
+  const { data: calendar } = await supabase
+    .from('print_promotion_calendar')
+    .select('id')
+    .eq('key', slug)
+    .single()
+
+  if (!calendar) return null
+
+  const { data: campaignData } = await supabase
+    .from('print_promotion_campaigns')
+    .select(`
+      *,
+      calendar:print_promotion_calendar(key, name_ko, name_en, default_discount_tier),
+      products:print_promotion_products(product_slug, sort_order, custom_hero_url)
+    `)
+    .eq('calendar_id', calendar.id)
+    .eq('status', 'live')
+    .lte('promo_start_at', now)
+    .gte('promo_end_at', now)
+    .order('year', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (!campaignData) return null
+  const campaign = campaignData as Campaign
+
+  const productSlugs = campaign.products.map(p => p.product_slug)
+
+  const { data: codeData } = await supabase
+    .from('print_promo_codes')
+    .select('*')
+    .eq('campaign_id', campaign.id)
+    .eq('status', 'active')
+    .lte('valid_from', now)
+    .gte('valid_until', now)
+    .order('discount_pct', { ascending: false })
+    .limit(1)
+    .single()
+
+  type ProductRow = { slug: string; name_en: string; hero_image_url: string | null; description_en: string | null }
+  let imageRows: ProductRow[] = []
+  if (productSlugs.length > 0) {
+    const { data } = await supabase
+      .from('print_products')
+      .select('slug, name_en, hero_image_url, description_en')
+      .in('slug', productSlugs)
+      .eq('is_active', true)
+    imageRows = (data ?? []) as ProductRow[]
+  }
+
+  const imageMap: Record<string, ProductRow> = {}
+  for (const p of imageRows) {
+    imageMap[p.slug] = p
+  }
+
+  const productDetails = campaign.products
+    .map(p => ({
+      slug: p.product_slug,
+      name_en: imageMap[p.product_slug]?.name_en ?? p.product_slug,
+      hero_image_url: imageMap[p.product_slug]?.hero_image_url ?? null,
+      description_en: imageMap[p.product_slug]?.description_en ?? null,
+      sort_order: p.sort_order,
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order)
+
+  return {
+    ...campaign,
+    promoCode: codeData ? (codeData as PromoCode) : null,
+    productDetails,
+  }
+}
+
+/**
+ * 캠페인의 최고 할인율 활성 코드 반환 (홈 hero용).
+ */
+export async function getTopPromoCode(campaignId: string): Promise<PromoCode | null> {
+  const supabase = createServerClient()
+  const now = new Date().toISOString()
+  const { data } = await supabase
+    .from('print_promo_codes')
+    .select('*')
+    .eq('campaign_id', campaignId)
+    .eq('status', 'active')
+    .lte('valid_from', now)
+    .gte('valid_until', now)
+    .order('discount_pct', { ascending: false })
+    .limit(1)
+    .single()
+  return data ? (data as PromoCode) : null
+}
+
 /**
  * 주문 데이터에서 margin 계산 후 음수면 알림.
  * margin = subtotal - factory_cost - shipping - transaction_fee - promo_discount

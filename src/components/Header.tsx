@@ -8,6 +8,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import AuthButton from './AuthButton'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
 import type { ProductCardData } from '@/app/layout'
+import type { Campaign } from '@/lib/promotion-engine'
 
 const NAV_LINKS = [
   { href: '/portfolio', label: 'Portfolio' },
@@ -18,11 +19,31 @@ const NAV_LINKS = [
 
 const FEATURED_PER_GROUP = 3
 
-interface Props {
-  productData?: Record<string, ProductCardData>
+const SEASON_EMOJI: Record<string, string> = {
+  black_friday: '🛍️',
+  christmas_new_year: '🎄',
+  wedding_boost: '💍',
+  valentine: '💝',
+  mothers_day: '🌸',
+  graduation: '🎓',
+  fathers_day: '👔',
+  back_to_school: '📚',
+  halloween: '🎃',
 }
 
-export default function Header({ productData = {} }: Props) {
+const TIER_DISCOUNT: Record<string, number> = {
+  top: 20,
+  standard: 15,
+  always_on: 10,
+  bestseller: 10,
+}
+
+interface Props {
+  productData?: Record<string, ProductCardData>
+  activeCampaigns?: Campaign[]
+}
+
+export default function Header({ productData = {}, activeCampaigns = [] }: Props) {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [productsOpen, setProductsOpen] = useState(false)
   const [mobileGroupOpen, setMobileGroupOpen] = useState<string | null>(null)
@@ -97,6 +118,25 @@ export default function Header({ productData = {} }: Props) {
 
                     {/* Col 1 — Category 좌측 리스트 */}
                     <div className="bg-gray-50 border-r border-gray-100 py-4 flex flex-col">
+                      {/* 시즌 프로모 배너 (활성 캠페인 있을 때만) */}
+                      {activeCampaigns.length > 0 && (() => {
+                        const c = activeCampaigns[0]
+                        const emoji = SEASON_EMOJI[c.calendar.key] ?? '🎉'
+                        const pct = TIER_DISCOUNT[c.calendar.default_discount_tier] ?? 15
+                        return (
+                          <Link
+                            href={`/promotions/${c.calendar.key}`}
+                            onClick={closeMega}
+                            className="mx-3 mb-3 flex flex-col gap-1 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl px-4 py-3 hover:from-blue-700 hover:to-indigo-700 transition-all shadow-sm"
+                          >
+                            <div className="flex items-center gap-1.5">
+                              <span aria-hidden="true">{emoji}</span>
+                              <span className="text-[11px] font-bold uppercase tracking-wider leading-none">{c.calendar.name_en}</span>
+                            </div>
+                            <div className="text-sm font-semibold">Up to {pct}% off →</div>
+                          </Link>
+                        )
+                      })()}
                       <div className="px-5 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-gray-400">Categories</div>
                       <div className="flex-1">
                         {PRODUCT_GROUPS.map(group => {
@@ -289,6 +329,25 @@ export default function Header({ productData = {} }: Props) {
       {mobileOpen && (
         <div className="md:hidden border-t border-gray-200 bg-white max-h-[80vh] overflow-y-auto">
           <nav className="flex flex-col py-2">
+            {/* 모바일 시즌 프로모 배너 */}
+            {activeCampaigns.length > 0 && (() => {
+              const c = activeCampaigns[0]
+              const emoji = SEASON_EMOJI[c.calendar.key] ?? '🎉'
+              const pct = TIER_DISCOUNT[c.calendar.default_discount_tier] ?? 15
+              return (
+                <Link
+                  href={`/promotions/${c.calendar.key}`}
+                  onClick={() => setMobileOpen(false)}
+                  className="mx-3 mb-2 flex items-center justify-between gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl px-4 py-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <span aria-hidden="true">{emoji}</span>
+                    <span className="text-sm font-semibold">{c.calendar.name_en}</span>
+                  </div>
+                  <span className="text-xs font-bold">Up to {pct}% off →</span>
+                </Link>
+              )
+            })()}
             {PRODUCT_GROUPS.map(group => {
               const open = mobileGroupOpen === group.key
               return (

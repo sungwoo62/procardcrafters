@@ -16,6 +16,9 @@ import {
 } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
 import ProductImage from '@/components/ProductImage'
+import { getActiveCampaigns, getTopPromoCode, getCampaignPriority } from '@/lib/promotion-engine'
+import type { Campaign } from '@/lib/promotion-engine'
+import CampaignHero from '@/components/CampaignHero'
 
 const PRODUCTS = [
   { slug: 'business-cards', category: 'business_cards', name: 'Business Cards', desc: 'Professional cards that make a lasting impression.', tag: 'Most Popular', tagColor: 'bg-blue-100 text-blue-700', gradient: 'from-blue-50 to-indigo-100', accent: 'border-blue-200' },
@@ -92,6 +95,13 @@ const GUARANTEES = [
   { icon: Package, text: 'Secure Packaging' },
 ]
 
+function pickTopCampaign(campaigns: Campaign[]): Campaign | null {
+  if (campaigns.length === 0) return null
+  return campaigns.reduce((best, c) =>
+    getCampaignPriority(c.calendar.key) > getCampaignPriority(best.calendar.key) ? c : best,
+  )
+}
+
 async function getFeaturedPortfolio() {
   try {
     const supabase = createServerClient()
@@ -109,10 +119,29 @@ async function getFeaturedPortfolio() {
 }
 
 export default async function HomePage() {
-  const featuredPortfolio = await getFeaturedPortfolio()
+  const [featuredPortfolio, campaigns] = await Promise.all([
+    getFeaturedPortfolio(),
+    getActiveCampaigns().catch((): Campaign[] => []),
+  ])
+
+  const topCampaign = pickTopCampaign(campaigns)
+  const promoCode = topCampaign
+    ? await getTopPromoCode(topCampaign.id).catch(() => null)
+    : null
+
   return (
     <>
-      {/* Hero Section */}
+      {/* Hero Section — 활성 캠페인 있으면 swap, 없으면 기본 hero */}
+      {topCampaign ? (
+        <CampaignHero
+          campaignKey={topCampaign.calendar.key}
+          campaignSlug={topCampaign.calendar.key}
+          headlineEn={topCampaign.headline_en ?? topCampaign.calendar.name_en}
+          heroImageUrl={topCampaign.hero_image_url ?? null}
+          promoCode={promoCode?.code ?? null}
+          cutoffAt={topCampaign.order_cutoff_at ?? null}
+        />
+      ) : (
       <section className="relative overflow-hidden bg-gradient-to-br from-slate-900 via-blue-950 to-indigo-900 py-28 px-4">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-10">
@@ -150,6 +179,7 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      )}
 
       {/* Stats Badges */}
       <section className="bg-white border-b border-gray-100 py-8 px-4">

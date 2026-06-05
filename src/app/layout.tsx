@@ -7,6 +7,8 @@ import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import FreeShippingBanner from '@/components/FreeShippingBanner'
 import { createServerClient } from '@/lib/supabase'
+import { getActiveCampaigns, getCampaignPriority } from '@/lib/promotion-engine'
+import type { Campaign } from '@/lib/promotion-engine'
 
 // 마케팅 트래킹 env (NEXT_PUBLIC_* 라야 브라우저 노출).
 // 없으면 해당 라이브러리 로드 안 함 (안전 폴백).
@@ -69,7 +71,13 @@ async function fetchProductCardData(): Promise<Record<string, ProductCardData>> 
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const productData = await fetchProductCardData()
+  const [productData, rawCampaigns] = await Promise.all([
+    fetchProductCardData(),
+    getActiveCampaigns().catch((): Campaign[] => []),
+  ])
+  const activeCampaigns = [...rawCampaigns].sort(
+    (a, b) => getCampaignPriority(b.calendar.key) - getCampaignPriority(a.calendar.key),
+  )
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
       <head>
@@ -164,7 +172,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </noscript>
         )}
         <FreeShippingBanner />
-        <Header productData={productData} />
+        <Header productData={productData} activeCampaigns={activeCampaigns} />
         <main className="flex-1">{children}</main>
         <Footer />
         <ChatWidget />
