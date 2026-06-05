@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
-import type { PrintProduct, PrintProductOption, OptionType } from '@/types/database'
+import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
@@ -23,17 +23,27 @@ interface Props {
   swadpiaData?: SwadpiaClientData
 }
 
-const OPTION_LABEL: Record<OptionType, string> = {
+const OPTION_LABEL: Record<string, string> = {
   quantity: 'Quantity',
+  paper_qty: 'Quantity',
   paper: 'Paper',
   paper_code: 'Paper',
+  paper_size: 'Size',
   coating: 'Coating',
   size: 'Size',
-  finish: 'Finish',
+  finish: 'Finishing',
+  finishing: 'Finishing',
   corners: 'Corners',
   sides: 'Sides',
   pages: 'Pages',
+  print_color_type: 'Print',
 }
+
+/** Option types that should show a hover preview popup (paper texture / finishing image). */
+const RICH_PREVIEW_TYPES = new Set(['paper', 'paper_code', 'finish', 'finishing'])
+
+/** Option types that represent quantity (so the selected qty is parsed from this). */
+const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
 
 /**
  * Look up cost from the Swadpia print price matrix.
@@ -62,7 +72,7 @@ function lookupSwadpiaCost(
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
   // Group options by type
   const grouped = useMemo(() => {
-    const map = new Map<OptionType, PrintProductOption[]>()
+    const map = new Map<string, PrintProductOption[]>()
     for (const opt of options) {
       if (!map.has(opt.option_type)) map.set(opt.option_type, [])
       map.get(opt.option_type)!.push(opt)
@@ -87,10 +97,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
 
-  // Selected quantity (from quantity option)
+  // Selected quantity — DB 마다 type 명이 다름 (paper_qty / quantity). 둘 다 지원.
   const selectedQty = useMemo(() => {
-    const qtyValue = selections['quantity']
-    return qtyValue ? parseInt(qtyValue, 10) : 100
+    const qtyValue = selections['paper_qty'] ?? selections['quantity']
+    const parsed = qtyValue ? parseInt(qtyValue, 10) : NaN
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : 100
   }, [selections])
 
   // Determine paper_code for Swadpia print cost lookup
@@ -149,19 +160,19 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <div className="flex flex-wrap gap-2">
             {opts.map((opt) => {
               const isSelected = selections[type] === opt.value
-              const isPaperType = type === 'paper' || type === 'paper_code'
+              const hasPreview = RICH_PREVIEW_TYPES.has(type)
+              const hoverKey = `${type}:${opt.value}`
 
               return (
                 <div key={opt.value} className="relative">
-                  {/* 용지 선택 팝업 */}
-                  {isPaperType && hoveredPaper === opt.value && (
+                  {hasPreview && hoveredPaper === hoverKey && (
                     <PaperPopup option={opt} />
                   )}
 
                   <button
                     onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
-                    onMouseEnter={() => isPaperType && setHoveredPaper(opt.value)}
-                    onMouseLeave={() => isPaperType && setHoveredPaper(null)}
+                    onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
+                    onMouseLeave={() => hasPreview && setHoveredPaper(null)}
                     className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
@@ -219,8 +230,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           })}
         </div>
         <p className="text-[11px] text-gray-400 mt-2">
-          Production starts after we approve your file (typically within 24 h). Shipping time is calculated separately at checkout.
+          Production starts after we approve your file (typically within 24 h).
         </p>
+        <div className="mt-2 flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
+          <span className="font-semibold">Note:</span>
+          <span>This is the production / dispatch estimate from our LA facility. Actual delivery time depends on FedEx network conditions and your destination — shipping is billed separately at checkout.</span>
+        </div>
       </div>
 
       {/* Price Summary */}
