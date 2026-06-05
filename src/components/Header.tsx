@@ -90,10 +90,10 @@ export default function Header({ productData = {} }: Props) {
               {productsOpen && (
                 <div
                   onMouseLeave={() => setProductsOpen(false)}
-                  className="absolute top-full left-1/2 -translate-x-1/2 bg-white border border-gray-100 rounded-2xl shadow-2xl shadow-gray-300/40 z-50 w-[min(1100px,calc(100vw-2rem))] overflow-hidden"
+                  className="fixed top-16 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl shadow-gray-300/40 z-50 overflow-hidden"
                 >
-                  {/* Moo 매칭 — 3 column side-by-side */}
-                  <div className="grid grid-cols-[200px,1fr,360px]">
+                  {/* Full-width megamenu — 가로 전체 확장. 3 column 내부 grid */}
+                  <div className="max-w-7xl mx-auto grid grid-cols-[220px,1fr,380px]">
 
                     {/* Col 1 — Category 좌측 리스트 */}
                     <div className="bg-gray-50 border-r border-gray-100 py-4 flex flex-col">
@@ -131,27 +131,39 @@ export default function Header({ productData = {} }: Props) {
                       </div>
                     </div>
 
-                    {/* Col 2 — Products of active category (2-col compact list) */}
-                    <div className="p-5 border-r border-gray-100">
-                      <div className="mb-3 flex items-baseline justify-between">
+                    {/* Col 2 — Products of active category (4-col thumb grid, 가로로 wide) */}
+                    <div className="p-6 border-r border-gray-100">
+                      <div className="mb-4 flex items-baseline justify-between">
                         <h3 className="text-sm font-semibold text-gray-900">All {activeGroup.title}</h3>
                         <span className="text-xs text-gray-400">{activeGroup.description}</span>
                       </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-0.5 max-h-[360px] overflow-y-auto">
+                      <div className="grid grid-cols-4 gap-x-4 gap-y-3 max-h-[420px] overflow-y-auto pr-2">
                         {activeGroup.items.map(item => {
                           const onPath = pathname === `/products/${item.slug}`
+                          const thumb = productData[item.slug]?.image
                           return (
                             <Link
                               key={item.slug}
                               href={`/products/${item.slug}`}
                               onClick={closeMega}
-                              className={`block py-1.5 text-sm transition-colors ${
+                              className={`group flex items-center gap-2.5 p-2 rounded-lg border transition-all ${
                                 onPath
-                                  ? 'text-blue-600 font-medium'
-                                  : 'text-gray-700 hover:text-blue-600'
+                                  ? 'border-blue-300 bg-blue-50'
+                                  : 'border-transparent hover:border-gray-200 hover:bg-gray-50'
                               }`}
                             >
-                              {item.label}
+                              <div className="relative w-12 h-9 rounded bg-gray-100 overflow-hidden shrink-0">
+                                {thumb ? (
+                                  <Image src={thumb} alt={item.label} fill sizes="48px" className="object-cover" />
+                                ) : (
+                                  <div className="absolute inset-0 flex items-center justify-center text-gray-300">
+                                    <Package className="w-4 h-4" />
+                                  </div>
+                                )}
+                              </div>
+                              <span className={`text-xs leading-tight ${onPath ? 'text-blue-700 font-medium' : 'text-gray-700 group-hover:text-blue-600'}`}>
+                                {item.label}
+                              </span>
                             </Link>
                           )
                         })}
