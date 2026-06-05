@@ -147,7 +147,7 @@ export default async function OrderTrackingPage({ params }: Props) {
       {/* Rejected file re-upload */}
       {rejectedFiles.length > 0 && (
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-gray-900">파일 재업로드 필요</h2>
+          <h2 className="text-lg font-semibold text-gray-900">File Re-upload Required</h2>
           {rejectedFiles.map((file) => (
             <RejectedFileUpload key={file.id} file={file} orderNumber={order.order_number} />
           ))}
@@ -214,7 +214,7 @@ export default async function OrderTrackingPage({ params }: Props) {
         <ReorderButton
           orderNumber={order.order_number}
           variant="primary"
-          label="이 주문 다시 하기"
+          label="Reorder this"
           className="px-5 py-2.5 text-base"
         />
       </div>

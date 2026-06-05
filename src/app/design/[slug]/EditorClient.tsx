@@ -143,7 +143,7 @@ const PRODUCT_DIMS: Record<string, EditorDimensions> = {
 const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3, safeMm: 3 }
 
 // ─── Required fields per product ──────────────────────────────────────────────
-// 제품별 필수 입력 필드. 사용자가 입력하면 캔버스의 data.fieldKey가 일치하는
+// 제품별 Required 입력 필드. 사용자가 입력하면 캔버스의 data.fieldKey가 일치하는
 // Textbox에 즉시 반영된다. 빈 캔버스에서는 신규 텍스트 박스가 자동 생성된다.
 
 const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
@@ -2675,8 +2675,8 @@ export default function EditorClient({ product, options }: Props) {
   async function handleLogoUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
-    if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
+    if (file.size > 20 * 1024 * 1024) showUploadToast('File is too large (over 20MB) — the editor may slow down.')
+    if (file.size < 10 * 1024) showUploadToast('File is too small (under 10KB) — print quality may be low.')
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
@@ -2701,7 +2701,7 @@ export default function EditorClient({ product, options }: Props) {
       const q = calcImageQuality(img, scale, file.size)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ;(img as any).set('data', { ...(img as any).data, imageQuality: q })
-      if (q.level === 'low') showUploadToast(`Logo 해상도 경고: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
+      if (q.level === 'low') showUploadToast(`Logo resolution warning: ${q.dpi} DPI — may print blurry.`)
       canvas.setActiveObject(img)
       canvas.renderAll()
       syncLayers(canvas)
@@ -2910,8 +2910,8 @@ export default function EditorClient({ product, options }: Props) {
   async function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
-    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
-    else if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
+    if (file.size > 20 * 1024 * 1024) showUploadToast('File is too large (over 20MB) — the editor may slow down.')
+    else if (file.size < 10 * 1024) showUploadToast('File is too small (under 10KB) — print quality may be low.')
     const url = URL.createObjectURL(file)
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
@@ -2934,7 +2934,7 @@ export default function EditorClient({ product, options }: Props) {
     const q = calcImageQuality(img, scale, file.size)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(img as any).set('data', { ...(img as any).data, imageQuality: q })
-    if (q.level === 'low') showUploadToast(`저해상도 이미지: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
+    if (q.level === 'low') showUploadToast(`Low-resolution image: ${q.dpi} DPI — may print blurry.`)
     canvas.setActiveObject(img)
     canvas.renderAll()
     syncLayers(canvas)
@@ -2951,8 +2951,8 @@ export default function EditorClient({ product, options }: Props) {
     const oldImg: any = canvas.getActiveObject()
     if (!oldImg || oldImg.type !== 'image') return
 
-    if (file.size > 20 * 1024 * 1024) showUploadToast('파일이 너무 큽니다 (20MB 초과) — 에디터가 느려질 수 있습니다.')
-    else if (file.size < 10 * 1024) showUploadToast('파일이 너무 작습니다 (10KB 미만) — 인쇄 품질이 낮을 수 있습니다.')
+    if (file.size > 20 * 1024 * 1024) showUploadToast('File is too large (over 20MB) — the editor may slow down.')
+    else if (file.size < 10 * 1024) showUploadToast('File is too small (under 10KB) — print quality may be low.')
 
     const url = URL.createObjectURL(file)
     const fabric = fabricModRef.current ?? await import('fabric')
@@ -2976,7 +2976,7 @@ export default function EditorClient({ product, options }: Props) {
     const q = calcImageQuality(newImg, scale, file.size)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ;(newImg as any).set('data', { ...(newImg as any).data, imageQuality: q })
-    if (q.level === 'low') showUploadToast(`저해상도 이미지: ${q.dpi} DPI — 인쇄 시 흐리게 나올 수 있습니다.`)
+    if (q.level === 'low') showUploadToast(`Low-resolution image: ${q.dpi} DPI — may print blurry.`)
     canvas.setActiveObject(newImg)
     canvas.renderAll()
     syncLayers(canvas)
@@ -3731,7 +3731,7 @@ export default function EditorClient({ product, options }: Props) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .map((o: any) => {
         const q: ImageQuality | undefined = o.data?.imageQuality
-        return q && q.level === 'low' ? { name: o.data?.name ?? '이미지', dpi: q.dpi } : null
+        return q && q.level === 'low' ? { name: o.data?.name ?? 'Image', dpi: q.dpi } : null
       })
       .filter(Boolean) as Array<{ name: string; dpi: number }>
   }
@@ -3760,7 +3760,7 @@ export default function EditorClient({ product, options }: Props) {
         oRight > trimX + trimW - safeMargin ||
         oBottom > trimY + trimH - safeMargin
       ) {
-        violations.push(o.data?.name ?? '요소')
+        violations.push(o.data?.name ?? 'Element')
       }
     })
     return violations
@@ -3770,20 +3770,20 @@ export default function EditorClient({ product, options }: Props) {
     const issues: PreflightIssue[] = []
 
     if (isCanvasEmpty()) {
-      issues.push({ level: 'block', category: 'empty_canvas', message: '캔버스가 비어 있습니다. 텍스트나 이미지를 추가하세요.' })
+      issues.push({ level: 'block', category: 'empty_canvas', message: 'Canvas is empty. Add text or images.' })
       return issues
     }
 
     getMissingRequired(fieldValues).forEach(f => {
-      issues.push({ level: 'block', category: 'required', message: `"${f.label}" 이(가) 비어 있습니다.` })
+      issues.push({ level: 'block', category: 'required', message: `"${f.label}" is empty.` })
     })
 
     getLowQualityImages().forEach(img => {
-      issues.push({ level: 'warn', category: 'low_dpi', message: `${img.name} (${img.dpi} DPI) — 인쇄 시 흐리게 나올 수 있습니다.` })
+      issues.push({ level: 'warn', category: 'low_dpi', message: `${img.name} (${img.dpi} DPI) — may print blurry.` })
     })
 
     getSafeAreaViolations().forEach(name => {
-      issues.push({ level: 'warn', category: 'safe_area', message: `"${name}" 이(가) 안전영역 밖에 있습니다.` })
+      issues.push({ level: 'warn', category: 'safe_area', message: `"${name}" is outside the safe area.` })
     })
 
     return issues
@@ -3826,20 +3826,20 @@ export default function EditorClient({ product, options }: Props) {
         const allWarnsAcknowledged = warnCategories.every(c => preflightAcknowledged.has(c))
         const canProceed = blockIssues.length === 0 && (warnCategories.length === 0 || allWarnsAcknowledged)
         const WARN_LABELS: Record<string, string> = {
-          low_dpi: '저해상도 이미지 (동의 필요)',
-          safe_area: '안전영역 침범 (동의 필요)',
+          low_dpi: 'Low-resolution image (acknowledgement required)',
+          safe_area: 'Safe area violation (acknowledgement required)',
         }
         return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-2xl w-[460px] max-h-[80vh] flex flex-col p-6">
               <div className="flex items-center gap-2 mb-4 shrink-0">
                 <ShieldCheck className="w-5 h-5 text-indigo-600 shrink-0" />
-                <h3 className="font-semibold text-gray-800">주문 전 검사</h3>
+                <h3 className="font-semibold text-gray-800">Pre-order check</h3>
               </div>
               <div className="overflow-y-auto flex-1 space-y-4">
                 {blockIssues.length > 0 && (
                   <div>
-                    <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">차단 항목</p>
+                    <p className="text-xs font-semibold text-red-600 uppercase tracking-wide mb-2">Blockers</p>
                     <ul className="space-y-1.5">
                       {blockIssues.map((issue, i) => (
                         <li key={i} className="flex items-start gap-2 text-sm bg-red-50 rounded-lg px-3 py-2">
@@ -3879,7 +3879,7 @@ export default function EditorClient({ product, options }: Props) {
                           }}
                           className="mt-0.5 accent-indigo-600"
                         />
-                        <span className="text-sm text-gray-700">이 상태로 진행합니다</span>
+                        <span className="text-sm text-gray-700">Proceed as-is</span>
                       </label>
                     </div>
                   )
@@ -3910,14 +3910,14 @@ export default function EditorClient({ product, options }: Props) {
                   }}
                   className="flex-1 rounded-lg border border-gray-200 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
                 >
-                  디자인 수정
+                  Edit design
                 </button>
                 <button
                   disabled={!canProceed}
                   onClick={() => { setShowPreflightModal(false); proceedToOrder({ preflightApproved: true }) }}
                   className="flex-1 rounded-lg bg-indigo-600 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  동의하고 주문 진행
+                  Acknowledge & proceed
                 </button>
               </div>
             </div>
@@ -4151,7 +4151,7 @@ export default function EditorClient({ product, options }: Props) {
                     <div key={f.key}>
                       <label className="flex items-center justify-between text-[10px] text-gray-500 mb-0.5">
                         <span>{f.label}{f.required && <span className="text-red-400 ml-0.5">*</span>}</span>
-                        {showError && <span className="text-red-500 font-medium">필수</span>}
+                        {showError && <span className="text-red-500 font-medium">Required</span>}
                       </label>
                       {f.type === 'multiline' ? (
                         <textarea

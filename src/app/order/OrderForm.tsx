@@ -79,7 +79,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const [form, setForm] = useState<FormState>(INITIAL_FORM)
   const [uploadStatus, setUploadStatus] = useState<UploadStatus>(preloadedFileId ? 'done' : 'idle')
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(preloadedFileId ?? null)
-  const [uploadedFileName, setUploadedFileName] = useState<string | null>(preloadedFileId ? '에디터 디자인 파일' : null)
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(preloadedFileId ? 'Editor design file' : null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const [fileValidation, setFileValidation] = useState<FileValidation | null>(null)
   const [paymentError, setPaymentError] = useState<string | null>(null)

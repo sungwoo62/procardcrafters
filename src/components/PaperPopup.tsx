@@ -57,42 +57,41 @@ function getTextureSrc(value: string, imageUrl: string | null): string {
 
 // 용지 특성 태그 (Swadpia 코드 기반)
 const PAPER_TAGS: Record<string, string[]> = {
-  SNW120W00: ['가볍고 얇음', '불투명', '고백색도'],
-  SNW150W00: ['중간 두께', '불투명', '고백색도'],
-  SNW180W00: ['두꺼운 느낌', '고급감', '고백색도'],
-  SNW200W00: ['고중량', '고급스러움', '고백색도'],
-  SNW250W00: ['프리미엄 두께', '고급 명함용', '순백'],
-  SNW300W00: ['최고 중량', '럭셔리', '순백'],
-  ART090W00: ['경량', '광택', '인쇄 선명'],
-  ART100W00: ['표준', '광택', '경제적'],
-  ART120W00: ['중간 광택', '인쇄 선명', '범용'],
-  ART150W00: ['두꺼운 광택지', '고급감', '선명한 색상'],
-  ART180W00: ['고중량 광택', '잡지/브로슈어'],
-  ART200W00: ['최고급 광택', '포스터/카탈로그'],
-  STK075AT0: ['스티커 전용', '아트지', '일반 점착'],
-  STK075AT1: ['스티커 전용', '아트지', '강력 점착'],
-  STK090AF0: ['스티커 전용', '아트지', '초강력 점착'],
-  STK080YP0: ['방수', '반투명 필름', '유포지'],
-  BNR440W00: ['현수막', 'PVC 440g', '야외용'],
-  BNR510W00: ['현수막', 'PVC 510g', '대형 야외용'],
-  CTN400W00: ['코튼지', '자연 질감', '필기 가능'],
-  CTN600W00: ['코튼지 최고급', '크레인 레트라', '활판 인쇄용'],
+  SNW120W00: ['Light', 'Opaque', 'Bright white'],
+  SNW150W00: ['Medium weight', 'Opaque', 'Bright white'],
+  SNW180W00: ['Substantial feel', 'Premium', 'Bright white'],
+  SNW200W00: ['Heavy', 'Premium feel', 'Bright white'],
+  SNW250W00: ['Premium weight', 'Premium card stock', 'Pure white'],
+  SNW300W00: ['Maximum weight', 'Luxury', 'Pure white'],
+  ART090W00: ['Lightweight', 'Glossy', 'Sharp print'],
+  ART100W00: ['Standard', 'Glossy', 'Economical'],
+  ART120W00: ['Semi-gloss', 'Sharp print', 'Versatile'],
+  ART150W00: ['Heavy gloss', 'Premium feel', 'Vivid color'],
+  ART180W00: ['Heavy gloss', 'Magazine / Brochure'],
+  ART200W00: ['Premium gloss', 'Poster / Catalog'],
+  STK075AT0: ['Sticker stock', 'Art paper', 'Standard adhesive'],
+  STK075AT1: ['Sticker stock', 'Art paper', 'Strong adhesive'],
+  STK090AF0: ['Sticker stock', 'Art paper', 'Heavy-duty adhesive'],
+  STK080YP0: ['Waterproof', 'Translucent film', 'Synthetic'],
+  BNR440W00: ['Banner', 'PVC 440g', 'Outdoor'],
+  BNR510W00: ['Banner', 'PVC 510g', 'Large outdoor'],
+  CTN400W00: ['Cotton', 'Natural texture', 'Writable'],
+  CTN600W00: ['Premium cotton', 'Crane Lettra', 'Letterpress'],
 }
 
 export default function PaperPopup({ option }: PaperPopupProps) {
   const textureSrc = getTextureSrc(option.value, option.image_url)
   const tags = PAPER_TAGS[option.value] ?? []
-  const description = option.description_en || option.description_ko
+  // OMO-2314: customer-facing — render English fields only.
+  const description = option.description_en
 
   return (
     <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-left">
-      {/* 아래쪽 화살표 */}
       <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 overflow-hidden">
         <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-45" />
       </div>
 
       <div className="flex gap-3">
-        {/* 질감 이미지 */}
         <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-gray-100 shadow-sm">
           <Image
             src={textureSrc}
@@ -104,13 +103,9 @@ export default function PaperPopup({ option }: PaperPopupProps) {
           />
         </div>
 
-        {/* 텍스트 정보 */}
         <div className="min-w-0 flex-1">
-          <p className="text-xs font-semibold text-gray-900 leading-tight">
+          <p className="text-xs font-semibold text-gray-900 leading-tight mb-1.5">
             {option.label_en}
-          </p>
-          <p className="text-[11px] text-gray-500 mb-1.5">
-            {option.label_ko}
           </p>
           {description && (
             <p className="text-[11px] text-gray-600 leading-snug mb-1.5">
