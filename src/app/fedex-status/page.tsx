@@ -131,56 +131,70 @@ export default function Page() {
         </p>
       </header>
 
-      {/* 계약 할인 격차 (보드 2차 응답) */}
+      {/* 계약 할인 격차 — PDF 입수 후 업데이트 */}
       <section className="mb-10 rounded-2xl border border-rose-300 bg-rose-50/60 p-5">
         <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-rose-900">
-          <XCircle className="h-5 w-5" /> ⚠ 계약 할인 격차 — API 가 풀 할인을 안 적용 중
+          <XCircle className="h-5 w-5" /> ⚠ 계약 할인 격차 — PDF 76.29% vs API 46.6%
         </h2>
         <p className="text-sm text-rose-900 mb-3">
-          계약서(PricingAgreement 2520066223-100) 기준 KR→US IP 1kg 은 <strong>~78% 할인</strong> 이어야 하는데
-          FedEx API 응답은 <strong>46.6% 할인</strong> 에 그침. <strong>대략 ₩42,000 만큼 더 비쌈</strong>.
+          보드가 첨부한 <strong>PricingAgreement 2520066223-100.pdf</strong> (
+          <a href="/fedex-status/PricingAgreement-2520066223-100.pdf" target="_blank" className="underline font-semibold">PDF 보기</a>
+          ) 기준 KR→US Zone D, IP, <strong>1.0-2.5kg 할인 = 76.29%</strong>.
+          하지만 FedEx Rate API (운영) 는 <strong>46.6% 할인</strong> 만 적용 중. 1kg 약 <strong>₩42,000</strong> 더 비쌈.
         </p>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="text-gray-500 text-xs uppercase tracking-wider">
               <tr className="border-b border-rose-200">
-                <th className="py-2 text-left">노선 (1kg)</th>
+                <th className="py-2 text-left">노선 (1kg IP)</th>
+                <th className="text-right">PDF 할인율</th>
                 <th className="text-right">LIST</th>
-                <th className="text-right">계약 기대</th>
-                <th className="text-right">API 실측</th>
+                <th className="text-right">계약 기대 (=LIST×(1−할인))</th>
+                <th className="text-right">API 실측 (ACCOUNT)</th>
                 <th className="text-right">격차</th>
               </tr>
             </thead>
             <tbody>
               <tr className="border-b border-rose-100">
-                <td className="py-2 font-medium">KR Bucheon → US LA, IP</td>
+                <td className="py-2 font-medium">KR Bucheon → US LA (Zone D)</td>
+                <td className="text-right tabular-nums">76.29%</td>
                 <td className="text-right text-gray-500 tabular-nums">₩134,460</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩29,294</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩31,889</td>
                 <td className="text-right font-semibold text-rose-700 tabular-nums">₩71,840</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩42,546</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩39,951</td>
               </tr>
               <tr className="border-b border-rose-100">
-                <td className="py-2 font-medium">KR Bucheon → JP Tokyo, IP</td>
+                <td className="py-2 font-medium">KR Bucheon → JP Tokyo (Zone A)</td>
+                <td className="text-right tabular-nums">81.49%</td>
                 <td className="text-right text-gray-500 tabular-nums">₩119,100</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩20,366</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩22,034</td>
                 <td className="text-right font-semibold text-rose-700 tabular-nums">₩31,860</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩11,494</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩9,826</td>
               </tr>
               <tr>
-                <td className="py-2 font-medium">KR Bucheon → GB London, IP</td>
+                <td className="py-2 font-medium">KR Bucheon → GB London (Zone K)</td>
+                <td className="text-right tabular-nums">79.71%</td>
                 <td className="text-right text-gray-500 tabular-nums">₩144,640</td>
-                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩26,758</td>
+                <td className="text-right font-semibold text-emerald-700 tabular-nums">~₩29,346</td>
                 <td className="text-right font-semibold text-rose-700 tabular-nums">₩38,540</td>
-                <td className="text-right text-rose-700 tabular-nums">+₩11,782</td>
+                <td className="text-right text-rose-700 tabular-nums">+₩9,194</td>
               </tr>
             </tbody>
           </table>
         </div>
-        <p className="text-xs text-rose-900 mt-3">
-          원인 가설: (a) FedEx 측 Pricing Agreement 활성화 지연, (b) earned discount 후정산
-          (월말 rebate), (c) 우리 DB 시드와 계약서 PDF 실제값 차이.
-          → 보드 PDF 1장 + FedEx 영업 담당자 ping 필요.
-        </p>
+        <div className="mt-4 rounded-lg bg-white border border-rose-200 p-3 text-xs text-gray-800">
+          <p className="font-semibold mb-1">🎯 원인 가설 (확률 순)</p>
+          <ol className="space-y-1 list-decimal list-inside">
+            <li><strong>FedEx 측 Pricing Agreement 미동기화</strong> — 계약 발효 2026-03-11 이지만 Rate API rating system 에는 아직 활성 안 됨. FedEx 영업 ping 필요.</li>
+            <li><strong>적립할인(ED) 후정산</strong> — PDF p11 명시: ED 는 월별 rebate 로 따로 들어옴. 라이브 견적에는 base discount 만 적용. (그래도 46.6%는 너무 낮음)</li>
+            <li><strong>API 가 published rate 다른 layer 사용</strong> — API LIST 가 PDF 기준 LIST 가 아닐 수 있음 (즉 PDF % 가 다른 base 에 적용)</li>
+          </ol>
+        </div>
+        <div className="mt-3 rounded-lg bg-yellow-50 border border-yellow-300 p-3 text-xs">
+          <p className="font-semibold text-yellow-900">📞 FedEx Korea 영업 담당 (PDF p3 서명)</p>
+          <p className="mt-1"><strong>Yoon-Seok Gil</strong> · Acct Exec-Snr · 사원번호 <code>3502633</code></p>
+          <p className="mt-1 text-yellow-800">→ 보드/CEO 가 직접 콜해서 「Account 210839884 PA 2520066223-100 활성 상태 + Rate API rating sync 확인」 요청 권장.</p>
+        </div>
       </section>
 
       {/* 운영 라이브 요율 — ACCOUNT vs LIST 비교 (보드 질문 응답) */}
