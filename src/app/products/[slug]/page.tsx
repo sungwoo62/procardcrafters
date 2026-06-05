@@ -11,8 +11,8 @@ import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
+import ProductGallery from '@/components/ProductGallery'
 import ViewItemTracker from '@/components/ViewItemTracker'
-import Image from 'next/image'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
 interface Props {
@@ -126,22 +126,15 @@ export default async function ProductDetailPage({ params }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
           {/* Left: Product Info */}
           <div>
-            {/* Product Visual */}
-            <div className={`relative h-80 bg-gradient-to-br ${PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'} rounded-2xl flex items-center justify-center mb-6 border border-white shadow-sm overflow-hidden`}>
-              {product.hero_image_url ? (
-                <Image
-                  src={product.hero_image_url}
-                  alt={product.name_en}
-                  fill
-                  sizes="(max-width: 1024px) 100vw, 50vw"
-                  className="object-cover"
-                  priority
-                />
-              ) : (
-                <div className="w-64 h-64">
-                  <ProductImage category={product.category} />
-                </div>
-              )}
+            {/* Product Visual + Gallery */}
+            <div className="mb-6">
+              <ProductGallery
+                heroUrl={product.hero_image_url ?? null}
+                galleryUrls={(product as PrintProduct & { gallery_urls?: string[] | null }).gallery_urls ?? null}
+                alt={product.name_en}
+                fallback={<ProductImage category={product.category} />}
+                gradientClass={PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'}
+              />
             </div>
 
             {/* Product Name + Badge */}
