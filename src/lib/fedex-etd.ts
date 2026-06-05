@@ -196,3 +196,41 @@ export function buildShipPostshipmentEtdDetail(documentTypes: EtdDocumentType[])
     },
   }
 }
+
+/**
+ * 경로 A — FedEx 자동 생성 Commercial Invoice (운영 기본값, OMO-2371 보드 결정).
+ *
+ * Ship API requestedShipment 에 spread 로 합쳐서 사용:
+ *
+ *   const shipBody = {
+ *     ...,
+ *     requestedShipment: {
+ *       ...commonShipment,
+ *       ...buildAutoInvoiceEtd(),
+ *     },
+ *   }
+ *
+ * FedEx 가 customs commodities 데이터로 invoice PDF 를 자동 렌더링하여
+ * 발송물에 ETD 로 첨부한다. 응답 transactionShipments[].shipmentDocuments[]
+ * 에 `{ contentType: 'COMMERCIAL_INVOICE', encodedLabel: <base64 PDF> }` 포함.
+ *
+ * 별도 Upload Documents API 구독이 필요 없는 가장 저마찰 경로.
+ * 우리 PDF 양식이 필요할 시점에 buildShipPreshipmentAttachment() 로 전환.
+ */
+export function buildAutoInvoiceEtd(): {
+  shipmentSpecialServices: { specialServiceTypes: string[]; etdDetail: { requestedDocumentTypes: string[] } }
+  shippingDocumentSpecification: {
+    shippingDocumentTypes: string[]
+    commercialInvoiceDetail: { documentFormat: { stockType: string; docType: string } }
+  }
+} {
+  return {
+    shipmentSpecialServices: buildShipPostshipmentEtdDetail(['COMMERCIAL_INVOICE']),
+    shippingDocumentSpecification: {
+      shippingDocumentTypes: ['COMMERCIAL_INVOICE'],
+      commercialInvoiceDetail: {
+        documentFormat: { stockType: 'PAPER_LETTER', docType: 'PDF' },
+      },
+    },
+  }
+}
