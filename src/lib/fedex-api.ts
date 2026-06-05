@@ -101,20 +101,25 @@ export async function fetchFedexRates(input: FedexRateInput): Promise<FedexRateR
   const token = await getAccessToken()
   const account = process.env.FEDEX_ACCOUNT_NUMBER!
 
+  const recipientCountry = input.recipientCountryCode.toUpperCase()
+  const shipperCountry = 'KR'
+  const isInternational = recipientCountry !== shipperCountry
+  const weightKg = Math.max(0.1, input.weightKg)
+  const declaredValueUsd = input.declaredValueUsd ?? 10
+
   // FedEx 는 kg 또는 lb 단위 받음. cm 도 그대로 사용.
   const body = {
     accountNumber: { value: account },
     rateRequestControlParameters: {
       returnTransitTimes: true,
       servicesNeededOnRateFailure: true,
-      variableOptions: 'TRANSIT_TIME',
       rateSortOrder: 'COMMITASCENDING',
     },
     requestedShipment: {
       shipper: {
         address: {
           postalCode: '14488',
-          countryCode: 'KR',
+          countryCode: shipperCountry,
           city: 'BUCHEON',
           stateOrProvinceCode: '',
         },
@@ -122,7 +127,7 @@ export async function fetchFedexRates(input: FedexRateInput): Promise<FedexRateR
       recipient: {
         address: {
           postalCode: input.recipientPostalCode || '00000',
-          countryCode: input.recipientCountryCode.toUpperCase(),
+          countryCode: recipientCountry,
           city: input.recipientCity || 'CITY',
           stateOrProvinceCode: input.recipientStateCode ?? '',
         },
@@ -131,9 +136,29 @@ export async function fetchFedexRates(input: FedexRateInput): Promise<FedexRateR
       ...(input.preferredService ? { serviceType: input.preferredService } : {}),
       rateRequestType: ['ACCOUNT', 'LIST'],
       preferredCurrency: 'USD',
+      // 국제 배송은 customs clearance detail 필수 (없으면 RATE.CUSTOMCLEARANCEDETAIL.INVALID)
+      ...(isInternational
+        ? {
+            customsClearanceDetail: {
+              dutiesPayment: { paymentType: 'SENDER' },
+              commodities: [
+                {
+                  description: 'Printed marketing materials',
+                  countryOfManufacture: shipperCountry,
+                  quantity: 1,
+                  quantityUnits: 'PCS',
+                  unitPrice: { amount: declaredValueUsd, currency: 'USD' },
+                  customsValue: { amount: declaredValueUsd, currency: 'USD' },
+                  weight: { units: 'KG', value: weightKg },
+                  harmonizedCode: '491110', // 인쇄 광고물 기본
+                },
+              ],
+            },
+          }
+        : {}),
       requestedPackageLineItems: [
         {
-          weight: { units: 'KG', value: Math.max(0.1, input.weightKg) },
+          weight: { units: 'KG', value: weightKg },
           ...(input.lengthCm && input.widthCm && input.heightCm
             ? {
                 dimensions: {
@@ -232,6 +257,7 @@ export function fedexServiceToInternalCode(serviceType: string): string {
     INTERNATIONAL_PRIORITY_EXPRESS:   'fedex_ipe',
     FEDEX_INTERNATIONAL_PRIORITY:     'fedex_ip',
     FEDEX_INTERNATIONAL_ECONOMY:      'fedex_ie',
+    FEDEX_INTERNATIONAL_CONNECT_PLUS: 'fedex_icp',
     INTERNATIONAL_FIRST:              'fedex_ipe',
   }
   return map[serviceType] ?? `fedex_${serviceType.toLowerCase()}`
