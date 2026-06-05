@@ -25,7 +25,13 @@ export async function GET(req: NextRequest) {
   }
 
   if (type === 'recovery') {
-    return NextResponse.redirect(`${origin}/auth/reset-password`)
+    const recoveryRedirect = searchParams.get('redirectTo') ?? '/auth/reset-password'
+    const url = new URL(`${origin}${recoveryRedirect}`)
+    const next = searchParams.get('next')
+    if (next) {
+      url.searchParams.set('next', next)
+    }
+    return NextResponse.redirect(url)
   }
 
   const redirectTo = searchParams.get('redirectTo') ?? '/mypage'

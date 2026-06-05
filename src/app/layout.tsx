@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import FreeShippingBanner from '@/components/FreeShippingBanner'
 import SeasonalToast from '@/components/SeasonalToast'
+import SocialProofToast from '@/components/SocialProofToast'
 import CouponPopup from '@/components/CouponPopup'
 import { createServerClient } from '@/lib/supabase'
 import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
@@ -15,11 +16,12 @@ import type { Campaign } from '@/lib/promotion-engine'
 // 마케팅 트래킹 env (NEXT_PUBLIC_* 라야 브라우저 노출).
 // 없으면 해당 라이브러리 로드 안 함 (안전 폴백).
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
-const GTM_CONTAINER_ID  = process.env.NEXT_PUBLIC_GTM_CONTAINER_ID
+const GTM_CONTAINER_ID  = process.env.NEXT_PUBLIC_GTM_ID || process.env.NEXT_PUBLIC_GTM_CONTAINER_ID
 const META_PIXEL_ID     = process.env.NEXT_PUBLIC_META_PIXEL_ID
 const TIKTOK_PIXEL_ID   = process.env.NEXT_PUBLIC_TIKTOK_PIXEL_ID
 const GOOGLE_ADS_ID     = process.env.NEXT_PUBLIC_GOOGLE_ADS_ID
 const CLARITY_PROJECT   = process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID
+const USE_GTM_PRIMARY = Boolean(GTM_CONTAINER_ID)
 
 const geist = Geist({
   variable: '--font-geist',
@@ -88,7 +90,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" className={`${geist.variable} h-full`}>
       <head>
         {/* GA4 / Google Ads gtag (env 가 있을 때만 로드) */}
-        {(GA_MEASUREMENT_ID || GOOGLE_ADS_ID) && (
+        {!USE_GTM_PRIMARY && (GA_MEASUREMENT_ID || GOOGLE_ADS_ID) && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID ?? GOOGLE_ADS_ID}`}
@@ -186,6 +188,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           <SeasonalToast campaign={primaryCampaign} promoCode={primaryPromoCode?.code ?? null} />
         )}
         <CouponPopup />
+        <SocialProofToast />
       </body>
     </html>
   )

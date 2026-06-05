@@ -81,7 +81,7 @@ function AdminLoginForm() {
             <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
             로그인 정보 저장
           </label>
-          <Link href="/auth/forgot-password" className="text-xs text-blue-600 hover:underline">
+          <Link href="/admin/forgot-password" className="text-xs text-blue-600 hover:underline">
             비밀번호 찾기
           </Link>
         </div>
