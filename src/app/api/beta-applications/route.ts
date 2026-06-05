@@ -2,7 +2,7 @@
 // 베타 테스터 신청 접수 → print_beta_applications INSERT → confirmation 이메일 발송
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { sendBetaConfirmation } from "@/lib/email";
 import { sendCapiEvent, extractClientSignals } from "@/lib/meta-capi";
 
@@ -113,7 +113,7 @@ export async function POST(req: NextRequest) {
     utm_content: asString(body.utm_content, 200),
   };
 
-  const supabase = await createClient();
+  const supabase = createAdminClient();
 
   // 중복 이메일 사전 체크 — DB unique index 가 최종 방어선이지만
   // 한국어 에러 메시지를 위해 사전 조회로 분기
