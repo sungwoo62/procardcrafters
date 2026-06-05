@@ -1,0 +1,750 @@
+{
+  "capturedAt": "2026-06-05T03:55:40.102Z",
+  "case": "KR Bucheon → FR Paris 75001, 1kg, multiple services",
+  "website_reference_IP": {
+    "base": 227100,
+    "fuel": 14850,
+    "peak": 3200,
+    "discount": 186720,
+    "bonus": 8630,
+    "total": 49800,
+    "discount_pct": 82.22,
+    "bonus_pct": 3.8
+  },
+  "api_results": [
+    {
+      "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+      "reply": {
+        "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+        "serviceName": "FedEx International Priority®",
+        "packagingType": "YOUR_PACKAGING",
+        "commit": {
+          "dateDetail": {
+            "dayOfWeek": "Thu",
+            "dayFormat": "2026-06-11T18:00:00"
+          },
+          "commodityName": "CATALOGS",
+          "deliveryMessages": [
+            " 6:00 P.M. IF NO CUSTOMS DELAY"
+          ],
+          "requiredDocuments": [
+            "INTERNATIONAL_AIRWAY_BILL",
+            "COMMERCIAL_INVOICE"
+          ],
+          "derivedOriginDetail": {
+            "countryCode": "KR",
+            "postalCode": "14488",
+            "serviceArea": "PM",
+            "locationId": "OSNA ",
+            "locationNumber": 0
+          },
+          "derivedDestinationDetail": {
+            "countryCode": "FR",
+            "stateOrProvinceCode": "75",
+            "postalCode": "75001",
+            "serviceArea": "A1",
+            "locationId": "TNFA ",
+            "locationNumber": 0,
+            "airportId": "CDG"
+          },
+          "saturdayDelivery": false
+        },
+        "customerMessages": [
+          {
+            "code": "SERVICE.TYPE.INTERNATIONAL.MESSAGE",
+            "message": "Rate does not include duties & taxes, clearance entry fees or other import fees.  The payor of duties/taxes/fees will be responsible for any applicable Clearance Entry Fees."
+          },
+          {
+            "code": "REQUEST.IS.COMPLETED",
+            "message": "Request Is Completed."
+          }
+        ],
+        "ratedShipmentDetails": [
+          {
+            "rateType": "ACCOUNT",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 101310,
+            "totalBaseCharge": 173300,
+            "totalNetCharge": 36790,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 36790,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 36790,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "M",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 42.5,
+              "totalSurcharges": 12570,
+              "totalFreightDiscount": 149080,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 142490,
+                  "percent": 82.22
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 6590,
+                  "percent": 3.8
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 10970
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1600
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR638FM_2P_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 1
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 101310,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 173300,
+                  "netFreight": 24220,
+                  "totalSurcharges": 12570,
+                  "netFedExCharge": 36790,
+                  "totalTaxes": 0,
+                  "netCharge": 36790,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 1
+                  },
+                  "totalFreightDiscounts": 149080,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 142490,
+                      "percent": 82.22
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 6590,
+                      "percent": 3.8
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 10970
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1600
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
+          },
+          {
+            "rateType": "LIST",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 0,
+            "totalBaseCharge": 173300,
+            "totalNetCharge": 138100,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 138100,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 138100,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "G",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 42.5,
+              "totalSurcharges": 42790,
+              "totalFreightDiscount": 77990,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 77990,
+                  "percent": 45
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 41190
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1600
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR528FG_2P_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 1
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 0,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_LIST_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 173300,
+                  "netFreight": 95310,
+                  "totalSurcharges": 42790,
+                  "netFedExCharge": 138100,
+                  "totalTaxes": 0,
+                  "netCharge": 138100,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 1
+                  },
+                  "totalFreightDiscounts": 77990,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 77990,
+                      "percent": 45
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 41190
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1600
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
+          }
+        ],
+        "operationalDetail": {
+          "originLocationIds": [
+            "OSNA "
+          ],
+          "originLocationNumbers": [
+            0
+          ],
+          "originServiceAreas": [
+            "PM"
+          ],
+          "destinationLocationIds": [
+            "TNFA "
+          ],
+          "destinationLocationNumbers": [
+            0
+          ],
+          "destinationServiceAreas": [
+            "A1"
+          ],
+          "destinationLocationStateOrProvinceCodes": [
+            "75"
+          ],
+          "deliveryDate": "2026-06-11T18:00:00",
+          "deliveryDay": "THU",
+          "commitDate": "2026-06-11T18:00:00",
+          "commitDays": [
+            "THU"
+          ],
+          "ineligibleForMoneyBackGuarantee": false,
+          "astraDescription": "IP EOD",
+          "originPostalCodes": [
+            "14488"
+          ],
+          "countryCodes": [
+            "KR"
+          ],
+          "airportId": "CDG",
+          "serviceCode": "2P",
+          "destinationPostalCode": "75001"
+        },
+        "signatureOptionType": "SERVICE_DEFAULT",
+        "serviceDescription": {
+          "serviceId": "EP1000000300",
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "code": "2P",
+          "names": [
+            {
+              "type": "long",
+              "encoding": "utf-8",
+              "value": "FedEx International Priority®"
+            },
+            {
+              "type": "long",
+              "encoding": "ascii",
+              "value": "FedEx International Priority"
+            },
+            {
+              "type": "medium",
+              "encoding": "utf-8",
+              "value": "FedEx International Priority"
+            },
+            {
+              "type": "medium",
+              "encoding": "ascii",
+              "value": "FedEx International Priority"
+            },
+            {
+              "type": "short",
+              "encoding": "utf-8",
+              "value": "IPED"
+            },
+            {
+              "type": "short",
+              "encoding": "ascii",
+              "value": "IPED"
+            },
+            {
+              "type": "abbrv",
+              "encoding": "ascii",
+              "value": "OA"
+            }
+          ],
+          "serviceCategory": "parcel",
+          "description": "International Priority EOD (IP EOD)",
+          "astraDescription": "IP EOD"
+        },
+        "deliveryStation": "TNFA "
+      }
+    },
+    {
+      "serviceType": "INTERNATIONAL_ECONOMY",
+      "reply": {
+        "serviceType": "INTERNATIONAL_ECONOMY",
+        "serviceName": "FedEx International Economy®",
+        "packagingType": "YOUR_PACKAGING",
+        "commit": {
+          "dateDetail": {
+            "dayOfWeek": "Mon",
+            "dayFormat": "2026-06-15T18:00:00"
+          },
+          "commodityName": "CATALOGS",
+          "delayDetails": [
+            {
+              "date": "2026-06-14",
+              "dayOfWeek": "SUN",
+              "level": "COUNTRY",
+              "point": "DESTINATION",
+              "type": "NON_WORKDAY",
+              "description": "NON WORKDAY"
+            }
+          ],
+          "deliveryMessages": [
+            " 6:00 P.M. IF NO CUSTOMS DELAY"
+          ],
+          "requiredDocuments": [
+            "INTERNATIONAL_AIRWAY_BILL",
+            "COMMERCIAL_INVOICE"
+          ],
+          "derivedOriginDetail": {
+            "countryCode": "KR",
+            "postalCode": "14488",
+            "serviceArea": "PM",
+            "locationId": "OSNA ",
+            "locationNumber": 0
+          },
+          "derivedDestinationDetail": {
+            "countryCode": "FR",
+            "stateOrProvinceCode": "75",
+            "postalCode": "75001",
+            "serviceArea": "A1",
+            "locationId": "TNFA ",
+            "locationNumber": 0,
+            "airportId": "CDG"
+          },
+          "saturdayDelivery": false
+        },
+        "customerMessages": [
+          {
+            "code": "SERVICE.TYPE.INTERNATIONAL.MESSAGE",
+            "message": "Rate does not include duties & taxes, clearance entry fees or other import fees.  The payor of duties/taxes/fees will be responsible for any applicable Clearance Entry Fees."
+          },
+          {
+            "code": "REQUEST.IS.COMPLETED",
+            "message": "Request Is Completed."
+          }
+        ],
+        "ratedShipmentDetails": [
+          {
+            "rateType": "ACCOUNT",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 98230,
+            "totalBaseCharge": 169700,
+            "totalNetCharge": 37050,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 37050,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 37050,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "KR638F",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 42.5,
+              "totalSurcharges": 12650,
+              "totalFreightDiscount": 145300,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 137490,
+                  "percent": 81.02
+                },
+                {
+                  "type": "BONUS",
+                  "description": "Bonus discount",
+                  "amount": 7810,
+                  "percent": 4.6
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 11050
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1600
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR638FM_03_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 1
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 98230,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_ACCOUNT_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 169700,
+                  "netFreight": 24400,
+                  "totalSurcharges": 12650,
+                  "netFedExCharge": 37050,
+                  "totalTaxes": 0,
+                  "netCharge": 37050,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 1
+                  },
+                  "totalFreightDiscounts": 145300,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 137490,
+                      "percent": 81.02
+                    },
+                    {
+                      "type": "BONUS",
+                      "description": "Bonus Discount",
+                      "amount": 7810,
+                      "percent": 4.6
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 11050
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1600
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
+          },
+          {
+            "rateType": "LIST",
+            "ratedWeightMethod": "ACTUAL",
+            "totalDiscounts": 0,
+            "totalBaseCharge": 169700,
+            "totalNetCharge": 135280,
+            "totalVatCharge": 0,
+            "totalNetFedExCharge": 135280,
+            "totalDutiesAndTaxes": 0,
+            "totalNetChargeWithDutiesAndTaxes": 135280,
+            "totalDutiesTaxesAndFees": 0,
+            "totalAncillaryFeesAndTaxes": 0,
+            "shipmentRateDetail": {
+              "rateZone": "KR528F",
+              "dimDivisor": 139,
+              "fuelSurchargePercent": 42.5,
+              "totalSurcharges": 41950,
+              "totalFreightDiscount": 76370,
+              "freightDiscount": [
+                {
+                  "type": "VOLUME",
+                  "description": "Volume discount",
+                  "amount": 76370,
+                  "percent": 45
+                }
+              ],
+              "surCharges": [
+                {
+                  "type": "FUEL",
+                  "description": "Fuel Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 40350
+                },
+                {
+                  "type": "DEMAND",
+                  "description": "Demand Surcharge",
+                  "level": "SHIPMENT",
+                  "amount": 1600
+                }
+              ],
+              "pricingCode": "",
+              "currencyExchangeRate": {
+                "fromCurrency": "KRW",
+                "intoCurrency": "KRW",
+                "rate": 1
+              },
+              "totalBillingWeight": {
+                "units": "KG",
+                "value": 1
+              },
+              "dimDivisorType": "COUNTRY",
+              "currency": "KRW",
+              "rateScale": "KR528FG_03_CUSTOMER_PACKAGING",
+              "totalRateScaleWeight": {
+                "units": "KG",
+                "value": 1
+              }
+            },
+            "ratedPackages": [
+              {
+                "groupNumber": 0,
+                "effectiveNetDiscount": 0,
+                "packageRateDetail": {
+                  "rateType": "PAYOR_LIST_SHIPMENT",
+                  "ratedWeightMethod": "ACTUAL",
+                  "baseCharge": 169700,
+                  "netFreight": 93330,
+                  "totalSurcharges": 41950,
+                  "netFedExCharge": 135280,
+                  "totalTaxes": 0,
+                  "netCharge": 135280,
+                  "totalRebates": 0,
+                  "billingWeight": {
+                    "units": "KG",
+                    "value": 1
+                  },
+                  "totalFreightDiscounts": 76370,
+                  "freightDiscounts": [
+                    {
+                      "type": "VOLUME",
+                      "description": "Volume",
+                      "amount": 76370,
+                      "percent": 45
+                    }
+                  ],
+                  "surcharges": [
+                    {
+                      "type": "FUEL",
+                      "description": "Fuel Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 40350
+                    },
+                    {
+                      "type": "DEMAND",
+                      "description": "Demand Surcharge",
+                      "level": "SHIPMENT",
+                      "amount": 1600
+                    }
+                  ],
+                  "currency": "KRW"
+                },
+                "sequenceNumber": 1
+              }
+            ],
+            "currency": "KRW"
+          }
+        ],
+        "operationalDetail": {
+          "originLocationIds": [
+            "OSNA "
+          ],
+          "originLocationNumbers": [
+            0
+          ],
+          "originServiceAreas": [
+            "PM"
+          ],
+          "destinationLocationIds": [
+            "TNFA "
+          ],
+          "destinationLocationNumbers": [
+            0
+          ],
+          "destinationServiceAreas": [
+            "A1"
+          ],
+          "destinationLocationStateOrProvinceCodes": [
+            "75"
+          ],
+          "deliveryDate": "2026-06-15T18:00:00",
+          "deliveryDay": "MON",
+          "commitDate": "2026-06-15T18:00:00",
+          "commitDays": [
+            "MON"
+          ],
+          "ineligibleForMoneyBackGuarantee": false,
+          "astraDescription": "IE",
+          "originPostalCodes": [
+            "14488"
+          ],
+          "countryCodes": [
+            "KR"
+          ],
+          "airportId": "CDG",
+          "serviceCode": "04",
+          "destinationPostalCode": "75001"
+        },
+        "signatureOptionType": "SERVICE_DEFAULT",
+        "serviceDescription": {
+          "serviceId": "EP1000000004",
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "code": "04",
+          "names": [
+            {
+              "type": "long",
+              "encoding": "utf-8",
+              "value": "FedEx International Economy®"
+            },
+            {
+              "type": "long",
+              "encoding": "ascii",
+              "value": "FedEx International Economy"
+            },
+            {
+              "type": "medium",
+              "encoding": "utf-8",
+              "value": "FedEx International Economy®"
+            },
+            {
+              "type": "medium",
+              "encoding": "ascii",
+              "value": "FedEx International Economy"
+            },
+            {
+              "type": "short",
+              "encoding": "utf-8",
+              "value": "IE"
+            },
+            {
+              "type": "short",
+              "encoding": "ascii",
+              "value": "IE"
+            },
+            {
+              "type": "abbrv",
+              "encoding": "ascii",
+              "value": "IE"
+            }
+          ],
+          "serviceCategory": "parcel",
+          "description": "International Economy",
+          "astraDescription": "IE"
+        },
+        "deliveryStation": "TNFA "
+      }
+    }
+  ]
+}
