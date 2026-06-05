@@ -5,6 +5,8 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
+import { validateCode, applyCode } from '@/lib/promotion-engine'
+import { createAuthRouteClient } from '@/lib/supabase-server'
 
 interface OrderItemInput {
   productId: string
@@ -29,6 +31,7 @@ interface OrderRequest {
     country: string
     postalCode: string
   }
+  promoCode?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +44,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
-  const { items, customer, shipping } = body
+  const { items, customer, shipping, promoCode } = body
+
+  // 로그인 사용자 추출 (per_user_max 검증용)
+  let userId: string | undefined
+  try {
+    const authClient = await createAuthRouteClient()
+    const { data: { user } } = await authClient.auth.getUser()
+    userId = user?.id
+  } catch {
+    // 비로그인 주문 허용
+  }
 
   if (!items?.length || !customer?.email || !shipping?.addressLine1) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 })
@@ -171,7 +184,43 @@ export async function POST(request: NextRequest) {
     })
   }
 
-  const totalUsd = subtotalUsd + shippingUsd
+  const prePromoTotalUsd = subtotalUsd + shippingUsd
+
+  // ── 프로모 코드 서버 사이드 재검증 (trust-but-verify) ──────
+  // 클라이언트 검증값 무시, 서버에서 새로 계산
+  let promoDiscountUsd = 0
+  let verifiedPromoCode: { id: string; code: string } | null = null
+
+  if (promoCode?.trim()) {
+    const totalCents = Math.round(prePromoTotalUsd * 100)
+    const productSlugs = orderItemsData.map((i) => {
+      const p = products.find((pr) => pr.id === i.product_id)
+      return p?.slug ?? ''
+    }).filter(Boolean)
+
+    const promoResult = await validateCode(promoCode.trim(), {
+      userId,
+      totalCents,
+      productSlugs,
+    })
+
+    if (promoResult.valid && promoResult.discountAmount) {
+      promoDiscountUsd = promoResult.discountAmount / 100
+      verifiedPromoCode = { id: promoResult.code!.id, code: promoResult.code!.code }
+
+      // Stripe에 할인 라인 추가
+      lineItems.push({
+        price_data: {
+          currency: 'usd',
+          product_data: { name: `프로모 할인 (${promoResult.code!.code})` },
+          unit_amount: -promoResult.discountAmount,
+        },
+        quantity: 1,
+      })
+    }
+  }
+
+  const totalUsd = prePromoTotalUsd - promoDiscountUsd
 
   // Create order
   const { data: order, error: orderError } = await supabase
@@ -189,6 +238,7 @@ export async function POST(request: NextRequest) {
       shipping_postal_code: shipping.postalCode,
       subtotal_usd: subtotalUsd,
       shipping_usd: shippingUsd,
+      promo_discount_usd: promoDiscountUsd,
       total_usd: totalUsd,
       exchange_rate_krw_usd: exchangeRate,
       status: 'pending',
@@ -198,6 +248,21 @@ export async function POST(request: NextRequest) {
 
   if (orderError || !order) {
     return NextResponse.json({ error: `Failed to create order: ${orderError?.message}` }, { status: 500 })
+  }
+
+  // ── 프로모 코드 redemption 기록 (원자적 DB 함수) ──────────
+  if (verifiedPromoCode && promoDiscountUsd > 0) {
+    try {
+      await applyCode(
+        order.id,
+        verifiedPromoCode.id,
+        Math.round(promoDiscountUsd * 100),
+        userId,
+      )
+    } catch (redeemErr) {
+      // redemption 실패는 주문 자체를 롤백하지 않음 — 단 로그 기록
+      console.error('[orders] 프로모 redemption 실패:', redeemErr)
+    }
   }
 
   // Create order items
