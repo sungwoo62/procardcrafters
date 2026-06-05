@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
-import { Truck, Globe, Settings, Layers, Package2, ArrowLeft } from 'lucide-react'
+import { Truck, Globe, Settings, Layers, Package2, ArrowLeft, FileSpreadsheet, AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 interface Zone {
   id: string
@@ -42,7 +42,7 @@ interface Config {
   origin_email: string | null
 }
 
-type Tab = 'zones' | 'services' | 'rates' | 'shipments' | 'config'
+type Tab = 'zones' | 'services' | 'rates' | 'shipments' | 'reconciliation' | 'config'
 
 export default function AdminShippingPage() {
   const [tab, setTab] = useState<Tab>('zones')
@@ -90,6 +90,7 @@ export default function AdminShippingPage() {
             { key: 'services',  label: '서비스 (Service)',     icon: Layers },
             { key: 'rates',     label: '요금표 (Rate)',        icon: Package2 },
             { key: 'shipments', label: '송장 (Shipment)',      icon: Truck },
+            { key: 'reconciliation', label: '정산 (Reconcile)', icon: FileSpreadsheet },
             { key: 'config',    label: '설정 (Config)',        icon: Settings },
           ].map(({ key, label, icon: Icon }) => (
             <button
@@ -115,6 +116,7 @@ export default function AdminShippingPage() {
             {tab === 'services'  && <ServicesPanel services={services} reload={loadAll} setMsg={setMsg} />}
             {tab === 'rates'     && <RatesPanel zones={zones} services={services} setMsg={setMsg} />}
             {tab === 'shipments' && <ShipmentsPanel />}
+            {tab === 'reconciliation' && <ReconciliationPanel setMsg={setMsg} />}
             {tab === 'config'    && <ConfigPanel config={config} reload={loadAll} setMsg={setMsg} />}
           </>
         )}
@@ -542,5 +544,271 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
       <span className="text-xs font-medium text-gray-700 mb-1 block">{label}</span>
       {children}
     </label>
+  )
+}
+
+/* ============ Reconciliation ============ */
+interface ReconRow {
+  shipmentId: string
+  orderNumber: string | null
+  customer: string | null
+  destinationCountry: string | null
+  trackingNumber: string | null
+  zoneCode: string | null
+  serviceCode: string | null
+  weightKg: number
+  costUsd: number
+  chargedUsd: number
+  status: string
+  shippedAt: string | null
+  createdAt: string
+}
+interface ReconSummary {
+  totalShipments: number
+  totalEstimatedCostUsd: number
+  totalChargedUsd: number
+  avgWeightKg: number
+  byCountry: Record<string, number>
+  byStatus: Record<string, number>
+  period: { from: string; to: string; unit: string }
+}
+interface InvoiceRow {
+  id: string
+  invoice_number: string
+  invoice_date: string
+  total_usd: number | null
+  account_number: string | null
+}
+
+function ReconciliationPanel({ setMsg }: { setMsg: (s: string) => void }) {
+  const [from, setFrom] = useState(() => {
+    const d = new Date(); d.setMonth(d.getMonth() - 1); d.setDate(1)
+    return d.toISOString().slice(0, 10)
+  })
+  const [to, setTo] = useState(() => new Date().toISOString().slice(0, 10))
+  const [unit, setUnit] = useState('pccf')
+  const [rows, setRows] = useState<ReconRow[]>([])
+  const [summary, setSummary] = useState<ReconSummary | null>(null)
+  const [loading, setLoading] = useState(false)
+  const [invoices, setInvoices] = useState<InvoiceRow[]>([])
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    const params = new URLSearchParams({ from, to, unit })
+    const [r, i] = await Promise.all([
+      fetch(`/api/admin/shipping/reconciliation?${params}`).then((r) => r.json()),
+      fetch('/api/admin/shipping/invoice-import').then((r) => r.json()).catch(() => ({ invoices: [] })),
+    ])
+    setRows(r.rows ?? [])
+    setSummary(r.summary ?? null)
+    setInvoices(i.invoices ?? [])
+    setLoading(false)
+  }, [from, to, unit])
+
+  useEffect(() => { load() }, [load])
+
+  const downloadCsv = () => {
+    const params = new URLSearchParams({ from, to, unit, format: 'csv' })
+    window.open(`/api/admin/shipping/reconciliation?${params}`, '_blank')
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* 사업부 분리 안내 */}
+      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800">
+        <strong>같은 FedEx 어카운트를 다른 사업부와 공유 중입니다</strong> (예: 에띠앙).
+        이 페이지는 <code>business_unit=&apos;pccf&apos;</code> 송장만 표시합니다. FedEx 월별 인보이스 받으면 아래 임포트로 자동 매칭/차이 검출.
+      </div>
+
+      {/* 필터 */}
+      <div className="rounded-2xl bg-white border border-gray-200 p-4 flex flex-wrap items-end gap-3">
+        <label className="block">
+          <span className="text-xs text-gray-600">From</span>
+          <input type="date" value={from} onChange={(e) => setFrom(e.target.value)}
+            className="block rounded-lg border-gray-200 text-sm" />
+        </label>
+        <label className="block">
+          <span className="text-xs text-gray-600">To</span>
+          <input type="date" value={to} onChange={(e) => setTo(e.target.value)}
+            className="block rounded-lg border-gray-200 text-sm" />
+        </label>
+        <label className="block">
+          <span className="text-xs text-gray-600">사업부</span>
+          <select value={unit} onChange={(e) => setUnit(e.target.value)}
+            className="block rounded-lg border-gray-200 text-sm">
+            <option value="pccf">PCCF (Procardcrafters)</option>
+            <option value="ettiang">Ettiang</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <button onClick={downloadCsv}
+          className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white">
+          CSV 다운로드
+        </button>
+      </div>
+
+      {/* 요약 */}
+      {summary && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <Summary label="총 송장" value={`${summary.totalShipments}`} />
+          <Summary label="예상 FedEx 원가" value={`$${summary.totalEstimatedCostUsd.toFixed(2)}`} sub="우리 추정" />
+          <Summary label="고객 청구 합계" value={`$${summary.totalChargedUsd.toFixed(2)}`} sub="VAT 포함" />
+          <Summary label="평균 무게" value={`${summary.avgWeightKg.toFixed(2)} kg`} />
+        </div>
+      )}
+
+      {/* 송장 리스트 */}
+      <div className="rounded-2xl bg-white border border-gray-200 overflow-x-auto">
+        {loading ? (
+          <p className="p-6 text-sm text-gray-500">Loading...</p>
+        ) : rows.length === 0 ? (
+          <p className="p-6 text-sm text-gray-400">기간 내 송장 없음</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="bg-gray-50 text-xs uppercase text-gray-500">
+              <tr>
+                <th className="px-3 py-2 text-left">주문</th>
+                <th className="px-3 py-2 text-left">도착</th>
+                <th className="px-3 py-2 text-left">송장번호</th>
+                <th className="px-3 py-2 text-left">Zone</th>
+                <th className="px-3 py-2 text-right">kg</th>
+                <th className="px-3 py-2 text-right">원가</th>
+                <th className="px-3 py-2 text-right">청구</th>
+                <th className="px-3 py-2 text-left">상태</th>
+                <th className="px-3 py-2 text-left">발송일</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {rows.map((r) => (
+                <tr key={r.shipmentId}>
+                  <td className="px-3 py-2 font-mono text-xs">{r.orderNumber}</td>
+                  <td className="px-3 py-2 text-xs">{r.destinationCountry}</td>
+                  <td className="px-3 py-2 font-mono text-xs">{r.trackingNumber ?? '—'}</td>
+                  <td className="px-3 py-2 text-xs">{r.zoneCode ?? '—'}</td>
+                  <td className="px-3 py-2 text-right text-xs">{r.weightKg.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-xs">${r.costUsd.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-right text-xs">${r.chargedUsd.toFixed(2)}</td>
+                  <td className="px-3 py-2 text-xs">{r.status}</td>
+                  <td className="px-3 py-2 text-xs">{r.shippedAt ? new Date(r.shippedAt).toLocaleDateString() : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* FedEx 인보이스 import */}
+      <InvoiceImporter onImported={() => { load(); setMsg('인보이스 임포트 완료') }} invoices={invoices} />
+    </div>
+  )
+}
+
+function Summary({ label, value, sub }: { label: string; value: string; sub?: string }) {
+  return (
+    <div className="rounded-xl bg-white border border-gray-200 p-3">
+      <p className="text-xs text-gray-500">{label}</p>
+      <p className="text-lg font-bold text-gray-900">{value}</p>
+      {sub && <p className="text-[10px] text-gray-400">{sub}</p>}
+    </div>
+  )
+}
+
+function InvoiceImporter({ onImported, invoices }: { onImported: () => void; invoices: InvoiceRow[] }) {
+  const [csv, setCsv] = useState('')
+  const [invoiceNumber, setInvoiceNumber] = useState('')
+  const [invoiceDate, setInvoiceDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [importing, setImporting] = useState(false)
+  const [result, setResult] = useState<{ matched: number; discrepancy: number; unmatched: number; total: number } | null>(null)
+
+  const doImport = async () => {
+    if (!invoiceNumber) { alert('인보이스 번호 필수'); return }
+    setImporting(true); setResult(null)
+    // 형식: trackingNumber,shipDate,serviceCode,weightKg,chargedUsd,destinationCountry  (첫 줄 헤더 자동 무시)
+    const rows = csv.split('\n').map((l) => l.trim()).filter(Boolean).filter((l) => !/^tracking|^#/i.test(l))
+      .map((line) => {
+        const cells = line.split(',').map((c) => c.trim())
+        return {
+          trackingNumber: cells[0],
+          shipDate: cells[1] || undefined,
+          serviceCode: cells[2] || undefined,
+          weightKg: Number(cells[3]) || undefined,
+          chargedUsd: Number(cells[4]),
+          destinationCountry: cells[5] || undefined,
+        }
+      }).filter((r) => r.trackingNumber && Number.isFinite(r.chargedUsd))
+
+    if (!rows.length) { alert('파싱된 행 없음'); setImporting(false); return }
+
+    const res = await fetch('/api/admin/shipping/invoice-import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ invoiceNumber, invoiceDate, rows }),
+    })
+    const data = await res.json()
+    setImporting(false)
+    if (!res.ok) { alert(`오류: ${data.error}`); return }
+    setResult({ matched: data.matched, discrepancy: data.discrepancy, unmatched: data.unmatched, total: data.total })
+    onImported()
+  }
+
+  return (
+    <div className="rounded-2xl bg-white border border-gray-200 p-5 space-y-4">
+      <h2 className="text-sm font-semibold text-gray-900">FedEx 인보이스 임포트 (CSV)</h2>
+      <p className="text-xs text-gray-500 leading-relaxed">
+        포맷: <code className="bg-gray-100 px-1 rounded">trackingNumber,shipDate,serviceCode,weightKg,chargedUsd,destinationCountry</code> (헤더 자동 스킵).<br />
+        매칭 결과: <span className="text-green-700">matched</span> = 우리 송장 + 금액 OK,
+        <span className="text-orange-700"> discrepancy</span> = 금액 차이 &gt; $1,
+        <span className="text-amber-700"> unmatched</span> = 우리 시스템에 없음 (=다른 사업부 가능성).
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <label className="block">
+          <span className="text-xs text-gray-600">인보이스 번호</span>
+          <input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)}
+            className="w-full rounded-lg border-gray-200 text-sm" placeholder="예: 8-123-45678" />
+        </label>
+        <label className="block">
+          <span className="text-xs text-gray-600">인보이스 일자</span>
+          <input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)}
+            className="w-full rounded-lg border-gray-200 text-sm" />
+        </label>
+      </div>
+      <textarea rows={8} value={csv} onChange={(e) => setCsv(e.target.value)}
+        placeholder="780012345678,2026-05-15,INTERNATIONAL_PRIORITY,1.2,14.50,US"
+        className="w-full rounded-lg border-gray-200 font-mono text-xs" />
+      <button onClick={doImport} disabled={importing}
+        className="rounded-lg bg-gray-900 px-4 py-2 text-sm font-medium text-white disabled:opacity-50">
+        {importing ? '임포트 중...' : '임포트 + 자동 매칭'}
+      </button>
+
+      {result && (
+        <div className="grid grid-cols-4 gap-2 text-center text-xs pt-2">
+          <div className="rounded bg-gray-100 p-2">총 {result.total}</div>
+          <div className="rounded bg-green-100 text-green-700 p-2 flex items-center justify-center gap-1">
+            <CheckCircle2 className="w-3 h-3" /> matched {result.matched}
+          </div>
+          <div className="rounded bg-orange-100 text-orange-700 p-2 flex items-center justify-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> diff {result.discrepancy}
+          </div>
+          <div className="rounded bg-amber-100 text-amber-700 p-2 flex items-center justify-center gap-1">
+            <AlertTriangle className="w-3 h-3" /> unmatched {result.unmatched}
+          </div>
+        </div>
+      )}
+
+      {invoices.length > 0 && (
+        <div className="pt-3 border-t border-gray-200">
+          <h3 className="text-xs font-semibold text-gray-500 uppercase mb-2">최근 임포트된 인보이스</h3>
+          <ul className="space-y-1 text-xs">
+            {invoices.slice(0, 5).map((inv) => (
+              <li key={inv.id} className="flex justify-between">
+                <span className="font-mono">{inv.invoice_number}</span>
+                <span className="text-gray-500">{inv.invoice_date}</span>
+                {inv.total_usd && <span>${Number(inv.total_usd).toFixed(2)}</span>}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </div>
   )
 }
