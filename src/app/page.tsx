@@ -40,12 +40,12 @@ const FEATURES = [
   {
     icon: Printer,
     title: 'Print Quality',
-    desc: 'Professional offset and digital press printing with CMYK+1 color options. Distributed from Los Angeles.',
+    desc: 'Professional offset and digital press printing with CMYK+1 color options across our global production network.',
   },
   {
     icon: Truck,
     title: 'Global FedEx Delivery',
-    desc: 'Express shipping from Los Angeles. Most destinations receive orders in 7–12 business days door-to-door.',
+    desc: 'Express FedEx International shipping worldwide. Most destinations receive orders in 7–12 business days door-to-door.',
   },
   {
     icon: Star,
@@ -243,7 +243,7 @@ export default async function HomePage() {
           <div className="text-center mb-14">
             <h2 className="text-4xl font-bold text-gray-900 mb-4">Why Procardcrafters?</h2>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              We combine manufacturing excellence with LA-based distribution.
+              We combine manufacturing excellence with global FedEx delivery.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
