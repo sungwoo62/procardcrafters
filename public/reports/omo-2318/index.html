@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>OMO-2318 검증 보고서 — 성원애드피아 작업메모 수정</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif; color: #1a1a1a; background: #fafafa; margin: 0; padding: 24px 16px 80px; }
+    main { max-width: 900px; margin: 0 auto; }
+    h1 { font-size: 24px; margin: 0 0 4px; }
+    h2 { font-size: 18px; margin: 36px 0 12px; padding-bottom: 8px; border-bottom: 1px solid #e5e5e5; }
+    h3 { font-size: 15px; margin: 20px 0 8px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: 600; vertical-align: middle; }
+    .badge.done { background: #dcfce7; color: #166534; }
+    .meta { color: #666; font-size: 13px; margin-bottom: 24px; }
+    .meta a { color: #2563eb; text-decoration: none; }
+    .meta a:hover { text-decoration: underline; }
+    table.kv { border-collapse: collapse; font-size: 14px; }
+    table.kv td { padding: 4px 12px 4px 0; vertical-align: top; }
+    table.kv td:first-child { color: #666; white-space: nowrap; }
+    .cardbox { background: #fff; border: 1px solid #e5e5e5; border-radius: 8px; padding: 20px 24px; margin: 16px 0; }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+    .codeblock { background: #1a1a1a; color: #e5e5e5; padding: 14px 16px; border-radius: 8px; overflow: auto; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; line-height: 1.5; }
+    .codeblock .add { color: #86efac; }
+    .codeblock .del { color: #fca5a5; }
+    .codeblock .hl { background: #facc15; color: #1a1a1a; padding: 1px 4px; border-radius: 3px; }
+    figure { margin: 16px 0; }
+    figure img { width: 100%; max-width: 100%; border: 1px solid #e5e5e5; border-radius: 6px; display: block; }
+    figcaption { font-size: 13px; color: #666; margin-top: 6px; padding-left: 4px; }
+    .callout { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 0 6px 6px 0; margin: 16px 0; font-size: 14px; }
+    .callout.ok { background: #dcfce7; border-color: #16a34a; }
+    .callout strong { display: block; margin-bottom: 4px; }
+    .pill { background: #fee2e2; color: #991b1b; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .pill.ok { background: #dcfce7; color: #166534; }
+    .grid2 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+    @media (min-width: 720px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>OMO-2318 검증 보고서 <span class="badge done">DONE</span></h1>
+    <div class="meta">
+      성원에 오더넣은거에 작업메모 이게 뭐야 왜이렇게나오ㅓㅏㅁ<br/>
+      검증 시점: 2026-06-05 10:31 KST · commit <code>4975149</code> · 실제 발주번호 <code>OSA260605717059</code>
+    </div>
+
+    <h2>1. 무엇이 문제였나</h2>
+    <p>
+      성원애드피아 결제대기 주문내역의 <strong>주문제목</strong>(작업자 화면에선 작업메모로 보이는 그 필드)에
+      고객 주문번호 대신 <span class="pill">print_file_1717234567890.pdf</span> 같은
+      임시 다운로드 파일명이 그대로 들어가던 문제입니다.
+    </p>
+    <div class="cardbox">
+      <h3 style="margin-top:0">근본 원인 (Root cause)</h3>
+      <p style="margin:0 0 12px"><code>scripts/place-factory-orders.ts</code> 가 자동 발주를 실행할 때
+      <code>placeSwadpiaOrder()</code> 에 <code>orderTitle</code> 파라미터를 넘기지 않았습니다.</p>
+      <p style="margin:0"><code>src/lib/swadpia-order.ts:130</code> 의 폴백 로직이
+      <code>input.orderTitle ?? fileName</code> 이라서 임시 파일명이 그대로 성원 <code>order_title</code> 필드에
+      들어갔고, 그게 작업메모로 노출됐습니다.</p>
+    </div>
+
+    <h2>2. 수정 내용</h2>
+    <p>commit <code>4975149</code> — <code>scripts/place-factory-orders.ts</code> 에
+      <code>buildOrderTitle()</code> 헬퍼를 추가하고 자동 발주 호출 시 우리 PCCF 주문번호를 작업메모로 전달합니다.</p>
+    <pre class="codeblock"><span class="add">+ // 작업메모(주문명) 생성: 성원 측에서 우리 주문번호로 식별 가능하도록</span>
+<span class="add">+ const orderTitle = await buildOrderTitle(record)</span>
+
+  const result = await placeSwadpiaOrder({
+    productSlugOrCategoryCode: record.category_code,
+    selectedOptions: record.options_snapshot,
+    quantity: record.quantity,
+    fileUrl,
+<span class="add">+   orderTitle,</span>
+  })
+...
+<span class="add">+ async function buildOrderTitle(record: FactoryOrderRecord): Promise&lt;string&gt; {</span>
+<span class="add">+   const { data: order } = await supabase</span>
+<span class="add">+     .from('print_orders')</span>
+<span class="add">+     .select('order_number')</span>
+<span class="add">+     .eq('id', record.print_order_id)</span>
+<span class="add">+     .single()</span>
+<span class="add">+   const orderNumber = order?.order_number ?? record.print_order_id.slice(0, 8)</span>
+<span class="add">+   return `${orderNumber} ${record.quantity}매`</span>
+<span class="add">+ }</span></pre>
+
+    <div class="cardbox">
+      <h3 style="margin-top:0">새 작업메모 포맷</h3>
+      <table class="kv">
+        <tr><td>형식</td><td><code>{PCCF-주문번호} {수량}매</code></td></tr>
+        <tr><td>예시</td><td><code>PCCF-20260605-OMO2318 500매</code></td></tr>
+        <tr><td>식별 가능</td><td>성원 작업자가 우리 주문번호로 즉시 매칭 가능</td></tr>
+      </table>
+    </div>
+
+    <h2>3. 실제 발주 검증 결과</h2>
+    <div class="callout ok">
+      <strong>실제로 성원애드피아에 1건 발주를 넣어 검증했습니다.</strong>
+      orderTitle <code>PCCF-20260605-OMO2318 500매</code> 가 모달 입력 → 주문서 → 마이페이지 결제대기 목록까지
+      모든 단계에서 그대로 노출됨을 확인했습니다.
+      <br/><br/>
+      성원 주문번호: <code>OSA260605717059</code> · 가상계좌 미결제 상태 (입금하지 않으면 7일 후 자동취소)
+    </div>
+
+    <h3>① 바로주문 모달 — order_title 필드</h3>
+    <figure>
+      <img src="screenshots/02-modal-after-input.png" alt="바로주문 모달의 order_title 필드에 PCCF-20260605-OMO2318 500매 가 입력된 모습" />
+      <figcaption>
+        모달 하단 텍스트 필드에 <span class="pill ok">PCCF-20260605-OMO2318 500매</span> 가 그대로 들어간다.
+        예전엔 여기에 <span class="pill">print_file_1717234567890.pdf</span> 같은 임시 파일명이 들어갔다.
+      </figcaption>
+    </figure>
+
+    <h3>② 주문서 작성 페이지 — 주문제목 칼럼</h3>
+    <figure>
+      <img src="screenshots/03-direct-order.png" alt="성원 주문서 작성 페이지의 주문제목 칼럼에 PCCF-20260605-OMO2318 500매 가 표시" />
+      <figcaption>
+        <code>order/order_info/direct_order</code> 페이지의 <strong>주문제목</strong> 칼럼에
+        우리 PCCF 번호가 명확히 표시된다. 성원 측 시스템이 같은 값을 작업메모로 그대로 가져간다.
+      </figcaption>
+    </figure>
+
+    <h3>③ 마이페이지 결제대기 주문내역 — 작업자가 보는 화면</h3>
+    <figure>
+      <img src="screenshots/04-mypage-unpaid-top.png" alt="성원 마이페이지 결제대기 주문내역. 최상단 2026-06-05 주문이 PCCF-20260605-O… 로 표시" />
+      <figcaption>
+        최상단 신규 주문(2026-06-05, 주문번호 717059)에 <span class="pill ok">[일반지명함] PCCF-20260605-O…</span> 로 표시된다.
+        성원 작업자가 화면을 열자마자 우리 주문번호로 식별 가능하다.
+      </figcaption>
+    </figure>
+
+    <h2>4. 적용 범위와 영향</h2>
+    <div class="grid2">
+      <div class="cardbox">
+        <h3 style="margin-top:0">앞으로 발주되는 주문</h3>
+        <p style="margin:0">cron(<code>scripts/place-factory-orders.ts</code>)이 다음 번 실행되는 시점부터
+          자동으로 PCCF 주문번호가 작업메모에 들어갑니다.</p>
+      </div>
+      <div class="cardbox">
+        <h3 style="margin-top:0">이미 잘못 들어간 기존 주문</h3>
+        <p style="margin:0">예전 잔재 데이터는 성원 마이페이지에서 수기로 보정해야 합니다.
+          (소급 수정 자동화는 본 이슈 범위 밖)</p>
+      </div>
+    </div>
+
+    <h2>5. 검증 데이터</h2>
+    <div class="cardbox">
+      <table class="kv">
+        <tr><td>commit</td><td><code>4975149 fix(OMO-2318): 성원애드피아 작업메모에 의미있는 주문명 전달</code></td></tr>
+        <tr><td>변경 파일</td><td><code>scripts/place-factory-orders.ts</code> (+26 / -2)</td></tr>
+        <tr><td>실행 시각</td><td>2026-06-05 10:30:47 KST ~ 10:31:22 KST</td></tr>
+        <tr><td>테스트 orderTitle</td><td><code>PCCF-20260605-OMO2318 500매</code></td></tr>
+        <tr><td>성원 주문번호</td><td><code>OSA260605717059</code></td></tr>
+        <tr><td>주문 URL</td><td><code>https://www.swadpia.co.kr/order/order_result/SUCCESS/OSA260605717059</code></td></tr>
+        <tr><td>업로드 파일명</td><td><code>222.100.166.77_o_1jqamfhfo1jso1cfrqnp1ligu3eb.pdf</code></td></tr>
+      </table>
+    </div>
+
+    <div class="meta" style="margin-top:48px">
+      검증 스크립트: <code>scripts/verify-omo-2318.ts</code> · 보고서 생성 자동화: 이 페이지는 <code>public/reports/omo-2318/index.html</code> 에 정적 파일로 배포됨
+    </div>
+  </main>
+</body>
+</html>
