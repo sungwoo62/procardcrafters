@@ -10,6 +10,7 @@ export type OrderEventType =
   | 'file_approved'
   | 'file_rejected'
   | 'shipment_created'
+  | 'shipment_label_created'
   | 'shipped'
   | 'delivered'
   | 'reorder'

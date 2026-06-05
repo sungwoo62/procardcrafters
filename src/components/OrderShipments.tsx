@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
-import { Truck, Printer, Plus, Save, Send, CheckCircle2 } from 'lucide-react'
+import { Truck, Printer, Plus, Save, Send, CheckCircle2, FileText, Tag } from 'lucide-react'
 
 interface Shipment {
   id: string
@@ -19,6 +19,8 @@ interface Shipment {
   delivered_at: string | null
   notes: string | null
   created_at: string
+  label_storage_path: string | null
+  invoice_storage_path: string | null
   print_shipping_services?: { code: string; name_ko: string; name_en: string } | null
   print_shipping_zones?: { code: string; name_ko: string; name_en: string } | null
 }
@@ -256,6 +258,32 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
         >
           <Save className="h-3.5 w-3.5" /> 저장
         </button>
+        {shipment.status === 'pending' && shipment.carrier === 'fedex' && (
+          <CreateLabelButton
+            orderId={orderId}
+            shipmentId={shipment.id}
+            onDone={onChange}
+          />
+        )}
+        {shipment.label_storage_path && (
+          <a
+            href={`/api/admin/shipping/documents?path=${encodeURIComponent(shipment.label_storage_path)}`}
+            target="_blank"
+            className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+          >
+            <Tag className="h-3.5 w-3.5" /> 라벨 PDF
+          </a>
+        )}
+        {shipment.invoice_storage_path && (
+          <a
+            href={`/api/admin/shipping/documents?path=${encodeURIComponent(shipment.invoice_storage_path)}`}
+            target="_blank"
+            className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
+            title="FedEx 자동 생성 Commercial Invoice (ETD 통관 신속 처리)"
+          >
+            <FileText className="h-3.5 w-3.5" /> Invoice PDF
+          </a>
+        )}
         {shipment.status !== 'in_transit' && shipment.status !== 'delivered' && (
           <button
             onClick={() => patch({ status: 'in_transit' })}
@@ -278,5 +306,36 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
         {msg && <span className="text-xs text-gray-600 ml-1">{msg}</span>}
       </div>
     </div>
+  )
+}
+
+function CreateLabelButton({ orderId, shipmentId, onDone }: { orderId: string; shipmentId: string; onDone: () => void }) {
+  const [busy, setBusy] = useState(false)
+  const [err, setErr] = useState('')
+
+  const onClick = async () => {
+    if (!confirm('FedEx Ship API 를 호출해서 실제 라벨 + Commercial Invoice 를 생성합니다. 계속할까요?')) return
+    setBusy(true); setErr('')
+    const res = await fetch(`/api/admin/orders/${orderId}/shipments/${shipmentId}/create-label`, { method: 'POST' })
+    const data = await res.json()
+    setBusy(false)
+    if (!res.ok) {
+      setErr(data.error ?? '라벨 생성 실패')
+      return
+    }
+    onDone()
+  }
+
+  return (
+    <>
+      <button
+        onClick={onClick}
+        disabled={busy}
+        className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+      >
+        <Tag className="h-3.5 w-3.5" /> {busy ? '생성 중...' : 'FedEx 라벨 생성'}
+      </button>
+      {err && <span className="text-xs text-red-600 ml-1">{err}</span>}
+    </>
   )
 }

@@ -249,6 +249,200 @@ function parseRateResponse(data: FedexRateRawResponse): FedexRateResult {
   }
 }
 
+// ====================================================================
+// Ship API — 실제 라벨/송장 PDF 생성 (OMO-2371: ETD 자동 첨부)
+// ====================================================================
+
+export interface FedexShipInput {
+  serviceType: 'INTERNATIONAL_PRIORITY' | 'INTERNATIONAL_ECONOMY' | 'INTERNATIONAL_PRIORITY_EXPRESS'
+  recipient: {
+    personName: string
+    phoneNumber: string
+    companyName?: string
+    streetLines: string[]
+    city: string
+    stateOrProvinceCode?: string
+    postalCode: string
+    countryCode: string
+  }
+  packageWeightKg: number
+  packageLengthCm?: number
+  packageWidthCm?: number
+  packageHeightCm?: number
+  customerReference: string                 // 주문번호 etc
+  commodities: {
+    description: string
+    countryOfManufacture: string
+    quantity: number
+    quantityUnits?: string
+    unitPriceUsd: number
+    customsValueUsd: number
+    weightKg: number
+    harmonizedCode?: string
+    numberOfPieces?: number
+  }[]
+  /** ELECTRONIC_TRADE_DOCUMENTS 자동 invoice 첨부 여부 (기본 true, 국제만) */
+  includeAutoEtdInvoice?: boolean
+}
+
+export interface FedexShipResult {
+  masterTrackingNumber: string
+  serviceType: string
+  serviceName?: string
+  labelPdf: Buffer | null                    // PAPER_4X6 라벨
+  invoicePdf: Buffer | null                  // ELECTRONIC_TRADE_DOCUMENTS — Commercial Invoice
+  raw: unknown
+}
+
+/**
+ * 실제 발송 라벨 생성. 국제 발송 시 ETD (Electronic Trade Documents) 로 Commercial Invoice 자동 첨부.
+ *
+ * OMO-2371 — buildAutoInvoiceEtd() 스프레드 사용.
+ */
+export async function createFedexShipment(input: FedexShipInput): Promise<FedexShipResult> {
+  if (!isFedexApiConfigured()) {
+    throw new Error('FedEx API not configured')
+  }
+
+  const { buildAutoInvoiceEtd } = await import('@/lib/fedex-etd')
+
+  const token = await getAccessToken()
+  const account = process.env.FEDEX_ACCOUNT_NUMBER!
+  const isInternational = input.recipient.countryCode.toUpperCase() !== 'KR'
+  const includeEtd = isInternational && (input.includeAutoEtdInvoice ?? true)
+
+  const body: Record<string, unknown> = {
+    labelResponseOptions: 'LABEL',
+    accountNumber: { value: account },
+    requestedShipment: {
+      shipper: {
+        contact: {
+          personName: 'ALLPACKMEISTER CO., LTD.',
+          phoneNumber: '0327030200',
+          companyName: 'ALLPACKMEISTER',
+        },
+        address: {
+          streetLines: ['123-45 BUCHEON-RO'],
+          city: 'BUCHEON',
+          stateOrProvinceCode: '',
+          postalCode: '14488',
+          countryCode: 'KR',
+        },
+      },
+      recipients: [{
+        contact: {
+          personName: input.recipient.personName,
+          phoneNumber: input.recipient.phoneNumber,
+          companyName: input.recipient.companyName ?? input.recipient.personName,
+        },
+        address: {
+          streetLines: input.recipient.streetLines,
+          city: input.recipient.city,
+          stateOrProvinceCode: input.recipient.stateOrProvinceCode ?? '',
+          postalCode: input.recipient.postalCode,
+          countryCode: input.recipient.countryCode,
+        },
+      }],
+      shipDatestamp: new Date().toISOString().slice(0, 10),
+      serviceType: input.serviceType,
+      packagingType: 'YOUR_PACKAGING',
+      pickupType: 'USE_SCHEDULED_PICKUP',
+      blockInsightVisibility: false,
+      shippingChargesPayment: {
+        paymentType: 'SENDER',
+        payor: { responsibleParty: { accountNumber: { value: account } } },
+      },
+      labelSpecification: {
+        labelFormatType: 'COMMON2D',
+        imageType: 'PDF',
+        labelStockType: 'PAPER_4X6',
+      },
+      ...(isInternational ? {
+        customsClearanceDetail: {
+          dutiesPayment: {
+            paymentType: 'SENDER',
+            payor: { responsibleParty: { accountNumber: { value: account } } },
+          },
+          isDocumentOnly: false,
+          commercialInvoice: { shipmentPurpose: 'SOLD' },
+          commodities: input.commodities.map((c) => ({
+            description: c.description,
+            countryOfManufacture: c.countryOfManufacture,
+            quantity: c.quantity,
+            quantityUnits: c.quantityUnits ?? 'PCS',
+            unitPrice: { amount: c.unitPriceUsd, currency: 'USD' },
+            customsValue: { amount: c.customsValueUsd, currency: 'USD' },
+            weight: { units: 'KG', value: c.weightKg },
+            ...(c.harmonizedCode ? { harmonizedCode: c.harmonizedCode } : {}),
+            numberOfPieces: c.numberOfPieces ?? 1,
+          })),
+        },
+      } : {}),
+      requestedPackageLineItems: [{
+        sequenceNumber: 1,
+        weight: { units: 'KG', value: Math.max(0.1, input.packageWeightKg) },
+        ...(input.packageLengthCm && input.packageWidthCm && input.packageHeightCm
+          ? { dimensions: {
+              length: Math.round(input.packageLengthCm),
+              width: Math.round(input.packageWidthCm),
+              height: Math.round(input.packageHeightCm),
+              units: 'CM',
+            } }
+          : {}),
+        customerReferences: [{ customerReferenceType: 'CUSTOMER_REFERENCE', value: input.customerReference }],
+      }],
+      ...(includeEtd ? buildAutoInvoiceEtd() : {}),
+    },
+  }
+
+  const res = await fetch(`${getBaseUrl()}/ship/v1/shipments`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'X-locale': 'en_US',
+    },
+    body: JSON.stringify(body),
+  })
+
+  const text = await res.text()
+  let data: unknown
+  try { data = JSON.parse(text) } catch { data = { raw: text.slice(0, 500) } }
+
+  if (!res.ok) {
+    throw new Error(`FedEx Ship API failed: ${res.status} ${text.slice(0, 500)}`)
+  }
+
+  interface ShipRaw {
+    output?: {
+      transactionShipments?: Array<{
+        masterTrackingNumber?: string
+        serviceType?: string
+        serviceName?: string
+        pieceResponses?: Array<{ packageDocuments?: Array<{ contentType?: string; encodedLabel?: string }> }>
+        shipmentDocuments?: Array<{ contentType?: string; encodedLabel?: string }>
+      }>
+    }
+  }
+  const d = data as ShipRaw
+  const ts = d.output?.transactionShipments?.[0]
+  if (!ts?.masterTrackingNumber) {
+    throw new Error(`FedEx Ship API: masterTrackingNumber missing — ${text.slice(0, 300)}`)
+  }
+
+  const labelDoc = ts.pieceResponses?.[0]?.packageDocuments?.find((p) => p.contentType === 'LABEL')
+  const invoiceDoc = ts.shipmentDocuments?.find((s) => s.contentType === 'COMMERCIAL_INVOICE')
+
+  return {
+    masterTrackingNumber: ts.masterTrackingNumber,
+    serviceType: ts.serviceType ?? input.serviceType,
+    serviceName: ts.serviceName,
+    labelPdf: labelDoc?.encodedLabel ? Buffer.from(labelDoc.encodedLabel, 'base64') : null,
+    invoicePdf: invoiceDoc?.encodedLabel ? Buffer.from(invoiceDoc.encodedLabel, 'base64') : null,
+    raw: data,
+  }
+}
+
 // FedEx serviceType ↔ 내부 서비스 코드 매핑
 export function fedexServiceToInternalCode(serviceType: string): string {
   const map: Record<string, string> = {
