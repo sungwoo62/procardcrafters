@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/supabase'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, FileText, User } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import LogoutButton from './LogoutButton'
+import ReviewButton from '@/components/ReviewButton'
 
 export const metadata = {
   title: 'My Page — Procardcrafters',
@@ -64,7 +65,6 @@ export default async function MypagePage() {
   const adminSupabase = createServerClient()
 
   const user = session.user
-  const displayName = user.user_metadata?.full_name ?? user.email
 
   // Fetch order history
   const { data: ordersData } = await supabase
@@ -103,6 +103,18 @@ export default async function MypagePage() {
       }
     })
   )
+
+  // 이미 작성된 리뷰: order_id + product_id 조합 집합
+  const { data: existingReviews } = await adminSupabase
+    .from('print_reviews')
+    .select('order_id, product_id')
+    .eq('user_id', user.id)
+
+  const reviewedSet = new Set(
+    (existingReviews ?? []).map((r) => `${r.order_id}:${r.product_id}`)
+  )
+
+  const displayName = (user.user_metadata?.full_name ?? user.email) ?? 'Customer'
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -166,20 +178,35 @@ export default async function MypagePage() {
 
                   {/* Order Items */}
                   <div className="px-5 py-4 space-y-2">
-                    {order.items.map((item) => (
-                      <div key={item.id} className="flex justify-between items-center">
-                        <div>
-                          <span className="text-sm font-medium text-gray-900">{item.product_name_en}</span>
-                          <span className="text-xs text-gray-400 ml-2">×{item.quantity}</span>
-                          {Object.keys(item.selected_options).length > 0 && (
-                            <span className="text-xs text-gray-400 ml-2">
-                              ({Object.entries(item.selected_options).map(([k, v]) => `${k}: ${v}`).join(', ')})
-                            </span>
-                          )}
+                    {order.items.map((item) => {
+                      const canReview =
+                        (order.status === 'shipped' || order.status === 'delivered') &&
+                        !reviewedSet.has(`${order.id}:${item.product_id}`)
+                      return (
+                        <div key={item.id} className="flex justify-between items-start gap-2">
+                          <div className="flex-1 min-w-0">
+                            <span className="text-sm font-medium text-gray-900">{item.product_name_en}</span>
+                            <span className="text-xs text-gray-400 ml-2">×{item.quantity}</span>
+                            {Object.keys(item.selected_options).length > 0 && (
+                              <span className="text-xs text-gray-400 ml-2">
+                                ({Object.entries(item.selected_options).map(([k, v]) => `${k}: ${v}`).join(', ')})
+                              </span>
+                            )}
+                            {canReview && (
+                              <div className="mt-1">
+                                <ReviewButton
+                                  orderId={order.id}
+                                  productId={item.product_id}
+                                  productName={item.product_name_en}
+                                  defaultName={displayName}
+                                />
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-sm text-gray-700 flex-shrink-0">${item.subtotal_usd.toFixed(2)}</span>
                         </div>
-                        <span className="text-sm text-gray-700">${item.subtotal_usd.toFixed(2)}</span>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
 
                   {/* Tracking — 라벨 발급 이후 노출 */}

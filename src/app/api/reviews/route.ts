@@ -9,6 +9,7 @@ interface ReviewRequest {
   title?: string
   body: string
   reviewerName: string
+  photos?: string[]
 }
 
 export async function POST(request: NextRequest) {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
   }
 
-  const { orderId, productId, rating, title, body: reviewBody, reviewerName } = body
+  const { orderId, productId, rating, title, body: reviewBody, reviewerName, photos } = body
 
   if (!orderId || !productId || !rating || !reviewBody || !reviewerName) {
     return NextResponse.json(
@@ -109,6 +110,7 @@ export async function POST(request: NextRequest) {
       rating,
       title: title ?? null,
       body: reviewBody,
+      photos: Array.isArray(photos) ? photos.slice(0, 5) : [],
       source: 'verified_purchase',
       status: 'pending',
     })

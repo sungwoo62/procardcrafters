@@ -6,6 +6,7 @@ import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types
 import RejectedFileUpload from '@/components/RejectedFileUpload'
 import DesignProofReview from '@/components/DesignProofReview'
 import ReorderButton from '@/components/ReorderButton'
+import ReviewButton from '@/components/ReviewButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -188,8 +189,8 @@ export default async function OrderTrackingPage({ params }: Props) {
         <h2 className="text-lg font-semibold text-gray-900 mb-3">Order Items</h2>
         <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.id} className="border border-gray-200 rounded-xl p-4 flex justify-between items-start">
-              <div>
+            <div key={item.id} className="border border-gray-200 rounded-xl p-4 flex justify-between items-start gap-3">
+              <div className="flex-1 min-w-0">
                 <p className="font-medium text-gray-900">{item.product_name_en}</p>
                 {Object.keys(item.selected_options).length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -200,8 +201,18 @@ export default async function OrderTrackingPage({ params }: Props) {
                     ))}
                   </div>
                 )}
+                {(currentStatus === 'shipped' || currentStatus === 'delivered') && (
+                  <div className="mt-2">
+                    <ReviewButton
+                      orderId={order.id}
+                      productId={item.product_id}
+                      productName={item.product_name_en}
+                      defaultName={order.shipping_name}
+                    />
+                  </div>
+                )}
               </div>
-              <p className="font-semibold text-gray-900">${item.subtotal_usd.toFixed(2)}</p>
+              <p className="font-semibold text-gray-900 flex-shrink-0">${item.subtotal_usd.toFixed(2)}</p>
             </div>
           ))}
         </div>
