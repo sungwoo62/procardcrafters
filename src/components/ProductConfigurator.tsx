@@ -48,25 +48,28 @@ const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
 /**
  * Look up cost from the Swadpia print price matrix.
  * If no exact quantity match, use the nearest higher quantity.
+ * Skips entries with print_unit2 <= 0 (Swadpia registers them as "전화문의"/phone-only and they would crash pricing).
+ * Returns the resolved entry so the caller knows whether Swadpia rounded the quantity up.
  */
 function lookupSwadpiaCost(
   printEntries: SwadpiaPrintEntry[],
   paperCode: string,
   quantity: number,
-): number | null {
+): { costKrw: number; effectiveQty: number } | null {
   const entries = printEntries
-    .filter(e => e.paper_code === paperCode)
+    .filter(e => e.paper_code === paperCode && e.print_unit2 > 0)
     .sort((a, b) => a.quantity - b.quantity)
 
   if (entries.length === 0) return null
 
   const exact = entries.find(e => e.quantity === quantity)
-  if (exact) return exact.print_unit2
+  if (exact) return { costKrw: exact.print_unit2, effectiveQty: exact.quantity }
 
   const upper = entries.find(e => e.quantity >= quantity)
-  if (upper) return upper.print_unit2
+  if (upper) return { costKrw: upper.print_unit2, effectiveQty: upper.quantity }
 
-  return entries[entries.length - 1].print_unit2
+  const last = entries[entries.length - 1]
+  return { costKrw: last.print_unit2, effectiveQty: last.quantity }
 }
 
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
@@ -113,10 +116,10 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   const itemPriceUsd = useMemo(() => {
     if (useSwadpia && swadpiaPaperCode) {
-      const costKrw = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, selectedQty)
-      if (costKrw !== null && costKrw > 0) {
+      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, selectedQty)
+      if (swadpia !== null && swadpia.costKrw > 0) {
         return calculatePriceFromSwadpia({
-          swadpiaCostKrw: costKrw,
+          swadpiaCostKrw: swadpia.costKrw,
           marginMultiplier: product.margin_multiplier,
           exchangeRate,
         })
@@ -136,6 +139,34 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       exchangeRate,
     })
   }, [product, grouped, selections, exchangeRate, useSwadpia, swadpiaData, swadpiaPaperCode, selectedQty])
+
+  /**
+   * 동일가격 프로모션 — Swadpia 최소 수량 한계 때문에 작은 수량 옵션이 더 큰 수량과 같은 단가가 되는 경우,
+   * 고객에게 "동일 가격 — 추가 매수 무료" 프레이밍으로 보여준다.
+   * 키: 수량 옵션의 value (예: "100"), 값: 실제로 Swadpia 가 매겨주는 수량 (예: 500)
+   */
+  const quantityPromoMap = useMemo(() => {
+    const map = new Map<string, number>()
+    if (!useSwadpia || !swadpiaPaperCode) return map
+
+    const qtyType = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
+    const qtyOptions = grouped.get(qtyType)
+    if (!qtyOptions) return map
+
+    for (const opt of qtyOptions) {
+      const requested = parseInt(opt.value, 10)
+      if (!Number.isFinite(requested) || requested <= 0) continue
+      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, requested)
+      if (swadpia && swadpia.effectiveQty > requested) {
+        map.set(opt.value, swadpia.effectiveQty)
+      }
+    }
+    return map
+  }, [useSwadpia, swadpiaData, swadpiaPaperCode, grouped])
+
+  const activePromoEffectiveQty = quantityPromoMap.get(
+    selections['paper_qty'] ?? selections['quantity'] ?? '',
+  )
 
   const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
   const totalUsd = itemPriceUsd + rushUsd + shippingUsd
@@ -162,6 +193,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
               const isSelected = selections[type] === opt.value
               const hasPreview = RICH_PREVIEW_TYPES.has(type)
               const hoverKey = `${type}:${opt.value}`
+              const promoEffectiveQty = QUANTITY_TYPES.has(type) ? quantityPromoMap.get(opt.value) : undefined
 
               return (
                 <div key={opt.value} className="relative">
@@ -176,15 +208,27 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                     className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                       isSelected
                         ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                        : promoEffectiveQty
+                          ? 'border-amber-300 bg-amber-50 text-amber-800 hover:border-amber-400'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                     }`}
                   >
                     {opt.label_en}
+                    {promoEffectiveQty && (
+                      <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                        Same price
+                      </span>
+                    )}
                   </button>
                 </div>
               )
             })}
           </div>
+          {QUANTITY_TYPES.has(type) && quantityPromoMap.size > 0 && (
+            <p className="mt-2 text-[11px] text-amber-700">
+              💡 Low-quantity orders are <span className="font-semibold">priced like the next available batch</span> — you pay the same and get extra prints free.
+            </p>
+          )}
         </div>
       ))}
 
@@ -240,8 +284,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
       {/* Price Summary */}
       <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-3">
+        {activePromoEffectiveQty && (
+          <div className="flex items-start gap-2 text-xs bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 text-amber-800">
+            <span className="font-semibold whitespace-nowrap">🎁 Promo:</span>
+            <span>
+              You ordered {selectedQty} pcs but we&apos;re printing&nbsp;
+              <span className="font-semibold">{activePromoEffectiveQty} pcs for the same price</span> — extra prints included free.
+            </span>
+          </div>
+        )}
         <div className="flex justify-between text-sm text-gray-600">
-          <span>Print Cost ({selectedQty} pcs)</span>
+          <span>Print Cost ({selectedQty} pcs{activePromoEffectiveQty ? ` → ${activePromoEffectiveQty} pcs free upgrade` : ''})</span>
           <span>${itemPriceUsd.toFixed(2)}</span>
         </div>
         {rushUsd > 0 && (
