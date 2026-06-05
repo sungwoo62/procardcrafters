@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
-import { sendReviewCouponEmail } from '@/lib/email'
+import { sendReviewCouponEmail, sendReviewRejectionEmail } from '@/lib/email'
 
 export async function GET(
   _request: NextRequest,
@@ -40,8 +40,11 @@ export async function PATCH(
   const { id } = await params
 
   let body: {
-    action: 'approve' | 'reject' | 'hide'
+    action: 'approve' | 'reject' | 'hide' | 'feature_update'
     note?: string
+    is_homepage_featured?: boolean
+    featured_sort?: number
+    featured_quote?: string | null
   }
 
   try {
@@ -50,9 +53,9 @@ export async function PATCH(
     return NextResponse.json({ error: '요청 형식이 올바르지 않습니다' }, { status: 400 })
   }
 
-  if (!['approve', 'reject', 'hide'].includes(body.action)) {
+  if (!['approve', 'reject', 'hide', 'feature_update'].includes(body.action)) {
     return NextResponse.json(
-      { error: "action은 'approve' | 'reject' | 'hide' 중 하나" },
+      { error: "action은 'approve' | 'reject' | 'hide' | 'feature_update' 중 하나" },
       { status: 400 }
     )
   }
@@ -71,6 +74,48 @@ export async function PATCH(
 
   if (fetchError || !review) {
     return NextResponse.json({ error: '리뷰를 찾을 수 없습니다' }, { status: 404 })
+  }
+
+  // featured_update: 상태 변경 없이 featured 필드만 수정
+  if (body.action === 'feature_update') {
+    const featuredPatch: Record<string, unknown> = {}
+    if (typeof body.is_homepage_featured === 'boolean') {
+      featuredPatch.is_homepage_featured = body.is_homepage_featured
+    }
+    if (typeof body.featured_sort === 'number') {
+      featuredPatch.featured_sort = body.featured_sort
+    }
+    if ('featured_quote' in body) {
+      featuredPatch.featured_quote = body.featured_quote ?? null
+    }
+
+    if (Object.keys(featuredPatch).length === 0) {
+      return NextResponse.json({ error: '변경할 featured 필드 없음' }, { status: 400 })
+    }
+
+    const { data: updated, error: updateError } = await supabase
+      .from('print_reviews')
+      .update(featuredPatch)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (updateError) {
+      return NextResponse.json({ error: updateError.message }, { status: 500 })
+    }
+
+    const auditAction = 'is_homepage_featured' in featuredPatch
+      ? (body.is_homepage_featured ? 'featured' : 'unfeatured')
+      : 'edited'
+
+    await supabase.from('print_review_admin_audit').insert({
+      review_id: id,
+      admin_user_id: user.id,
+      action: auditAction,
+      note: body.featured_quote ? `quote 설정: ${body.featured_quote.slice(0, 60)}` : null,
+    })
+
+    return NextResponse.json(updated)
   }
 
   if (review.status === 'approved' && body.action === 'approve') {
@@ -101,6 +146,35 @@ export async function PATCH(
     new_status: newStatus,
     note: body.note?.trim() ?? null,
   })
+
+  // 반려 → 리뷰어에게 사유 메일
+  if (body.action === 'reject' && body.note?.trim()) {
+    let reviewerEmail: string | null = null
+    let reviewerName: string = review.reviewer_name
+
+    if (review.user_id) {
+      const { data: authUser } = await supabase.auth.admin.getUserById(review.user_id)
+      reviewerEmail = authUser?.user?.email ?? null
+    }
+
+    if (!reviewerEmail && review.order_id) {
+      const { data: order } = await supabase
+        .from('print_orders')
+        .select('customer_email, customer_name')
+        .eq('id', review.order_id)
+        .single()
+      reviewerEmail = order?.customer_email ?? null
+      if (order?.customer_name) reviewerName = order.customer_name
+    }
+
+    if (reviewerEmail) {
+      await sendReviewRejectionEmail({
+        reviewerEmail,
+        reviewerName,
+        reason: body.note.trim(),
+      })
+    }
+  }
 
   // 승인 + source='incentivized' → 쿠폰 발급 + 이메일
   if (body.action === 'approve' && review.source === 'incentivized') {

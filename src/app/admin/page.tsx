@@ -13,6 +13,7 @@ import {
   Users,
   Truck,
   TrendingDown,
+  Star,
 } from 'lucide-react'
 
 interface TrendPoint {
@@ -116,6 +117,7 @@ export default function AdminDashboardPage() {
               { href: '/admin/portfolio', label: 'Portfolio', icon: Package },
               { href: '/admin/customers', label: 'Customers', icon: Users },
               { href: '/admin/competitor-prices', label: 'Competitor Prices', icon: TrendingDown },
+              { href: '/admin/reviews', label: 'Reviews', icon: Star },
             ].map(({ href, label, icon: Icon }) => (
               <Link
                 key={href}

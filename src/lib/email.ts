@@ -317,6 +317,34 @@ export async function sendReviewCouponEmail(data: ReviewCouponEmailData): Promis
   })
 }
 
+export async function sendReviewRejectionEmail(data: {
+  reviewerEmail: string
+  reviewerName: string
+  reason: string
+}): Promise<void> {
+  if (!resend) return
+  const { reviewerEmail, reviewerName, reason } = data
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <p>Hi ${reviewerName},</p>
+      <p>Thank you for submitting a review. Unfortunately, we were unable to approve it for the following reason:</p>
+      <div style="background:#fef2f2;border-left:4px solid #dc2626;padding:12px 16px;margin:16px 0">
+        <p style="margin:0;color:#991b1b">${reason}</p>
+      </div>
+      <p>If you have any questions, please don't hesitate to reach out.</p>
+      <p>— Procardcrafters Team</p>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"/>
+      <p style="color:#888;font-size:12px">Procardcrafters · Premium Print Services<br/>${SITE_URL}</p>
+    </div>
+  `
+  await resend.emails.send({
+    from: FROM,
+    to: reviewerEmail,
+    subject: `[Procardcrafters] Review submission update`,
+    html,
+  })
+}
+
 // OMO-2314: 빌드 통과용 임시 스텁 (WIP 가 실제 구현 가져올 때까지)
 export async function sendDesignProofEmail(_data: {
   customerEmail: string
