@@ -34,11 +34,17 @@ export async function POST(request: NextRequest) {
     // 비로그인 사용자는 per_user_max 체크 생략
   }
 
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-real-ip') ||
+    undefined
+
   try {
     const result = await validateCode(code, {
       userId,
       totalCents: cart.totalCents,
       productSlugs: cart.productSlugs,
+      ip,
     })
 
     if (!result.valid) {

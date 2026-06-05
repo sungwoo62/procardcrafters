@@ -1,4 +1,9 @@
 import { createServerClient } from '@/lib/supabase'
+import {
+  checkAbuseCircuit,
+  checkPostRedemptionLock,
+  alertNegativeMargin,
+} from '@/lib/promo-circuit-breaker'
 
 // ============================================================
 // 타입 정의
@@ -48,6 +53,7 @@ export interface CartContext {
   userId?: string
   totalCents: number
   productSlugs?: string[]
+  ip?: string
 }
 
 export interface ValidateResult {
@@ -188,25 +194,31 @@ export async function validateCode(
 
   const promoCode = row as PromoCode
 
-  // ── 2. status 체크 ────────────────────────────────────────
+  // ── 2. abuse circuit breaker ──────────────────────────────
+  const abuseCheck = await checkAbuseCircuit(promoCode.id, cart.ip, cart.userId)
+  if (abuseCheck.blocked) {
+    return { valid: false, reason: abuseCheck.reason }
+  }
+
+  // ── 3. status 체크 ────────────────────────────────────────
   if (promoCode.status !== 'active') {
     return { valid: false, reason: '사용할 수 없는 코드입니다.' }
   }
 
-  // ── 3. 유효 기간 ──────────────────────────────────────────
+  // ── 4. 유효 기간 ──────────────────────────────────────────
   const validFrom = new Date(promoCode.valid_from)
   const validUntil = new Date(promoCode.valid_until)
   if (now < validFrom || now > validUntil) {
     return { valid: false, reason: '코드 유효 기간이 아닙니다.' }
   }
 
-  // ── 4. 최소 주문 금액 ─────────────────────────────────────
+  // ── 5. 최소 주문 금액 ─────────────────────────────────────
   if (cart.totalCents < promoCode.min_order_cents) {
     const minKrw = Math.round(promoCode.min_order_cents / 100)
     return { valid: false, reason: `최소 주문 금액 ${minKrw.toLocaleString()}원 이상이어야 합니다.` }
   }
 
-  // ── 5. max_uses 체크 ──────────────────────────────────────
+  // ── 6. max_uses 체크 ──────────────────────────────────────
   if (promoCode.max_uses !== null) {
     const { count: usedCount, error: cntErr } = await supabase
       .from('print_promo_code_redemptions')
@@ -219,7 +231,7 @@ export async function validateCode(
     }
   }
 
-  // ── 6. per_user_max 체크 ──────────────────────────────────
+  // ── 7. per_user_max 체크 ──────────────────────────────────
   if (cart.userId) {
     const { count: userCount, error: uErr } = await supabase
       .from('print_promo_code_redemptions')
@@ -233,7 +245,7 @@ export async function validateCode(
     }
   }
 
-  // ── 7. 저마진 라인 자동 제외 ──────────────────────────────
+  // ── 8. 저마진 라인 자동 제외 ──────────────────────────────
   //    카트의 모든 상품이 margin_pct < 25%이면 적용 불가
   if (cart.productSlugs?.length) {
     const { data: products } = await supabase
@@ -249,7 +261,7 @@ export async function validateCode(
         return { valid: false, reason: '이 코드는 해당 상품에 적용할 수 없습니다.' }
       }
 
-      // ── 8. bestseller cap ──────────────────────────────────
+      // ── 9. bestseller cap ──────────────────────────────────
       const hasAnyBestseller = products.some((p) => p.is_bestseller === true)
       const capPct = await resolveCapPct(promoCode, hasAnyBestseller, supabase)
       const appliedPct = Math.min(promoCode.discount_pct, capPct)
@@ -269,7 +281,7 @@ export async function validateCode(
     }
   }
 
-  // ── 9. 상품 목록 없는 경우 (카트 컨텍스트 없이 호출) ───────
+  // ── 10. 상품 목록 없는 경우 (카트 컨텍스트 없이 호출) ──────
   const capPct = await resolveCapPct(promoCode, false, supabase)
   const appliedPct = Math.min(promoCode.discount_pct, capPct)
   const { discountCents, effectivePct } = computeDiscountCents(
@@ -313,12 +325,69 @@ export async function applyCode(
     throw new Error(`프로모 코드 적용 실패: ${result.reason}`)
   }
 
-  return {
+  const redemption: Redemption = {
     id: result.redemption_id!,
     code_id: codeId,
     order_id: orderId,
     user_id: userId ?? null,
     discount_amount_cents: discountAmountCents,
     applied_at: result.applied_at!,
+  }
+
+  // ── 사후 처리 (비차단: 실패해도 주문 진행) ─────────────────
+  void Promise.allSettled([
+    // 1h 누적 후 임계 초과 시 자동 lock
+    checkPostRedemptionLock(codeId),
+    // margin 음수 체크 및 알림
+    checkMarginAndAlert(orderId, codeId, discountAmountCents),
+  ])
+
+  return redemption
+}
+
+/**
+ * 주문 데이터에서 margin 계산 후 음수면 알림.
+ * margin = subtotal - factory_cost - shipping - transaction_fee - promo_discount
+ */
+async function checkMarginAndAlert(
+  orderId: string,
+  codeId: string,
+  discountAmountCents: number,
+): Promise<void> {
+  const supabase = createServerClient()
+
+  const { data: order } = await supabase
+    .from('print_orders')
+    .select('subtotal_usd, shipping_usd, exchange_rate_krw_usd')
+    .eq('id', orderId)
+    .single()
+
+  if (!order) return
+
+  const { data: items } = await supabase
+    .from('print_order_items')
+    .select('quantity, product:print_products(base_price_krw)')
+    .eq('order_id', orderId)
+
+  const exchangeRate = Number(order.exchange_rate_krw_usd ?? 1300)
+  const subtotalUsd = Number(order.subtotal_usd)
+  const shippingUsd = Number(order.shipping_usd)
+  const promoDiscountUsd = discountAmountCents / 100
+
+  // factory cost: 원가 합산 (KRW → USD)
+  const factoryCostUsd = (items ?? []).reduce((sum, item) => {
+    const basePriceKrw = Number(
+      (item.product as { base_price_krw?: number } | null)?.base_price_krw ?? 0,
+    )
+    return sum + (basePriceKrw * item.quantity) / exchangeRate
+  }, 0)
+
+  const transactionFeeUsd = subtotalUsd * 0.03  // Stripe/PayPal ~3%
+
+  const marginUsd =
+    subtotalUsd - promoDiscountUsd - factoryCostUsd - shippingUsd - transactionFeeUsd
+
+  if (marginUsd < 0) {
+    await alertNegativeMargin(codeId, orderId, marginUsd, subtotalUsd)
   }
 }

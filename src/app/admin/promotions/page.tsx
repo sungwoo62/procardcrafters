@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import Link from 'next/link'
 import {
   AlertTriangle,
   Calendar,
@@ -8,10 +9,13 @@ import {
   ChevronDown,
   Edit2,
   ExternalLink,
+  Lock,
   Pause,
   Play,
   Plus,
+  Tag,
   Trash2,
+  Unlock,
   X,
   Zap,
 } from 'lucide-react'
@@ -592,6 +596,36 @@ function CampaignCard({ campaign, onRefresh }: CampaignCardProps) {
         {/* Status message */}
         {msg && (
           <div className="text-sm text-blue-700 bg-blue-50 rounded-lg px-3 py-2">{msg}</div>
+        )}
+
+        {/* 프로모 코드 */}
+        {campaign.promo_codes.length > 0 && (
+          <div className="pt-2 border-t space-y-1.5">
+            <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">프로모 코드</p>
+            {campaign.promo_codes.map((pc) => (
+              <div key={pc.id} className="flex items-center justify-between gap-2 rounded-lg bg-gray-50 px-3 py-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  {pc.status === 'locked' ? (
+                    <Lock className="h-3.5 w-3.5 text-red-500 shrink-0" />
+                  ) : (
+                    <Tag className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                  )}
+                  <span className="font-mono text-xs font-medium text-gray-800 truncate">{pc.code}</span>
+                  <span className="text-xs text-gray-400">{pc.discount_pct}%</span>
+                </div>
+                <Link
+                  href={`/admin/promotions/${pc.id}`}
+                  className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-900 shrink-0"
+                >
+                  {pc.status === 'locked' ? (
+                    <><Unlock className="h-3 w-3" />해제</>
+                  ) : (
+                    <><Lock className="h-3 w-3" />잠금</>
+                  )}
+                </Link>
+              </div>
+            ))}
+          </div>
         )}
 
         {/* Action buttons */}
