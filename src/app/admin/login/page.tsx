@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import { createBrowserClient } from '@/lib/supabase'
 import { Suspense } from 'react'
 
@@ -75,10 +76,15 @@ function AdminLoginForm() {
             className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm text-gray-900 outline-none focus:border-gray-400"
           />
         </div>
-        <label className="mb-6 flex cursor-pointer items-center gap-2 text-xs text-gray-600">
-          <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
-          로그인 정보 저장 (다음 방문 시 자동 입력)
-        </label>
+        <div className="mb-6 flex items-center justify-between">
+          <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
+            <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-gray-400" />
+            로그인 정보 저장
+          </label>
+          <Link href="/auth/forgot-password" className="text-xs text-blue-600 hover:underline">
+            비밀번호 찾기
+          </Link>
+        </div>
         <button
           type="submit"
           disabled={loading}

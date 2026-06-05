@@ -10,10 +10,11 @@ function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const redirectTo = searchParams.get('redirectTo') ?? '/mypage'
+  const errorParam = searchParams.get('error')
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(errorParam)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
 
@@ -139,10 +140,15 @@ function LoginForm() {
               </div>
             </div>
 
-            <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
-              <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-              로그인 정보 저장 (Remember me)
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="flex cursor-pointer items-center gap-2 text-xs text-gray-600">
+                <input type="checkbox" defaultChecked className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
+                로그인 정보 저장
+              </label>
+              <Link href="/auth/forgot-password" className="text-xs text-blue-600 hover:underline">
+                비밀번호 찾기
+              </Link>
+            </div>
 
             <button
               type="submit"
