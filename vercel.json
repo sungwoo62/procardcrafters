@@ -11,6 +11,10 @@
     {
       "path": "/api/cron/cleanup-orphan-files",
       "schedule": "0 3 * * *"
+    },
+    {
+      "path": "/api/cron/seasonal-promotions",
+      "schedule": "30 15 * * *"
     }
   ]
 }
