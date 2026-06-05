@@ -7,6 +7,7 @@ import Footer from '@/components/Footer'
 import ChatWidget from '@/components/ChatWidget'
 import FreeShippingBanner from '@/components/FreeShippingBanner'
 import SeasonalToast from '@/components/SeasonalToast'
+import CouponPopup from '@/components/CouponPopup'
 import { createServerClient } from '@/lib/supabase'
 import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
 import type { Campaign } from '@/lib/promotion-engine'
@@ -184,6 +185,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         {primaryCampaign && (
           <SeasonalToast campaign={primaryCampaign} promoCode={primaryPromoCode?.code ?? null} />
         )}
+        <CouponPopup />
       </body>
     </html>
   )

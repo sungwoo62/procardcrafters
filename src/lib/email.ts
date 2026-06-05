@@ -345,6 +345,43 @@ export async function sendReviewRejectionEmail(data: {
   })
 }
 
+export interface WelcomeCouponEmailData {
+  email: string
+  couponCode: string
+}
+
+export async function sendWelcomeCouponEmail(data: WelcomeCouponEmailData): Promise<void> {
+  if (!resend) return
+  const { email, couponCode } = data
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <p style="font-size:15px">안녕하세요!</p>
+      <p style="font-size:15px">구독해 주셔서 감사합니다. 첫 주문 5% 할인 쿠폰을 드립니다.</p>
+      <div style="background:#eff6ff;border:2px solid #3b82f6;border-radius:10px;padding:20px 28px;margin:24px 0;text-align:center">
+        <p style="margin:0 0 8px;font-size:13px;color:#1d4ed8;font-weight:600">쿠폰 코드</p>
+        <p style="margin:0;font-size:30px;font-weight:bold;letter-spacing:4px;color:#1e40af">${couponCode}</p>
+        <p style="margin:10px 0 0;font-size:12px;color:#3b82f6">첫 주문 5% 할인 · 유효기간 30일</p>
+      </div>
+      <p style="font-size:14px">주문 시 쿠폰 코드를 입력하시면 자동으로 할인이 적용됩니다.</p>
+      <p style="text-align:center;margin:28px 0">
+        <a href="${SITE_URL}" style="display:inline-block;padding:12px 28px;background:#2563eb;color:#fff;text-decoration:none;border-radius:8px;font-weight:bold;font-size:14px">
+          쇼핑 시작하기
+        </a>
+      </p>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"/>
+      <p style="color:#aaa;font-size:11px;text-align:center">
+        수신을 원하지 않으시면 <a href="${SITE_URL}/api/unsubscribe?email=${encodeURIComponent(email)}" style="color:#aaa">수신 거부</a>하세요.
+      </p>
+    </div>
+  `
+  await resend.emails.send({
+    from: FROM,
+    to: email,
+    subject: `첫 주문 5% 할인 쿠폰이 도착했습니다 — ${couponCode}`,
+    html,
+  })
+}
+
 // OMO-2314: 빌드 통과용 임시 스텁 (WIP 가 실제 구현 가져올 때까지)
 export async function sendDesignProofEmail(_data: {
   customerEmail: string
