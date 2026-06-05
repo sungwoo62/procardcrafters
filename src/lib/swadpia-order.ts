@@ -120,6 +120,14 @@ export async function placeSwadpiaOrder(
     await page.waitForTimeout(2000)
     await selectOrderOptions(page, input.selectedOptions, input.quantity)
 
+    // 2-b. 당일판(same-day) 옵션 자동 평가
+    //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
+    //     - Swadpia UI 가 당일판을 제공하지 않으면 no-op (decision = "not_available").
+    const sameDayDecision = await tryEnableSameDay(page, 0.10)
+    console.log(`[swadpia-order] 당일판 결정: ${sameDayDecision.decision} ` +
+      `(base=${sameDayDecision.basePrice ?? '-'} today=${sameDayDecision.todayPrice ?? '-'} ` +
+      `delta=${sameDayDecision.deltaPct ? (sameDayDecision.deltaPct * 100).toFixed(1) + '%' : '-'})`)
+
     // 3. 바로주문 모달 열기
     await page.evaluate(() => {
       (document.querySelector('#btn_order3') as HTMLElement)?.click()
@@ -280,6 +288,153 @@ async function swadpiaLogin(page: Page, username: string, password: string): Pro
   if (page.url().includes('/member/login')) {
     throw new Error('Swadpia 로그인 실패')
   }
+}
+
+// ─── Same-day (당일판) auto-toggle ──────────────────────────────
+//
+// Swadpia 의 견적 페이지에는 일부 카테고리에서 "당일판" 옵션이 노출됨.
+// 일반판 대비 추가 비용이 maxDeltaPct (예: 0.10 = 10%) 이내면 ON, 초과면 OFF
+// 로 자동 결정. 보드 OMO-2314 정책.
+//
+// Swadpia 가 당일판을 노출하지 않는 카테고리에서는 no-op + decision='not_available'.
+// 가격 비교 실패 시 안전하게 OFF 로 둠 (decision='read_fail').
+
+type SameDayDecision = 'enabled' | 'rejected_too_expensive' | 'not_available' | 'read_fail'
+
+interface SameDayResult {
+  decision: SameDayDecision
+  basePrice: number | null
+  todayPrice: number | null
+  deltaPct: number | null
+}
+
+const SAME_DAY_SELECTORS = [
+  'input[name="paper_today_yn"]',
+  'input[name="paper_today"]',
+  'input[name="today_yn"]',
+  'input[name="chk_today"]',
+  'input[id*="today"]',
+  'select[name="paper_today_yn"]',
+] as const
+
+const PRICE_SELECTORS = [
+  '#total_price',
+  '#total_amount',
+  '#price_total',
+  '#order_total_price',
+  '.total_price',
+  '[id*="total_price"]',
+] as const
+
+async function readDisplayedPrice(page: Page): Promise<number | null> {
+  for (const sel of PRICE_SELECTORS) {
+    const text = await page.evaluate((s: string) => {
+      const el = document.querySelector(s) as HTMLElement | null
+      if (!el) return null
+      return (el.innerText || el.textContent || '').trim()
+    }, sel)
+    if (!text) continue
+    // "12,345원" / "₩12,345" / "12345" 다 처리
+    const digits = text.replace(/[^0-9]/g, '')
+    if (digits.length > 0) {
+      const n = parseInt(digits, 10)
+      if (Number.isFinite(n) && n > 0) return n
+    }
+  }
+  return null
+}
+
+async function tryEnableSameDay(page: Page, maxDeltaPct: number): Promise<SameDayResult> {
+  // Step 1: locate same-day control
+  let selector: string | null = null
+  let kind: 'checkbox' | 'select' | null = null
+  for (const sel of SAME_DAY_SELECTORS) {
+    const exists = await page.evaluate((s: string) => {
+      const el = document.querySelector(s) as HTMLElement | null
+      if (!el) return false
+      // hidden 또는 display:none 인 경우 페이지 노출 옵션 아님
+      const cs = window.getComputedStyle(el)
+      return cs.display !== 'none' || el.tagName.toLowerCase() === 'input'
+    }, sel)
+    if (exists) {
+      selector = sel
+      kind = sel.startsWith('select') ? 'select' : 'checkbox'
+      break
+    }
+  }
+  if (!selector || !kind) {
+    return { decision: 'not_available', basePrice: null, todayPrice: null, deltaPct: null }
+  }
+
+  const basePrice = await readDisplayedPrice(page)
+  if (basePrice === null) {
+    return { decision: 'read_fail', basePrice: null, todayPrice: null, deltaPct: null }
+  }
+
+  // Step 2: toggle ON
+  try {
+    if (kind === 'select') {
+      await page.$eval(selector, (el: Element) => {
+        const sel = el as HTMLSelectElement
+        for (const opt of Array.from(sel.options)) {
+          if (/Y|당일|same/i.test(opt.value) || /Y|당일|same/i.test(opt.text)) {
+            sel.value = opt.value
+            sel.dispatchEvent(new Event('change', { bubbles: true }))
+            return
+          }
+        }
+      })
+    } else {
+      await page.$eval(selector, (el: Element) => {
+        const inp = el as HTMLInputElement
+        inp.checked = true
+        inp.dispatchEvent(new Event('change', { bubbles: true }))
+        inp.dispatchEvent(new Event('click', { bubbles: true }))
+      })
+    }
+    await page.waitForTimeout(800)
+  } catch {
+    return { decision: 'read_fail', basePrice, todayPrice: null, deltaPct: null }
+  }
+
+  const todayPrice = await readDisplayedPrice(page)
+  if (todayPrice === null) {
+    return { decision: 'read_fail', basePrice, todayPrice: null, deltaPct: null }
+  }
+
+  const deltaPct = (todayPrice - basePrice) / basePrice
+
+  // Step 3: decide
+  if (deltaPct <= maxDeltaPct) {
+    return { decision: 'enabled', basePrice, todayPrice, deltaPct }
+  }
+
+  // Revert
+  try {
+    if (kind === 'select') {
+      await page.$eval(selector, (el: Element) => {
+        const sel = el as HTMLSelectElement
+        for (const opt of Array.from(sel.options)) {
+          if (/N|일반|normal/i.test(opt.value) || /N|일반|normal/i.test(opt.text) || opt.value === '') {
+            sel.value = opt.value
+            sel.dispatchEvent(new Event('change', { bubbles: true }))
+            return
+          }
+        }
+      })
+    } else {
+      await page.$eval(selector, (el: Element) => {
+        const inp = el as HTMLInputElement
+        inp.checked = false
+        inp.dispatchEvent(new Event('change', { bubbles: true }))
+        inp.dispatchEvent(new Event('click', { bubbles: true }))
+      })
+    }
+    await page.waitForTimeout(800)
+  } catch {
+    // best-effort revert
+  }
+  return { decision: 'rejected_too_expensive', basePrice, todayPrice, deltaPct }
 }
 
 async function selectOrderOptions(
