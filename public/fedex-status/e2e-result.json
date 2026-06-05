@@ -1,0 +1,16 @@
+{
+  "capturedAt": "2026-06-05T04:26:01.665Z",
+  "sandbox": true,
+  "orderNumber": "PCCF-20260605-E2E500",
+  "elapsedMs": 5195,
+  "masterTrackingNumber": "794825557527",
+  "serviceType": "INTERNATIONAL_PRIORITY",
+  "serviceName": "International Priority®",
+  "labelPdfBytes": 12580,
+  "invoicePdfBytes": 147310,
+  "etdInvoiceAttached": true,
+  "artifacts": {
+    "label": "public/fedex-status/e2e-label-794825557527.pdf",
+    "invoice": "public/fedex-status/e2e-invoice-794825557527.pdf"
+  }
+}
