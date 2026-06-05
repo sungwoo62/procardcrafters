@@ -277,6 +277,46 @@ export async function sendAdminStatusChangeEmail(
   })
 }
 
+export interface ReviewCouponEmailData {
+  reviewerEmail: string
+  reviewerName: string
+  couponCode: string
+  amountUsd: number
+  minOrderUsd: number
+}
+
+export async function sendReviewCouponEmail(data: ReviewCouponEmailData): Promise<void> {
+  if (!resend) return
+
+  const { reviewerEmail, reviewerName, couponCode, amountUsd, minOrderUsd } = data
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <p>Hi ${reviewerName},</p>
+      <p>Thank you for your review! As a token of appreciation, here's a <strong>$${amountUsd.toFixed(2)} USD coupon</strong> for your next order.</p>
+      <div style="background:#f0fdf4;border:2px solid #22c55e;border-radius:8px;padding:16px 24px;margin:20px 0;text-align:center">
+        <p style="margin:0 0 8px;font-size:13px;color:#166534;font-weight:600">YOUR COUPON CODE</p>
+        <p style="margin:0;font-size:28px;font-weight:bold;letter-spacing:4px;color:#15803d">${couponCode}</p>
+        <p style="margin:8px 0 0;font-size:12px;color:#166534">Valid for 30 days · Minimum order $${minOrderUsd.toFixed(2)}</p>
+      </div>
+      <p style="font-size:12px;color:#666">
+        <em>This coupon was provided as an incentive for your review. This fact is disclosed on the review per FTC guidelines.</em>
+      </p>
+      <p><a href="${SITE_URL}" style="display:inline-block;padding:10px 20px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px">Shop Now</a></p>
+      <p>— Procardcrafters Team</p>
+      <hr style="margin:24px 0;border:none;border-top:1px solid #e5e5e5"/>
+      <p style="color:#888;font-size:12px">Procardcrafters · Premium Print Services<br/>${SITE_URL}</p>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM,
+    to: reviewerEmail,
+    subject: `[Procardcrafters] Thank you — here's your $${amountUsd.toFixed(2)} review coupon`,
+    html,
+  })
+}
+
 // OMO-2314: 빌드 통과용 임시 스텁 (WIP 가 실제 구현 가져올 때까지)
 export async function sendDesignProofEmail(_data: {
   customerEmail: string
