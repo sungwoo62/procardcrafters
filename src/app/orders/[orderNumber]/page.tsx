@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
-import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw } from 'lucide-react'
+import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, ExternalLink } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import RejectedFileUpload from '@/components/RejectedFileUpload'
 import DesignProofReview from '@/components/DesignProofReview'
@@ -86,6 +86,32 @@ export default async function OrderTrackingPage({ params }: Props) {
     .eq('status', 'rejected')
 
   const rejectedFiles = (filesData as Pick<PrintFile, 'id' | 'original_filename' | 'rejection_reason' | 'status'>[] | null) ?? []
+
+  // 송장 (고객 노출용): 라벨 발급 이후만, tracking 번호 + carrier + ship/deliver 시각
+  const { data: shipmentsData } = await supabase
+    .from('print_shipments')
+    .select('id, carrier, tracking_number, status, shipped_at, delivered_at')
+    .eq('order_id', order.id)
+    .in('status', ['label_created', 'in_transit', 'delivered'])
+    .order('created_at', { ascending: false })
+
+  interface CustomerShipment {
+    id: string
+    carrier: string
+    tracking_number: string | null
+    status: 'label_created' | 'in_transit' | 'delivered' | string
+    shipped_at: string | null
+    delivered_at: string | null
+  }
+  const shipments = (shipmentsData as CustomerShipment[] | null) ?? []
+
+  function trackingUrl(carrier: string, tn: string): string | null {
+    if (!tn) return null
+    if (carrier === 'fedex') return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(tn)}`
+    if (carrier === 'dhl')   return `https://www.dhl.com/global-en/home/tracking/tracking-express.html?tracking-id=${encodeURIComponent(tn)}`
+    if (carrier === 'ups')   return `https://www.ups.com/track?tracknum=${encodeURIComponent(tn)}`
+    return null
+  }
 
   const currentStatus = order.status
   const statusInfo = STATUS_CONFIG[currentStatus]
@@ -196,6 +222,50 @@ export default async function OrderTrackingPage({ params }: Props) {
           <span className="text-blue-600">${order.total_usd.toFixed(2)} USD</span>
         </div>
       </section>
+
+      {/* Tracking (라벨 발급 이후만 표시) */}
+      {shipments.length > 0 && (
+        <section>
+          <h2 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+            <Truck className="w-5 h-5" /> Tracking
+          </h2>
+          <div className="space-y-3">
+            {shipments.map((sh) => {
+              const url = sh.tracking_number ? trackingUrl(sh.carrier, sh.tracking_number) : null
+              return (
+                <div key={sh.id} className="border border-gray-200 rounded-xl p-4 text-sm">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="uppercase text-xs font-semibold text-gray-500">{sh.carrier}</span>
+                      <span className="font-mono font-semibold text-gray-900">{sh.tracking_number ?? '—'}</span>
+                    </div>
+                    {url && (
+                      <a
+                        href={url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs text-blue-600 hover:underline font-medium"
+                      >
+                        Track on {sh.carrier.toUpperCase()} <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                  {(sh.shipped_at || sh.delivered_at) && (
+                    <div className="mt-2 flex flex-wrap gap-4 text-xs text-gray-500">
+                      {sh.shipped_at && (
+                        <span>Shipped: {new Date(sh.shipped_at).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}</span>
+                      )}
+                      {sh.delivered_at && (
+                        <span>Delivered: {new Date(sh.delivered_at).toLocaleString('en-US', { timeZone: 'America/Los_Angeles' })}</span>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </section>
+      )}
 
       {/* Shipping Information */}
       <section>

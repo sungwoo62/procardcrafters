@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createAuthServerClient } from '@/lib/supabase-server'
+import { createServerClient } from '@/lib/supabase'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, FileText, User } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import LogoutButton from './LogoutButton'
@@ -28,9 +29,25 @@ const FILE_STATUS_CONFIG = {
   processing: { label: 'Processing', color: 'text-blue-600 bg-blue-50' },
 }
 
+interface MypageShipment {
+  id: string
+  carrier: string
+  tracking_number: string | null
+  status: string
+}
+
 interface OrderWithItems extends PrintOrder {
   items: PrintOrderItem[]
   files: PrintFile[]
+  shipments: MypageShipment[]
+}
+
+function trackingUrl(carrier: string, tn: string): string | null {
+  if (!tn) return null
+  if (carrier === 'fedex') return `https://www.fedex.com/fedextrack/?trknbr=${encodeURIComponent(tn)}`
+  if (carrier === 'dhl')   return `https://www.dhl.com/global-en/home/tracking/tracking-express.html?tracking-id=${encodeURIComponent(tn)}`
+  if (carrier === 'ups')   return `https://www.ups.com/track?tracknum=${encodeURIComponent(tn)}`
+  return null
 }
 
 export default async function MypagePage() {
@@ -41,6 +58,10 @@ export default async function MypagePage() {
   if (!session) {
     redirect('/auth/login')
   }
+
+  // shipments RLS 는 service_role 만 허용 (관리자 API 경유 가정)
+  // 마이페이지는 이미 주문 owner 만 노출되므로 service-role 로 보강 조회.
+  const adminSupabase = createServerClient()
 
   const user = session.user
   const displayName = user.user_metadata?.full_name ?? user.email
@@ -58,7 +79,7 @@ export default async function MypagePage() {
   // Fetch items + files for each order
   const ordersWithItems: OrderWithItems[] = await Promise.all(
     orders.map(async (order) => {
-      const [{ data: items }, { data: files }] = await Promise.all([
+      const [{ data: items }, { data: files }, { data: shipments }] = await Promise.all([
         supabase
           .from('print_order_items')
           .select('*')
@@ -67,11 +88,18 @@ export default async function MypagePage() {
           .from('print_files')
           .select('*')
           .eq('order_id', order.id),
+        adminSupabase
+          .from('print_shipments')
+          .select('id, carrier, tracking_number, status')
+          .eq('order_id', order.id)
+          .in('status', ['label_created', 'in_transit', 'delivered'])
+          .order('created_at', { ascending: false }),
       ])
       return {
         ...order,
         items: (items as PrintOrderItem[] | null) ?? [],
         files: (files as PrintFile[] | null) ?? [],
+        shipments: (shipments as MypageShipment[] | null) ?? [],
       }
     })
   )
@@ -153,6 +181,32 @@ export default async function MypagePage() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Tracking — 라벨 발급 이후 노출 */}
+                  {order.shipments.length > 0 && (
+                    <div className="px-5 py-3 border-t border-gray-100 bg-orange-50/40">
+                      {order.shipments.map((sh) => {
+                        const url = sh.tracking_number ? trackingUrl(sh.carrier, sh.tracking_number) : null
+                        return (
+                          <div key={sh.id} className="flex items-center gap-3 text-xs">
+                            <Truck className="w-3.5 h-3.5 text-orange-600" />
+                            <span className="uppercase text-gray-500 font-semibold">{sh.carrier}</span>
+                            <span className="font-mono font-semibold text-gray-900">{sh.tracking_number ?? '—'}</span>
+                            {url && (
+                              <a
+                                href={url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:underline font-medium"
+                              >
+                                Track →
+                              </a>
+                            )}
+                          </div>
+                        )
+                      })}
+                    </div>
+                  )}
 
                   {/* File Status */}
                   {order.files.length > 0 && (
