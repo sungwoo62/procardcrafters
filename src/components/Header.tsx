@@ -93,7 +93,7 @@ export default function Header({ productData = {} }: Props) {
                   className="fixed top-16 left-0 right-0 bg-white border-t border-gray-100 shadow-2xl shadow-gray-300/40 z-50 overflow-hidden"
                 >
                   {/* Full-width megamenu — 가로 전체 확장. 3 column 내부 grid */}
-                  <div className="max-w-7xl mx-auto grid grid-cols-[220px,1fr,380px]">
+                  <div className="max-w-7xl mx-auto grid grid-cols-[220px_1fr_380px]">
 
                     {/* Col 1 — Category 좌측 리스트 */}
                     <div className="bg-gray-50 border-r border-gray-100 py-4 flex flex-col">
