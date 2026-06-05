@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
-import { Upload, FileText, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Tag } from 'lucide-react'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { trackBeginCheckout } from '@/lib/analytics'
 import type { PrintProduct } from '@/types/database'
@@ -71,6 +71,18 @@ const INITIAL_FORM: FormState = {
 
 type UploadStatus = 'idle' | 'uploading' | 'done' | 'error'
 
+interface CouponResult {
+  valid: true
+  couponId: string
+  code: string
+  amount_usd: number
+  min_order_usd: number
+}
+interface CouponInvalid {
+  valid: false
+  reason: string
+}
+
 interface FileValidation {
   isValid: boolean
   warnings: string[]
@@ -98,6 +110,10 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
   const [paymentError, setPaymentError] = useState<string | null>(null)
   const [formTouched, setFormTouched] = useState(false)
 
+  const [couponInput, setCouponInput] = useState('')
+  const [couponValidating, setCouponValidating] = useState(false)
+  const [couponResult, setCouponResult] = useState<CouponResult | CouponInvalid | null>(null)
+
   // 실시간 배송비 견적 (국가/우편번호/소계 변경 시 자동 갱신)
   const [liveQuoteResponse, setLiveQuoteResponse] = useState<LiveQuoteResponse | null>(null)
   const [selectedOptionIndex, setSelectedOptionIndex] = useState(0)
@@ -106,7 +122,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
 
   const selectedOption = liveQuoteResponse?.options[selectedOptionIndex] ?? null
   const effectiveShippingUsd = selectedOption?.effectiveCostUsd ?? shippingUsd
-  const totalUsd = itemPriceUsd + effectiveShippingUsd
+  const appliedCouponDiscount = couponResult?.valid ? couponResult.amount_usd : 0
+  const totalUsd = Math.max(0, itemPriceUsd + effectiveShippingUsd - appliedCouponDiscount)
 
   // Debounced 견적 페치 — 국가/우편번호/소계 변경 시 모든 옵션 갱신
   useEffect(() => {
@@ -230,6 +247,30 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     if (data.validation) setFileValidation(data.validation)
   }
 
+  async function handleApplyCoupon() {
+    const code = couponInput.trim()
+    if (!code) return
+    setCouponValidating(true)
+    setCouponResult(null)
+    try {
+      const res = await fetch('/api/coupons/validate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, subtotalUsd: itemPriceUsd }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setCouponResult({ valid: false, reason: data.error ?? '쿠폰 확인 중 오류가 발생했습니다.' })
+      } else {
+        setCouponResult(data)
+      }
+    } catch {
+      setCouponResult({ valid: false, reason: '쿠폰 확인 중 오류가 발생했습니다.' })
+    } finally {
+      setCouponValidating(false)
+    }
+  }
+
   // PayPal createOrder callback — creates DB order + PayPal Order
   async function handlePaypalCreateOrder() {
     setPaymentError(null)
@@ -254,6 +295,7 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           postalCode: form.postalCode,
           shippingServiceCode: selectedOption?.serviceCode ?? undefined,
         },
+        couponCode: couponResult?.valid ? couponResult.code : undefined,
       }),
     })
 
@@ -697,6 +739,56 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           <p className={`text-xs rounded px-2 py-1 ${liveQuoteResponse.overWeightLimit ? 'bg-amber-50 text-amber-700' : 'bg-blue-50 text-blue-700'}`}>
             {liveQuoteResponse.freeShippingNote}
           </p>
+        )}
+
+        {/* 쿠폰 코드 입력 */}
+        <div className="border-t border-gray-200 pt-3">
+          <p className="text-xs font-medium text-gray-600 mb-2 flex items-center gap-1">
+            <Tag className="w-3.5 h-3.5" />
+            Coupon Code (optional)
+          </p>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={couponInput}
+              onChange={e => {
+                setCouponInput(e.target.value.toUpperCase())
+                if (couponResult) setCouponResult(null)
+              }}
+              onKeyDown={e => { if (e.key === 'Enter') handleApplyCoupon() }}
+              placeholder="Enter coupon code"
+              className="flex-1 border border-gray-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 uppercase"
+            />
+            <button
+              type="button"
+              onClick={handleApplyCoupon}
+              disabled={!couponInput.trim() || couponValidating}
+              className="px-4 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:bg-blue-700 transition-colors flex items-center gap-1"
+            >
+              {couponValidating ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : null}
+              Apply
+            </button>
+          </div>
+          {couponResult && (
+            couponResult.valid ? (
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-green-700 bg-green-50 rounded-lg px-3 py-2">
+                <CheckCircle className="w-3.5 h-3.5 shrink-0" />
+                <span>Coupon applied — <strong>-${couponResult.amount_usd.toFixed(2)}</strong> discount</span>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-1.5 text-xs text-red-600 bg-red-50 rounded-lg px-3 py-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {couponResult.reason}
+              </div>
+            )
+          )}
+        </div>
+
+        {appliedCouponDiscount > 0 && (
+          <div className="flex justify-between text-sm text-green-700">
+            <span>Coupon Discount ({couponResult?.valid ? couponResult.code : ''})</span>
+            <span>-${appliedCouponDiscount.toFixed(2)}</span>
+          </div>
         )}
         <div className="border-t border-gray-200 pt-3 flex justify-between font-bold text-lg">
           <span>Total</span>

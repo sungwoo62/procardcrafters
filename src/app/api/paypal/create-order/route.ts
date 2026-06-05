@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
+import { createAuthRouteClient } from '@/lib/supabase-server'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
@@ -29,6 +30,7 @@ interface OrderRequest {
     postalCode: string
     shippingServiceCode?: string
   }
+  couponCode?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -39,10 +41,20 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
-  const { items, customer, shipping } = body
+  const { items, customer, shipping, couponCode } = body
 
   if (!items?.length || !customer?.email || !shipping?.addressLine1) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 })
+  }
+
+  // 로그인 사용자 추출 (쿠폰 소유자 확인용)
+  let userId: string | undefined
+  try {
+    const authClient = await createAuthRouteClient()
+    const { data: { user } } = await authClient.auth.getUser()
+    userId = user?.id
+  } catch {
+    // 비로그인 주문 허용 — 쿠폰 없이 처리
   }
 
   const supabase = createServerClient()
@@ -133,7 +145,37 @@ export async function POST(request: NextRequest) {
     freeThreshold > 0 && subtotalUsd >= freeThreshold &&
     (maxWeight === 0 || weightKg <= maxWeight)
   const shippingUsd = freeApplies ? 0 : shippingQuote.costUsd
-  const totalUsd = subtotalUsd + shippingUsd
+  const preDiscountTotalUsd = subtotalUsd + shippingUsd
+
+  // ── 리뷰 쿠폰 서버 사이드 재검증 ──────────────────────────────
+  let couponDiscountUsd = 0
+  let verifiedCouponId: string | null = null
+
+  if (couponCode?.trim() && userId) {
+    const { data: coupon } = await supabase
+      .from('print_review_coupons')
+      .select('id, amount_usd, min_order_usd, status, expires_at, print_reviews!inner(user_id)')
+      .eq('code', couponCode.trim().toUpperCase())
+      .maybeSingle()
+
+    const review = coupon
+      ? (Array.isArray(coupon.print_reviews) ? coupon.print_reviews[0] : coupon.print_reviews) as { user_id: string } | null
+      : null
+
+    const couponValid =
+      coupon &&
+      review?.user_id === userId &&
+      coupon.status === 'sent' &&
+      new Date(coupon.expires_at) >= new Date() &&
+      subtotalUsd >= Number(coupon.min_order_usd)
+
+    if (couponValid) {
+      couponDiscountUsd = Number(coupon!.amount_usd)
+      verifiedCouponId = coupon!.id
+    }
+  }
+
+  const totalUsd = Math.max(0, preDiscountTotalUsd - couponDiscountUsd)
 
   const { data: order, error: orderError } = await supabase
     .from('print_orders')
@@ -150,6 +192,8 @@ export async function POST(request: NextRequest) {
       shipping_postal_code: shipping.postalCode,
       subtotal_usd: subtotalUsd,
       shipping_usd: shippingUsd,
+      coupon_discount_usd: couponDiscountUsd,
+      review_coupon_id: verifiedCouponId,
       total_usd: totalUsd,
       exchange_rate_krw_usd: exchangeRate,
       status: 'pending',
@@ -181,6 +225,19 @@ export async function POST(request: NextRequest) {
         order_item_id: orderItemId,
       }).eq('id', fileId)
     }
+  }
+
+  // 쿠폰 redemption 기록 (optimistic lock — status='sent'인 경우에만)
+  if (verifiedCouponId && couponDiscountUsd > 0) {
+    await supabase
+      .from('print_review_coupons')
+      .update({
+        status: 'used',
+        redeemed_at: new Date().toISOString(),
+        redeemed_order_id: order.id,
+      })
+      .eq('id', verifiedCouponId)
+      .eq('status', 'sent')
   }
 
   // Create PayPal Order
