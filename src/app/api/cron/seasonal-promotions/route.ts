@@ -121,6 +121,23 @@ async function runSeasonalPromotions(request: NextRequest): Promise<NextResponse
       .from('print_promotion_campaigns')
       .update({ status: 'live' })
       .in('id', activatedIds)
+
+    // 새로 live 전환된 캠페인마다 announcement 이메일 잡 비동기 호출
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+    await Promise.allSettled(
+      activatedIds.map((id) =>
+        fetch(`${baseUrl}/api/jobs/promotion-announcement`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${process.env.CRON_SECRET}`,
+          },
+          body: JSON.stringify({ campaign_id: id }),
+        }).catch((err) => {
+          console.error(`promotion-announcement 잡 호출 실패 (campaign ${id}):`, err)
+        })
+      )
+    )
   }
 
   // ─── Step 3: live → ended ──────────────────────────────────────
