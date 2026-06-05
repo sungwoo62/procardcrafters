@@ -1,0 +1,7 @@
+{
+  "capturedAt": "2026-06-05T03:37:54.333Z",
+  "sandbox": true,
+  "ok": false,
+  "stage": "upload",
+  "error": "FedEx ETD upload failed: 404 {  \n   \"errors\":[  \n         {\n            \"message\":\"Invalid request: no api resource found\"\n         }\n      ]\n}"
+}
