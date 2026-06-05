@@ -1,0 +1,620 @@
+{
+  "capturedAt": "2026-06-05T02:41:16.532Z",
+  "fedex": {
+    "base": "https://apis.fedex.com",
+    "account": "210839884",
+    "env": "production"
+  },
+  "summary": {
+    "total": 5,
+    "success": 5
+  },
+  "cases": [
+    {
+      "label": "KR Bucheon → US LA, 1kg",
+      "status": 200,
+      "options": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 105180,
+              "totalBaseCharge": 165800,
+              "totalDiscounts": 65780
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 170960,
+              "totalBaseCharge": 165800,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 101840,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 62620
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 164460,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_FIRST",
+          "serviceName": "FedEx International First®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 299470,
+              "totalBaseCharge": 197400,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 299470,
+              "totalBaseCharge": 197400,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 75180,
+              "totalBaseCharge": 165800,
+              "totalDiscounts": 65780
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 140960,
+              "totalBaseCharge": 165800,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 71840,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 62620
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 134460,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_CONNECT_PLUS",
+          "serviceName": "FedEx International Connect Plus",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 452870,
+              "totalBaseCharge": 301710,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 112060,
+              "totalBaseCharge": 122400,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 71380,
+              "totalBaseCharge": 155400,
+              "totalDiscounts": 61040
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 132420,
+              "totalBaseCharge": 155400,
+              "totalDiscounts": 0
+            }
+          ]
+        }
+      ],
+      "alerts": [],
+      "errors": []
+    },
+    {
+      "label": "KR Bucheon → US LA, 2kg",
+      "status": 200,
+      "options": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 120050,
+              "totalBaseCharge": 198600,
+              "totalDiscounts": 78790
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 198840,
+              "totalBaseCharge": 198600,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 116200,
+              "totalBaseCharge": 189500,
+              "totalDiscounts": 75160
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 191360,
+              "totalBaseCharge": 189500,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_FIRST",
+          "serviceName": "FedEx International First®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 359530,
+              "totalBaseCharge": 237000,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 359530,
+              "totalBaseCharge": 237000,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 90050,
+              "totalBaseCharge": 198600,
+              "totalDiscounts": 78790
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 168840,
+              "totalBaseCharge": 198600,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 86200,
+              "totalBaseCharge": 189500,
+              "totalDiscounts": 75160
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 161360,
+              "totalBaseCharge": 189500,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_CONNECT_PLUS",
+          "serviceName": "FedEx International Connect Plus",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 540240,
+              "totalBaseCharge": 359570,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 133170,
+              "totalBaseCharge": 144900,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 85690,
+              "totalBaseCharge": 186600,
+              "totalDiscounts": 73300
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 158990,
+              "totalBaseCharge": 186600,
+              "totalDiscounts": 0
+            }
+          ]
+        }
+      ],
+      "alerts": [],
+      "errors": []
+    },
+    {
+      "label": "KR Bucheon → US NY, 1kg",
+      "status": 200,
+      "options": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 110090,
+              "totalBaseCharge": 169400,
+              "totalDiscounts": 70090
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 180180,
+              "totalBaseCharge": 169400,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 106600,
+              "totalBaseCharge": 160800,
+              "totalDiscounts": 66520
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 173120,
+              "totalBaseCharge": 160800,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_FIRST",
+          "serviceName": "FedEx International First®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 313010,
+              "totalBaseCharge": 201000,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 313010,
+              "totalBaseCharge": 201000,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 80090,
+              "totalBaseCharge": 169400,
+              "totalDiscounts": 70090
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 150180,
+              "totalBaseCharge": 169400,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 76600,
+              "totalBaseCharge": 160800,
+              "totalDiscounts": 66520
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 143120,
+              "totalBaseCharge": 160800,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_CONNECT_PLUS",
+          "serviceName": "FedEx International Connect Plus",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 469660,
+              "totalBaseCharge": 307450,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 120300,
+              "totalBaseCharge": 124600,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 76080,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 64650
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 140730,
+              "totalBaseCharge": 157900,
+              "totalDiscounts": 0
+            }
+          ]
+        }
+      ],
+      "alerts": [],
+      "errors": []
+    },
+    {
+      "label": "KR Bucheon → JP Tokyo, 1kg",
+      "status": 200,
+      "options": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 31860,
+              "totalBaseCharge": 145100,
+              "totalDiscounts": 87240
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 119100,
+              "totalBaseCharge": 145100,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 29190,
+              "totalBaseCharge": 141300,
+              "totalDiscounts": 86790
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 115980,
+              "totalBaseCharge": 141300,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_CONNECT_PLUS",
+          "serviceName": "FedEx International Connect Plus",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 366020,
+              "totalBaseCharge": 245240,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 108890,
+              "totalBaseCharge": 121600,
+              "totalDiscounts": 0
+            }
+          ]
+        }
+      ],
+      "alerts": [],
+      "errors": []
+    },
+    {
+      "label": "KR Bucheon → GB London, 1kg",
+      "status": 200,
+      "options": [
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY_EXPRESS",
+          "serviceName": "FedEx International Priority® Express",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 40310,
+              "totalBaseCharge": 181700,
+              "totalDiscounts": 111220
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 151530,
+              "totalBaseCharge": 181700,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_PRIORITY",
+          "serviceName": "FedEx International Priority®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 38540,
+              "totalBaseCharge": 173300,
+              "totalDiscounts": 106100
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 144640,
+              "totalBaseCharge": 173300,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "FEDEX_INTERNATIONAL_CONNECT_PLUS",
+          "serviceName": "FedEx International Connect Plus",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 468360,
+              "totalBaseCharge": 312100,
+              "totalDiscounts": 0
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 131970,
+              "totalBaseCharge": 144700,
+              "totalDiscounts": 0
+            }
+          ]
+        },
+        {
+          "serviceType": "INTERNATIONAL_ECONOMY",
+          "serviceName": "FedEx International Economy®",
+          "rateDetails": [
+            {
+              "rateType": "ACCOUNT",
+              "currency": "KRW",
+              "totalNetCharge": 38810,
+              "totalBaseCharge": 169700,
+              "totalDiscounts": 102870
+            },
+            {
+              "rateType": "LIST",
+              "currency": "KRW",
+              "totalNetCharge": 141680,
+              "totalBaseCharge": 169700,
+              "totalDiscounts": 0
+            }
+          ]
+        }
+      ],
+      "alerts": [
+        {
+          "code": "DESTINATION.STATEORPROVINCECODE.CHANGED",
+          "message": "The destination state/province code has been changed.",
+          "alertType": "NOTE"
+        }
+      ],
+      "errors": []
+    }
+  ]
+}

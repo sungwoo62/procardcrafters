@@ -40,6 +40,45 @@ function loadShipResult(): { masterTrackingNumber?: string; serviceType?: string
   }
 }
 
+type ProdRates = {
+  capturedAt: string
+  fedex: { base: string; account: string; env: string }
+  cases: {
+    label: string
+    status: number
+    options: {
+      serviceType: string
+      serviceName: string
+      rateDetails: { rateType: string; currency: string; totalNetCharge: number; totalBaseCharge?: number; totalDiscounts?: number }[]
+    }[]
+  }[]
+}
+
+function loadProdRates(): ProdRates | null {
+  try {
+    const p = path.join(process.cwd(), 'public/fedex-status/prod-rates.json')
+    return JSON.parse(fs.readFileSync(p, 'utf-8'))
+  } catch {
+    return null
+  }
+}
+
+// 가장 싼 ACCOUNT rate 와 가장 싼 LIST rate 추출
+function cheapestRates(opts: ProdRates['cases'][number]['options']) {
+  let bestAccount: { service: string; price: number; currency: string } | null = null
+  let bestList: { service: string; price: number; currency: string } | null = null
+  for (const o of opts) {
+    for (const r of o.rateDetails) {
+      // CONNECT_PLUS 는 데이터 이상치가 있어 제외 (ACCOUNT > LIST)
+      if (o.serviceType === 'FEDEX_INTERNATIONAL_CONNECT_PLUS') continue
+      const entry = { service: o.serviceType, price: r.totalNetCharge, currency: r.currency }
+      if ((r.rateType === 'ACCOUNT' || r.rateType === 'PAYOR_ACCOUNT_PACKAGE') && (!bestAccount || entry.price < bestAccount.price)) bestAccount = entry
+      if ((r.rateType === 'LIST' || r.rateType === 'PAYOR_LIST_PACKAGE') && (!bestList || entry.price < bestList.price)) bestList = entry
+    }
+  }
+  return { bestAccount, bestList }
+}
+
 const VALIDATION_PIPELINE = [
   { step: 1, title: '웹 API 개발 + 테스트 키로 검증', status: 'done', note: 'OAuth + Rate API + Ship API 모두 샌드박스 OK' },
   { step: 2, title: '테스트 라벨 생성 + label@fedex.com 제출', status: 'in_progress', note: '샌드박스 PDF 생성 완료 — 600 DPI 인쇄 + 라벨 표지 작성 필요 (보드 액션)' },
@@ -75,6 +114,7 @@ const NOT_DONE = [
 export default function Page() {
   const data = loadResults()
   const ship = loadShipResult()
+  const prod = loadProdRates()
   return (
     <main className="mx-auto max-w-5xl px-4 py-10 text-gray-900">
       <header className="mb-8 border-b border-gray-200 pb-6">
@@ -90,6 +130,57 @@ export default function Page() {
           데이터 캡처 시각: {data?.capturedAt ?? '없음'} · 운영 계정: 210839884 (ALLPACKMEISTER) · API base: apis.fedex.com (prod) / apis-sandbox.fedex.com (Ship)
         </p>
       </header>
+
+      {/* 운영 라이브 요율 — ACCOUNT vs LIST 비교 (보드 질문 응답) */}
+      {prod && (
+        <section className="mb-10 rounded-2xl border border-emerald-200 bg-emerald-50/40 p-5">
+          <h2 className="text-lg font-semibold mb-1 flex items-center gap-2 text-emerald-900">
+            <Package className="h-5 w-5" /> 운영 라이브 요율 (ALLPACKMEISTER 계약가 vs 정가)
+          </h2>
+          <p className="text-xs text-emerald-800 mb-4">
+            샌드박스는 계약 할인 없는 default 요율을 반환해서 비쌉니다.
+            아래는 <strong>운영 API (apis.fedex.com) 에 실제 계약 계정 210839884 로 호출한 결과</strong> — KRW native.
+            할인율 = (LIST − ACCOUNT) / LIST × 100%.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="text-gray-500 text-xs uppercase tracking-wider">
+                <tr className="border-b border-emerald-200">
+                  <th className="py-2 text-left">노선</th>
+                  <th className="text-left">최저 ACCOUNT (계약가)</th>
+                  <th className="text-right">계약가 KRW</th>
+                  <th className="text-right">정가 LIST KRW</th>
+                  <th className="text-right">할인율</th>
+                  <th className="text-right">≈ USD</th>
+                </tr>
+              </thead>
+              <tbody>
+                {prod.cases.map((c) => {
+                  const { bestAccount, bestList } = cheapestRates(c.options)
+                  if (!bestAccount) return null
+                  const discount = bestList ? Math.round((1 - bestAccount.price / bestList.price) * 100) : null
+                  const usd = Math.round(bestAccount.price / 1380) // ~1380 KRW/USD
+                  return (
+                    <tr key={c.label} className="border-b border-emerald-100">
+                      <td className="py-2 font-medium">{c.label}</td>
+                      <td className="text-gray-600 text-xs">{bestAccount.service.replace('FEDEX_', '').replace(/_/g, ' ')}</td>
+                      <td className="text-right font-semibold tabular-nums">₩{bestAccount.price.toLocaleString()}</td>
+                      <td className="text-right text-gray-500 tabular-nums">{bestList ? `₩${bestList.price.toLocaleString()}` : '—'}</td>
+                      <td className={`text-right font-semibold tabular-nums ${discount && discount >= 40 ? 'text-emerald-700' : 'text-gray-500'}`}>{discount != null ? `-${discount}%` : '—'}</td>
+                      <td className="text-right text-gray-700 tabular-nums">${usd}</td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <p className="text-xs text-gray-600 mt-4">
+            예: <strong>KR Bucheon → US LA 1kg INTL Priority 계약가 ₩71,840 (≈ $52)</strong> — FedEx 정가 ₩164,460 의 약 56% 할인.
+            샌드박스에 표시되던 $194 는 LIST 보다도 더 높은 합성 default 가 (실제로는 청구되지 않음).
+            CONNECT_PLUS 는 데이터 이상치 (ACCOUNT &gt; LIST) 가 보여 표에서 제외.
+          </p>
+        </section>
+      )}
 
       {/* 검증 파이프라인 7단계 */}
       <section className="mb-10 rounded-2xl border border-purple-200 bg-purple-50/40 p-5">
