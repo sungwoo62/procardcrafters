@@ -203,6 +203,50 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     selections['paper_qty'] ?? selections['quantity'] ?? '',
   )
 
+  // 수량 옵션별 개당 단가 맵 (할인율 계산용)
+  const qtyUnitPriceMap = useMemo(() => {
+    const qtyType = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
+    const qtyOptions = grouped.get(qtyType)
+    if (!qtyOptions) return new Map<string, number>()
+    const map = new Map<string, number>()
+    for (const opt of qtyOptions) {
+      const qty = parseInt(opt.value, 10)
+      if (!Number.isFinite(qty) || qty <= 0) continue
+      let price: number
+      if (useSwadpia && swadpiaPaperCode && swadpiaData) {
+        const sw = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, qty)
+        if (sw !== null && sw.costKrw > 0) {
+          price = calculatePriceFromSwadpia({
+            swadpiaCostKrw: sw.costKrw,
+            marginMultiplier: product.margin_multiplier,
+            exchangeRate,
+          })
+          map.set(opt.value, price / (quantityPromoMap.get(opt.value) ?? qty))
+          continue
+        }
+      }
+      const extraPricesKrw = Array.from(grouped.entries()).map(([t, os]) => {
+        const v = t === qtyType ? opt.value : (selections[t] ?? '')
+        return os.find(o => o.value === v)?.extra_price_krw ?? 0
+      })
+      price = calculateItemPriceUsd({
+        basePriceKrw: product.base_price_krw,
+        marginMultiplier: product.margin_multiplier,
+        extraPricesKrw,
+        exchangeRate,
+      })
+      map.set(opt.value, price / qty)
+    }
+    return map
+  }, [useSwadpia, swadpiaData, swadpiaPaperCode, product, grouped, selections, exchangeRate, quantityPromoMap])
+
+  const currentQtyKey = selections['paper_qty'] ?? selections['quantity'] ?? ''
+  const currentUnitPrice = qtyUnitPriceMap.get(currentQtyKey) ?? null
+  const maxUnitPrice = qtyUnitPriceMap.size > 1 ? Math.max(...Array.from(qtyUnitPriceMap.values())) : null
+  const discountPct = (currentUnitPrice !== null && maxUnitPrice !== null && maxUnitPrice > currentUnitPrice)
+    ? Math.round((1 - currentUnitPrice / maxUnitPrice) * 100)
+    : 0
+
   const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
   const totalUsd = itemPriceUsd + rushUsd + shippingUsd
   const productionWindow = formatProductionWindow(product, leadTier)
@@ -235,9 +279,16 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
               >
                 {opts.map((opt) => {
                   const promoQty = quantityPromoMap.get(opt.value)
+                  const perUnit = qtyUnitPriceMap.get(opt.value)
+                  const perUnitStr = perUnit !== undefined
+                    ? (perUnit < 0.1 ? `$${perUnit.toFixed(3)}` : `$${perUnit.toFixed(2)}`) + '/pc'
+                    : ''
+                  const optDiscount = (perUnit !== undefined && maxUnitPrice !== null && maxUnitPrice > perUnit + 0.0001)
+                    ? ` -${Math.round((1 - perUnit / maxUnitPrice) * 100)}%`
+                    : ''
                   return (
                     <option key={opt.value} value={opt.value}>
-                      {opt.label_en}{promoQty ? ` (→ ${promoQty} pcs, same price)` : ''}
+                      {opt.label_en}{perUnitStr ? ` — ${perUnitStr}${optDiscount}` : ''}{promoQty ? ` (→ ${promoQty} pcs free)` : ''}
                     </option>
                   )
                 })}
@@ -341,6 +392,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <span className="font-semibold">Note:</span>
           <span>This is the production / dispatch estimate from our LA facility. Actual delivery time depends on FedEx network conditions and your destination — shipping is billed separately at checkout.</span>
         </div>
+        {product.category === 'letterpress_cards' && (
+          <div className="mt-2 flex items-start gap-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-md p-2">
+            <span className="font-semibold shrink-0">⏳ Lead Time:</span>
+            <span>Letterpress is 100% handcrafted. Due to artisan production and current order backlog, please allow <strong>30–40 business days</strong> before dispatch. Orders are non-cancellable once production begins.</span>
+          </div>
+        )}
       </div>
 
       {/* Price Summary */}
@@ -358,6 +415,19 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <span>Print Cost ({selectedQty} pcs{activePromoEffectiveQty ? ` → ${activePromoEffectiveQty} pcs free upgrade` : ''})</span>
           <span>${itemPriceUsd.toFixed(2)}</span>
         </div>
+        {currentUnitPrice !== null && (
+          <div className="flex justify-between text-xs text-gray-500 -mt-1">
+            <span>Unit price</span>
+            <span className="flex items-center gap-2">
+              <span>{currentUnitPrice < 0.1 ? `$${currentUnitPrice.toFixed(3)}` : `$${currentUnitPrice.toFixed(2)}`}/pc</span>
+              {discountPct > 0 && (
+                <span className="text-green-600 font-semibold bg-green-50 px-1.5 py-0.5 rounded">
+                  Save {discountPct}%
+                </span>
+              )}
+            </span>
+          </div>
+        )}
         {rushUsd > 0 && (
           <div className="flex justify-between text-sm text-orange-700">
             <span className="flex items-center gap-1">

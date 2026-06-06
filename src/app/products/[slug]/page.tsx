@@ -77,7 +77,7 @@ const PRODUCT_FEATURES: Record<string, string[]> = {
   postcards: ['300gsm premium stock', 'Gloss or soft-touch finish', 'Perfect for direct mail', 'Standard & large formats'],
   posters: ['170gsm satin poster paper', 'Large format up to A0', 'Vivid color reproduction', 'Rolled or flat delivery'],
   banners: ['Mini banner 60×160cm or 80×200cm', 'Durable PVC material', 'Indoor & outdoor use', 'Retractable stand available'],
-  letterpress_cards: ['Crane Lettra 600gsm cotton stock', 'Deep-impression letterpress printing', '1 or 2-color designs', 'Artisan craftsmanship — 5–8 day production'],
+  letterpress_cards: ['Crane Lettra 600gsm cotton stock', 'Deep-impression letterpress printing', '1 or 2-color designs', 'Artisan craftsmanship — 30–40+ day production'],
 }
 
 const TRUST_ITEMS = [
@@ -195,6 +195,21 @@ export default async function ProductDetailPage({ params }: Props) {
               <p className="text-gray-600 leading-relaxed mb-4">
                 {product.description_en}
               </p>
+            )}
+
+            {/* Letterpress 전용: 긴 제작기간 안내 */}
+            {product.category === 'letterpress_cards' && (
+              <div className="flex gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                <Clock className="w-5 h-5 text-amber-600 shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-semibold text-amber-800 mb-1">
+                    Production Lead Time: 30–40+ Business Days
+                  </p>
+                  <p className="text-xs text-amber-700 leading-relaxed">
+                    Letterpress is a fully handcrafted process. Each card is pressed individually on a vintage press — combined with our current order backlog, please allow <strong>30–40 business days</strong> for production before shipping. We appreciate your patience for this artisan product.
+                  </p>
+                </div>
+              </div>
             )}
 
             {/* Recommended use + production time */}

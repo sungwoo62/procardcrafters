@@ -60,15 +60,45 @@ export interface SwadpiaCategoryData {
 
 /** Product slug to Swadpia category_code */
 const CATEGORY_MAP: Record<string, string> = {
+  // 명함류
   'business-cards': 'CNC1000',
   'premium-business-cards': 'CNC2000',
+  // 스티커류
   'stickers': 'CST1000',
   'die-cut-stickers': 'CST2000',
+  'holographic-stickers': 'CST5000',   // 스페셜스티커
+  'roll-stickers': 'CST7000',          // 팬시롤스티커
+  'price-labels': 'CLP1000',           // 라벨스티커(롤)
+  'barcode-labels': 'CLP1000',
+  'food-labels': 'CLP1000',
+  // 인쇄물
   'flyers': 'CLF1000',
   'brochures': 'CLF2000',
+  'leaflets': 'CPR3000',               // 리플렛/팜플렛
+  'menus': 'CLF2000',                  // 브로슈어와 동일 카테고리
+  'saddle-stitch-booklet': 'CPR4000',  // 책자
+  'perfect-bound-booklet': 'CPR4000',
+  'catalogs': 'CPR4000',
+  // 우편
   'postcards': 'CDP3000',
+  // 디스플레이
   'posters': 'CPR2000',
   'banners': 'CPR5000',
+  'x-banners': 'CPR5000',
+  'rollup-banners': 'CPR5000',
+  'mini-banners': 'CPR5000',
+  // 봉투·서식
+  'standard-envelopes': 'CEV1000',
+  'admin-envelopes': 'CEV1000',
+  'gusset-envelopes': 'CEV1000',
+  'receipts': 'CNR2000',
+  'quotation-forms': 'CNR2000',
+  'invoice-forms': 'CNR2000',
+  'ncr-forms': 'CNR2000',
+  // 캘린더
+  'wall-calendars': 'CCD1000',
+  'desk-calendars': 'CCD2000',
+  'mini-calendars': 'CCD2000',
 }
 
 // ─── In-memory cache (1-hour TTL) ────────────────────────────

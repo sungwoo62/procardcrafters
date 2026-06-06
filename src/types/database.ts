@@ -3,6 +3,7 @@ export type ProductCategory =
   | 'stickers' | 'die_cut_stickers' | 'eco_stickers'
   | 'flyers' | 'brochures'
   | 'postcards' | 'posters' | 'banners'
+  | 'letterpress_cards'
   | 'sample_pack'
 export type OptionType = 'quantity' | 'paper' | 'paper_code' | 'coating' | 'size' | 'finish' | 'corners' | 'sides' | 'pages'
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
