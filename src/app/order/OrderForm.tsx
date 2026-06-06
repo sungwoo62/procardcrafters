@@ -333,7 +333,21 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
     sessionStorage.removeItem('pccf_pending_order_id')
     sessionStorage.setItem(
       'pccf_purchase_data',
-      JSON.stringify({ value: totalUsd, productId: product.id, productName: product.name_en }),
+      JSON.stringify({
+        value: totalUsd,
+        productId: product.id,
+        productName: product.name_en,
+        customerEmail: form.customerEmail,
+        customerPhone: form.customerPhone || undefined,
+        customerName: form.customerName,
+        shippingAddress: {
+          addressLine1: form.addressLine1,
+          city: form.city,
+          state: form.state || undefined,
+          postalCode: form.postalCode,
+          country: form.country,
+        },
+      }),
     )
     router.push(`/order/success?order=${data.orderNumber}`)
   }

@@ -25,6 +25,7 @@ import { createClient } from '@supabase/supabase-js'
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://omoongmoo.com'
+const ADMIN_RECOVERY_REDIRECT = `${SITE_URL}/auth/callback?type=recovery&redirectTo=/admin/reset-password&next=/admin`
 
 if (!SUPABASE_URL || !SERVICE_KEY) {
   console.error('NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 환경변수가 필요합니다.')
@@ -45,7 +46,7 @@ async function main() {
   console.log(`[invite-admin] target=${targetEmail}`)
 
   const { data: invite, error: inviteErr } = await supabase.auth.admin.inviteUserByEmail(targetEmail, {
-    redirectTo: `${SITE_URL}/admin/login`,
+    redirectTo: ADMIN_RECOVERY_REDIRECT,
   })
 
   if (inviteErr) {
@@ -57,7 +58,7 @@ async function main() {
     }
     console.log('[invite-admin] 기존 사용자 — 비밀번호 재설정 메일 발송 시도')
     const { error: resetErr } = await supabase.auth.resetPasswordForEmail(targetEmail, {
-      redirectTo: `${SITE_URL}/admin/login`,
+      redirectTo: ADMIN_RECOVERY_REDIRECT,
     })
     if (resetErr) {
       console.error('[invite-admin] 재설정 메일 실패:', resetErr.message)

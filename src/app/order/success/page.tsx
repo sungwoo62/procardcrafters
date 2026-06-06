@@ -1,6 +1,7 @@
 import { Suspense } from 'react'
 import Link from 'next/link'
 import { CheckCircle, Package, ArrowRight } from 'lucide-react'
+import PurchaseTracker from '@/components/PurchaseTracker'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,6 +15,7 @@ async function SuccessContent({ searchParams }: PageProps) {
 
   return (
     <div className="max-w-lg mx-auto text-center space-y-6">
+      {orderNumber && <PurchaseTracker orderNumber={orderNumber} />}
       <div className="flex justify-center">
         <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
           <CheckCircle className="w-10 h-10 text-green-600" />

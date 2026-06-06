@@ -1,0 +1,199 @@
+-- ============================================================
+-- 성원애드피아 발주 기준으로 상품 옵션 전면 재정의
+--
+-- 배경: 기존 옵션 value(snow_350, art_250 등)가 성원 코드
+--       (SNW250W00, CTN40 등)와 달라 발주 시 옵션 미적용.
+--       option_type/value를 성원 select name/value와 일치시킴.
+-- ============================================================
+
+-- 성원 연동 9개 제품 기존 옵션 삭제
+DELETE FROM print_product_options WHERE product_id IN (
+  '182c4d9b-36be-4674-85d5-de8e283de32d', -- business-cards
+  '089080ac-3088-4b43-af0d-844fefc42ffa', -- premium-business-cards
+  'b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', -- stickers
+  '6e2b5810-3534-4da0-98ec-253ba4bcbace', -- die-cut-stickers
+  'aec01160-d01e-4514-8cdd-4af041138e54', -- flyers
+  'a3230c4e-a50f-4713-9dcc-9e0e835f58ba', -- brochures
+  'b801348a-c45d-4208-845f-9a064a016e17', -- postcards
+  '7dd27fda-34cf-48ba-a87d-0aa7c2769945', -- posters
+  'ad59df6c-1752-468c-81d3-89fc5c488d50'  -- banners
+);
+
+-- ──────────────────────────────────────────────────────────
+-- 1. 명함 (business-cards) CNC1000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지 (paper_code)
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_code', 'SNW250W00', '스노우지 250g', 'Snow White 250gsm',     0, true,  1),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_code', 'SNW300W00', '스노우지 300g', 'Snow White 300gsm', 3000, false, 2),
+-- 인쇄 (print_color_type)
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'print_color_type', 'CTN40', '양면 컬러', 'Double-sided Color',     0, true,  1),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'print_color_type', 'CTN10', '단면 컬러', 'Single-sided Color', -3000, false, 2),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'print_color_type', 'CTN99', '흑백',       'Black & White',      -5000, false, 3),
+-- 사이즈 (paper_size)
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_size', 'N0100', '90×50mm (표준)', '90×50mm (Standard)', 0, true,  1),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_size', 'N0200', '86×52mm',         '86×52mm',            0, false, 2),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_size', 'N0500', '91×55mm',         '91×55mm',            0, false, 3),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_size', 'N0600', '85×55mm',         '85×55mm',            0, false, 4),
+-- 수량 (paper_qty)
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_qty', '100',  '100매',  '100 cards',  0,     true,  1),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_qty', '200',  '200매',  '200 cards',  8000,  false, 2),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_qty', '500',  '500매',  '500 cards',  20000, false, 3),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_qty', '1000', '1000매', '1,000 cards',50000, false, 4),
+('182c4d9b-36be-4674-85d5-de8e283de32d', 'paper_qty', '2000', '2000매', '2,000 cards',95000, false, 5);
+
+-- ──────────────────────────────────────────────────────────
+-- 2. 프리미엄 명함 (premium-business-cards) CNC2000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_code', 'SNW250W00', '스노우지 250g', 'Snow White 250gsm',     0, true,  1),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_code', 'SNW300W00', '스노우지 300g', 'Snow White 300gsm', 3000, false, 2),
+-- 인쇄
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'print_color_type', 'CTN40', '양면 컬러', 'Double-sided Color',     0, true,  1),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'print_color_type', 'CTN10', '단면 컬러', 'Single-sided Color', -3000, false, 2),
+-- 사이즈
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_size', 'N0100', '90×50mm (표준)', '90×50mm (Standard)', 0, true,  1),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_size', 'N0200', '86×52mm',         '86×52mm',            0, false, 2),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_size', 'N0500', '91×55mm',         '91×55mm',            0, false, 3),
+-- 수량
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_qty', '200',  '200매',  '200 cards',  0,     true,  1),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_qty', '500',  '500매',  '500 cards',  20000, false, 2),
+('089080ac-3088-4b43-af0d-844fefc42ffa', 'paper_qty', '1000', '1000매', '1,000 cards',50000, false, 3);
+
+-- ──────────────────────────────────────────────────────────
+-- 3. 스티커 (stickers) CST1000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_code', 'STK075AT0', '아트지 75g',          'Art Paper 75gsm',            0,    true,  1),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_code', 'STK090AF0', '아트지 90g (초강접)', 'Art Paper 90gsm Super-bond', 2000, false, 2),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_code', 'STK080YP0', '유포지 80µm',         'Vinyl Film 80µm',            3000, false, 3),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_code', 'STK075AT1', '아트지 75g (강접)',   'Art Paper 75gsm Strong-bond',1000, false, 4),
+-- 인쇄 방식
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'print_color_type', 'SPD10', '단면 컬러',          'Single-sided Color',         0,    true,  1),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'print_color_type', 'SPD20', '단면 컬러 + UV코팅', 'Single-sided Color + UV',    3000, false, 2),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'print_color_type', 'SPD30', '단면 컬러 + 라미',   'Single-sided Color + Lami',  3000, false, 3),
+-- 수량
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_qty', '500',  '500매',  '500 pcs',   0,     true,  1),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_qty', '1000', '1000매', '1,000 pcs', 10000, false, 2),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_qty', '2000', '2000매', '2,000 pcs', 18000, false, 3),
+('b3cc2020-8f4c-4005-b7a2-c59a70ee0de4', 'paper_qty', '3000', '3000매', '3,000 pcs', 25000, false, 4);
+
+-- ──────────────────────────────────────────────────────────
+-- 4. 도무송 스티커 (die-cut-stickers) CST2000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_code', 'STK075AT0', '아트지 75g',          'Art Paper 75gsm',            0,    true,  1),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_code', 'STK080YP0', '유포지 80µm',         'Vinyl Film 80µm',            3000, false, 2),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_code', 'STK090AF0', '아트지 90g (초강접)', 'Art Paper 90gsm Super-bond', 2000, false, 3),
+-- 인쇄 방식
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'print_color_type', 'SPD10', '단면 컬러',          'Single-sided Color',      0,    true,  1),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'print_color_type', 'SPD20', '단면 컬러 + UV코팅', 'Single-sided Color + UV', 3000, false, 2),
+-- 수량
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_qty', '100',  '100매',  '100 pcs',   0,     true,  1),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_qty', '200',  '200매',  '200 pcs',   8000,  false, 2),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_qty', '500',  '500매',  '500 pcs',   18000, false, 3),
+('6e2b5810-3534-4da0-98ec-253ba4bcbace', 'paper_qty', '1000', '1000매', '1,000 pcs', 30000, false, 4);
+
+-- ──────────────────────────────────────────────────────────
+-- 5. 전단지 (flyers) CLF1000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_code', 'ART090W00', '아트지 90g',  'Art Coated 90gsm',  0,    true,  1),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_code', 'ART120W00', '아트지 120g', 'Art Coated 120gsm', 3000, false, 2),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_code', 'ART150W00', '아트지 150g', 'Art Coated 150gsm', 5000, false, 3),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_code', 'ART180W00', '아트지 180g', 'Art Coated 180gsm', 8000, false, 4),
+-- 사이즈 (paper_size)
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_size', 'A0400', 'A4 (210×297mm)', 'A4 (210×297mm)', 0,     true,  1),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_size', 'A0500', 'A5 (148×210mm)', 'A5 (148×210mm)', -3000, false, 2),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_size', 'A0300', 'A3 (297×420mm)', 'A3 (297×420mm)', 8000,  false, 3),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_size', 'A0200', 'A2 (420×594mm)', 'A2 (420×594mm)', 20000, false, 4),
+-- 수량 (paper_qty)
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_qty', '2000',  '2,000매',  '2,000 pcs',  0,     true,  1),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_qty', '4000',  '4,000매',  '4,000 pcs',  15000, false, 2),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_qty', '8000',  '8,000매',  '8,000 pcs',  25000, false, 3),
+('aec01160-d01e-4514-8cdd-4af041138e54', 'paper_qty', '12000', '12,000매', '12,000 pcs', 40000, false, 4);
+
+-- ──────────────────────────────────────────────────────────
+-- 6. 브로셔 (brochures) CLF2000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_code', 'ART100W00', '아트지 100g', 'Art Coated 100gsm', 0,    true,  1),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_code', 'ART120W00', '아트지 120g', 'Art Coated 120gsm', 3000, false, 2),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_code', 'ART150W00', '아트지 150g', 'Art Coated 150gsm', 5000, false, 3),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_code', 'ART180W00', '아트지 180g', 'Art Coated 180gsm', 8000, false, 4),
+-- 사이즈
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_size', 'A0400', 'A4 (210×297mm)', 'A4 (210×297mm)', 0,     true,  1),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_size', 'A0300', 'A3 (297×420mm)', 'A3 (297×420mm)', 8000,  false, 2),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_size', 'A0200', 'A2 (420×594mm)', 'A2 (420×594mm)', 20000, false, 3),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_size', 'A0100', 'A1 (594×841mm)', 'A1 (594×841mm)', 40000, false, 4),
+-- 수량
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_qty', '1000', '1,000매', '1,000 pcs', 0,     true,  1),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_qty', '2000', '2,000매', '2,000 pcs', 20000, false, 2),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_qty', '4000', '4,000매', '4,000 pcs', 35000, false, 3),
+('a3230c4e-a50f-4713-9dcc-9e0e835f58ba', 'paper_qty', '6000', '6,000매', '6,000 pcs', 50000, false, 4);
+
+-- ──────────────────────────────────────────────────────────
+-- 7. 엽서 (postcards) CDP3000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_code', 'SNW120W00', '스노우지 120g', 'Snow White 120gsm', 0,    true,  1),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_code', 'SNW150W00', '스노우지 150g', 'Snow White 150gsm', 3000, false, 2),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_code', 'SNW180W00', '스노우지 180g', 'Snow White 180gsm', 5000, false, 3),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_code', 'SNW200W00', '스노우지 200g', 'Snow White 200gsm', 8000, false, 4),
+-- 인쇄 방식
+('b801348a-c45d-4208-845f-9a064a016e17', 'print_color_type', 'DPD10', '양면 컬러', 'Double-sided Color',     0,    true,  1),
+('b801348a-c45d-4208-845f-9a064a016e17', 'print_color_type', 'DPD20', '단면 컬러', 'Single-sided Color', -3000, false, 2),
+-- 사이즈
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_size', 'V0500', '100×148mm (엽서 표준)', '100×148mm (Postcard Standard)', 0, true, 1),
+-- 수량
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_qty', '100', '100매', '100 pcs', 0,    true,  1),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_qty', '200', '200매', '200 pcs', 8000, false, 2),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_qty', '300', '300매', '300 pcs', 12000,false, 3),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_qty', '400', '400매', '400 pcs', 16000,false, 4),
+('b801348a-c45d-4208-845f-9a064a016e17', 'paper_qty', '500', '500매', '500 pcs', 20000,false, 5);
+
+-- ──────────────────────────────────────────────────────────
+-- 8. 포스터 (posters) CPR2000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_code', 'ART100W00', '아트지 100g', 'Art Coated 100gsm', 0,    true,  1),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_code', 'ART120W00', '아트지 120g', 'Art Coated 120gsm', 3000, false, 2),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_code', 'ART150W00', '아트지 150g', 'Art Coated 150gsm', 5000, false, 3),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_code', 'ART180W00', '아트지 180g', 'Art Coated 180gsm', 8000, false, 4),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_code', 'ART200W00', '아트지 200g', 'Art Coated 200gsm', 12000,false, 5),
+-- 사이즈
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'A0300', 'A3 (297×420mm)',  'A3 (297×420mm)',  0,     true,  1),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'A0200', 'A2 (420×594mm)',  'A2 (420×594mm)',  15000, false, 2),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'A0100', 'A1 (594×841mm)',  'A1 (594×841mm)',  30000, false, 3),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'B0200', 'B2 타블로이드',    'B2 Tabloid',      20000, false, 4),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'B0300', 'B3',              'B3',              10000, false, 5),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_size', 'B0400', 'B4',              'B4',              5000,  false, 6),
+-- 수량
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_qty', '250',  '250매',  '250 pcs',   0,     true,  1),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_qty', '500',  '500매',  '500 pcs',   15000, false, 2),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_qty', '1000', '1,000매','1,000 pcs', 25000, false, 3),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_qty', '1500', '1,500매','1,500 pcs', 35000, false, 4),
+('7dd27fda-34cf-48ba-a87d-0aa7c2769945', 'paper_qty', '2000', '2,000매','2,000 pcs', 45000, false, 5);
+
+-- ──────────────────────────────────────────────────────────
+-- 9. 배너 (banners) CPR5000
+-- ──────────────────────────────────────────────────────────
+INSERT INTO print_product_options (product_id, option_type, value, label_ko, label_en, extra_price_krw, is_default, sort_order) VALUES
+-- 용지 (배너는 현수막용 출력지)
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_code', 'BNR510W00', '현수막 510g (표준)', 'PVC Banner 510gsm (Standard)', 0,     true,  1),
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_code', 'BNR440W00', '현수막 440g',        'PVC Banner 440gsm',            -5000, false, 2),
+-- 사이즈 (paper_size — 직접 입력)
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_size', 'SZT20', '사이즈 직접 입력', 'Custom Size (enter dimensions)', 0, true, 1),
+-- 수량
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_qty', '1', '1장', '1 pc',   0,     true,  1),
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_qty', '2', '2장', '2 pcs',  5000,  false, 2),
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_qty', '3', '3장', '3 pcs',  8000,  false, 3),
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_qty', '5', '5장', '5 pcs',  12000, false, 4),
+('ad59df6c-1752-468c-81d3-89fc5c488d50', 'paper_qty', '10','10장','10 pcs', 20000, false, 5);

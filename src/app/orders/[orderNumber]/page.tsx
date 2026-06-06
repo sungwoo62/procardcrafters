@@ -1,7 +1,8 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { createServerClient } from '@/lib/supabase'
-import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, ExternalLink } from 'lucide-react'
+import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, ExternalLink, Bell } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import RejectedFileUpload from '@/components/RejectedFileUpload'
 import DesignProofReview from '@/components/DesignProofReview'
@@ -120,6 +121,19 @@ export default async function OrderTrackingPage({ params }: Props) {
 
   const isTerminal = currentStatus === 'cancelled' || currentStatus === 'refunded'
 
+  // 최근 30분 내 결제완료 주문에만 self-recognition 안내 카드 표시
+  const isRecentOrder = currentStatus === 'paid'
+    && (Date.now() - new Date(order.created_at).getTime()) < 30 * 60 * 1000
+
+  // 마스킹된 이름 미리보기 생성
+  const previewName = (() => {
+    const name = order.shipping_name || order.customer_name
+    if (!name) return '고객**'
+    const isKorean = /[가-힯]/.test(name[0])
+    return isKorean ? name[0] + '**' : name.slice(0, 2) + '**'
+  })()
+  const previewProduct = items[0]?.product_name_en ?? 'Print Order'
+
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
       {/* Order Number + Status */}
@@ -131,6 +145,33 @@ export default async function OrderTrackingPage({ params }: Props) {
           {statusInfo.label}
         </div>
       </div>
+
+      {/* Self-recognition 안내 카드 (최근 30분 내 결제완료만) */}
+      {isRecentOrder && (
+        <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 space-y-3">
+          <div className="flex items-center gap-2">
+            <Bell className="w-5 h-5 text-blue-500" />
+            <h2 className="text-sm font-semibold text-blue-900">방금 주문이 사이트에 노출됩니다 (5분 이내)</h2>
+          </div>
+          <p className="text-xs text-blue-700 leading-relaxed">
+            다른 방문자들에게 아래와 같이 실시간 알림으로 표시돼요:
+          </p>
+          {/* 미리보기 토스트 */}
+          <div className="bg-white border border-blue-100 rounded-xl p-3 flex items-start gap-2 shadow-sm max-w-xs">
+            <span className="text-base">📦</span>
+            <p className="text-xs text-gray-700 leading-snug">
+              <span className="font-medium">{previewName}</span> 님이 방금{' '}
+              <span className="font-medium">{previewProduct}</span> 주문
+            </p>
+          </div>
+          <Link
+            href="/?highlight=my-order"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
+          >
+            홈에서 내 알림 보기 →
+          </Link>
+        </div>
+      )}
 
       {/* Progress Stepper */}
       {!isTerminal && (

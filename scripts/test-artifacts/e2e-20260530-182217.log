@@ -1,0 +1,69 @@
+(node:95887) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/william/.paperclip/instances/default/projects/65d8f163-a23c-4512-9b7b-3cd5114e1519/925c72c4-60c3-470f-b5a3-527ba5143e94/_default/scripts/test-e2e-factory-pipeline.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/william/.paperclip/instances/default/projects/65d8f163-a23c-4512-9b7b-3cd5114e1519/925c72c4-60c3-470f-b5a3-527ba5143e94/_default/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[오후 6:22:18] 
+════════════════════════════════════════════════════════════
+[오후 6:22:18]   E2E 공장 발주 파이프라인 테스트
+[오후 6:22:18] ════════════════════════════════════════════════════════════
+
+[오후 6:22:18] 흐름: 고객 주문 → 파일 업로드 → 결제 → 큐 등록 → Swadpia 발주
+
+[오후 6:22:18] 
+════════════════════════════════════════════════════════════
+[오후 6:22:18]   Step 1: 고객 주문 생성 (시뮬레이션)
+[오후 6:22:18] ════════════════════════════════════════════════════════════
+
+[오후 6:22:18] 상품: 명함 (Business Cards)
+[오후 6:22:18] 주문 생성 완료: PCCF-20260530-8C46A2 (f904e4b4-24f5-46f9-ba7b-660d07320c25)
+[오후 6:22:18] 주문 아이템 생성 완료: 66f68afe-7d3a-49c6-a87c-81b05bfee2e3
+[오후 6:22:18] 
+════════════════════════════════════════════════════════════
+[오후 6:22:18]   Step 2: 파일 업로드 (Supabase Storage)
+[오후 6:22:18] ════════════════════════════════════════════════════════════
+
+[오후 6:22:19] Storage 업로드 완료: print-assets/print-files/f904e4b4-24f5-46f9-ba7b-660d07320c25/test-business-card-1780132938717.pdf
+[오후 6:22:19] print_files 레코드 생성 완료 (status: approved)
+[오후 6:22:19] 서명 URL 생성 확인: https://ilcfemvqommqyoohfoxw.supabase.co/storage/v1/object/sign/print-assets/pri...
+[오후 6:22:19] 
+════════════════════════════════════════════════════════════
+[오후 6:22:19]   Step 3: 결제 완료 시뮬레이션
+[오후 6:22:19] ════════════════════════════════════════════════════════════
+
+[오후 6:22:19] 주문 상태 → paid
+[오후 6:22:19] 이벤트 로그: payment_received
+[오후 6:22:19] 
+════════════════════════════════════════════════════════════
+[오후 6:22:19]   Step 4: 공장 발주 큐 등록
+[오후 6:22:19] ════════════════════════════════════════════════════════════
+
+[오후 6:22:19] 공장 발주 큐 등록 완료: 1030c8b6-151a-41b7-80d9-07475ea79316
+[오후 6:22:19]   카테고리: CNC1000
+[오후 6:22:19]   옵션: {"size_type":"SZT10","paper_code":"SNW250W00","paper_size":"N0100","order_count":"1","print_color_type":"CTN40"}
+[오후 6:22:19]   수량: 500
+[오후 6:22:19] 
+════════════════════════════════════════════════════════════
+[오후 6:22:19]   Step 5: Swadpia 자동 발주 실행
+[오후 6:22:19] ════════════════════════════════════════════════════════════
+
+[오후 6:22:19] 발주 상태 → placing (시도 1회)
+[오후 6:22:19] 파일 URL 확인: https://ilcfemvqommqyoohfoxw.supabase.co/storage/v1/object/sign/print-assets/pri...
+[오후 6:22:19] 
+Playwright 발주 시작...
+
+오류: Swadpia 발주 실패: browserType.launch: Executable doesn't exist at /Users/william/Library/Caches/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-mac-arm64/chrome-headless-shell
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+[오후 6:22:20] 
+════════════════════════════════════════════════════════════
+[오후 6:22:20]   정리: 테스트 데이터 삭제
+[오후 6:22:20] ════════════════════════════════════════════════════════════
+
+[오후 6:22:20] Storage 파일 삭제: print-files/f904e4b4-24f5-46f9-ba7b-660d07320c25/test-business-card-1780132938717.pdf
+[오후 6:22:20] DB 레코드 삭제 완료 (CASCADE)
