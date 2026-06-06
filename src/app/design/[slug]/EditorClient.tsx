@@ -3102,9 +3102,11 @@ export default function EditorClient({ product, options }: Props) {
 
       // Load template from URL param or default to Classic
       const urlTemplate = searchParams.get('template')
-      const initialTemplate = (urlTemplate && TEMPLATE_CATALOG.some(t => t.name === urlTemplate))
-        ? urlTemplate
-        : 'Classic'
+      // 자동 생성 템플릿(GENERATED_TEMPLATE_MAP)도 인정해야 함 — 누락 시 'Classic'으로
+      // 폴백되어 썸네일과 에디터 렌더가 완전히 달라지는 버그가 발생한다.
+      const isKnownTemplate = !!urlTemplate &&
+        (TEMPLATE_CATALOG.some(t => t.name === urlTemplate) || !!GENERATED_TEMPLATE_MAP[urlTemplate])
+      const initialTemplate = isKnownTemplate ? (urlTemplate as string) : 'Classic'
       const urlBg = searchParams.get('bg')
       if (urlBg) { bgColorRef.current = urlBg; setBgColor(urlBg) }
       buildTemplate(canvas, fabric, initialTemplate, bgColorRef.current)
