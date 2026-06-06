@@ -13,6 +13,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
+import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1094,8 +1095,105 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // 자동 생성 명함 템플릿 — 스펙(layout/accent/ink/sample)으로 fabric 객체를 구성.
+  // TemplatePreview 의 8개 레이아웃과 1:1 대응되도록 mm 좌표로 렌더.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function buildSpecTemplate(canvas: any, fabric: typeof import('fabric'), spec: GenTemplateDef) {
+    const bl = mmToPx(dims.bleedMm, scale)
+    const W = dims.widthMm
+    const H = dims.heightMm
+    const ink = spec.ink ?? '#1a1a1a'
+    const accent = spec.accent ?? '#2563eb'
+    const dark = (() => {
+      const h = spec.bg.replace('#', '')
+      if (h.length < 6) return false
+      const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16)
+      return (r * 299 + g * 587 + b * 114) / 1000 / 255 < 0.5
+    })()
+    const sub = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.45)'
+    const s = spec.sample ?? { name: 'Your Name', title: 'Your Title', contact: 'email@company.com' }
+    const initials = s.name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('') || 'YN'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const rect = (x: number, y: number, w: number, h: number, fill: string, opts: Record<string, unknown> = {}) =>
+      canvas.add(new fabric.Rect({ left: bl + mmToPx(x, scale), top: bl + mmToPx(y, scale), width: mmToPx(w, scale), height: mmToPx(h, scale), fill, data: { id: makeId(), name: 'Shape', layerType: 'rect' }, ...opts }))
+    const txt = (text: string, x: number, y: number, w: number, fontMm: number, fill: string, opts: Record<string, unknown> = {}) =>
+      addTextbox(canvas, fabric, text, bl + mmToPx(x, scale), bl + mmToPx(y, scale), mmToPx(w, scale), { fontSize: mmToPx(fontMm, scale), fill, ...opts })
+
+    switch (spec.layout ?? 0) {
+      case 0: // 좌측 강조 바
+        rect(0, 0, 4, H, accent)
+        txt(s.name, 10, H * 0.26, W - 16, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 10, H * 0.46, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 10, H * 0.66, W - 16, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 1: { // 중앙 모노그램
+        const r = 7
+        canvas.add(new fabric.Circle({ left: bl + mmToPx(W / 2 - r, scale), top: bl + mmToPx(H * 0.18, scale), radius: mmToPx(r, scale), fill: 'transparent', stroke: accent, strokeWidth: 2, data: { id: makeId(), name: 'Ring', layerType: 'rect' } }))
+        txt(initials, W / 2 - 10, H * 0.18 + 1.5, 20, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
+        txt(s.name, W / 2 - 30, H * 0.52, 60, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        rect(W / 2 - 8, H * 0.68, 16, 0.5, accent)
+        txt(s.title, W / 2 - 30, H * 0.72, 60, 2.8, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        break
+      }
+      case 2: // 상단 컬러 밴드
+        rect(0, 0, W, H * 0.4, accent)
+        txt(s.name, 7, H * 0.1, W - 14, 5, '#ffffff', { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.25, W - 14, 3, 'rgba(255,255,255,0.85)', { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.6, W - 14, 2.8, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 3: // 좌우 분할
+        rect(0, 0, W * 0.4, H, accent)
+        txt(initials, 0, H / 2 - 5, W * 0.4, 9, '#ffffff', { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
+        txt(s.name, W * 0.45, H * 0.3, W * 0.5, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, W * 0.45, H * 0.46, W * 0.5, 2.8, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, W * 0.45, H * 0.64, W * 0.52, 2.4, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 4: // 하단 강조 바
+        txt(s.name, 7, H * 0.18, W - 14, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.36, W - 14, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        rect(0, H * 0.72, W, H * 0.28, accent)
+        txt(s.contact, 7, H * 0.8, W - 14, 2.8, '#ffffff', { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 5: { // 코너 사선
+        const poly = new fabric.Polygon(
+          [{ x: 0, y: 0 }, { x: mmToPx(W * 0.45, scale), y: 0 }, { x: 0, y: mmToPx(H * 0.6, scale) }],
+          { left: bl, top: bl, fill: accent }
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(poly as any).data = { id: makeId(), name: 'Corner', layerType: 'rect' }
+        canvas.add(poly)
+        txt(s.name, 7, H * 0.6, W - 14, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.75, W - 14, 2.8, sub, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.85, W - 14, 2.4, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      }
+      case 6: // 미니멀 중앙
+        txt(s.name, W / 2 - 35, H * 0.38, 70, 5, ink, { fontWeight: 'bold', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        rect(W / 2 - 7, H * 0.56, 14, 0.5, accent)
+        txt(s.title, W / 2 - 35, H * 0.62, 70, 2.8, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        break
+      default: // 7: 프레임
+        canvas.add(new fabric.Rect({ left: bl + mmToPx(3, scale), top: bl + mmToPx(3, scale), width: mmToPx(W - 6, scale), height: mmToPx(H - 6, scale), fill: 'transparent', stroke: accent, strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+        txt(s.name, W / 2 - 32, H * 0.34, 64, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, W / 2 - 32, H * 0.5, 64, 2.8, accent, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, W / 2 - 32, H * 0.64, 64, 2.4, sub, { textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function buildTemplate(canvas: any, fabric: typeof import('fabric'), name: string, bg: string) {
     const bl = mmToPx(dims.bleedMm, scale)
+
+    // 자동 생성 명함 템플릿 처리 → 스펙 기반 렌더 후 종료.
+    const genSpec = GENERATED_TEMPLATE_MAP[name]
+    if (genSpec) {
+      buildSpecTemplate(canvas, fabric, genSpec)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
+      if (trimBg) trimBg.set('fill', bg)
+      return
+    }
 
     if (name === 'Classic') {
       addTextbox(canvas, fabric, 'John Doe', bl + mmToPx(5, scale), bl + mmToPx(14, scale), mmToPx(75, scale), {
@@ -4372,9 +4470,10 @@ export default function EditorClient({ product, options }: Props) {
                   ))}
                 </div>
                 <div className="space-y-1">
-                  {TEMPLATE_CATALOG
+                  {[...TEMPLATE_CATALOG, ...GENERATED_CARD_TEMPLATES]
                     .filter(t => {
-                      if (t.products && t.products.length > 0 && !t.products.includes(product.slug)) return false
+                      // 템플릿 products 태그는 카테고리명(business_cards) 기준 → product.category 와 비교.
+                      if (t.products && t.products.length > 0 && !t.products.includes(product.category)) return false
                       if (templateSearch) return t.name.toLowerCase().includes(templateSearch.toLowerCase()) || t.description.toLowerCase().includes(templateSearch.toLowerCase())
                       return templateCategory === 'all' || t.category === templateCategory
                     })

@@ -40,8 +40,12 @@ function hashStr(s: string): number {
 
 function resolveColors(t: TemplateDef): Colors {
   const dark = isDark(t.bg)
-  const ink = dark ? '#ffffff' : '#1a1a1a'
+  const ink = t.ink ?? (dark ? '#ffffff' : '#1a1a1a')
   const sub = dark ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.4)'
+
+  // 생성 템플릿은 명시적 accent 사용.
+  if (t.accent) return { bg: t.bg, ink, sub, accent: t.accent }
+
   // accent: pick from pool by name hash, avoid one too close to bg luminance
   const bgLum = luminance(t.bg)
   const start = hashStr(t.name) % ACCENT_POOL.length
@@ -263,7 +267,8 @@ export default function TemplatePreview({
 }) {
   const c = resolveColors(template)
   const [W, H] = ASPECT[template.category] ?? [180, 110]
-  const idx = hashStr(template.name)
+  // 생성 템플릿은 명시적 layout 인덱스, 수동 템플릿은 이름 hash 로 결정.
+  const idx = template.layout ?? hashStr(template.name)
 
   let content: React.ReactNode
   if (template.category === 'sticker') content = stickerLayout(idx, c, template, W, H)

@@ -5,12 +5,23 @@ export type TemplateCategory =
   | 'realestate' | 'sticker' | 'postcard' | 'banner' | 'luxury'
   | 'flyer' | 'brochure' | 'poster'
 
+export interface TemplateSample {
+  name: string
+  title: string
+  contact: string
+}
+
 export interface TemplateDef {
   name: string
   category: TemplateCategory
   bg: string
   description: string
   products?: string[]
+  // 자동 생성 템플릿용 스펙 — 미리보기·에디터가 동일하게 렌더하기 위한 정보.
+  layout?: number    // 레이아웃 아키타입 인덱스 (0–7)
+  accent?: string    // 강조 색
+  ink?: string       // 주요 텍스트 색
+  sample?: TemplateSample  // 에디터 초기 샘플 텍스트
 }
 
 const BC = ['business_cards', 'premium_business_cards']
@@ -23,7 +34,7 @@ const FY = ['flyers']
 const BR = ['brochures']
 const PO = ['posters']
 
-export const TEMPLATE_CATALOG: TemplateDef[] = [
+const MANUAL_TEMPLATES: TemplateDef[] = [
   // ── Business / Professional
   { name: 'Classic',            category: 'business',    bg: '#ffffff', description: 'Traditional layout',       products: BC },
   { name: 'Corporate',          category: 'business',    bg: '#0f172a', description: 'Dark professional',        products: BC },
@@ -163,6 +174,107 @@ export const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Poster Contest',     category: 'poster',      bg: '#fefce8', description: 'Contest announcement poster', products: PO },
   { name: 'Poster Recruitment', category: 'poster',      bg: '#0f172a', description: 'Job recruitment poster',   products: PO },
 ]
+
+// ─── 명함 템플릿 자동 생성 (직군 × 레이아웃 × 팔레트) ──────────────────────────
+// moo.com 처럼 풍부한 배리에이션을 위해 직군별 샘플 + 레이아웃 8종 + 팔레트를
+// 조합해 200+ 명함 템플릿을 생성. 각 템플릿은 layout/accent/ink/sample 스펙을
+// 가지므로 미리보기(TemplatePreview)와 에디터(buildSpecTemplate)가 동일하게 렌더.
+
+interface Profession {
+  label: string
+  category: TemplateCategory
+  sample: TemplateSample
+}
+
+const PROFESSIONS: Profession[] = [
+  { label: 'Lawyer',            category: 'business',   sample: { name: 'James Carter',    title: 'Attorney at Law',        contact: 'james@lawfirm.com · (212) 555-0100' } },
+  { label: 'Accountant',        category: 'business',   sample: { name: 'Emily Nguyen',    title: 'Certified Accountant',   contact: 'emily@cpa.com · (212) 555-0142' } },
+  { label: 'Consultant',        category: 'business',   sample: { name: 'David Park',      title: 'Management Consultant',  contact: 'david@consult.co · (415) 555-0190' } },
+  { label: 'Financial Advisor', category: 'business',   sample: { name: 'Sarah Bennett',   title: 'Financial Advisor',      contact: 'sarah@wealth.com · (646) 555-0177' } },
+  { label: 'Marketing Manager', category: 'business',   sample: { name: 'Olivia Reed',     title: 'Marketing Manager',      contact: 'olivia@brand.io · (312) 555-0166' } },
+  { label: 'Sales Director',    category: 'business',   sample: { name: 'Michael Brooks',  title: 'Sales Director',         contact: 'michael@sales.com · (305) 555-0123' } },
+  { label: 'Event Planner',     category: 'business',   sample: { name: 'Grace Kim',       title: 'Event Planner',          contact: 'grace@events.co · (702) 555-0188' } },
+  { label: 'Travel Agent',      category: 'business',   sample: { name: 'Lucas Moore',     title: 'Travel Specialist',      contact: 'lucas@travel.com · (808) 555-0144' } },
+  { label: 'Real Estate Agent', category: 'realestate', sample: { name: 'Sophia Turner',   title: 'Realtor®',               contact: 'sophia@realty.com · (480) 555-0133' } },
+  { label: 'Architect',         category: 'realestate', sample: { name: 'Daniel Cho',      title: 'Principal Architect',    contact: 'daniel@studio.com · (206) 555-0119' } },
+  { label: 'Interior Designer', category: 'creative',   sample: { name: 'Isabella Rossi',  title: 'Interior Designer',      contact: 'bella@interiors.com · (310) 555-0155' } },
+  { label: 'Photographer',      category: 'creative',   sample: { name: 'Ethan Walker',    title: 'Photographer',           contact: 'ethan@photos.com · (323) 555-0171' } },
+  { label: 'Graphic Designer',  category: 'creative',   sample: { name: 'Maya Patel',      title: 'Graphic Designer',       contact: 'maya@design.studio · (718) 555-0162' } },
+  { label: 'Writer',            category: 'creative',   sample: { name: 'Noah Fischer',    title: 'Author & Copywriter',    contact: 'noah@writes.com · (503) 555-0148' } },
+  { label: 'Musician',          category: 'creative',   sample: { name: 'Ava Sinclair',    title: 'Composer & Performer',   contact: 'ava@music.com · (615) 555-0137' } },
+  { label: 'Software Engineer', category: 'tech',       sample: { name: 'Ryan Mitchell',   title: 'Software Engineer',      contact: 'ryan@dev.io · github.com/ryanm' } },
+  { label: 'Product Manager',   category: 'tech',       sample: { name: 'Chloe Adams',     title: 'Product Manager',        contact: 'chloe@product.co · (415) 555-0124' } },
+  { label: 'Data Scientist',    category: 'tech',       sample: { name: 'Leo Zhang',       title: 'Data Scientist',         contact: 'leo@data.ai · (650) 555-0192' } },
+  { label: 'Startup Founder',   category: 'tech',       sample: { name: 'Nora Hughes',     title: 'Founder & CEO',          contact: 'nora@startup.com · (628) 555-0101' } },
+  { label: 'Doctor',            category: 'health',     sample: { name: 'Dr. Alan Foster', title: 'Family Physician',       contact: 'alan@clinic.com · (212) 555-0156' } },
+  { label: 'Dentist',           category: 'health',     sample: { name: 'Dr. Lisa Hwang',  title: 'Dental Surgeon',         contact: 'lisa@dental.com · (212) 555-0173' } },
+  { label: 'Therapist',         category: 'health',     sample: { name: 'Rachel Green',    title: 'Licensed Therapist',     contact: 'rachel@therapy.com · (646) 555-0184' } },
+  { label: 'Personal Trainer',  category: 'health',     sample: { name: 'Marcus Lee',      title: 'Certified Trainer',      contact: 'marcus@fitness.com · (310) 555-0129' } },
+  { label: 'Yoga Instructor',   category: 'health',     sample: { name: 'Hana Suzuki',     title: 'Yoga Instructor',        contact: 'hana@yoga.studio · (808) 555-0118' } },
+  { label: 'Nutritionist',      category: 'health',     sample: { name: 'Ella Martin',     title: 'Registered Dietitian',   contact: 'ella@nutri.com · (619) 555-0146' } },
+  { label: 'Chef',              category: 'food',       sample: { name: 'Antonio Russo',   title: 'Executive Chef',         contact: 'antonio@kitchen.com · (212) 555-0153' } },
+  { label: 'Cafe Owner',        category: 'food',       sample: { name: 'Julia Stone',     title: 'Cafe Owner',             contact: 'julia@cafe.com · (503) 555-0167' } },
+  { label: 'Baker',             category: 'food',       sample: { name: 'Oscar Bell',      title: 'Master Baker',           contact: 'oscar@bakery.com · (415) 555-0139' } },
+  { label: 'Teacher',           category: 'minimal',    sample: { name: 'Hannah Cole',     title: 'Educator',               contact: 'hannah@school.edu · (312) 555-0175' } },
+  { label: 'Hair Stylist',      category: 'health',     sample: { name: 'Zoe Carter',      title: 'Hair Stylist',           contact: 'zoe@salon.com · (786) 555-0191' } },
+]
+
+interface Palette {
+  bg: string
+  ink: string
+  accent: string
+}
+
+// 라이트/다크 혼합 팔레트 — 직군+레이아웃 인덱스로 회전 선택.
+const CARD_PALETTES: Palette[] = [
+  { bg: '#ffffff', ink: '#1a1a1a', accent: '#2563eb' },
+  { bg: '#0f172a', ink: '#ffffff', accent: '#60a5fa' },
+  { bg: '#f8fafc', ink: '#0f172a', accent: '#6366f1' },
+  { bg: '#1a1a1a', ink: '#ffffff', accent: '#f59e0b' },
+  { bg: '#fef2f2', ink: '#7f1d1d', accent: '#dc2626' },
+  { bg: '#f0fdf4', ink: '#14532d', accent: '#16a34a' },
+  { bg: '#0d1117', ink: '#f0f6fc', accent: '#3fb950' },
+  { bg: '#fdf6e3', ink: '#3b2f1a', accent: '#b8860b' },
+  { bg: '#faf5ff', ink: '#4c1d95', accent: '#7c3aed' },
+  { bg: '#f0fdfa', ink: '#134e4a', accent: '#0d9488' },
+  { bg: '#fff1f2', ink: '#9d174d', accent: '#ec4899' },
+  { bg: '#0c1222', ink: '#e2e8f0', accent: '#38bdf8' },
+  { bg: '#fafafa', ink: '#171717', accent: '#f97316' },
+  { bg: '#1e1b4b', ink: '#e0e7ff', accent: '#a78bfa' },
+  { bg: '#ecfeff', ink: '#155e75', accent: '#06b6d4' },
+]
+
+const LAYOUT_NAMES = ['Bar', 'Monogram', 'Header', 'Split', 'Footer', 'Diagonal', 'Minimal', 'Frame']
+
+function generateCardTemplates(): TemplateDef[] {
+  const out: TemplateDef[] = []
+  PROFESSIONS.forEach((prof, pi) => {
+    for (let layout = 0; layout < 8; layout++) {
+      const pal = CARD_PALETTES[(pi * 3 + layout) % CARD_PALETTES.length]
+      out.push({
+        name: `${prof.label} ${LAYOUT_NAMES[layout]}`,
+        category: prof.category,
+        bg: pal.bg,
+        description: `${prof.sample.title} — ${LAYOUT_NAMES[layout].toLowerCase()} layout`,
+        products: BC,
+        layout,
+        accent: pal.accent,
+        ink: pal.ink,
+        sample: prof.sample,
+      })
+    }
+  })
+  return out
+}
+
+export const GENERATED_CARD_TEMPLATES: TemplateDef[] = generateCardTemplates()
+
+// 이름 → 생성 스펙 빠른 조회 (에디터에서 사용).
+export const GENERATED_TEMPLATE_MAP: Record<string, TemplateDef> =
+  Object.fromEntries(GENERATED_CARD_TEMPLATES.map(t => [t.name, t]))
+
+// 수동 + 자동 생성 통합 카탈로그.
+export const TEMPLATE_CATALOG: TemplateDef[] = [...MANUAL_TEMPLATES, ...GENERATED_CARD_TEMPLATES]
 
 export const TEMPLATE_CATEGORY_LABELS: Record<TemplateCategory | 'all', string> = {
   all:        'All',
