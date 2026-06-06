@@ -73,8 +73,8 @@ export default function AboutPage() {
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Our Story</h2>
         <div className="prose prose-gray max-w-none space-y-4 text-gray-600 leading-relaxed">
           <p>
-            We use professional-grade printing equipment and premium materials. Our LA distribution
-            center ensures fast delivery across the United States and worldwide.
+            We use professional-grade printing equipment and premium materials. Each order is
+            produced at the most suitable factory in our global network, ensuring quality and fast delivery worldwide.
           </p>
           <p>
             Procardcrafters handles all the logistics and delivers your finished prints wherever

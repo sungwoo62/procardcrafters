@@ -236,8 +236,8 @@ export default async function ProductDetailPage({ params }: Props) {
             {/* Partnership Highlight */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <div className="font-semibold text-blue-800 text-sm mb-1">LA Distribution</div>
-                <div className="text-blue-600 text-xs leading-relaxed">Fast fulfillment from our Los Angeles distribution center</div>
+                <div className="font-semibold text-blue-800 text-sm mb-1">Global Factory Network</div>
+                <div className="text-blue-600 text-xs leading-relaxed">Produced at the optimal factory worldwide for your order</div>
               </div>
               <div className="bg-green-50 border border-green-100 rounded-xl p-4">
                 <div className="font-semibold text-green-800 text-sm mb-1">Global Delivery</div>
