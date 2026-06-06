@@ -14,7 +14,7 @@ export const metadata = {
 
 function safeRead<T>(rel: string): T | null {
   try {
-    const p = path.join(process.cwd(), rel)
+    const p = path.join(/*turbopackIgnore: true*/ process.cwd(), rel)
     return JSON.parse(fs.readFileSync(p, 'utf-8'))
   } catch {
     return null
