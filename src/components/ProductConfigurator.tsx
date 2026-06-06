@@ -379,9 +379,6 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         <div className="text-xs text-gray-500 border-t border-gray-200 pt-2">
           Production: <span className="font-medium text-gray-700">{productionWindow}</span> · then ships separately
         </div>
-        <p className="text-[11px] text-gray-400">
-          Exchange rate: 1 KRW = ${exchangeRate.toFixed(6)} USD (live)
-        </p>
       </div>
 
       {/* Pre-upload design file */}
