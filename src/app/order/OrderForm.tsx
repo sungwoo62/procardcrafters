@@ -260,12 +260,12 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
       })
       const data = await res.json()
       if (!res.ok) {
-        setCouponResult({ valid: false, reason: data.error ?? '쿠폰 확인 중 오류가 발생했습니다.' })
+        setCouponResult({ valid: false, reason: data.error ?? 'Failed to validate coupon.' })
       } else {
         setCouponResult(data)
       }
     } catch {
-      setCouponResult({ valid: false, reason: '쿠폰 확인 중 오류가 발생했습니다.' })
+      setCouponResult({ valid: false, reason: 'Failed to validate coupon.' })
     } finally {
       setCouponValidating(false)
     }
@@ -682,18 +682,18 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
                       </span>
                       {isCheapest && (
                         <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
-                          추천
+                          Recommended
                         </span>
                       )}
                     </div>
-                    {(opt.transitTimeLabelKo || opt.transitTimeLabelEn) && (
+                    {(opt.transitTimeLabelEn || opt.transitTimeLabelKo) && (
                       <p className="text-xs text-gray-500 mt-0.5">
-                        {opt.transitTimeLabelKo ?? opt.transitTimeLabelEn}
+                        {opt.transitTimeLabelEn ?? opt.transitTimeLabelKo}
                       </p>
                     )}
-                    {(opt.descriptionKo || opt.descriptionEn) && (
+                    {(opt.descriptionEn || opt.descriptionKo) && (
                       <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">
-                        {opt.descriptionKo ?? opt.descriptionEn}
+                        {opt.descriptionEn ?? opt.descriptionKo}
                       </p>
                     )}
                   </div>
