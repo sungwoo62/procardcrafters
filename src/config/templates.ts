@@ -217,6 +217,25 @@ const PROFESSIONS: Profession[] = [
   { label: 'Baker',             category: 'food',       sample: { name: 'Oscar Bell',      title: 'Master Baker',           contact: 'oscar@bakery.com · (415) 555-0139' } },
   { label: 'Teacher',           category: 'minimal',    sample: { name: 'Hannah Cole',     title: 'Educator',               contact: 'hannah@school.edu · (312) 555-0175' } },
   { label: 'Hair Stylist',      category: 'health',     sample: { name: 'Zoe Carter',      title: 'Hair Stylist',           contact: 'zoe@salon.com · (786) 555-0191' } },
+  // 2차 확대 — 직군 18종 추가 (30 → 48).
+  { label: 'Lawyer',            category: 'business',   sample: { name: 'Victoria Shaw',   title: 'Attorney at Law',        contact: 'victoria@law.com · (212) 555-0204' } },
+  { label: 'Financial Advisor', category: 'business',   sample: { name: 'James Park',      title: 'Financial Advisor',      contact: 'james@wealth.com · (646) 555-0217' } },
+  { label: 'Insurance Agent',   category: 'business',   sample: { name: 'Olivia Reed',     title: 'Insurance Specialist',   contact: 'olivia@insure.com · (312) 555-0229' } },
+  { label: 'HR Manager',        category: 'business',   sample: { name: 'Benjamin Cruz',   title: 'HR Manager',             contact: 'ben@company.com · (415) 555-0231' } },
+  { label: 'Recruiter',         category: 'business',   sample: { name: 'Sofia Alvarez',   title: 'Talent Recruiter',       contact: 'sofia@talent.io · (628) 555-0246' } },
+  { label: 'Marketing Manager', category: 'business',   sample: { name: 'Daniel Wright',   title: 'Marketing Manager',      contact: 'daniel@brand.com · (305) 555-0253' } },
+  { label: 'UX Designer',       category: 'creative',   sample: { name: 'Mia Larson',      title: 'UX Designer',            contact: 'mia@ux.studio · (206) 555-0264' } },
+  { label: 'Illustrator',       category: 'creative',   sample: { name: 'Felix Romano',    title: 'Illustrator',            contact: 'felix@draw.com · (718) 555-0278' } },
+  { label: 'Videographer',      category: 'creative',   sample: { name: 'Aria Bennett',    title: 'Videographer',           contact: 'aria@films.com · (323) 555-0282' } },
+  { label: 'Art Director',      category: 'creative',   sample: { name: 'Theo Nakamura',   title: 'Art Director',           contact: 'theo@studio.com · (310) 555-0297' } },
+  { label: 'Florist',           category: 'creative',   sample: { name: 'Lily Brooks',     title: 'Floral Designer',        contact: 'lily@blooms.com · (503) 555-0301' } },
+  { label: 'Makeup Artist',     category: 'creative',   sample: { name: 'Camila Ortiz',    title: 'Makeup Artist',          contact: 'camila@mua.com · (786) 555-0316' } },
+  { label: 'Barber',            category: 'health',     sample: { name: 'Marcus Webb',     title: 'Master Barber',          contact: 'marcus@barber.co · (615) 555-0324' } },
+  { label: 'Veterinarian',      category: 'health',     sample: { name: 'Dr. Emma Lyle',   title: 'Veterinarian',           contact: 'emma@vetcare.com · (480) 555-0339' } },
+  { label: 'Pharmacist',        category: 'health',     sample: { name: 'Dr. Owen Park',   title: 'Pharmacist',             contact: 'owen@pharma.com · (619) 555-0341' } },
+  { label: 'Optometrist',       category: 'health',     sample: { name: 'Dr. Sara Klein',  title: 'Optometrist',            contact: 'sara@vision.com · (702) 555-0358' } },
+  { label: 'DevOps Engineer',   category: 'tech',       sample: { name: 'Kai Anderson',    title: 'DevOps Engineer',        contact: 'kai@cloud.io · github.com/kaia' } },
+  { label: 'QA Engineer',       category: 'tech',       sample: { name: 'Priya Nair',      title: 'QA Engineer',            contact: 'priya@qa.dev · (650) 555-0367' } },
 ]
 
 interface Palette {
@@ -247,6 +266,8 @@ const CARD_PALETTES: Palette[] = [
 const LAYOUT_NAMES = [
   'Bar', 'Monogram', 'Header', 'Split', 'Footer', 'Diagonal', 'Minimal', 'Frame',
   'Sidebar', 'Banner', 'Emblem', 'Watermark',
+  // 2차 확대 — 타사(Canva/VistaPrint/Moo) 레이아웃 참고한 6종 추가.
+  'Geometric', 'Wave', 'Stripe', 'Vertical', 'Ribbon', 'Badge',
 ]
 const LAYOUT_COUNT = LAYOUT_NAMES.length
 

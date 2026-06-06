@@ -1372,6 +1372,60 @@ export default function EditorClient({ product, options }: Props) {
         txt(s.title, W / 2 - 32, H * 0.7, 64, 2.6, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
         break
       }
+      case 12: { // 우상단 기하 도형
+        canvas.add(new fabric.Circle({ left: bl + mmToPx(W * 0.6, scale), top: bl + mmToPx(-4, scale), radius: mmToPx(11, scale), fill: accent, data: { id: makeId(), name: 'Circle', layerType: 'rect' } }))
+        canvas.add(new fabric.Triangle({ left: bl + mmToPx(W * 0.8, scale), top: bl + mmToPx(6, scale), width: mmToPx(13, scale), height: mmToPx(11, scale), fill: accent, opacity: 0.45, angle: 18, data: { id: makeId(), name: 'Triangle', layerType: 'rect' } }))
+        txt(s.name, 8, H * 0.42, W - 16, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 8, H * 0.6, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 8, H * 0.78, W - 16, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      }
+      case 13: { // 하단 웨이브 밴드
+        const steps = 16
+        const yBase = mmToPx(H * 0.6, scale)
+        const amp = mmToPx(H * 0.07, scale)
+        const pts: { x: number; y: number }[] = []
+        for (let i = 0; i <= steps; i++) {
+          pts.push({ x: (mmToPx(W, scale) / steps) * i, y: yBase + amp * Math.sin((i / steps) * Math.PI * 2) })
+        }
+        pts.push({ x: mmToPx(W, scale), y: mmToPx(H, scale) }, { x: 0, y: mmToPx(H, scale) })
+        const wave = new fabric.Polygon(pts, { left: bl, top: bl, fill: accent })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(wave as any).data = { id: makeId(), name: 'Wave', layerType: 'rect' }
+        canvas.add(wave)
+        txt(s.name, 8, H * 0.16, W - 16, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 8, H * 0.32, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 8, H * 0.8, W - 16, 2.6, '#ffffff', { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      }
+      case 14: // 좌측 멀티 스트라이프
+        rect(0, 0, 2.5, H, accent)
+        rect(3.5, 0, 1.5, H, accent, { opacity: 0.6 })
+        rect(6, 0, 1, H, accent, { opacity: 0.35 })
+        txt(s.name, 12, H * 0.28, W - 18, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 12, H * 0.46, W - 18, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 12, H * 0.66, W - 18, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 15: // 좌측 세로형 패널 + 회전 직함
+        rect(0, 0, W * 0.22, H, accent)
+        addTextbox(canvas, fabric, s.title, bl + mmToPx(W * 0.11, scale), bl + mmToPx(H * 0.5, scale), mmToPx(H - 12, scale), { fontSize: mmToPx(2.8, scale), fill: '#ffffff', textAlign: 'center', angle: 270, originX: 'center', originY: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.name, W * 0.3, H * 0.34, W * 0.62, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.contact, W * 0.3, H * 0.56, W * 0.62, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 16: { // 좌상단 코너 리본
+        const ribbon = new fabric.Rect({ left: bl + mmToPx(-4, scale), top: bl + mmToPx(14, scale), width: mmToPx(42, scale), height: mmToPx(6, scale), fill: accent, angle: -45, data: { id: makeId(), name: 'Ribbon', layerType: 'rect' } })
+        canvas.add(ribbon)
+        txt(s.name, 7, H * 0.5, W - 14, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.66, W - 14, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.8, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      }
+      case 17: // 상단 라운드 배지 + 이름
+        canvas.add(new fabric.Rect({ left: bl + mmToPx(7, scale), top: bl + mmToPx(H * 0.16, scale), width: mmToPx(28, scale), height: mmToPx(7, scale), rx: mmToPx(3.5, scale), ry: mmToPx(3.5, scale), fill: accent, data: { id: makeId(), name: 'Badge', layerType: 'rect' } }))
+        txt(s.title, 7, H * 0.185, 28, 2.6, '#ffffff', { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.name, 7, H * 0.46, W - 14, 6, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.contact, 7, H * 0.72, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
       default: // 11: 대형 이니셜 워터마크
         txt(initials[0], W * 0.55, H * 0.05, W * 0.5, H * 0.9, accent, { fontWeight: 'bold', opacity: 0.12, data: { id: makeId(), name: 'Watermark', layerType: 'text' } })
         txt(s.name, 7, H * 0.48, W * 0.6, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })

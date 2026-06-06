@@ -86,7 +86,7 @@ const initials = (name: string) =>
 // ── 명함 레이아웃 (8종) ───────────────────────────────────────────────────────
 
 function cardLayout(idx: number, c: Colors, t: TemplateDef, W: number, H: number) {
-  const variant = idx % 12
+  const variant = idx % 18
   const serif = /law|finance|executive|editorial|investment|realtor|luxe|gold|letterpress|noir|lawyer|accountant|architect/i.test(t.name)
   const ff = serif ? 'Georgia, serif' : 'Helvetica, Arial, sans-serif'
 
@@ -176,6 +176,53 @@ function cardLayout(idx: number, c: Colors, t: TemplateDef, W: number, H: number
         <text x={W / 2} y={H * 0.3 + 4} textAnchor="middle" fontFamily={ff} fontSize={9} fontWeight="bold" fill="#ffffff">{initials(t.name)}</text>
         <rect x={W / 2 - W * 0.22} y={H * 0.56} width={W * 0.44} height={4} rx={2} fill={c.ink} />
         <rect x={W / 2 - W * 0.14} y={H * 0.7} width={W * 0.28} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 12: // 우상단 기하 도형
+      return (<>
+        <circle cx={W * 0.78} cy={H * 0.02} r={22} fill={c.accent} />
+        <polygon points={`${W * 0.84},${H * 0.2} ${W * 0.96},${H * 0.2} ${W * 0.9},${H * 0.05}`} fill={c.accent} opacity={0.45} />
+        <rect x={14} y={H * 0.44} width={W * 0.5} height={5} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.6} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.76} width={W * 0.45} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 13: // 하단 웨이브 밴드
+      return (<>
+        <path d={`M0 ${H * 0.6} Q ${W * 0.25} ${H * 0.5} ${W * 0.5} ${H * 0.6} T ${W} ${H * 0.6} L ${W} ${H} L 0 ${H} Z`} fill={c.accent} />
+        <rect x={14} y={H * 0.18} width={W * 0.5} height={5} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.32} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.8} width={W * 0.5} height={2.5} rx={1} fill="rgba(255,255,255,0.85)" />
+      </>)
+    case 14: // 좌측 멀티 스트라이프
+      return (<>
+        <rect x={0} y={0} width={5} height={H} fill={c.accent} />
+        <rect x={8} y={0} width={3} height={H} fill={c.accent} opacity={0.6} />
+        <rect x={13} y={0} width={2} height={H} fill={c.accent} opacity={0.35} />
+        <rect x={24} y={H * 0.3} width={W * 0.45} height={5} rx={2} fill={c.ink} />
+        <rect x={24} y={H * 0.45} width={W * 0.3} height={3} rx={1.5} fill={c.accent} />
+        <rect x={24} y={H * 0.66} width={W * 0.42} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 15: // 좌측 세로형 패널
+      return (<>
+        <rect x={0} y={0} width={W * 0.22} height={H} fill={c.accent} />
+        <text x={W * 0.11} y={H * 0.5} textAnchor="middle" fontFamily={ff} fontSize={11} fontWeight="bold" fill="#ffffff" transform={`rotate(-90 ${W * 0.11} ${H * 0.5})`}>{initials(t.name)}</text>
+        <rect x={W * 0.3} y={H * 0.36} width={W * 0.5} height={5} rx={2} fill={c.ink} />
+        <rect x={W * 0.3} y={H * 0.5} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={W * 0.3} y={H * 0.64} width={W * 0.42} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 16: // 좌상단 코너 리본
+      return (<>
+        <polygon points={`0,${H * 0.28} ${W * 0.34},0 ${W * 0.46},0 0,${H * 0.4}`} fill={c.accent} />
+        <rect x={14} y={H * 0.5} width={W * 0.5} height={5} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.65} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.79} width={W * 0.45} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 17: // 상단 라운드 배지
+      return (<>
+        <rect x={14} y={H * 0.16} width={W * 0.3} height={H * 0.13} rx={H * 0.065} fill={c.accent} />
+        <rect x={14 + W * 0.05} y={H * 0.205} width={W * 0.2} height={2.5} rx={1} fill="#ffffff" />
+        <rect x={14} y={H * 0.46} width={W * 0.55} height={6} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.62} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.76} width={W * 0.42} height={2.5} rx={1} fill={c.sub} />
       </>)
     default: // 11: 대형 이니셜 워터마크
       return (<>
