@@ -143,7 +143,7 @@ export default function CouponPopup() {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="첫 주문 쿠폰 받기"
+        aria-label="Get your first order coupon"
         className={[
           'fixed z-50 bg-white shadow-2xl',
           // 모바일: 하단 시트
@@ -162,7 +162,7 @@ export default function CouponPopup() {
         <button
           type="button"
           onClick={dismiss}
-          aria-label="닫기"
+          aria-label="Close"
           className="absolute top-3 right-3 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <X className="w-4 h-4" />
@@ -174,15 +174,15 @@ export default function CouponPopup() {
               <div className="flex items-center gap-1.5 mb-2">
                 <Tag className="w-4 h-4 text-blue-600" />
                 <span className="text-xs font-semibold text-blue-600 uppercase tracking-wide">
-                  신규 방문자 한정
+                  New Visitor Offer
                 </span>
               </div>
 
               <h2 className="text-xl font-bold text-gray-900 mb-1">
-                첫 주문 5% 할인 쿠폰 받기
+                Get 5% Off Your First Order
               </h2>
               <p className="text-sm text-gray-500 mb-5">
-                이메일을 입력하면 즉시 쿠폰 코드를 드립니다.
+                Enter your email and we'll send you a coupon code instantly.
               </p>
 
               <form onSubmit={handleSubmit} noValidate>
@@ -194,7 +194,7 @@ export default function CouponPopup() {
                       type="email"
                       value={email}
                       onChange={e => { setEmail(e.target.value); setError('') }}
-                      placeholder="이메일 주소"
+                      placeholder="Your email address"
                       required
                       disabled={state === 'submitting'}
                       className="w-full pl-9 pr-3 py-2.5 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50"
@@ -205,7 +205,7 @@ export default function CouponPopup() {
                     disabled={state === 'submitting' || !email.trim()}
                     className="px-4 py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors whitespace-nowrap"
                   >
-                    {state === 'submitting' ? '처리 중…' : '쿠폰 받기'}
+                    {state === 'submitting' ? 'Sending…' : 'Get Coupon'}
                   </button>
                 </div>
 
@@ -217,25 +217,25 @@ export default function CouponPopup() {
               </form>
 
               <p className="mt-4 text-xs text-gray-400 leading-relaxed">
-                구독 시 마케팅 이메일 수신에 동의하며, 언제든지 수신 거부할 수 있습니다.
+                By subscribing, you agree to receive marketing emails. Unsubscribe at any time.
               </p>
             </>
           ) : (
             <div className="text-center py-2">
               <div className="text-4xl mb-3" aria-hidden="true">🎉</div>
               <h2 className="text-lg font-bold text-gray-900 mb-1">
-                쿠폰이 발급되었습니다!
+                Your Coupon is Ready!
               </h2>
               <p className="text-sm text-gray-500 mb-5">
-                이메일로도 쿠폰 코드를 보내드렸습니다.
+                We've also sent the code to your email.
               </p>
 
               <div className="bg-blue-50 border border-blue-200 rounded-xl px-6 py-4 mb-5">
-                <p className="text-xs text-blue-600 font-semibold mb-1.5">쿠폰 코드</p>
+                <p className="text-xs text-blue-600 font-semibold mb-1.5">Coupon Code</p>
                 <p className="text-2xl font-bold font-mono tracking-widest text-blue-700">
                   {couponCode}
                 </p>
-                <p className="text-xs text-blue-500 mt-1.5">첫 주문 5% 할인</p>
+                <p className="text-xs text-blue-500 mt-1.5">5% off your first order</p>
               </div>
 
               <button
@@ -243,7 +243,7 @@ export default function CouponPopup() {
                 onClick={dismiss}
                 className="w-full py-2.5 text-sm font-semibold bg-blue-600 text-white rounded-lg hover:bg-blue-700 active:bg-blue-800 transition-colors"
               >
-                쇼핑 시작하기
+                Start Shopping
               </button>
             </div>
           )}

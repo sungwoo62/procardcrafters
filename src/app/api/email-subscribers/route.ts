@@ -10,11 +10,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     email = typeof body?.email === 'string' ? body.email.trim() : ''
   } catch {
-    return NextResponse.json({ error: '잘못된 요청 형식입니다.' }, { status: 400 })
+    return NextResponse.json({ error: 'Invalid request format.' }, { status: 400 })
   }
 
   if (!email || !EMAIL_RE.test(email)) {
-    return NextResponse.json({ error: '올바른 이메일 형식이 아닙니다.' }, { status: 400 })
+    return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 })
   }
 
   const result = await subscribeEmailForCoupon(email)
@@ -22,12 +22,12 @@ export async function POST(request: NextRequest) {
   if (!result.success) {
     if (result.error === 'duplicate') {
       return NextResponse.json(
-        { error: '이미 등록된 이메일입니다. 기존 쿠폰을 이메일에서 확인해주세요.' },
+        { error: 'This email is already registered. Check your inbox for your existing coupon.' },
         { status: 409 },
       )
     }
     return NextResponse.json(
-      { error: '처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' },
+      { error: 'Something went wrong. Please try again in a moment.' },
       { status: 500 },
     )
   }
