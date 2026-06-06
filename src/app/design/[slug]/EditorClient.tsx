@@ -2739,7 +2739,9 @@ export default function EditorClient({ product, options }: Props) {
         width: canvasW,
         height: canvasH,
         preserveObjectStacking: true,
-        enableRetinaScaling: false,
+        // Retina 스케일링 활성화 — 고해상도(레티나) 화면에서 캔버스가 흐릿하게
+        // 보이던 문제 해결. devicePixelRatio 만큼 백킹 스토어를 키워 선명하게 렌더.
+        enableRetinaScaling: true,
       })
       fabricRef.current = canvas
 
@@ -2865,7 +2867,7 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Background color update ───────────────────────────────────────────────
 
-  function updateBgColor(color: string) {
+  function updateBgColor(color: string, recordHistory = false) {
     setBgColor(color)
     bgColorRef.current = color
     const canvas = fabricRef.current
@@ -2875,6 +2877,8 @@ export default function EditorClient({ product, options }: Props) {
     if (trimBg) {
       trimBg.set('fill', color)
       canvas.renderAll()
+      // .set() fires no fabric event, so the history listeners never snapshot it.
+      if (recordHistory) saveHistory(canvas)
     }
   }
 
@@ -3285,10 +3289,12 @@ export default function EditorClient({ product, options }: Props) {
     const canvas = fabricRef.current
     if (!canvas) return
     const obj = canvas.getActiveObject()
-    if (obj && !isBackground(obj)) {
+    if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
       canvas.remove(obj)
       canvas.discardActiveObject()
       canvas.renderAll()
+      syncLayers(canvas)
+      saveHistory(canvas)
       setSelectedId(null)
       setSelectedProps(null)
       setActivePanel('layers')
@@ -3316,6 +3322,7 @@ export default function EditorClient({ product, options }: Props) {
       obj.set('visible', !obj.visible)
       canvas.renderAll()
       syncLayers(canvas)
+      saveHistory(canvas)
     }
   }
 
@@ -3329,6 +3336,7 @@ export default function EditorClient({ product, options }: Props) {
       obj.set({ selectable: !nowLocked, evented: !nowLocked, hasControls: !nowLocked })
       canvas.renderAll()
       syncLayers(canvas)
+      saveHistory(canvas)
     }
   }
 
@@ -3342,6 +3350,7 @@ export default function EditorClient({ product, options }: Props) {
     else canvas.sendObjectBackwards(obj)
     canvas.renderAll()
     syncLayers(canvas)
+    saveHistory(canvas)
   }
 
   function updateLayerName(id: string, name: string) {
@@ -3352,6 +3361,7 @@ export default function EditorClient({ product, options }: Props) {
     if (obj) {
       obj.data = { ...obj.data, name }
       syncLayers(canvas)
+      saveHistory(canvas)
     }
   }
 
@@ -4337,7 +4347,7 @@ export default function EditorClient({ product, options }: Props) {
               {/* Background color */}
               <div>
                 <label className="block text-xs text-gray-500 mb-1">Background</label>
-                <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value)} className="w-full h-8 rounded cursor-pointer" />
+                <input type="color" value={bgColor} onChange={e => updateBgColor(e.target.value, true)} className="w-full h-8 rounded cursor-pointer" />
               </div>
 
               {/* Template search + category filter */}
