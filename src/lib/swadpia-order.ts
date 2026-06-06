@@ -26,8 +26,14 @@ const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
 // ─── Category → Swadpia goods_code mapping ────────────────────
 const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: string }> = {
-  'business-cards':         { categoryCode: 'CNC1000', goodsCode: '1' },
-  'premium-business-cards': { categoryCode: 'CNC2000', goodsCode: '1' },
+  'business-cards':              { categoryCode: 'CNC1000', goodsCode: '1' },
+  'premium-business-cards':     { categoryCode: 'CNC2000', goodsCode: '1' },
+  'premium-foil-cards':         { categoryCode: 'CNC3000', goodsCode: '1' },
+  'metallic-business-cards':    { categoryCode: 'CNC3000', goodsCode: '1' },
+  'letterpress-business-cards': { categoryCode: 'CNC4000', goodsCode: '1' },
+  'transparent-business-cards': { categoryCode: 'CNC5000', goodsCode: '1' },
+  'uv-business-cards':          { categoryCode: 'CNC6000', goodsCode: '1' },
+  'pearl-business-cards':       { categoryCode: 'CNC8000', goodsCode: '1' },
   'stickers':               { categoryCode: 'CST1000', goodsCode: '1' },
   'die-cut-stickers':       { categoryCode: 'CST2000', goodsCode: '1' },
   'flyers':                 { categoryCode: 'CLF1000', goodsCode: '1' },

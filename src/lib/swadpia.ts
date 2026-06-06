@@ -63,6 +63,12 @@ const CATEGORY_MAP: Record<string, string> = {
   // 명함류
   'business-cards': 'CNC1000',
   'premium-business-cards': 'CNC2000',
+  'premium-foil-cards': 'CNC3000',       // Luxury 메탈/포일 명함
+  'metallic-business-cards': 'CNC3000',  // Luxury 메탈릭 명함
+  'letterpress-business-cards': 'CNC4000', // 아트지 300g 명함
+  'transparent-business-cards': 'CNC5000', // PET 투명 명함
+  'uv-business-cards': 'CNC6000',        // UV 코팅 명함 (11종)
+  'pearl-business-cards': 'CNC8000',     // UV 코팅 명함 (9종)
   // 스티커류
   'stickers': 'CST1000',
   'die-cut-stickers': 'CST2000',
