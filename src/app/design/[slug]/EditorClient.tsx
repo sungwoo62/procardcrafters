@@ -723,8 +723,28 @@ export default function EditorClient({ product, options }: Props) {
   const [customFields, setCustomFields] = useState<CustomField[]>([])
 
   function getMissingRequired(values: Record<string, string>) {
+    // 인쇄물의 진실은 캔버스다. 폼이 비어 있어도 캔버스의 해당 필드 텍스트가 차 있으면
+    // 충족으로 본다. 또 디자인에 존재하지 않는 필드(예: 명함 템플릿엔 company/phone 없음)는
+    // 강제하지 않는다 — 그렇지 않으면 모든 템플릿 주문이 막힌다.
+    const canvas = fabricRef.current
+    const filledKeys = new Set<string>()   // 캔버스에 텍스트가 차 있는 필드
+    const presentKeys = new Set<string>()  // 캔버스에 존재하는 필드(비어 있어도)
+    if (canvas) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      canvas.getObjects().forEach((o: any) => {
+        const fk = o.data?.fieldKey as string | undefined
+        if (!fk || isBackground(o)) return
+        presentKeys.add(fk)
+        if (((o.text ?? '') as string).toString().trim()) filledKeys.add(fk)
+      })
+    }
     return allFormFields
-      .filter(f => f.required && !values[f.key]?.trim())
+      .filter(f => f.required)
+      .filter(f => {
+        if (values[f.key]?.trim()) return false   // 폼에 입력됨 → 충족
+        if (filledKeys.has(f.key)) return false    // 캔버스에 텍스트 있음 → 충족
+        return presentKeys.has(f.key)              // 디자인에 있으나 비어 있음 → 누락. 없으면 강제 안 함
+      })
       .map(f => ({ key: f.key, label: f.label }))
   }
 
@@ -4018,10 +4038,14 @@ export default function EditorClient({ product, options }: Props) {
       results.push({ level: 'warn', message: '' })
     }
 
-    // 안전 영역 침범 여부 확인
+    // 안전 영역 침범 여부 확인 — 텍스트만 검사한다.
+    // 배경·도형 색 채움은 블리드를 위해 가장자리까지 채우는 게 정상(재단됨)이므로 제외.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isTextObj = (o: any) => o.data?.layerType === 'text' || o.type === 'textbox' || o.type === 'i-text' || o.type === 'text'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let nearEdge = false
-    userObjs.forEach((o: any) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    userObjs.filter((o: any) => isTextObj(o)).forEach((o: any) => {
       const oLeft = o.left ?? 0
       const oTop = o.top ?? 0
       const oRight = oLeft + (o.getScaledWidth?.() ?? o.width ?? 0)
@@ -4036,9 +4060,9 @@ export default function EditorClient({ product, options }: Props) {
       }
     })
     if (nearEdge) {
-      results.push({ level: 'warn', message: `Elements extend past the safe area (trim minus ${dims.safeMm}mm). Content may be cut off during printing.` })
+      results.push({ level: 'warn', message: `Text extends past the safe area (trim minus ${dims.safeMm}mm) and may be cut off. Tip: backgrounds and color fills SHOULD extend to the edge for bleed — only keep important text inside the safe area.` })
     } else if (userObjs.length > 0) {
-      results.push({ level: 'ok', message: `All elements are within the safe area (${dims.safeMm}mm).` })
+      results.push({ level: 'ok', message: `Important text is within the safe area (${dims.safeMm}mm). Backgrounds extending to the edge is normal for bleed.` })
     }
 
     // 이미지 해상도 체크 (실제 픽셀 vs 출력 크기 기준 DPI 계산)
@@ -4252,11 +4276,15 @@ export default function EditorClient({ product, options }: Props) {
     const trimY = bl
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
+    // 텍스트만 검사한다. 배경·도형 색 채움은 블리드를 위해 안전영역을 넘어 가장자리까지
+    // 채우는 게 정상(재단됨)이므로 위반으로 보지 않는다. 잘리면 안 되는 건 "중요한 텍스트".
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const userObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop')
+    const isText = (o: any) => o.data?.layerType === 'text' || o.type === 'textbox' || o.type === 'i-text' || o.type === 'text'
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const textObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop' && isText(o))
     const violations: string[] = []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    userObjs.forEach((o: any) => {
+    textObjs.forEach((o: any) => {
       const oLeft = o.left ?? 0
       const oTop = o.top ?? 0
       const oRight = oLeft + (o.getScaledWidth?.() ?? o.width ?? 0)
@@ -4267,7 +4295,7 @@ export default function EditorClient({ product, options }: Props) {
         oRight > trimX + trimW - safeMargin ||
         oBottom > trimY + trimH - safeMargin
       ) {
-        violations.push(o.data?.name ?? 'Element')
+        violations.push(o.data?.name ?? 'Text')
       }
     })
     return violations
@@ -4290,7 +4318,7 @@ export default function EditorClient({ product, options }: Props) {
     })
 
     getSafeAreaViolations().forEach(name => {
-      issues.push({ level: 'warn', category: 'safe_area', message: `"${name}" is outside the safe area.` })
+      issues.push({ level: 'warn', category: 'safe_area', message: `Text "${name}" extends past the safe area — it may be trimmed off when cut.` })
     })
 
     return issues
@@ -4334,7 +4362,7 @@ export default function EditorClient({ product, options }: Props) {
         const canProceed = blockIssues.length === 0 && (warnCategories.length === 0 || allWarnsAcknowledged)
         const WARN_LABELS: Record<string, string> = {
           low_dpi: 'Low-resolution image (acknowledgement required)',
-          safe_area: 'Safe area violation (acknowledgement required)',
+          safe_area: 'Text near the trim edge — may be cut (acknowledge to proceed)',
         }
         return (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
