@@ -86,8 +86,8 @@ const initials = (name: string) =>
 // ── 명함 레이아웃 (8종) ───────────────────────────────────────────────────────
 
 function cardLayout(idx: number, c: Colors, t: TemplateDef, W: number, H: number) {
-  const variant = idx % 8
-  const serif = /law|finance|executive|editorial|investment|realtor|luxe|gold|letterpress|noir/i.test(t.name)
+  const variant = idx % 12
+  const serif = /law|finance|executive|editorial|investment|realtor|luxe|gold|letterpress|noir|lawyer|accountant|architect/i.test(t.name)
   const ff = serif ? 'Georgia, serif' : 'Helvetica, Arial, sans-serif'
 
   switch (variant) {
@@ -144,12 +144,45 @@ function cardLayout(idx: number, c: Colors, t: TemplateDef, W: number, H: number
         <line x1={W / 2 - 10} y1={H * 0.56} x2={W / 2 + 10} y2={H * 0.56} stroke={c.accent} strokeWidth={1.5} />
         <rect x={W / 2 - W * 0.12} y={H * 0.62} width={W * 0.24} height={2.5} rx={1} fill={c.sub} />
       </>)
-    default: // 7: 프레임
+    case 7: // 프레임
       return (<>
         <rect x={8} y={8} width={W - 16} height={H - 16} fill="none" stroke={c.accent} strokeWidth={1.5} />
         <rect x={W / 2 - W * 0.2} y={H * 0.38} width={W * 0.4} height={5} rx={2} fill={c.ink} />
         <rect x={W / 2 - W * 0.13} y={H * 0.52} width={W * 0.26} height={3} rx={1.5} fill={c.sub} />
         <rect x={W / 2 - W * 0.16} y={H * 0.64} width={W * 0.32} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 8: // 우측 사이드바
+      return (<>
+        <rect x={W * 0.7} y={0} width={W * 0.3} height={H} fill={c.accent} />
+        <circle cx={W * 0.85} cy={H * 0.3} r={9} fill="rgba(255,255,255,0.85)" />
+        <rect x={14} y={H * 0.34} width={W * 0.42} height={5} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.48} width={W * 0.3} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.66} width={W * 0.45} height={2.5} rx={1} fill={c.sub} />
+        <rect x={14} y={H * 0.74} width={W * 0.38} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 9: // 투톤 대각 밴드
+      return (<>
+        <polygon points={`0,0 ${W},0 ${W},${H * 0.42} 0,${H * 0.72}`} fill={c.accent} />
+        <rect x={14} y={H * 0.12} width={W * 0.5} height={5} rx={2} fill="#ffffff" />
+        <rect x={14} y={H * 0.25} width={W * 0.32} height={3} rx={1.5} fill="rgba(255,255,255,0.75)" />
+        <rect x={14} y={H * 0.78} width={W * 0.55} height={2.5} rx={1} fill={c.sub} />
+        <rect x={14} y={H * 0.87} width={W * 0.4} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    case 10: // 중앙 엠블럼 (이중 프레임)
+      return (<>
+        <rect x={6} y={6} width={W - 12} height={H - 12} fill="none" stroke={c.accent} strokeWidth={1} />
+        <rect x={10} y={10} width={W - 20} height={H - 20} fill="none" stroke={c.accent} strokeWidth={0.5} opacity={0.5} />
+        <circle cx={W / 2} cy={H * 0.3} r={8} fill={c.accent} />
+        <text x={W / 2} y={H * 0.3 + 4} textAnchor="middle" fontFamily={ff} fontSize={9} fontWeight="bold" fill="#ffffff">{initials(t.name)}</text>
+        <rect x={W / 2 - W * 0.22} y={H * 0.56} width={W * 0.44} height={4} rx={2} fill={c.ink} />
+        <rect x={W / 2 - W * 0.14} y={H * 0.7} width={W * 0.28} height={2.5} rx={1} fill={c.sub} />
+      </>)
+    default: // 11: 대형 이니셜 워터마크
+      return (<>
+        <text x={W * 0.62} y={H * 0.95} fontFamily={ff} fontSize={H * 0.95} fontWeight="bold" fill={c.accent} opacity={0.12}>{initials(t.name)[0]}</text>
+        <rect x={14} y={H * 0.5} width={W * 0.5} height={5} rx={2} fill={c.ink} />
+        <rect x={14} y={H * 0.63} width={W * 0.32} height={3} rx={1.5} fill={c.accent} />
+        <rect x={14} y={H * 0.76} width={W * 0.45} height={2.5} rx={1} fill={c.sub} />
       </>)
   }
 }

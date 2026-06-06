@@ -244,13 +244,17 @@ const CARD_PALETTES: Palette[] = [
   { bg: '#ecfeff', ink: '#155e75', accent: '#06b6d4' },
 ]
 
-const LAYOUT_NAMES = ['Bar', 'Monogram', 'Header', 'Split', 'Footer', 'Diagonal', 'Minimal', 'Frame']
+const LAYOUT_NAMES = [
+  'Bar', 'Monogram', 'Header', 'Split', 'Footer', 'Diagonal', 'Minimal', 'Frame',
+  'Sidebar', 'Banner', 'Emblem', 'Watermark',
+]
+const LAYOUT_COUNT = LAYOUT_NAMES.length
 
 function generateCardTemplates(): TemplateDef[] {
   const out: TemplateDef[] = []
   PROFESSIONS.forEach((prof, pi) => {
-    for (let layout = 0; layout < 8; layout++) {
-      const pal = CARD_PALETTES[(pi * 3 + layout) % CARD_PALETTES.length]
+    for (let layout = 0; layout < LAYOUT_COUNT; layout++) {
+      const pal = CARD_PALETTES[(pi * 5 + layout * 3) % CARD_PALETTES.length]
       out.push({
         name: `${prof.label} ${LAYOUT_NAMES[layout]}`,
         category: prof.category,

@@ -565,9 +565,13 @@ async function loadGoogleFont(fontName: string): Promise<void> {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
+// 일러스트레이터식 페이스트보드(대지 밖 작업영역) 여백 — 대지 밖에 둔 오브젝트도
+// 잘리지 않고 보이도록 캔버스를 이만큼 더 키운다. (mm 단위, 대지 사방)
+const PASTEBOARD_MM = 24
+
 function getScale(dims: EditorDimensions): number {
-  const totalW = dims.widthMm + 2 * dims.bleedMm
-  const totalH = dims.heightMm + 2 * dims.bleedMm
+  const totalW = dims.widthMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM
+  const totalH = dims.heightMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM
   return Math.min(MAX_CANVAS_W / totalW, MAX_CANVAS_H / totalH)
 }
 
@@ -575,7 +579,7 @@ function mmToPx(mm: number, scale: number) { return mm * scale }
 
 function makeId() { return Math.random().toString(36).slice(2) }
 
-const BACKGROUND_ROLES = new Set(['bleed-bg', 'trim-bg', 'trim-border', 'safe-border', 'guide'])
+const BACKGROUND_ROLES = new Set(['pasteboard', 'bleed-bg', 'trim-bg', 'trim-border', 'safe-border', 'guide'])
 
 function isBackground(obj: { data?: { role?: string } }) {
   return BACKGROUND_ROLES.has(obj.data?.role ?? '')
@@ -620,8 +624,9 @@ export default function EditorClient({ product, options }: Props) {
   const searchParams = useSearchParams()
   const dims = PRODUCT_DIMS[product.category] ?? DEFAULT_DIMS
   const scale = getScale(dims)
-  const canvasW = Math.round(mmToPx(dims.widthMm + 2 * dims.bleedMm, scale))
-  const canvasH = Math.round(mmToPx(dims.heightMm + 2 * dims.bleedMm, scale))
+  // 페이스트보드 포함 — 대지(트림+블리드) 사방에 PASTEBOARD_MM 여백.
+  const canvasW = Math.round(mmToPx(dims.widthMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM, scale))
+  const canvasH = Math.round(mmToPx(dims.heightMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM, scale))
 
   const canvasElRef = useRef<HTMLCanvasElement>(null)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -719,7 +724,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const existing = canvas.getObjects().find((o: any) => o.data?.fieldKey === field.id)
@@ -967,14 +972,32 @@ export default function EditorClient({ product, options }: Props) {
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function addBackgroundObjects(canvas: any, fabric: typeof import('fabric'), bg: string) {
-    const trimX = mmToPx(dims.bleedMm, scale)
-    const trimY = mmToPx(dims.bleedMm, scale)
+    const padPx = mmToPx(PASTEBOARD_MM, scale)
+    const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
     const safePx = mmToPx(dims.safeMm, scale)
 
-    const bleedBg = new fabric.Rect({
+    // 페이스트보드(대지 밖 작업영역) — 캔버스 전체를 옅은 회색으로. 여기 둔 오브젝트도 보임.
+    const pasteboard = new fabric.Rect({
       left: 0, top: 0, width: canvasW, height: canvasH,
+      fill: '#eceef2', selectable: false, evented: false,
+      data: { role: 'pasteboard' },
+    })
+    // 대지 그림자 — 일러스트 느낌의 입체감
+    const artboardShadow = new fabric.Rect({
+      left: padPx + mmToPx(1, scale), top: padPx + mmToPx(1, scale),
+      width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
+      height: mmToPx(dims.heightMm + 2 * dims.bleedMm, scale),
+      fill: 'rgba(15,23,42,0.18)', selectable: false, evented: false,
+      data: { role: 'pasteboard' },
+    })
+    // 블리드(재단 여백) 영역 — 대지 안쪽, 재단되어 버려지는 구간
+    const bleedBg = new fabric.Rect({
+      left: padPx, top: padPx,
+      width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
+      height: mmToPx(dims.heightMm + 2 * dims.bleedMm, scale),
       fill: '#cbd5e1', selectable: false, evented: false,
       data: { role: 'bleed-bg' },
     })
@@ -982,6 +1005,15 @@ export default function EditorClient({ product, options }: Props) {
       left: trimX, top: trimY, width: trimW, height: trimH,
       fill: bg, selectable: false, evented: false,
       data: { role: 'trim-bg' },
+    })
+    // 블리드 외곽선 — 대지 경계(잘리는 영역 포함)를 또렷하게 표시
+    const bleedBorder = new fabric.Rect({
+      left: padPx, top: padPx,
+      width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
+      height: mmToPx(dims.heightMm + 2 * dims.bleedMm, scale),
+      fill: 'transparent', stroke: 'rgba(100,116,139,0.5)', strokeWidth: 1,
+      selectable: false, evented: false,
+      data: { role: 'bleed-bg' },
     })
     // 재단선(trim): 빨간 실선 — 이 선에서 재단됨
     const trimBorder = new fabric.Rect({
@@ -999,14 +1031,21 @@ export default function EditorClient({ product, options }: Props) {
       data: { role: 'safe-border' },
     })
 
+    canvas.add(pasteboard)
+    canvas.add(artboardShadow)
     canvas.add(bleedBg)
     canvas.add(trimBg)
+    canvas.add(bleedBorder)
     canvas.add(trimBorder)
     canvas.add(safeBorder)
+    // 배경 스택 순서 (뒤 → 앞): pasteboard → shadow → bleed → trim → borders
     canvas.sendObjectToBack(safeBorder)
     canvas.sendObjectToBack(trimBorder)
+    canvas.sendObjectToBack(bleedBorder)
     canvas.sendObjectToBack(trimBg)
     canvas.sendObjectToBack(bleedBg)
+    canvas.sendObjectToBack(artboardShadow)
+    canvas.sendObjectToBack(pasteboard)
   }
 
   // ── Snap guides ───────────────────────────────────────────────────────────
@@ -1021,8 +1060,8 @@ export default function EditorClient({ product, options }: Props) {
   function snapObject(canvas: any, fabric: typeof import('fabric'), obj: any) {
     clearGuides(canvas)
 
-    const trimX = mmToPx(dims.bleedMm, scale)
-    const trimY = mmToPx(dims.bleedMm, scale)
+    const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
     const snapPx = mmToPx(SNAP_THRESHOLD_MM, scale)
@@ -1099,7 +1138,7 @@ export default function EditorClient({ product, options }: Props) {
   // TemplatePreview 의 8개 레이아웃과 1:1 대응되도록 mm 좌표로 렌더.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function buildSpecTemplate(canvas: any, fabric: typeof import('fabric'), spec: GenTemplateDef) {
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const W = dims.widthMm
     const H = dims.heightMm
     const ink = spec.ink ?? '#1a1a1a'
@@ -1172,18 +1211,52 @@ export default function EditorClient({ product, options }: Props) {
         rect(W / 2 - 7, H * 0.56, 14, 0.5, accent)
         txt(s.title, W / 2 - 35, H * 0.62, 70, 2.8, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
         break
-      default: // 7: 프레임
+      case 7: // 프레임
         canvas.add(new fabric.Rect({ left: bl + mmToPx(3, scale), top: bl + mmToPx(3, scale), width: mmToPx(W - 6, scale), height: mmToPx(H - 6, scale), fill: 'transparent', stroke: accent, strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
         txt(s.name, W / 2 - 32, H * 0.34, 64, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
         txt(s.title, W / 2 - 32, H * 0.5, 64, 2.8, accent, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
         txt(s.contact, W / 2 - 32, H * 0.64, 64, 2.4, sub, { textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 8: // 우측 사이드바
+        rect(W * 0.7, 0, W * 0.3, H, accent)
+        txt(s.name, 7, H * 0.32, W * 0.6, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.48, W * 0.6, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.66, W * 0.6, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      case 9: { // 투톤 대각 밴드
+        const poly = new fabric.Polygon(
+          [{ x: 0, y: 0 }, { x: mmToPx(W, scale), y: 0 }, { x: mmToPx(W, scale), y: mmToPx(H * 0.42, scale) }, { x: 0, y: mmToPx(H * 0.72, scale) }],
+          { left: bl, top: bl, fill: accent }
+        )
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ;(poly as any).data = { id: makeId(), name: 'Band', layerType: 'rect' }
+        canvas.add(poly)
+        txt(s.name, 7, H * 0.1, W - 14, 5, '#ffffff', { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.24, W - 14, 3, 'rgba(255,255,255,0.85)', { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.8, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
+        break
+      }
+      case 10: { // 중앙 엠블럼 (이중 프레임)
+        canvas.add(new fabric.Rect({ left: bl + mmToPx(2.5, scale), top: bl + mmToPx(2.5, scale), width: mmToPx(W - 5, scale), height: mmToPx(H - 5, scale), fill: 'transparent', stroke: accent, strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
+        const r = 6
+        canvas.add(new fabric.Circle({ left: bl + mmToPx(W / 2 - r, scale), top: bl + mmToPx(H * 0.2, scale), radius: mmToPx(r, scale), fill: accent, data: { id: makeId(), name: 'Emblem', layerType: 'rect' } }))
+        txt(initials, W / 2 - 10, H * 0.2 + 1.5, 20, 4, '#ffffff', { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
+        txt(s.name, W / 2 - 32, H * 0.54, 64, 4.5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, W / 2 - 32, H * 0.7, 64, 2.6, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        break
+      }
+      default: // 11: 대형 이니셜 워터마크
+        txt(initials[0], W * 0.55, H * 0.05, W * 0.5, H * 0.9, accent, { fontWeight: 'bold', opacity: 0.12, data: { id: makeId(), name: 'Watermark', layerType: 'text' } })
+        txt(s.name, 7, H * 0.48, W * 0.6, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
+        txt(s.title, 7, H * 0.62, W * 0.6, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
+        txt(s.contact, 7, H * 0.76, W * 0.6, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
         break
     }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function buildTemplate(canvas: any, fabric: typeof import('fabric'), name: string, bg: string) {
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
 
     // 자동 생성 명함 템플릿 처리 → 스펙 기반 렌더 후 종료.
     const genSpec = GENERATED_TEMPLATE_MAP[name]
@@ -2681,7 +2754,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
 
     let newBoxIdx = 0
     for (const fieldDef of allFormFields) {
@@ -2724,7 +2797,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const def = allFormFields.find(f => f.key === key)
     const fallback = def?.placeholder ? `[${def.label.replace(/\s*\(.*\)$/, '')}]` : `[${key}]`
 
@@ -2796,7 +2869,7 @@ export default function EditorClient({ product, options }: Props) {
       const dataUrl = ev.target?.result as string
       if (!dataUrl) return
       const img = await fabric.FabricImage.fromURL(dataUrl)
-      const bl = mmToPx(dims.bleedMm, scale)
+      const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
       const maxW = mmToPx(25, scale)
       const maxH = mmToPx(15, scale)
       const ratio = Math.min(maxW / (img.width ?? maxW), maxH / (img.height ?? maxH))
@@ -2986,7 +3059,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const id = makeId()
     const obj = new fabric.Textbox('Enter text', {
       left: bl + mmToPx(5, scale),
@@ -3007,7 +3080,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const id = makeId()
     const obj = new fabric.Rect({
       left: bl + mmToPx(10, scale),
@@ -3042,7 +3115,7 @@ export default function EditorClient({ product, options }: Props) {
     const maxW = mmToPx(dims.widthMm * 0.6, scale)
     const maxH = mmToPx(dims.heightMm * 0.6, scale)
     const scaleF = Math.min(maxW / (img.width ?? 1), maxH / (img.height ?? 1))
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const id = makeId()
     img.set({
       left: bl + (mmToPx(dims.widthMm, scale) - (img.width ?? 0) * scaleF) / 2,
@@ -3339,7 +3412,7 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
     if (!canvas) return
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const size = mmToPx(20, scale)
     const id = makeId()
     const cx = bl + (mmToPx(dims.widthMm, scale) - size) / 2
@@ -3472,10 +3545,12 @@ export default function EditorClient({ product, options }: Props) {
     const canvas = fabricRef.current
     if (!canvas) return ''
     const bleedPx = mmToPx(dims.bleedMm, scale)
+    const padPx = mmToPx(PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
-    const exportLeft = includeBleed ? 0 : bleedPx
-    const exportTop = includeBleed ? 0 : bleedPx
+    // 페이스트보드 오프셋만큼 크롭 시작점 이동 (대지 영역만 export).
+    const exportLeft = padPx + (includeBleed ? 0 : bleedPx)
+    const exportTop = padPx + (includeBleed ? 0 : bleedPx)
     const exportW = includeBleed ? trimW + 2 * bleedPx : trimW
     const exportH = includeBleed ? trimH + 2 * bleedPx : trimH
     const exportWmm = includeBleed ? dims.widthMm + 2 * dims.bleedMm : dims.widthMm
@@ -3583,7 +3658,7 @@ export default function EditorClient({ product, options }: Props) {
     const qrDataUrl = await QRCode.toDataURL(url.trim(), { width: 200, margin: 1 })
     const img = await fabric.FabricImage.fromURL(qrDataUrl)
     const size = mmToPx(20, scale)
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const id = makeId()
     img.set({
       left: bl + mmToPx(dims.widthMm - 22, scale),
@@ -3622,7 +3697,7 @@ export default function EditorClient({ product, options }: Props) {
     const canvas = fabricRef.current
     if (!canvas) return results
 
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const safeMargin = mmToPx(dims.safeMm, scale)
     const trimX = bl
     const trimY = bl
@@ -3866,7 +3941,7 @@ export default function EditorClient({ product, options }: Props) {
   function getSafeAreaViolations(): string[] {
     const canvas = fabricRef.current
     if (!canvas) return []
-    const bl = mmToPx(dims.bleedMm, scale)
+    const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const safeMargin = mmToPx(dims.safeMm, scale)
     const trimX = bl
     const trimY = bl
