@@ -2746,8 +2746,14 @@ export default function EditorClient({ product, options }: Props) {
       // Draw background
       addBackgroundObjects(canvas, fabric, bgColorRef.current)
 
-      // Load Classic template
-      buildTemplate(canvas, fabric, 'Classic', bgColorRef.current)
+      // Load template from URL param or default to Classic
+      const urlTemplate = searchParams.get('template')
+      const initialTemplate = (urlTemplate && TEMPLATE_CATALOG.some(t => t.name === urlTemplate))
+        ? urlTemplate
+        : 'Classic'
+      const urlBg = searchParams.get('bg')
+      if (urlBg) { bgColorRef.current = urlBg; setBgColor(urlBg) }
+      buildTemplate(canvas, fabric, initialTemplate, bgColorRef.current)
       canvas.renderAll()
 
       syncLayers(canvas)
