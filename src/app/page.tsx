@@ -51,7 +51,7 @@ const FEATURES = [
   {
     icon: Printer,
     title: 'Offset Print Quality',
-    desc: 'Produced at certified global print facilities. Professional CMYK+1 printing with vibrant color and clean cuts.',
+    desc: 'Produced on world-class Heidelberg and HP Indigo presses — multi-million-dollar machines — for professional CMYK+1 color, vibrant tones, and clean cuts.',
     color: 'bg-blue-50',
     iconColor: 'text-blue-600',
   },
@@ -74,7 +74,7 @@ const FEATURES = [
 const HOW_IT_WORKS = [
   { icon: Settings, step: '01', title: 'Configure Options', desc: 'Choose product, size, quantity, and finish. Price updates in real time.' },
   { icon: Upload, step: '02', title: 'Upload Your Design', desc: 'Upload PDF, AI, or PSD. Print readiness is auto-checked.' },
-  { icon: CreditCard, step: '03', title: 'Pay via Stripe', desc: 'Secure payment. Production starts immediately — no hidden fees.' },
+  { icon: CreditCard, step: '03', title: 'Secure Payment', desc: 'Secure checkout. Production starts immediately — no hidden fees.' },
   { icon: CheckCircle, step: '04', title: 'Receive Your Order', desc: '7–10 day production + FedEx shipping. Door-to-door anywhere in the world.' },
 ]
 
@@ -113,7 +113,7 @@ const TRUST_ITEMS = [
   { icon: Zap, text: 'Fast Production', sub: '7–10 business days' },
   { icon: Globe, text: 'Worldwide Shipping', sub: 'FedEx Express' },
   { icon: Package, text: 'Safe Packaging', sub: 'Damage-free delivery' },
-  { icon: BadgeCheck, text: 'Stripe Payments', sub: '256-bit SSL' },
+  { icon: BadgeCheck, text: 'Secure Payments', sub: '256-bit SSL' },
   { icon: Clock, text: 'Order Tracking', sub: 'Real-time updates' },
 ]
 
