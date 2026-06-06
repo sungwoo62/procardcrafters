@@ -120,7 +120,9 @@ export function buildCardLayout(
       P.push(title(W * 0.124, H * 0.7, W * 0.753, H * 0.0473, sub, 'center'))
       break
     case 12: // 우상단 기하 도형
-      P.push({ kind: 'circle', cx: W * 0.729, cy: H * 0.127, r: H * 0.2, fill: accent, label: 'Circle' })
+      // 원은 아트보드 안에 완전히 들어오도록(상단 블리드로 빠지지 않게) 배치 —
+      // 빠지면 fabric 에디터에서 렌더되지 않아 썸네일과 어긋난다.
+      P.push({ kind: 'circle', cx: W * 0.74, cy: H * 0.25, r: H * 0.16, fill: accent, label: 'Circle' })
       P.push({ kind: 'poly', pts: [[W * 0.8, H * 0.309], [W * 0.953, H * 0.309], [W * 0.876, H * 0.109]], fill: accent, opacity: 0.45, label: 'Triangle' })
       P.push(name(W * 0.094, H * 0.42, W * 0.812, H * 0.10, ink))
       P.push(title(W * 0.094, H * 0.6, W * 0.812, H * 0.0545, accent))
