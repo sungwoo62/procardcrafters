@@ -142,12 +142,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 100
   }, [selections])
 
-  // Determine paper_code for Swadpia print cost lookup
+  // Determine paper_code for Swadpia print cost lookup.
+  // Prefer the user-selected paper_code (from DB options) if it has entries in the Swadpia matrix.
   const swadpiaPaperCode = useMemo(() => {
     if (!swadpiaData) return null
-    const allCodes = [...new Set(swadpiaData.printEntries.map(e => e.paper_code))]
+    const validCodes = new Set(swadpiaData.printEntries.filter(e => e.print_unit2 > 0).map(e => e.paper_code))
+    const selectedCode = selections['paper_code']
+    if (selectedCode && validCodes.has(selectedCode)) return selectedCode
+    // Fall back to first code with valid pricing
+    const allCodes = [...validCodes]
     return allCodes[0] ?? null
-  }, [swadpiaData])
+  }, [swadpiaData, selections])
 
   const itemPriceUsd = useMemo(() => {
     if (useSwadpia && swadpiaPaperCode) {
