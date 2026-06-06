@@ -1,5 +1,8 @@
 import type { TemplateDef, TemplateCategory } from '@/config/templates'
-import { buildCardLayout, CARD_FONT, type LayoutPrim } from '@/config/cardLayout'
+import {
+  buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor,
+  type LayoutPrim,
+} from '@/config/cardLayout'
 
 // 템플릿 미리보기 — 카테고리·레이아웃별로 서로 다른 SVG 목업을 렌더.
 // 순수 SVG (클라이언트 훅 없음) → 서버 컴포넌트에서도 그대로 사용 가능.
@@ -405,10 +408,11 @@ export default function TemplatePreview({
   const idx = template.layout ?? hashStr(template.name)
 
   let content: React.ReactNode
-  // 자동 생성 명함 템플릿(layout+sample 보유) → 에디터와 동일한 공유 스펙으로 렌더.
-  // 실제 샘플 텍스트를 그려 썸네일과 에디터가 1:1로 일치한다.
-  if (template.layout != null && template.sample) {
-    const prims = buildCardLayout(template.layout, W, H, { ink: c.ink, sub: c.sub, accent: c.accent }, template.sample)
+  // 명함 계열(수동·생성 모두) → 에디터와 동일한 공유 스펙으로 렌더.
+  // 실제 샘플 텍스트를 같은 좌표에 그려 썸네일과 에디터가 1:1로 일치한다.
+  if (CARD_CATEGORIES.has(template.category)) {
+    const colors = resolveCardColors(template)
+    const prims = buildCardLayout(cardLayoutIndex(template), W, H, colors, cardSampleFor(template))
     content = <>{prims.map((p, i) => primToSvg(p, i))}</>
   }
   else if (template.category === 'sticker') content = stickerLayout(idx, c, template, W, H)

@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
-import { buildCardLayout, CARD_FONT } from '@/config/cardLayout'
+import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1339,13 +1339,32 @@ export default function EditorClient({ product, options }: Props) {
   function buildTemplate(canvas: any, fabric: typeof import('fabric'), name: string, bg: string) {
     const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const applyTrimBg = () => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
+      if (trimBg) trimBg.set('fill', bg)
+    }
+
     // 자동 생성 명함 템플릿 처리 → 스펙 기반 렌더 후 종료.
     const genSpec = GENERATED_TEMPLATE_MAP[name]
     if (genSpec) {
       buildSpecTemplate(canvas, fabric, genSpec)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
-      if (trimBg) trimBg.set('fill', bg)
+      applyTrimBg()
+      return
+    }
+
+    // 수동 명함 템플릿도 동일한 공유 스펙으로 렌더 → 썸네일과 1:1 일치.
+    // (Classic·Corporate 등 기존 전용 디자인을 공유 레이아웃으로 통합)
+    const def = TEMPLATE_CATALOG.find(t => t.name === name)
+    if (def && CARD_CATEGORIES.has(def.category)) {
+      const colors = resolveCardColors({ ...def, bg })
+      buildSpecTemplate(canvas, fabric, {
+        name: def.name, category: def.category, bg, description: def.description,
+        layout: cardLayoutIndex(def), accent: colors.accent, ink: colors.ink,
+        sample: cardSampleFor(def),
+      })
+      applyTrimBg()
       return
     }
 
