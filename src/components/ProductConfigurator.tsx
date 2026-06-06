@@ -218,54 +218,80 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       )}
 
       {/* Option Selection */}
-      {Array.from(grouped.entries()).map(([type, opts]) => (
-        <div key={type}>
-          <label className="block text-sm font-semibold text-gray-700 mb-2">
-            {OPTION_LABEL[type] ?? type}
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {opts.map((opt) => {
-              const isSelected = selections[type] === opt.value
-              const hasPreview = RICH_PREVIEW_TYPES.has(type)
-              const hoverKey = `${type}:${opt.value}`
-              const promoEffectiveQty = QUANTITY_TYPES.has(type) ? quantityPromoMap.get(opt.value) : undefined
+      {Array.from(grouped.entries()).map(([type, opts]) => {
+        const isQtyType = QUANTITY_TYPES.has(type)
 
-              return (
-                <div key={opt.value} className="relative">
-                  {hasPreview && hoveredPaper === hoverKey && (
-                    <PaperPopup option={opt} />
-                  )}
+        if (isQtyType) {
+          const currentPromo = quantityPromoMap.get(selections[type] ?? '')
+          return (
+            <div key={type}>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {OPTION_LABEL[type] ?? type}
+              </label>
+              <select
+                value={selections[type] ?? ''}
+                onChange={(e) => setSelections((prev) => ({ ...prev, [type]: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
+              >
+                {opts.map((opt) => {
+                  const promoQty = quantityPromoMap.get(opt.value)
+                  return (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label_en}{promoQty ? ` (→ ${promoQty} pcs, same price)` : ''}
+                    </option>
+                  )
+                })}
+              </select>
+              {quantityPromoMap.size > 0 && (
+                <p className="mt-1.5 text-[11px] text-amber-700">
+                  💡 Low-quantity orders are <span className="font-semibold">priced like the next available batch</span> — you pay the same and get extra prints free.
+                </p>
+              )}
+              {currentPromo && (
+                <p className="mt-1 text-[11px] text-amber-700 font-medium">
+                  ✨ Selected quantity gets upgraded to {currentPromo} pcs at no extra cost.
+                </p>
+              )}
+            </div>
+          )
+        }
 
-                  <button
-                    onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
-                    onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
-                    onMouseLeave={() => hasPreview && setHoveredPaper(null)}
-                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                      isSelected
-                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                        : promoEffectiveQty
-                          ? 'border-amber-300 bg-amber-50 text-amber-800 hover:border-amber-400'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                    }`}
-                  >
-                    {opt.label_en}
-                    {promoEffectiveQty && (
-                      <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-500 px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
-                        Same price
-                      </span>
+        return (
+          <div key={type}>
+            <label className="block text-sm font-semibold text-gray-700 mb-2">
+              {OPTION_LABEL[type] ?? type}
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {opts.map((opt) => {
+                const isSelected = selections[type] === opt.value
+                const hasPreview = RICH_PREVIEW_TYPES.has(type)
+                const hoverKey = `${type}:${opt.value}`
+
+                return (
+                  <div key={opt.value} className="relative">
+                    {hasPreview && hoveredPaper === hoverKey && (
+                      <PaperPopup option={opt} />
                     )}
-                  </button>
-                </div>
-              )
-            })}
+
+                    <button
+                      onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
+                      onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
+                      onMouseLeave={() => hasPreview && setHoveredPaper(null)}
+                      className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                        isSelected
+                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      {opt.label_en}
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
           </div>
-          {QUANTITY_TYPES.has(type) && quantityPromoMap.size > 0 && (
-            <p className="mt-2 text-[11px] text-amber-700">
-              💡 Low-quantity orders are <span className="font-semibold">priced like the next available batch</span> — you pay the same and get extra prints free.
-            </p>
-          )}
-        </div>
-      ))}
+        )
+      })}
 
       {/* Production speed */}
       <div>
