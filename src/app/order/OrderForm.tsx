@@ -808,7 +808,6 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           <span>Total</span>
           <span className="text-blue-600">${totalUsd.toFixed(2)} USD</span>
         </div>
-        <p className="text-xs text-gray-400">Exchange rate: 1 KRW ≈ ${exchangeRate.toFixed(6)} USD</p>
       </section>
 
       {/* File Responsibility Agreement */}
