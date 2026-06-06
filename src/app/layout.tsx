@@ -9,7 +9,6 @@ import FreeShippingBanner from '@/components/FreeShippingBanner'
 import SeasonalToast from '@/components/SeasonalToast'
 import SocialProofToast from '@/components/SocialProofToast'
 import CouponPopup from '@/components/CouponPopup'
-import { createServerClient } from '@/lib/supabase'
 import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
 import type { Campaign } from '@/lib/promotion-engine'
 
@@ -59,15 +58,21 @@ export interface ProductCardData {
 }
 
 async function fetchProductCardData(): Promise<Record<string, ProductCardData>> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return {}
   try {
-    const supabase = createServerClient()
-    const { data } = await supabase
-      .from('print_products')
-      .select('slug, hero_image_url, description_en')
-      .eq('is_active', true)
-    if (!data) return {}
+    const res = await fetch(
+      `${url}/rest/v1/print_products?select=slug,hero_image_url,description_en&is_active=eq.true`,
+      {
+        headers: { apikey: key, Authorization: `Bearer ${key}` },
+        cache: 'no-store',
+      },
+    )
+    if (!res.ok) return {}
+    const data: Array<{ slug: string; hero_image_url: string | null; description_en: string | null }> = await res.json()
     return Object.fromEntries(
-      data.map(r => [r.slug, { image: r.hero_image_url ?? null, description: r.description_en ?? null }])
+      data.map(r => [r.slug, { image: r.hero_image_url ?? null, description: r.description_en ?? null }]),
     )
   } catch {
     return {}
