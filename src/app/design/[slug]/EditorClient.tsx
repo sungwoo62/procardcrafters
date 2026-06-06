@@ -16,6 +16,7 @@ import {
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
+import { buildCardLayout } from '@/config/cardLayout'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1261,8 +1262,9 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // 자동 생성 명함 템플릿 — 스펙(layout/accent/ink/sample)으로 fabric 객체를 구성.
-  // TemplatePreview 의 8개 레이아웃과 1:1 대응되도록 mm 좌표로 렌더.
+  // 자동 생성 명함 템플릿 — 썸네일(TemplatePreview)과 동일한 공유 스펙
+  // (buildCardLayout)으로 fabric 객체를 구성한다. 두 렌더러가 같은 프리미티브
+  // 배열을 소비하므로 썸네일과 에디터가 좌표·텍스트까지 1:1로 일치한다.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function buildSpecTemplate(canvas: any, fabric: typeof import('fabric'), spec: GenTemplateDef) {
     const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
@@ -1278,160 +1280,52 @@ export default function EditorClient({ product, options }: Props) {
     })()
     const sub = dark ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.45)'
     const s = spec.sample ?? { name: 'Your Name', title: 'Your Title', contact: 'email@company.com' }
-    const initials = s.name.split(' ').slice(0, 2).map(w => w[0]?.toUpperCase() ?? '').join('') || 'YN'
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const rect = (x: number, y: number, w: number, h: number, fill: string, opts: Record<string, unknown> = {}) =>
-      canvas.add(new fabric.Rect({ left: bl + mmToPx(x, scale), top: bl + mmToPx(y, scale), width: mmToPx(w, scale), height: mmToPx(h, scale), fill, data: { id: makeId(), name: 'Shape', layerType: 'rect' }, ...opts }))
-    const txt = (text: string, x: number, y: number, w: number, fontMm: number, fill: string, opts: Record<string, unknown> = {}) =>
-      addTextbox(canvas, fabric, text, bl + mmToPx(x, scale), bl + mmToPx(y, scale), mmToPx(w, scale), { fontSize: mmToPx(fontMm, scale), fill, ...opts })
 
-    switch (spec.layout ?? 0) {
-      case 0: // 좌측 강조 바
-        rect(0, 0, 4, H, accent)
-        txt(s.name, 10, H * 0.26, W - 16, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 10, H * 0.46, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 10, H * 0.66, W - 16, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 1: { // 중앙 모노그램
-        const r = 7
-        canvas.add(new fabric.Circle({ left: bl + mmToPx(W / 2 - r, scale), top: bl + mmToPx(H * 0.18, scale), radius: mmToPx(r, scale), fill: 'transparent', stroke: accent, strokeWidth: 2, data: { id: makeId(), name: 'Ring', layerType: 'rect' } }))
-        txt(initials, W / 2 - 10, H * 0.18 + 1.5, 20, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
-        txt(s.name, W / 2 - 30, H * 0.52, 60, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        rect(W / 2 - 8, H * 0.68, 16, 0.5, accent)
-        txt(s.title, W / 2 - 30, H * 0.72, 60, 2.8, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        break
-      }
-      case 2: // 상단 컬러 밴드
-        rect(0, 0, W, H * 0.4, accent)
-        txt(s.name, 7, H * 0.1, W - 14, 5, '#ffffff', { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.25, W - 14, 3, 'rgba(255,255,255,0.85)', { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.6, W - 14, 2.8, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 3: // 좌우 분할
-        rect(0, 0, W * 0.4, H, accent)
-        txt(initials, 0, H / 2 - 5, W * 0.4, 9, '#ffffff', { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
-        txt(s.name, W * 0.45, H * 0.3, W * 0.5, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, W * 0.45, H * 0.46, W * 0.5, 2.8, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, W * 0.45, H * 0.64, W * 0.52, 2.4, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 4: // 하단 강조 바
-        txt(s.name, 7, H * 0.18, W - 14, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.36, W - 14, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        rect(0, H * 0.72, W, H * 0.28, accent)
-        txt(s.contact, 7, H * 0.8, W - 14, 2.8, '#ffffff', { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 5: { // 코너 사선
-        const poly = new fabric.Polygon(
-          [{ x: 0, y: 0 }, { x: mmToPx(W * 0.45, scale), y: 0 }, { x: 0, y: mmToPx(H * 0.6, scale) }],
-          { left: bl, top: bl, fill: accent }
-        )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(poly as any).data = { id: makeId(), name: 'Corner', layerType: 'rect' }
-        canvas.add(poly)
-        txt(s.name, 7, H * 0.6, W - 14, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.75, W - 14, 2.8, sub, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.85, W - 14, 2.4, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      }
-      case 6: // 미니멀 중앙
-        txt(s.name, W / 2 - 35, H * 0.38, 70, 5, ink, { fontWeight: 'bold', textAlign: 'center', charSpacing: 100, data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        rect(W / 2 - 7, H * 0.56, 14, 0.5, accent)
-        txt(s.title, W / 2 - 35, H * 0.62, 70, 2.8, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        break
-      case 7: // 프레임
-        canvas.add(new fabric.Rect({ left: bl + mmToPx(3, scale), top: bl + mmToPx(3, scale), width: mmToPx(W - 6, scale), height: mmToPx(H - 6, scale), fill: 'transparent', stroke: accent, strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
-        txt(s.name, W / 2 - 32, H * 0.34, 64, 5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, W / 2 - 32, H * 0.5, 64, 2.8, accent, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, W / 2 - 32, H * 0.64, 64, 2.4, sub, { textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 8: // 우측 사이드바
-        rect(W * 0.7, 0, W * 0.3, H, accent)
-        txt(s.name, 7, H * 0.32, W * 0.6, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.48, W * 0.6, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.66, W * 0.6, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 9: { // 투톤 대각 밴드
-        const poly = new fabric.Polygon(
-          [{ x: 0, y: 0 }, { x: mmToPx(W, scale), y: 0 }, { x: mmToPx(W, scale), y: mmToPx(H * 0.42, scale) }, { x: 0, y: mmToPx(H * 0.72, scale) }],
-          { left: bl, top: bl, fill: accent }
-        )
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(poly as any).data = { id: makeId(), name: 'Band', layerType: 'rect' }
-        canvas.add(poly)
-        txt(s.name, 7, H * 0.1, W - 14, 5, '#ffffff', { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.24, W - 14, 3, 'rgba(255,255,255,0.85)', { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.8, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      }
-      case 10: { // 중앙 엠블럼 (이중 프레임)
-        canvas.add(new fabric.Rect({ left: bl + mmToPx(2.5, scale), top: bl + mmToPx(2.5, scale), width: mmToPx(W - 5, scale), height: mmToPx(H - 5, scale), fill: 'transparent', stroke: accent, strokeWidth: 1, data: { id: makeId(), name: 'Frame', layerType: 'rect' } }))
-        const r = 6
-        canvas.add(new fabric.Circle({ left: bl + mmToPx(W / 2 - r, scale), top: bl + mmToPx(H * 0.2, scale), radius: mmToPx(r, scale), fill: accent, data: { id: makeId(), name: 'Emblem', layerType: 'rect' } }))
-        txt(initials, W / 2 - 10, H * 0.2 + 1.5, 20, 4, '#ffffff', { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Monogram', layerType: 'text' } })
-        txt(s.name, W / 2 - 32, H * 0.54, 64, 4.5, ink, { fontWeight: 'bold', textAlign: 'center', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, W / 2 - 32, H * 0.7, 64, 2.6, sub, { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        break
-      }
-      case 12: { // 우상단 기하 도형
-        canvas.add(new fabric.Circle({ left: bl + mmToPx(W * 0.6, scale), top: bl + mmToPx(-4, scale), radius: mmToPx(11, scale), fill: accent, data: { id: makeId(), name: 'Circle', layerType: 'rect' } }))
-        canvas.add(new fabric.Triangle({ left: bl + mmToPx(W * 0.8, scale), top: bl + mmToPx(6, scale), width: mmToPx(13, scale), height: mmToPx(11, scale), fill: accent, opacity: 0.45, angle: 18, data: { id: makeId(), name: 'Triangle', layerType: 'rect' } }))
-        txt(s.name, 8, H * 0.42, W - 16, 5.5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 8, H * 0.6, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 8, H * 0.78, W - 16, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      }
-      case 13: { // 하단 웨이브 밴드
-        const steps = 16
-        const yBase = mmToPx(H * 0.6, scale)
-        const amp = mmToPx(H * 0.07, scale)
-        const pts: { x: number; y: number }[] = []
-        for (let i = 0; i <= steps; i++) {
-          pts.push({ x: (mmToPx(W, scale) / steps) * i, y: yBase + amp * Math.sin((i / steps) * Math.PI * 2) })
+    const prims = buildCardLayout(spec.layout ?? 0, W, H, { ink, sub, accent }, s)
+    for (const p of prims) {
+      if (p.kind === 'rect') {
+        const opts: Record<string, unknown> = {
+          left: bl + mmToPx(p.x, scale), top: bl + mmToPx(p.y, scale),
+          width: mmToPx(Math.max(p.w, 0), scale), height: mmToPx(Math.max(p.h, 0), scale),
+          fill: p.stroke ? 'transparent' : (p.fill ?? '#000000'),
+          opacity: p.opacity,
+          data: { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' },
         }
-        pts.push({ x: mmToPx(W, scale), y: mmToPx(H, scale) }, { x: 0, y: mmToPx(H, scale) })
-        const wave = new fabric.Polygon(pts, { left: bl, top: bl, fill: accent })
+        if (p.stroke) { opts.stroke = p.stroke; opts.strokeWidth = mmToPx(p.sw ?? 0.3, scale) }
+        if (p.r) { opts.rx = mmToPx(p.r, scale); opts.ry = mmToPx(p.r, scale) }
+        if (p.rotate) opts.angle = p.rotate
+        canvas.add(new fabric.Rect(opts))
+      } else if (p.kind === 'circle') {
+        canvas.add(new fabric.Circle({
+          left: bl + mmToPx(p.cx - p.r, scale), top: bl + mmToPx(p.cy - p.r, scale),
+          radius: mmToPx(p.r, scale),
+          fill: p.stroke ? 'transparent' : (p.fill ?? '#000000'),
+          stroke: p.stroke, strokeWidth: p.stroke ? mmToPx(p.sw ?? 0.3, scale) : undefined,
+          opacity: p.opacity,
+          data: { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' },
+        }))
+      } else if (p.kind === 'poly') {
+        const poly = new fabric.Polygon(
+          p.pts.map(([x, y]) => ({ x: mmToPx(x, scale), y: mmToPx(y, scale) })),
+          { left: bl, top: bl, fill: p.fill, opacity: p.opacity },
+        )
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ;(wave as any).data = { id: makeId(), name: 'Wave', layerType: 'rect' }
-        canvas.add(wave)
-        txt(s.name, 8, H * 0.16, W - 16, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 8, H * 0.32, W - 16, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 8, H * 0.8, W - 16, 2.6, '#ffffff', { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
+        ;(poly as any).data = { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' }
+        canvas.add(poly)
+      } else if (p.kind === 'text') {
+        const opts: Record<string, unknown> = {
+          fontSize: mmToPx(p.size, scale), fill: p.fill,
+          data: { id: makeId(), name: p.label, layerType: 'text', ...(p.field ? { fieldKey: p.field } : {}) },
+        }
+        if (p.weight) opts.fontWeight = p.weight
+        if (p.align) opts.textAlign = p.align
+        if (p.opacity != null) opts.opacity = p.opacity
+        if (p.rotate) {
+          opts.angle = p.rotate
+          if (p.originCenter) { opts.originX = 'center'; opts.originY = 'center' }
+        }
+        addTextbox(canvas, fabric, p.text, bl + mmToPx(p.x, scale), bl + mmToPx(p.y, scale), mmToPx(p.w, scale), opts)
       }
-      case 14: // 좌측 멀티 스트라이프
-        rect(0, 0, 2.5, H, accent)
-        rect(3.5, 0, 1.5, H, accent, { opacity: 0.6 })
-        rect(6, 0, 1, H, accent, { opacity: 0.35 })
-        txt(s.name, 12, H * 0.28, W - 18, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 12, H * 0.46, W - 18, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 12, H * 0.66, W - 18, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 15: // 좌측 세로형 패널 + 회전 직함
-        rect(0, 0, W * 0.22, H, accent)
-        addTextbox(canvas, fabric, s.title, bl + mmToPx(W * 0.11, scale), bl + mmToPx(H * 0.5, scale), mmToPx(H - 12, scale), { fontSize: mmToPx(2.8, scale), fill: '#ffffff', textAlign: 'center', angle: 270, originX: 'center', originY: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.name, W * 0.3, H * 0.34, W * 0.62, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.contact, W * 0.3, H * 0.56, W * 0.62, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      case 16: { // 좌상단 코너 리본
-        const ribbon = new fabric.Rect({ left: bl + mmToPx(-4, scale), top: bl + mmToPx(14, scale), width: mmToPx(42, scale), height: mmToPx(6, scale), fill: accent, angle: -45, data: { id: makeId(), name: 'Ribbon', layerType: 'rect' } })
-        canvas.add(ribbon)
-        txt(s.name, 7, H * 0.5, W - 14, 5.2, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.66, W - 14, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.8, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      }
-      case 17: // 상단 라운드 배지 + 이름
-        canvas.add(new fabric.Rect({ left: bl + mmToPx(7, scale), top: bl + mmToPx(H * 0.16, scale), width: mmToPx(28, scale), height: mmToPx(7, scale), rx: mmToPx(3.5, scale), ry: mmToPx(3.5, scale), fill: accent, data: { id: makeId(), name: 'Badge', layerType: 'rect' } }))
-        txt(s.title, 7, H * 0.185, 28, 2.6, '#ffffff', { textAlign: 'center', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.name, 7, H * 0.46, W - 14, 6, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.contact, 7, H * 0.72, W - 14, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
-      default: // 11: 대형 이니셜 워터마크
-        txt(initials[0], W * 0.55, H * 0.05, W * 0.5, H * 0.9, accent, { fontWeight: 'bold', opacity: 0.12, data: { id: makeId(), name: 'Watermark', layerType: 'text' } })
-        txt(s.name, 7, H * 0.48, W * 0.6, 5, ink, { fontWeight: 'bold', data: { id: makeId(), name: 'Name', layerType: 'text', fieldKey: 'name' } })
-        txt(s.title, 7, H * 0.62, W * 0.6, 3, accent, { data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
-        txt(s.contact, 7, H * 0.76, W * 0.6, 2.6, sub, { data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
-        break
     }
   }
 

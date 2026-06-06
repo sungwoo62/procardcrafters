@@ -1,4 +1,5 @@
 import type { TemplateDef, TemplateCategory } from '@/config/templates'
+import { buildCardLayout, type LayoutPrim } from '@/config/cardLayout'
 
 // 템플릿 미리보기 — 카테고리·레이아웃별로 서로 다른 SVG 목업을 렌더.
 // 순수 SVG (클라이언트 훅 없음) → 서버 컴포넌트에서도 그대로 사용 가능.
@@ -64,14 +65,14 @@ function resolveColors(t: TemplateDef): Colors {
 // ── 카테고리별 viewBox (실제 제품 비율 반영) ──────────────────────────────────
 
 const ASPECT: Record<TemplateCategory, [number, number]> = {
-  business:   [180, 110],  // 명함 가로
-  minimal:    [180, 110],
-  creative:   [180, 110],
-  food:       [180, 110],
-  health:     [180, 110],
-  tech:       [180, 110],
-  realestate: [180, 110],
-  luxury:     [180, 110],
+  business:   [170, 110],  // 명함 가로 (실제 제품 85×55mm 비율)
+  minimal:    [170, 110],
+  creative:   [170, 110],
+  food:       [170, 110],
+  health:     [170, 110],
+  tech:       [170, 110],
+  realestate: [170, 110],
+  luxury:     [170, 110],
   sticker:    [120, 120],  // 정사각 스티커
   postcard:   [180, 120],  // 엽서 가로
   banner:     [90, 135],   // 배너 세로
@@ -336,6 +337,59 @@ function posterLayout(idx: number, c: Colors, t: TemplateDef, W: number, H: numb
   }
 }
 
+// ── 공유 레이아웃 스펙 → SVG (에디터와 동일 디자인 보장) ────────────────────────
+// buildCardLayout 이 돌려주는 프리미티브를 SVG 로 그린다. 에디터(fabric)와 같은
+// 배열을 소비하므로 좌표·텍스트가 1:1로 일치한다.
+
+function primToSvg(p: LayoutPrim, i: number): React.ReactNode {
+  switch (p.kind) {
+    case 'rect':
+      return (
+        <rect
+          key={i} x={p.x} y={p.y} width={Math.max(p.w, 0)} height={Math.max(p.h, 0)}
+          rx={p.r} ry={p.r}
+          fill={p.stroke ? 'none' : (p.fill ?? 'none')}
+          stroke={p.stroke} strokeWidth={p.sw} opacity={p.opacity}
+          transform={p.rotate ? `rotate(${p.rotate} ${p.x} ${p.y})` : undefined}
+        />
+      )
+    case 'circle':
+      return (
+        <circle
+          key={i} cx={p.cx} cy={p.cy} r={p.r}
+          fill={p.stroke ? 'none' : (p.fill ?? 'none')}
+          stroke={p.stroke} strokeWidth={p.sw} opacity={p.opacity}
+        />
+      )
+    case 'poly':
+      return <polygon key={i} points={p.pts.map(([x, y]) => `${x},${y}`).join(' ')} fill={p.fill} opacity={p.opacity} />
+    case 'text': {
+      const cx = p.align === 'center' ? p.x + p.w / 2 : p.x
+      const anchor = p.align === 'center' ? 'middle' : 'start'
+      const baseline = p.y + p.size * 0.82
+      if (p.rotate && p.originCenter) {
+        return (
+          <text
+            key={i} x={p.x} y={p.y} fontFamily="Helvetica, Arial, sans-serif"
+            fontSize={p.size} fontWeight={p.weight} fill={p.fill} opacity={p.opacity}
+            textAnchor="middle" dominantBaseline="central"
+            transform={`rotate(${p.rotate} ${p.x} ${p.y})`}
+          >{p.text}</text>
+        )
+      }
+      return (
+        <text
+          key={i} x={cx} y={baseline} fontFamily="Helvetica, Arial, sans-serif"
+          fontSize={p.size} fontWeight={p.weight} fill={p.fill} opacity={p.opacity}
+          textAnchor={anchor}
+          lengthAdjust="spacingAndGlyphs"
+          textLength={p.text.length * p.size * 0.62 > p.w ? p.w : undefined}
+        >{p.text}</text>
+      )
+    }
+  }
+}
+
 // ── 메인 컴포넌트 ────────────────────────────────────────────────────────────
 
 export default function TemplatePreview({
@@ -346,12 +400,18 @@ export default function TemplatePreview({
   className?: string
 }) {
   const c = resolveColors(template)
-  const [W, H] = ASPECT[template.category] ?? [180, 110]
+  const [W, H] = ASPECT[template.category] ?? [170, 110]
   // 생성 템플릿은 명시적 layout 인덱스, 수동 템플릿은 이름 hash 로 결정.
   const idx = template.layout ?? hashStr(template.name)
 
   let content: React.ReactNode
-  if (template.category === 'sticker') content = stickerLayout(idx, c, template, W, H)
+  // 자동 생성 명함 템플릿(layout+sample 보유) → 에디터와 동일한 공유 스펙으로 렌더.
+  // 실제 샘플 텍스트를 그려 썸네일과 에디터가 1:1로 일치한다.
+  if (template.layout != null && template.sample) {
+    const prims = buildCardLayout(template.layout, W, H, { ink: c.ink, sub: c.sub, accent: c.accent }, template.sample)
+    content = <>{prims.map((p, i) => primToSvg(p, i))}</>
+  }
+  else if (template.category === 'sticker') content = stickerLayout(idx, c, template, W, H)
   else if (template.category === 'postcard') content = postcardLayout(idx, c, template, W, H)
   else if (template.category === 'banner' || template.category === 'flyer' || template.category === 'brochure' || template.category === 'poster')
     content = posterLayout(idx, c, template, W, H)
