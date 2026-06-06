@@ -11,6 +11,8 @@ import {
   RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
   FileText, Save, FolderOpen, QrCode, ShieldCheck, CopyPlus,
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
+  ZoomIn, ZoomOut, Maximize2, Copy,
+  AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
@@ -654,6 +656,11 @@ export default function EditorClient({ product, options }: Props) {
   const allFormFields: (FieldDef & { required: boolean })[] =
     productFields.map(f => ({ ...f, required: f.required ?? true }))
   const [bgColor, setBgColor] = useState('#ffffff')
+  // 줌/팬 (일러스트식 작업영역)
+  const [zoom, setZoom] = useState(1)
+  const spaceDownRef = useRef(false)
+  const panningRef = useRef(false)
+  const lastPanPosRef = useRef<{ x: number; y: number } | null>(null)
   const [ordering, setOrdering] = useState(false)
   const [orderError, setOrderError] = useState('')
   const [cropActive, setCropActive] = useState(false)
@@ -931,7 +938,46 @@ export default function EditorClient({ product, options }: Props) {
       const canvas = fabricRef.current
       if (!canvas) return
       const tag = (e.target as HTMLElement).tagName
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return
+      const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
+
+      // Space = 일시적 핸드(팬) 툴 — 입력 중이 아닐 때만
+      if (e.code === 'Space' && !typing) {
+        if (!spaceDownRef.current) {
+          spaceDownRef.current = true
+          canvas.defaultCursor = 'grab'
+          canvas.setCursor('grab')
+        }
+        e.preventDefault()
+        return
+      }
+      if (typing) return
+
+      // 방향키 넛지 — 선택 객체 이동 (Shift = 10px)
+      if (e.key.startsWith('Arrow')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const obj: any = canvas.getActiveObject()
+        if (obj && !isBackground(obj)) {
+          e.preventDefault()
+          const step = e.shiftKey ? 10 : 1
+          if (e.key === 'ArrowLeft') obj.set('left', (obj.left ?? 0) - step)
+          if (e.key === 'ArrowRight') obj.set('left', (obj.left ?? 0) + step)
+          if (e.key === 'ArrowUp') obj.set('top', (obj.top ?? 0) - step)
+          if (e.key === 'ArrowDown') obj.set('top', (obj.top ?? 0) + step)
+          obj.setCoords()
+          canvas.requestRenderAll()
+          syncSelected(canvas)
+          saveHistory(canvas)
+        }
+        return
+      }
+
+      if (e.key === 'Escape') {
+        canvas.discardActiveObject()
+        canvas.requestRenderAll()
+        setSelectedId(null)
+        setSelectedProps(null)
+        return
+      }
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const obj = canvas.getActiveObject()
@@ -945,6 +991,22 @@ export default function EditorClient({ product, options }: Props) {
       } else if (e.ctrlKey || e.metaKey) {
         if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); await undo() }
         else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); await redo() }
+        else if (e.key === 'd') { e.preventDefault(); await duplicateActive() }
+        else if (e.key === '0') { e.preventDefault(); resetView() }
+        else if (e.key === '=' || e.key === '+') { e.preventDefault(); zoomIn() }
+        else if (e.key === '-') { e.preventDefault(); zoomOut() }
+        else if (e.key === 'a') {
+          e.preventDefault()
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const userObjs = canvas.getObjects().filter((o: any) => !isBackground(o) && o.data?.role !== 'crop')
+          if (userObjs.length > 0) {
+            canvas.discardActiveObject()
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const sel = new (fabricModRef.current as any).ActiveSelection(userObjs, { canvas })
+            canvas.setActiveObject(sel)
+            canvas.requestRenderAll()
+          }
+        }
         else if (e.key === 'c') {
           const obj = canvas.getActiveObject()
           if (obj && !isBackground(obj)) {
@@ -964,8 +1026,23 @@ export default function EditorClient({ product, options }: Props) {
         }
       }
     }
+    function handleKeyUp(e: KeyboardEvent) {
+      const canvas = fabricRef.current
+      if (e.code === 'Space' && canvas) {
+        spaceDownRef.current = false
+        panningRef.current = false
+        lastPanPosRef.current = null
+        canvas.defaultCursor = 'default'
+        canvas.setCursor('default')
+      }
+    }
     window.addEventListener('keydown', handleKey)
-    return () => window.removeEventListener('keydown', handleKey)
+    window.addEventListener('keyup', handleKeyUp)
+    return () => {
+      window.removeEventListener('keydown', handleKey)
+      window.removeEventListener('keyup', handleKeyUp)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [undo, redo])
 
   // ── Background drawing ─────────────────────────────────────────────────────
@@ -2982,8 +3059,35 @@ export default function EditorClient({ product, options }: Props) {
         z *= 0.999 ** delta
         z = Math.min(Math.max(z, 0.2), 5)
         canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, z)
+        setZoom(z)
         opt.e.preventDefault()
         opt.e.stopPropagation()
+      })
+
+      // Space + drag 팬 (일러스트식 핸드 툴)
+      canvas.on('mouse:down', (opt: { e: MouseEvent }) => {
+        if (!spaceDownRef.current) return
+        panningRef.current = true
+        canvas.selection = false
+        canvas.discardActiveObject()
+        lastPanPosRef.current = { x: opt.e.clientX, y: opt.e.clientY }
+        canvas.setCursor('grabbing')
+      })
+      canvas.on('mouse:move', (opt: { e: MouseEvent }) => {
+        if (!panningRef.current || !lastPanPosRef.current) return
+        const e = opt.e
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const vpt: any = canvas.viewportTransform
+        vpt[4] += e.clientX - lastPanPosRef.current.x
+        vpt[5] += e.clientY - lastPanPosRef.current.y
+        canvas.requestRenderAll()
+        lastPanPosRef.current = { x: e.clientX, y: e.clientY }
+      })
+      canvas.on('mouse:up', () => {
+        if (!panningRef.current) return
+        panningRef.current = false
+        canvas.selection = true
+        lastPanPosRef.current = null
       })
 
       // Click to place objects
@@ -3534,6 +3638,73 @@ export default function EditorClient({ product, options }: Props) {
       syncLayers(canvas)
       saveHistory(canvas)
     }
+  }
+
+  // ── 줌 / 팬 컨트롤 ──────────────────────────────────────────────────────────
+
+  function applyZoom(targetZoom: number) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const z = Math.min(Math.max(targetZoom, 0.2), 5)
+    // 캔버스 중앙 기준 줌
+    canvas.zoomToPoint({ x: canvas.getWidth() / 2, y: canvas.getHeight() / 2 }, z)
+    setZoom(z)
+  }
+  function zoomIn() { applyZoom(zoom * 1.2) }
+  function zoomOut() { applyZoom(zoom / 1.2) }
+  function resetView() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
+    setZoom(1)
+    canvas.requestRenderAll()
+  }
+
+  // ── 정렬 (대지 기준) ────────────────────────────────────────────────────────
+
+  type AlignMode = 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom'
+  function alignToArtboard(mode: AlignMode) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj: any = canvas.getActiveObject()
+    if (!obj || isBackground(obj)) return
+    const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+    const w = obj.getScaledWidth?.() ?? obj.width ?? 0
+    const h = obj.getScaledHeight?.() ?? obj.height ?? 0
+    switch (mode) {
+      case 'left':    obj.set('left', trimX); break
+      case 'centerH': obj.set('left', trimX + (trimW - w) / 2); break
+      case 'right':   obj.set('left', trimX + trimW - w); break
+      case 'top':     obj.set('top', trimY); break
+      case 'centerV': obj.set('top', trimY + (trimH - h) / 2); break
+      case 'bottom':  obj.set('top', trimY + trimH - h); break
+    }
+    obj.setCoords()
+    canvas.requestRenderAll()
+    syncSelected(canvas)
+    saveHistory(canvas)
+  }
+
+  // ── 선택 객체 복제 ──────────────────────────────────────────────────────────
+
+  async function duplicateActive() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj: any = canvas.getActiveObject()
+    if (!obj || isBackground(obj)) return
+    const cloned = await obj.clone(['data'])
+    cloned.set({ left: (obj.left ?? 0) + 12, top: (obj.top ?? 0) + 12 })
+    cloned.data = { ...cloned.data, id: makeId() }
+    canvas.add(cloned)
+    canvas.setActiveObject(cloned)
+    canvas.requestRenderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
   }
 
   // ── Export ────────────────────────────────────────────────────────────────
@@ -4292,12 +4463,42 @@ export default function EditorClient({ product, options }: Props) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas area */}
-        <div className="flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+        <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+          {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
+          {selectedProps && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
+              <span className="text-[10px] text-gray-400 px-1.5 font-medium">Align</span>
+              <button onClick={() => alignToArtboard('left')} title="좌측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignLeft className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerH')} title="가로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('right')} title="우측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignRight className="w-4 h-4" /></button>
+              <span className="w-px h-4 bg-gray-200 mx-0.5" />
+              <button onClick={() => alignToArtboard('top')} title="상단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyStart className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerV')} title="세로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('bottom')} title="하단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
+              <span className="w-px h-4 bg-gray-200 mx-0.5" />
+              <button onClick={duplicateActive} title="복제 (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
+            </div>
+          )}
+
           <div
             className="shadow-xl"
             style={{ cursor: tool === 'text' ? 'text' : tool === 'rect' ? 'crosshair' : 'default' }}
           >
             <canvas ref={canvasElRef} />
+          </div>
+
+          {/* 줌 컨트롤 (하단 좌측) */}
+          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
+            <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
+            <button onClick={resetView} title="100% / 맞춤 (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
+            <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
+            <span className="w-px h-4 bg-gray-200 mx-0.5" />
+            <button onClick={resetView} title="화면 맞춤" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
+          </div>
+
+          {/* 팬 힌트 */}
+          <div className="absolute bottom-3 right-3 z-10 text-[10px] text-gray-400 bg-white/70 rounded px-2 py-1 pointer-events-none">
+            Space+드래그로 이동 · 휠로 확대/축소
           </div>
         </div>
 
