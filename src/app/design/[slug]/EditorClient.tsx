@@ -11,7 +11,7 @@ import {
   RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
   FileText, Save, FolderOpen, QrCode, ShieldCheck, CopyPlus,
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
-  ZoomIn, ZoomOut, Maximize2, Copy,
+  ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
@@ -581,7 +581,7 @@ function mmToPx(mm: number, scale: number) { return mm * scale }
 
 function makeId() { return Math.random().toString(36).slice(2) }
 
-const BACKGROUND_ROLES = new Set(['pasteboard', 'bleed-bg', 'trim-bg', 'trim-border', 'safe-border', 'guide'])
+const BACKGROUND_ROLES = new Set(['pasteboard', 'bleed-bg', 'trim-bg', 'trim-border', 'safe-border', 'guide', 'grid'])
 
 function isBackground(obj: { data?: { role?: string } }) {
   return BACKGROUND_ROLES.has(obj.data?.role ?? '')
@@ -658,6 +658,7 @@ export default function EditorClient({ product, options }: Props) {
   const [bgColor, setBgColor] = useState('#ffffff')
   // 줌/팬 (일러스트식 작업영역)
   const [zoom, setZoom] = useState(1)
+  const [showGrid, setShowGrid] = useState(false)
   const spaceDownRef = useRef(false)
   const panningRef = useRef(false)
   const lastPanPosRef = useRef<{ x: number; y: number } | null>(null)
@@ -992,6 +993,8 @@ export default function EditorClient({ product, options }: Props) {
         if (e.key === 'z' && !e.shiftKey) { e.preventDefault(); await undo() }
         else if ((e.key === 'z' && e.shiftKey) || e.key === 'y') { e.preventDefault(); await redo() }
         else if (e.key === 'd') { e.preventDefault(); await duplicateActive() }
+        else if (e.key === 'g' && !e.shiftKey) { e.preventDefault(); groupSelected() }
+        else if ((e.key === 'g' && e.shiftKey) || e.key === 'G') { e.preventDefault(); ungroupSelected() }
         else if (e.key === '0') { e.preventDefault(); resetView() }
         else if (e.key === '=' || e.key === '+') { e.preventDefault(); zoomIn() }
         else if (e.key === '-') { e.preventDefault(); zoomOut() }
@@ -1165,29 +1168,75 @@ export default function EditorClient({ product, options }: Props) {
       })
     }
 
+    let snappedX = false
+    let snappedY = false
+
+    // ── 대지 기준 스냅 (중앙/좌우/상하 가장자리) ──
     if (Math.abs(objL + objW / 2 - docCX) < snapPx) {
       obj.set('left', docCX - objW / 2)
-      guides.push(vLine(docCX))
+      guides.push(vLine(docCX)); snappedX = true
     }
     if (Math.abs(objT + objH / 2 - docCY) < snapPx) {
       obj.set('top', docCY - objH / 2)
-      guides.push(hLine(docCY))
+      guides.push(hLine(docCY)); snappedY = true
     }
-    if (Math.abs(objL - trimX) < snapPx) {
+    if (!snappedX && Math.abs(objL - trimX) < snapPx) {
       obj.set('left', trimX)
-      guides.push(vLine(trimX))
+      guides.push(vLine(trimX)); snappedX = true
     }
-    if (Math.abs(objT - trimY) < snapPx) {
+    if (!snappedY && Math.abs(objT - trimY) < snapPx) {
       obj.set('top', trimY)
-      guides.push(hLine(trimY))
+      guides.push(hLine(trimY)); snappedY = true
     }
-    if (Math.abs(objL + objW - (trimX + trimW)) < snapPx) {
+    if (!snappedX && Math.abs(objL + objW - (trimX + trimW)) < snapPx) {
       obj.set('left', trimX + trimW - objW)
-      guides.push(vLine(trimX + trimW))
+      guides.push(vLine(trimX + trimW)); snappedX = true
     }
-    if (Math.abs(objT + objH - (trimY + trimH)) < snapPx) {
+    if (!snappedY && Math.abs(objT + objH - (trimY + trimH)) < snapPx) {
       obj.set('top', trimY + trimH - objH)
-      guides.push(hLine(trimY + trimH))
+      guides.push(hLine(trimY + trimH)); snappedY = true
+    }
+
+    // ── 오브젝트 간 스마트 가이드 (다른 객체의 좌/중앙/우 · 상/중앙/하) ──
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const others = canvas.getObjects().filter((o: any) =>
+      o !== obj && !isBackground(o) && o.data?.role !== 'crop' && o.data?.role !== 'guide')
+    const curL = obj.left ?? 0
+    const curT = obj.top ?? 0
+    for (const o of others) {
+      const oL = o.left ?? 0
+      const oT = o.top ?? 0
+      const oW = o.getScaledWidth?.() ?? o.width ?? 0
+      const oH = o.getScaledHeight?.() ?? o.height ?? 0
+      // X축: 좌-좌, 중앙-중앙, 우-우
+      const xPairs: [number, number][] = [
+        [curL, oL], [curL + objW / 2, oL + oW / 2], [curL + objW, oL + oW],
+      ]
+      if (!snappedX) {
+        for (let i = 0; i < xPairs.length; i++) {
+          const [a, b] = xPairs[i]
+          if (Math.abs(a - b) < snapPx) {
+            const deltaAnchor = i === 0 ? 0 : i === 1 ? objW / 2 : objW
+            obj.set('left', b - deltaAnchor)
+            guides.push(vLine(b)); snappedX = true; break
+          }
+        }
+      }
+      // Y축: 상-상, 중앙-중앙, 하-하
+      const yPairs: [number, number][] = [
+        [curT, oT], [curT + objH / 2, oT + oH / 2], [curT + objH, oT + oH],
+      ]
+      if (!snappedY) {
+        for (let i = 0; i < yPairs.length; i++) {
+          const [a, b] = yPairs[i]
+          if (Math.abs(a - b) < snapPx) {
+            const deltaAnchor = i === 0 ? 0 : i === 1 ? objH / 2 : objH
+            obj.set('top', b - deltaAnchor)
+            guides.push(hLine(b)); snappedY = true; break
+          }
+        }
+      }
+      if (snappedX && snappedY) break
     }
 
     guides.forEach(g => canvas.add(g))
@@ -3707,6 +3756,75 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
+  // ── 그리드 토글 ─────────────────────────────────────────────────────────────
+
+  async function toggleGrid() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    const fabric = fabricModRef.current ?? await import('fabric')
+    const next = !showGrid
+    setShowGrid(next)
+    // 기존 그리드 제거
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    canvas.getObjects().filter((o: any) => o.data?.role === 'grid').forEach((o: object) => canvas.remove(o))
+    if (!next) { canvas.requestRenderAll(); return }
+    // 대지(트림) 영역에 5mm 간격 그리드
+    const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+    const step = mmToPx(5, scale)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const lines: any[] = []
+    for (let x = trimX; x <= trimX + trimW + 0.5; x += step) {
+      lines.push(new fabric.Line([x, trimY, x, trimY + trimH], { stroke: 'rgba(99,102,241,0.15)', strokeWidth: 1, selectable: false, evented: false, data: { role: 'grid' } }))
+    }
+    for (let y = trimY; y <= trimY + trimH + 0.5; y += step) {
+      lines.push(new fabric.Line([trimX, y, trimX + trimW, y], { stroke: 'rgba(99,102,241,0.15)', strokeWidth: 1, selectable: false, evented: false, data: { role: 'grid' } }))
+    }
+    lines.forEach(l => { canvas.add(l); canvas.sendObjectToBack(l) })
+    // 배경(트림/블리드/페이스트보드)보다는 앞, 사용자 객체보다는 뒤로 — 트림bg 다음에 오도록 재정렬
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
+    if (trimBg) {
+      lines.forEach(l => canvas.sendObjectToBack(l))
+      // pasteboard/shadow/bleed/trimBg 를 그리드보다 뒤로 다시 보냄
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const behind = canvas.getObjects().filter((o: any) => ['pasteboard', 'bleed-bg', 'trim-bg'].includes(o.data?.role))
+      behind.forEach((o: object) => canvas.sendObjectToBack(o))
+    }
+    canvas.requestRenderAll()
+  }
+
+  // ── 그룹화 / 그룹해제 ───────────────────────────────────────────────────────
+
+  function groupSelected() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const active: any = canvas.getActiveObject()
+    if (!active || active.type !== 'activeselection') return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const group = (active as any).toGroup()
+    group.data = { id: makeId(), name: 'Group', layerType: 'rect' }
+    canvas.requestRenderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+  }
+
+  function ungroupSelected() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const active: any = canvas.getActiveObject()
+    if (!active || active.type !== 'group') return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(active as any).toActiveSelection()
+    canvas.requestRenderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+  }
+
   // ── Export ────────────────────────────────────────────────────────────────
 
   // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
@@ -4476,6 +4594,8 @@ export default function EditorClient({ product, options }: Props) {
               <button onClick={() => alignToArtboard('centerV')} title="세로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
               <button onClick={() => alignToArtboard('bottom')} title="하단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
+              <button onClick={groupSelected} title="그룹 (Ctrl+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Group className="w-4 h-4" /></button>
+              <button onClick={ungroupSelected} title="그룹해제 (Ctrl+Shift+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Ungroup className="w-4 h-4" /></button>
               <button onClick={duplicateActive} title="복제 (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
             </div>
           )}
@@ -4494,6 +4614,7 @@ export default function EditorClient({ product, options }: Props) {
             <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
             <span className="w-px h-4 bg-gray-200 mx-0.5" />
             <button onClick={resetView} title="화면 맞춤" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={toggleGrid} title="그리드 (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
           </div>
 
           {/* 팬 힌트 */}
