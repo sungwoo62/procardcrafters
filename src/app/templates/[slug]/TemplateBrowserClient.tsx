@@ -5,34 +5,29 @@ import Link from 'next/link'
 import { ArrowLeft, Search, Pencil, ArrowRight } from 'lucide-react'
 import type { PrintProduct } from '@/types/database'
 import {
-  TEMPLATE_CATALOG,
   TEMPLATE_CATEGORY_LABELS,
   getTemplatesForProduct,
   type TemplateCategory,
   type TemplateDef,
 } from '@/config/templates'
+import TemplatePreview from '@/components/TemplatePreview'
 
 interface Props {
   product: PrintProduct
 }
 
 function TemplateCard({ template, productSlug }: { template: TemplateDef; productSlug: string }) {
-  const isDark = isColorDark(template.bg)
-
   return (
     <Link
       href={`/design/${productSlug}?template=${encodeURIComponent(template.name)}&bg=${encodeURIComponent(template.bg)}`}
-      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-white/10"
+      className="group relative rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border border-gray-200"
     >
-      {/* Template preview background */}
-      <div
-        className="h-40 relative flex items-center justify-center"
-        style={{ backgroundColor: template.bg }}
-      >
-        <TemplatePreviewContent template={template} isDark={isDark} />
+      {/* Template preview */}
+      <div className="h-40 relative flex items-center justify-center bg-gray-50 p-4">
+        <TemplatePreview template={template} className="max-h-full max-w-full rounded-md shadow-sm" />
 
         {/* Hover overlay */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 flex items-center justify-center">
+        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/25 transition-colors duration-300 flex items-center justify-center">
           <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white text-gray-900 text-sm font-semibold px-4 py-2 rounded-full shadow-lg flex items-center gap-2">
             <Pencil className="w-3.5 h-3.5" />
             Use This Template
@@ -52,65 +47,12 @@ function TemplateCard({ template, productSlug }: { template: TemplateDef; produc
             )}
           </div>
           <span className="shrink-0 text-[10px] font-medium px-2 py-0.5 rounded-full bg-gray-100 text-gray-500 capitalize">
-            {template.category}
+            {TEMPLATE_CATEGORY_LABELS[template.category]}
           </span>
         </div>
       </div>
     </Link>
   )
-}
-
-function TemplatePreviewContent({ template, isDark }: { template: TemplateDef; isDark: boolean }) {
-  const textColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'
-  const subColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.4)'
-  const accentColor = isDark ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.08)'
-
-  return (
-    <div className="w-full h-full relative overflow-hidden flex items-center justify-center px-6">
-      {/* Background geometric accent */}
-      <div
-        className="absolute -right-8 -bottom-8 w-32 h-32 rounded-full"
-        style={{ backgroundColor: accentColor }}
-      />
-      <div
-        className="absolute -left-4 -top-4 w-20 h-20 rounded-full"
-        style={{ backgroundColor: accentColor }}
-      />
-
-      {/* Simulated card content */}
-      <div className="relative z-10 text-center">
-        <div
-          className="w-8 h-1.5 rounded-full mx-auto mb-3"
-          style={{ backgroundColor: textColor }}
-        />
-        <div
-          className="text-xs font-bold uppercase tracking-widest mb-1"
-          style={{ color: textColor }}
-        >
-          {template.name.split(' ')[0]}
-        </div>
-        <div
-          className="text-[10px] font-medium"
-          style={{ color: subColor }}
-        >
-          {template.description || template.category}
-        </div>
-        <div
-          className="w-12 h-0.5 rounded-full mx-auto mt-3"
-          style={{ backgroundColor: subColor }}
-        />
-      </div>
-    </div>
-  )
-}
-
-function isColorDark(hex: string): boolean {
-  const h = hex.replace('#', '')
-  if (h.length < 6) return false
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 < 128
 }
 
 export default function TemplateBrowserClient({ product }: Props) {

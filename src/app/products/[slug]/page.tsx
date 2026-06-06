@@ -11,6 +11,7 @@ import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
+import TemplatePreview from '@/components/TemplatePreview'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ProductGallery from '@/components/ProductGallery'
@@ -325,47 +326,29 @@ export default async function ProductDetailPage({ params }: Props) {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-              {templates.map(template => {
-                const isDark = isColorDark(template.bg)
-                const textColor = isDark ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)'
-                const subColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.35)'
-                return (
-                  <Link
-                    key={template.name}
-                    href={`/design/${product.slug}?template=${encodeURIComponent(template.name)}&bg=${encodeURIComponent(template.bg)}`}
-                    className="group rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
-                  >
-                    <div
-                      className="h-28 relative overflow-hidden flex items-center justify-center"
-                      style={{ backgroundColor: template.bg }}
-                    >
-                      {/* Accent circles */}
-                      <div className="absolute -right-6 -bottom-6 w-20 h-20 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)' }} />
-                      <div className="absolute -left-3 -top-3 w-12 h-12 rounded-full" style={{ backgroundColor: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)' }} />
-                      {/* Simulated card content */}
-                      <div className="relative text-center px-4">
-                        <div className="w-6 h-1 rounded-full mx-auto mb-2" style={{ backgroundColor: textColor }} />
-                        <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: textColor }}>
-                          {template.name.split(' ')[0]}
-                        </div>
-                        <div className="w-8 h-0.5 rounded-full mx-auto mt-2" style={{ backgroundColor: subColor }} />
-                      </div>
-                      {/* Hover overlay */}
-                      <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-colors duration-200 flex items-center justify-center">
-                        <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
-                          <Pencil className="w-3 h-3" /> Use
-                        </span>
-                      </div>
+              {templates.map(template => (
+                <Link
+                  key={template.name}
+                  href={`/design/${product.slug}?template=${encodeURIComponent(template.name)}&bg=${encodeURIComponent(template.bg)}`}
+                  className="group rounded-xl overflow-hidden border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-200 hover:-translate-y-0.5"
+                >
+                  <div className="h-28 relative overflow-hidden flex items-center justify-center bg-gray-50 p-3">
+                    <TemplatePreview template={template} className="max-h-full max-w-full rounded-md shadow-sm" />
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 bg-blue-600/0 group-hover:bg-blue-600/20 transition-colors duration-200 flex items-center justify-center">
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white text-blue-700 text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1 shadow-md">
+                        <Pencil className="w-3 h-3" /> Use
+                      </span>
                     </div>
-                    <div className="px-3 py-2.5 bg-white">
-                      <div className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
-                        {template.name}
-                      </div>
-                      <div className="text-[10px] text-gray-400 truncate mt-0.5">{template.description || template.category}</div>
+                  </div>
+                  <div className="px-3 py-2.5 bg-white">
+                    <div className="text-xs font-semibold text-gray-800 group-hover:text-blue-600 transition-colors truncate">
+                      {template.name}
                     </div>
-                  </Link>
-                )
-              })}
+                    <div className="text-[10px] text-gray-400 truncate mt-0.5">{template.description || template.category}</div>
+                  </div>
+                </Link>
+              ))}
             </div>
 
             <div className="mt-6 flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -413,13 +396,4 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
     </div>
   )
-}
-
-function isColorDark(hex: string): boolean {
-  const h = hex.replace('#', '')
-  if (h.length < 6) return false
-  const r = parseInt(h.slice(0, 2), 16)
-  const g = parseInt(h.slice(2, 4), 16)
-  const b = parseInt(h.slice(4, 6), 16)
-  return (r * 299 + g * 587 + b * 114) / 1000 < 128
 }
