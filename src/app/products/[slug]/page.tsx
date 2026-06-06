@@ -18,6 +18,7 @@ import ViewItemTracker from '@/components/ViewItemTracker'
 import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 import ProductReviews from '@/components/ProductReviews'
+import FinishingSection from '@/components/FinishingSection'
 import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
 
 interface Props {
@@ -295,6 +296,9 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </div>
       </div>
+
+      {/* Finishing Options Section */}
+      <FinishingSection productCategory={product.category} />
 
       {/* Template Gallery Section */}
       {templates.length > 0 && (

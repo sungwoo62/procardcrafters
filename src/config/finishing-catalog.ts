@@ -24,7 +24,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '박',
     description_en: 'Hot-stamped gold foil applied to selected areas — luxury statement.',
     image_url: `${BASE}/foil_stamp.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'greeting_cards', 'letterpress_cards'],
+    fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'greeting_cards', 'letterpress_cards'],
   },
   {
     value: 'deboss_emboss',
@@ -32,7 +32,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '형압',
     description_en: 'Pressed pattern that creates a tactile recessed (deboss) or raised (emboss) effect.',
     image_url: `${BASE}/deboss_emboss.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'letterpress_cards', 'greeting_cards'],
+    fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards', 'greeting_cards'],
   },
   {
     value: 'coating',
@@ -40,7 +40,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '코팅',
     description_en: 'Protective laminate finish — matte, gloss, or soft-touch options.',
     image_url: `${BASE}/coating.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'postcards', 'flyers', 'brochures'],
+    fits: ['business_cards', 'premium_business_cards', 'letterpress_cards', 'postcards', 'flyers', 'brochures'],
   },
   {
     value: 'score_crease',
@@ -72,7 +72,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '귀도리',
     description_en: 'Soft 3mm radius corners for a modern, approachable look.',
     image_url: `${BASE}/round_corner.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'postcards', 'flyers', 'stickers'],
+    fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards', 'postcards', 'flyers', 'stickers'],
   },
   {
     value: 'die_cut',
@@ -112,7 +112,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '별색',
     description_en: 'Vivid Pantone spot ink for exact brand colors beyond CMYK gamut.',
     image_url: `${BASE}/spot_color.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'posters', 'brochures'],
+    fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards', 'posters', 'brochures'],
   },
   {
     value: 'binding',
@@ -144,7 +144,7 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     label_ko: '에폭시',
     description_en: 'Clear raised resin coating — glossy 3D dome over logo or selected area.',
     image_url: `${BASE}/epoxy.jpg`,
-    fits: ['business_cards', 'premium_business_cards', 'labels'],
+    fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards', 'labels'],
   },
 ]
 
