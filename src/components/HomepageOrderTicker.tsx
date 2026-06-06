@@ -12,14 +12,14 @@ interface TickerItem {
 }
 
 const STATIC_FALLBACK: TickerItem[] = [
-  { id: '1', maskedName: 'J. Kim', city: 'Seoul', productName: 'Business Cards 500pcs', relativeTime: '3 min ago' },
-  { id: '2', maskedName: 'L. Park', city: 'Los Angeles', productName: 'Stickers 1,000pcs', relativeTime: '8 min ago' },
-  { id: '3', maskedName: 'S. Lee', city: 'Busan', productName: 'Stickers 200pcs', relativeTime: '12 min ago' },
-  { id: '4', maskedName: 'J. Kim', city: 'New York', productName: 'Business Cards 500pcs', relativeTime: '19 min ago' },
-  { id: '5', maskedName: 'M. Park', city: 'Daejeon', productName: 'Flyers 1,000pcs', relativeTime: '25 min ago' },
-  { id: '6', maskedName: 'M. Chen', city: 'Toronto', productName: 'Postcards 200pcs', relativeTime: '31 min ago' },
-  { id: '7', maskedName: 'H. Choi', city: 'Incheon', productName: 'Premium Cards 300pcs', relativeTime: '38 min ago' },
-  { id: '8', maskedName: 'S. Lee', city: 'London', productName: 'Flyers 500pcs', relativeTime: '44 min ago' },
+  { id: '1', maskedName: 'Ja** W.', city: 'New York', productName: 'Business Cards 500pcs', relativeTime: '3 min ago' },
+  { id: '2', maskedName: 'Em** J.', city: 'Los Angeles', productName: 'Stickers 1,000pcs', relativeTime: '8 min ago' },
+  { id: '3', maskedName: 'Mi** B.', city: 'Chicago', productName: 'Stickers 200pcs', relativeTime: '12 min ago' },
+  { id: '4', maskedName: 'Sa** D.', city: 'London', productName: 'Business Cards 500pcs', relativeTime: '19 min ago' },
+  { id: '5', maskedName: 'Ch** M.', city: 'Toronto', productName: 'Flyers 1,000pcs', relativeTime: '25 min ago' },
+  { id: '6', maskedName: 'Je** T.', city: 'Sydney', productName: 'Postcards 200pcs', relativeTime: '31 min ago' },
+  { id: '7', maskedName: 'Da** A.', city: 'Miami', productName: 'Premium Cards 300pcs', relativeTime: '38 min ago' },
+  { id: '8', maskedName: 'La** H.', city: 'Paris', productName: 'Flyers 500pcs', relativeTime: '44 min ago' },
 ]
 
 export default function HomepageOrderTicker() {
