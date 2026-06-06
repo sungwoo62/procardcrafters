@@ -11,7 +11,7 @@ import {
   RotateCcw, RotateCw, RefreshCw, Crop, Star, Circle, Triangle,
   FileText, Save, FolderOpen, QrCode, ShieldCheck, CopyPlus,
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
-  ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup,
+  ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup, Loader2,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
@@ -659,6 +659,7 @@ export default function EditorClient({ product, options }: Props) {
   // 줌/팬 (일러스트식 작업영역)
   const [zoom, setZoom] = useState(1)
   const [showGrid, setShowGrid] = useState(false)
+  const [bgRemoving, setBgRemoving] = useState(false)
   const spaceDownRef = useRef(false)
   const panningRef = useRef(false)
   const lastPanPosRef = useRef<{ x: number; y: number } | null>(null)
@@ -3455,6 +3456,46 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
+  // ── 이미지 배경 제거 (클라이언트 사이드 AI, @imgly/background-removal) ────────
+  // 모델은 첫 실행 시 브라우저에서 lazy 로드 (API 키 불필요).
+
+  async function removeImageBackground() {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const img: any = canvas.getActiveObject()
+    if (!img || img.type !== 'image') return
+    const src: string | undefined = img.getSrc?.() ?? img._element?.src
+    if (!src) return
+    setBgRemoving(true)
+    try {
+      const { removeBackground } = await import('@imgly/background-removal')
+      const resultBlob = await removeBackground(src)
+      const url = URL.createObjectURL(resultBlob)
+      const fabric = fabricModRef.current ?? await import('fabric')
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const newEl = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const el = new Image()
+        el.crossOrigin = 'anonymous'
+        el.onload = () => resolve(el)
+        el.onerror = reject
+        el.src = url
+      })
+      // 기존 위치/스케일/각도/필터 유지하며 src 교체
+      img.setElement(newEl)
+      img.applyFilters()
+      void fabric
+      canvas.requestRenderAll()
+      syncLayers(canvas)
+      saveHistory(canvas)
+      showUploadToast('배경을 제거했습니다.')
+    } catch {
+      showUploadToast('배경 제거에 실패했습니다. 다시 시도해 주세요.')
+    } finally {
+      setBgRemoving(false)
+    }
+  }
+
   // ── Crop ─────────────────────────────────────────────────────────────────
 
   function startCrop() {
@@ -5360,6 +5401,22 @@ export default function EditorClient({ product, options }: Props) {
                       </div>
                     )}
                   </div>
+
+                  {/* AI 배경 제거 */}
+                  {!cropActive && (
+                    <div>
+                      <label className="block text-gray-500 mb-1">Background</label>
+                      <button
+                        onClick={removeImageBackground}
+                        disabled={bgRemoving}
+                        className="w-full flex items-center justify-center gap-1.5 py-1.5 text-xs rounded bg-indigo-600 text-white font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {bgRemoving ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
+                        {bgRemoving ? 'Removing…' : 'Remove Background (AI)'}
+                      </button>
+                      <p className="text-[10px] text-gray-400 mt-1">첫 실행 시 AI 모델 다운로드(수 초~수십 초)</p>
+                    </div>
+                  )}
 
                   {!cropActive && (
                   <>
