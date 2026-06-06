@@ -395,7 +395,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </p>
         <div className="mt-2 flex items-start gap-1.5 text-[11px] text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2">
           <span className="font-semibold">Note:</span>
-          <span>This is the production / dispatch estimate from our LA facility. Actual delivery time depends on FedEx network conditions and your destination — shipping is billed separately at checkout.</span>
+          <span>This is the production / dispatch estimate from our global production facility. Actual delivery time depends on FedEx network conditions and your destination — shipping is billed separately at checkout.</span>
         </div>
         {product.category === 'letterpress_cards' && (
           <div className="mt-2 flex items-start gap-1.5 text-[11px] text-red-700 bg-red-50 border border-red-200 rounded-md p-2">

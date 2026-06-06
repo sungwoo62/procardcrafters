@@ -51,14 +51,14 @@ const FEATURES = [
   {
     icon: Printer,
     title: 'Offset Print Quality',
-    desc: 'Shipped directly from Los Angeles. Professional CMYK+1 printing with vibrant color and clean cuts.',
+    desc: 'Produced at certified global print facilities. Professional CMYK+1 printing with vibrant color and clean cuts.',
     color: 'bg-blue-50',
     iconColor: 'text-blue-600',
   },
   {
     icon: Truck,
     title: 'FedEx Worldwide Shipping',
-    desc: 'FedEx Express from LA. 7–10 day production + 5–8 day delivery. Door-to-door worldwide.',
+    desc: 'FedEx Express worldwide shipping. 7–10 day production + 5–8 day delivery. Door-to-door worldwide.',
     color: 'bg-green-50',
     iconColor: 'text-green-600',
   },
@@ -246,7 +246,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-blue-100/70 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Shipped from Los Angeles · Real-time pricing · No hidden fees · FedEx worldwide delivery
+              Global production · Real-time pricing · No hidden fees · FedEx worldwide delivery
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
@@ -409,9 +409,9 @@ export default async function HomePage() {
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
             <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Why Procardcrafters?</p>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">LA Production · Global Delivery</h2>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Global Production · Worldwide Delivery</h2>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              Premium print quality combined with LA-based fulfillment for global delivery.
+              Premium print quality produced at the most suitable global factory, delivered worldwide.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

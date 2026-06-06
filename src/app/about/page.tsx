@@ -4,7 +4,7 @@ import Link from 'next/link'
 
 export const metadata: Metadata = {
   title: 'About — Procardcrafters',
-  description: 'Learn about Procardcrafters — premium printing distributed from Los Angeles and delivered worldwide.',
+  description: 'Learn about Procardcrafters — premium printing produced at certified global facilities and delivered worldwide.',
 }
 
 const VALUES = [
@@ -47,11 +47,11 @@ export default function AboutPage() {
             <Package className="w-7 h-7 text-blue-600" />
           </div>
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Premium Print, Distributed from LA
+            Premium Print, Produced for the World
           </h1>
           <p className="text-lg text-gray-600 leading-relaxed">
             Procardcrafters was built to give businesses everywhere access to high-quality
-            printing — at fair prices, with no guesswork. Distributed from our Los Angeles facility.
+            printing — at fair prices, with no guesswork. Produced at the most suitable factory in our global network.
           </p>
         </div>
       </section>

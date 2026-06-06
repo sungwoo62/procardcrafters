@@ -45,7 +45,7 @@ const TYPOGRAPHY = [
   { label: 'Display / H1', cls: 'text-5xl font-bold text-gray-900', sample: 'Premium Print' },
   { label: 'H2', cls: 'text-3xl font-bold text-gray-900', sample: 'Our Products' },
   { label: 'H3', cls: 'text-xl font-semibold text-gray-900', sample: 'Business Cards' },
-  { label: 'Body Large', cls: 'text-lg text-gray-600', sample: 'Distributed from LA, delivered worldwide.' },
+  { label: 'Body Large', cls: 'text-lg text-gray-600', sample: 'Produced globally, delivered worldwide.' },
   { label: 'Body', cls: 'text-base text-gray-700', sample: 'Choose your product, size, and finish options.' },
   { label: 'Body Small', cls: 'text-sm text-gray-500', sample: 'Free FedEx shipping on orders over $100.' },
   { label: 'Caption', cls: 'text-xs text-gray-400', sample: '3–5 business days production' },
@@ -277,7 +277,7 @@ export default function DesignSystemPage() {
                 </div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-3 leading-tight">
                   Premium Print,{' '}
-                  <span className="text-blue-600">Shipped From LA</span>
+                  <span className="text-blue-600">Produced Globally</span>
                 </h2>
                 <p className="text-gray-500 max-w-md mx-auto text-sm mb-6">
                   Business cards, stickers, flyers — printed with precision and delivered worldwide.
