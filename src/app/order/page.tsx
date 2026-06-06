@@ -71,6 +71,7 @@ async function OrderPageContent({ searchParams }: PageProps) {
       itemPriceUsd={itemPriceUsd}
       shippingUsd={shippingUsd}
       exchangeRate={exchangeRate}
+      preloadedFileId={params.fileId ?? null}
     />
   )
 }

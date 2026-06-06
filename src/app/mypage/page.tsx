@@ -2,7 +2,7 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createAuthServerClient } from '@/lib/supabase-server'
 import { createServerClient } from '@/lib/supabase'
-import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, FileText, User } from 'lucide-react'
+import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, FileText, User, AlertTriangle, Eye, UploadCloud } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import LogoutButton from './LogoutButton'
 import ReviewButton from '@/components/ReviewButton'
@@ -37,10 +37,19 @@ interface MypageShipment {
   status: string
 }
 
+interface PendingProof {
+  id: string
+  order_id: string
+  order_number: string
+  version: number
+  admin_note: string | null
+}
+
 interface OrderWithItems extends PrintOrder {
   items: PrintOrderItem[]
   files: PrintFile[]
   shipments: MypageShipment[]
+  pendingProof: PendingProof | null
 }
 
 function trackingUrl(carrier: string, tn: string): string | null {
@@ -76,10 +85,10 @@ export default async function MypagePage() {
 
   const orders = (ordersData as PrintOrder[] | null) ?? []
 
-  // Fetch items + files for each order
+  // Fetch items + files + shipments + pending proofs for each order
   const ordersWithItems: OrderWithItems[] = await Promise.all(
     orders.map(async (order) => {
-      const [{ data: items }, { data: files }, { data: shipments }] = await Promise.all([
+      const [{ data: items }, { data: files }, { data: shipments }, { data: proofs }] = await Promise.all([
         supabase
           .from('print_order_items')
           .select('*')
@@ -94,12 +103,23 @@ export default async function MypagePage() {
           .eq('order_id', order.id)
           .in('status', ['label_created', 'in_transit', 'delivered'])
           .order('created_at', { ascending: false }),
+        adminSupabase
+          .from('print_design_proofs')
+          .select('id, order_id, version, admin_note, status')
+          .eq('order_id', order.id)
+          .eq('status', 'pending')
+          .order('version', { ascending: false })
+          .limit(1),
       ])
+      const pendingProof = proofs?.[0]
+        ? { ...(proofs[0] as { id: string; order_id: string; version: number; admin_note: string | null; status: string }), order_number: order.order_number }
+        : null
       return {
         ...order,
         items: (items as PrintOrderItem[] | null) ?? [],
         files: (files as PrintFile[] | null) ?? [],
         shipments: (shipments as MypageShipment[] | null) ?? [],
+        pendingProof,
       }
     })
   )
@@ -131,6 +151,69 @@ export default async function MypagePage() {
         </div>
         <LogoutButton />
       </div>
+
+      {/* Action Required */}
+      {(() => {
+        const actionItems = ordersWithItems.filter(
+          o => o.pendingProof || o.files.some(f => f.status === 'rejected')
+        )
+        if (actionItems.length === 0) return null
+        return (
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-3">
+              <AlertTriangle className="w-5 h-5 text-amber-500" />
+              <h2 className="text-lg font-semibold text-gray-900">Action Required</h2>
+              <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">{actionItems.length}</span>
+            </div>
+            <div className="space-y-3">
+              {actionItems.map(order => (
+                <div key={`action-${order.id}`} className="border border-amber-200 bg-amber-50 rounded-xl p-4 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-mono text-sm font-semibold text-gray-900">{order.order_number}</span>
+                    <Link href={`/orders/${order.order_number}`} className="text-xs text-blue-600 hover:underline font-medium">
+                      View Order →
+                    </Link>
+                  </div>
+                  {order.pendingProof && (
+                    <div className="flex items-start gap-2">
+                      <Eye className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-800">Design proof ready for review</p>
+                        {order.pendingProof.admin_note && (
+                          <p className="text-xs text-gray-500 mt-0.5 truncate">Note: {order.pendingProof.admin_note}</p>
+                        )}
+                        <Link
+                          href={`/orders/${order.order_number}#proof`}
+                          className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-blue-600 hover:text-blue-700"
+                        >
+                          Review Design Proof →
+                        </Link>
+                      </div>
+                    </div>
+                  )}
+                  {order.files.filter(f => f.status === 'rejected').map(file => (
+                    <div key={file.id} className="flex items-start gap-2">
+                      <UploadCloud className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-red-700">File rejected: {file.original_filename}</p>
+                        {file.rejection_reason && (
+                          <p className="text-xs text-red-500 mt-0.5">{file.rejection_reason}</p>
+                        )}
+                        <Link
+                          href={`/orders/${order.order_number}#reupload`}
+                          className="inline-flex items-center gap-1 mt-2 text-xs font-semibold text-red-600 hover:text-red-700"
+                        >
+                          Upload Replacement File →
+                        </Link>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </section>
+        )
+      })()}
 
       {/* Order History */}
       <section>
@@ -235,29 +318,52 @@ export default async function MypagePage() {
                     </div>
                   )}
 
-                  {/* File Status */}
-                  {order.files.length > 0 && (
-                    <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50">
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <FileText className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-xs font-medium text-gray-500">Uploaded Files</span>
-                      </div>
-                      <div className="flex flex-wrap gap-2">
-                        {order.files.map((file) => {
-                          const fileStatus = FILE_STATUS_CONFIG[file.status]
-                          return (
-                            <div key={file.id} className="flex items-center gap-1.5 text-xs">
-                              <span className="text-gray-600 max-w-[160px] truncate">{file.original_filename}</span>
-                              <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${fileStatus.color}`}>
-                                {fileStatus.label}
-                              </span>
-                              {file.rejection_reason && (
-                                <span className="text-red-500 text-xs">— {file.rejection_reason}</span>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
+                  {/* File Status + Design Proof */}
+                  {(order.files.length > 0 || order.pendingProof) && (
+                    <div className="px-5 py-3 border-t border-gray-100 bg-gray-50/50 space-y-2">
+                      {order.pendingProof && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Eye className="w-3.5 h-3.5 text-blue-500" />
+                            <span className="text-xs font-semibold text-blue-700">Design Proof v{order.pendingProof.version} — Awaiting Review</span>
+                          </div>
+                          <Link
+                            href={`/orders/${order.order_number}#proof`}
+                            className="text-xs text-blue-600 font-semibold hover:underline"
+                          >
+                            Review →
+                          </Link>
+                        </div>
+                      )}
+                      {order.files.length > 0 && (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-3.5 h-3.5 text-gray-400" />
+                            <span className="text-xs font-medium text-gray-500">Uploaded Files</span>
+                          </div>
+                          <div className="flex flex-wrap gap-2">
+                            {order.files.map((file) => {
+                              const fileStatus = FILE_STATUS_CONFIG[file.status]
+                              return (
+                                <div key={file.id} className="flex items-center gap-1.5 text-xs">
+                                  <span className="text-gray-600 max-w-[160px] truncate">{file.original_filename}</span>
+                                  <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${fileStatus.color}`}>
+                                    {fileStatus.label}
+                                  </span>
+                                  {file.status === 'rejected' && (
+                                    <Link
+                                      href={`/orders/${order.order_number}#reupload`}
+                                      className="text-red-600 text-xs font-semibold hover:underline"
+                                    >
+                                      Re-upload →
+                                    </Link>
+                                  )}
+                                </div>
+                              )
+                            })}
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
 

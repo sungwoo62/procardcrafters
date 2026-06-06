@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useRef } from 'react'
 import Link from 'next/link'
-import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap } from 'lucide-react'
+import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
@@ -96,6 +96,41 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
   const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
   const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
+
+  // Pre-upload state
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
+  const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
+  const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setUploadStatus('uploading')
+    setUploadError(null)
+    setUploadedFileId(null)
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await fetch('/api/files/upload', { method: 'POST', body: fd })
+    const data = await res.json()
+    if (!res.ok) {
+      setUploadStatus('error')
+      setUploadError(data.error ?? 'Upload failed')
+      return
+    }
+    setUploadStatus('done')
+    setUploadedFileId(data.fileId)
+    setUploadedFileName(file.name)
+  }
+
+  function clearFile() {
+    setUploadStatus('idle')
+    setUploadedFileId(null)
+    setUploadedFileName(null)
+    setUploadError(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
 
   // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
@@ -323,6 +358,66 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         </p>
       </div>
 
+      {/* Pre-upload design file */}
+      <div className="border border-gray-200 rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-semibold text-gray-700">Upload Your Design File</p>
+          <span className="text-xs text-gray-400">PDF · AI · PSD · PNG · JPG · TIFF · Max 200MB</span>
+        </div>
+
+        {uploadStatus === 'idle' && (
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            className="w-full border-2 border-dashed border-gray-300 rounded-lg py-4 text-sm text-gray-500 hover:border-blue-400 hover:bg-blue-50 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            Choose file or drag & drop
+          </button>
+        )}
+
+        {uploadStatus === 'uploading' && (
+          <div className="flex items-center gap-3 py-3 px-4 bg-blue-50 rounded-lg text-blue-700 text-sm">
+            <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            Uploading…
+          </div>
+        )}
+
+        {uploadStatus === 'done' && uploadedFileName && (
+          <div className="flex items-center gap-3 py-2 px-3 bg-green-50 border border-green-200 rounded-lg text-sm">
+            <CheckCircle className="w-4 h-4 text-green-600 shrink-0" />
+            <span className="flex-1 truncate text-green-800">{uploadedFileName}</span>
+            <button type="button" onClick={clearFile} className="text-green-600 hover:text-green-800 shrink-0">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
+
+        {uploadStatus === 'error' && (
+          <div className="flex items-start gap-3 py-2 px-3 bg-red-50 border border-red-200 rounded-lg text-sm">
+            <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-red-700">{uploadError}</p>
+              <button type="button" onClick={clearFile} className="text-xs text-red-500 underline mt-1">Try again</button>
+            </div>
+          </div>
+        )}
+
+        {uploadStatus !== 'done' && (
+          <p className="text-xs text-gray-400">
+            Optional: upload now to skip the upload step at checkout.
+          </p>
+        )}
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.ai,.psd,.png,.jpg,.jpeg,.tif,.tiff"
+          onChange={handleFileChange}
+          className="hidden"
+        />
+      </div>
+
       {/* Order / Editor Buttons */}
       <div className="space-y-2">
         <Link
@@ -335,12 +430,14 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           </span>
         </Link>
         <Link
-          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
+          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
           className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
-            <ShoppingCart className="w-5 h-5" />
-            Upload File & Order
+            {uploadStatus === 'done'
+              ? <><FileText className="w-5 h-5" /> Order with Uploaded File</>
+              : <><ShoppingCart className="w-5 h-5" /> Upload File & Order</>
+            }
           </span>
         </Link>
       </div>
