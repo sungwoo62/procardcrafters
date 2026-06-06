@@ -5,6 +5,11 @@
 // 갈라지지 않는다. 좌표·크기는 호출자가 넘긴 W·H 의 절대 단위로 반환한다
 // (썸네일은 viewBox 단위, 에디터는 mm). 같은 비율이면 결과도 1:1로 일치한다.
 
+// 썸네일(SVG)·에디터(fabric canvas) 양쪽에서 동일하게 렌더되는 폰트.
+// fabric Textbox 는 fontFamily 미지정 시 'Times New Roman'(세리프)로 떨어져
+// 산세리프 썸네일과 어긋난다 → 두 렌더러 모두 이 상수를 사용한다.
+export const CARD_FONT = 'Helvetica, Arial, sans-serif'
+
 export interface LayoutColors {
   ink: string
   sub: string

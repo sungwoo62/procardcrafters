@@ -16,7 +16,7 @@ import {
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
-import { buildCardLayout } from '@/config/cardLayout'
+import { buildCardLayout, CARD_FONT } from '@/config/cardLayout'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1305,16 +1305,19 @@ export default function EditorClient({ product, options }: Props) {
           data: { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' },
         }))
       } else if (p.kind === 'poly') {
-        const poly = new fabric.Polygon(
-          p.pts.map(([x, y]) => ({ x: mmToPx(x, scale), y: mmToPx(y, scale) })),
-          { left: bl, top: bl, fill: p.fill, opacity: p.opacity },
-        )
+        // fabric Polygon 은 점들을 자체 bbox 기준으로 정규화하므로, left/top 을 bl 로만
+        // 주면 (0,0)에서 시작하지 않는 도형(예: 우측 삼각형)이 좌상단으로 끌려온다.
+        // 점들의 최소 x·y 만큼 left/top 을 보정해 절대 좌표를 보존한다.
+        const pxPts = p.pts.map(([x, y]) => ({ x: mmToPx(x, scale), y: mmToPx(y, scale) }))
+        const minX = Math.min(...pxPts.map(pt => pt.x))
+        const minY = Math.min(...pxPts.map(pt => pt.y))
+        const poly = new fabric.Polygon(pxPts, { left: bl + minX, top: bl + minY, fill: p.fill, opacity: p.opacity })
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         ;(poly as any).data = { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' }
         canvas.add(poly)
       } else if (p.kind === 'text') {
         const opts: Record<string, unknown> = {
-          fontSize: mmToPx(p.size, scale), fill: p.fill,
+          fontSize: mmToPx(p.size, scale), fill: p.fill, fontFamily: CARD_FONT,
           data: { id: makeId(), name: p.label, layerType: 'text', ...(p.field ? { fieldKey: p.field } : {}) },
         }
         if (p.weight) opts.fontWeight = p.weight

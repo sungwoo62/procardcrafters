@@ -1,5 +1,5 @@
 import type { TemplateDef, TemplateCategory } from '@/config/templates'
-import { buildCardLayout, type LayoutPrim } from '@/config/cardLayout'
+import { buildCardLayout, CARD_FONT, type LayoutPrim } from '@/config/cardLayout'
 
 // 템플릿 미리보기 — 카테고리·레이아웃별로 서로 다른 SVG 목업을 렌더.
 // 순수 SVG (클라이언트 훅 없음) → 서버 컴포넌트에서도 그대로 사용 가능.
@@ -370,7 +370,7 @@ function primToSvg(p: LayoutPrim, i: number): React.ReactNode {
       if (p.rotate && p.originCenter) {
         return (
           <text
-            key={i} x={p.x} y={p.y} fontFamily="Helvetica, Arial, sans-serif"
+            key={i} x={p.x} y={p.y} fontFamily={CARD_FONT}
             fontSize={p.size} fontWeight={p.weight} fill={p.fill} opacity={p.opacity}
             textAnchor="middle" dominantBaseline="central"
             transform={`rotate(${p.rotate} ${p.x} ${p.y})`}
@@ -379,7 +379,7 @@ function primToSvg(p: LayoutPrim, i: number): React.ReactNode {
       }
       return (
         <text
-          key={i} x={cx} y={baseline} fontFamily="Helvetica, Arial, sans-serif"
+          key={i} x={cx} y={baseline} fontFamily={CARD_FONT}
           fontSize={p.size} fontWeight={p.weight} fill={p.fill} opacity={p.opacity}
           textAnchor={anchor}
           lengthAdjust="spacingAndGlyphs"
