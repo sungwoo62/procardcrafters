@@ -1288,22 +1288,25 @@ export default function EditorClient({ product, options }: Props) {
           left: bl + mmToPx(p.x, scale), top: bl + mmToPx(p.y, scale),
           width: mmToPx(Math.max(p.w, 0), scale), height: mmToPx(Math.max(p.h, 0), scale),
           fill: p.stroke ? 'transparent' : (p.fill ?? '#000000'),
-          opacity: p.opacity,
           data: { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' },
         }
+        if (p.opacity != null) opts.opacity = p.opacity
         if (p.stroke) { opts.stroke = p.stroke; opts.strokeWidth = mmToPx(p.sw ?? 0.3, scale) }
         if (p.r) { opts.rx = mmToPx(p.r, scale); opts.ry = mmToPx(p.r, scale) }
         if (p.rotate) opts.angle = p.rotate
         canvas.add(new fabric.Rect(opts))
       } else if (p.kind === 'circle') {
-        canvas.add(new fabric.Circle({
+        // undefined 키를 넘기면 fabric.Circle 의 채움 원이 렌더되지 않는 사례가 있어,
+        // 정의된 키만 포함해 동작하는 수동 템플릿 원과 동일한 형태로 생성한다.
+        const copts: Record<string, unknown> = {
           left: bl + mmToPx(p.cx - p.r, scale), top: bl + mmToPx(p.cy - p.r, scale),
           radius: mmToPx(p.r, scale),
           fill: p.stroke ? 'transparent' : (p.fill ?? '#000000'),
-          stroke: p.stroke, strokeWidth: p.stroke ? mmToPx(p.sw ?? 0.3, scale) : undefined,
-          opacity: p.opacity,
           data: { id: makeId(), name: p.label ?? 'Shape', layerType: 'rect' },
-        }))
+        }
+        if (p.stroke) { copts.stroke = p.stroke; copts.strokeWidth = mmToPx(p.sw ?? 0.3, scale) }
+        if (p.opacity != null) copts.opacity = p.opacity
+        canvas.add(new fabric.Circle(copts))
       } else if (p.kind === 'poly') {
         // fabric Polygon 은 점들을 자체 bbox 기준으로 정규화하므로, left/top 을 bl 로만
         // 주면 (0,0)에서 시작하지 않는 도형(예: 우측 삼각형)이 좌상단으로 끌려온다.
