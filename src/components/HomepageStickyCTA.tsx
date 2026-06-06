@@ -24,7 +24,7 @@ export default function HomepageStickyCTA() {
         href="/products"
         className="inline-flex items-center gap-2.5 bg-blue-600 hover:bg-blue-700 text-white px-7 py-3.5 rounded-full font-semibold shadow-2xl shadow-blue-900/40 transition-colors text-sm whitespace-nowrap"
       >
-        지금 주문하기
+        Order Now
         <ArrowRight className="w-4 h-4" />
       </Link>
     </div>

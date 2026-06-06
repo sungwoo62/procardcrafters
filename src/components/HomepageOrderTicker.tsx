@@ -12,14 +12,14 @@ interface TickerItem {
 }
 
 const STATIC_FALLBACK: TickerItem[] = [
-  { id: '1', maskedName: '김○○', city: '서울', productName: '명함 500장', relativeTime: '3분 전' },
-  { id: '2', maskedName: 'L. Park', city: 'Los Angeles', productName: 'Stickers 1,000pcs', relativeTime: '8분 전' },
-  { id: '3', maskedName: '이○○', city: '부산', productName: '스티커 200장', relativeTime: '12분 전' },
-  { id: '4', maskedName: 'J. Kim', city: 'New York', productName: 'Business Cards 500pcs', relativeTime: '19분 전' },
-  { id: '5', maskedName: '박○○', city: '대전', productName: '전단지 1,000장', relativeTime: '25분 전' },
-  { id: '6', maskedName: 'M. Chen', city: 'Toronto', productName: 'Postcards 200pcs', relativeTime: '31분 전' },
-  { id: '7', maskedName: '최○○', city: '인천', productName: '프리미엄 명함 300장', relativeTime: '38분 전' },
-  { id: '8', maskedName: 'S. Lee', city: 'London', productName: 'Flyers 500pcs', relativeTime: '44분 전' },
+  { id: '1', maskedName: 'J. Kim', city: 'Seoul', productName: 'Business Cards 500pcs', relativeTime: '3 min ago' },
+  { id: '2', maskedName: 'L. Park', city: 'Los Angeles', productName: 'Stickers 1,000pcs', relativeTime: '8 min ago' },
+  { id: '3', maskedName: 'S. Lee', city: 'Busan', productName: 'Stickers 200pcs', relativeTime: '12 min ago' },
+  { id: '4', maskedName: 'J. Kim', city: 'New York', productName: 'Business Cards 500pcs', relativeTime: '19 min ago' },
+  { id: '5', maskedName: 'M. Park', city: 'Daejeon', productName: 'Flyers 1,000pcs', relativeTime: '25 min ago' },
+  { id: '6', maskedName: 'M. Chen', city: 'Toronto', productName: 'Postcards 200pcs', relativeTime: '31 min ago' },
+  { id: '7', maskedName: 'H. Choi', city: 'Incheon', productName: 'Premium Cards 300pcs', relativeTime: '38 min ago' },
+  { id: '8', maskedName: 'S. Lee', city: 'London', productName: 'Flyers 500pcs', relativeTime: '44 min ago' },
 ]
 
 export default function HomepageOrderTicker() {
@@ -53,11 +53,10 @@ export default function HomepageOrderTicker() {
             className="inline-flex items-center gap-1.5 text-blue-200 text-xs px-6"
           >
             <TrendingUp className="w-3 h-3 text-blue-400 shrink-0" />
-            <span className="font-medium text-white">{item.maskedName ?? '고객'}</span>
-            <span>님이</span>
-            <span className="text-blue-300">{item.relativeTime ?? '방금'}</span>
-            <span className="font-medium text-white">{item.productName ?? '제품'}</span>
-            <span>주문</span>
+            <span className="font-medium text-white">{item.maskedName ?? 'Customer'}</span>
+            <span>ordered</span>
+            <span className="font-medium text-white">{item.productName ?? 'products'}</span>
+            <span className="text-blue-300">{item.relativeTime ?? 'just now'}</span>
             {item.city && <span className="text-blue-400">({item.city})</span>}
             <span className="text-blue-700 mx-2">•</span>
           </span>

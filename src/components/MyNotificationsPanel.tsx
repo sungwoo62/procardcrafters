@@ -16,12 +16,12 @@ interface NotificationItem {
 function relativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime()
   const diffMin = Math.floor(diffMs / 60000)
-  if (diffMin < 1) return '방금'
-  if (diffMin < 60) return `${diffMin}분 전`
+  if (diffMin < 1) return 'just now'
+  if (diffMin < 60) return `${diffMin} min ago`
   const diffH = Math.floor(diffMin / 60)
-  if (diffH < 24) return `${diffH}시간 전`
+  if (diffH < 24) return `${diffH}h ago`
   const diffD = Math.floor(diffH / 24)
-  return `${diffD}일 전`
+  return `${diffD}d ago`
 }
 
 // 마이페이지에서 사용하는 내 알림 패널
@@ -37,7 +37,7 @@ export default function MyNotificationsPanel() {
       const supabase = createAuthBrowserClient()
       const { data: { session } } = await supabase.auth.getSession()
       if (!session?.access_token) {
-        setError('로그인이 필요합니다.')
+        setError('Please sign in to view notifications.')
         return
       }
 
@@ -45,13 +45,13 @@ export default function MyNotificationsPanel() {
         headers: { Authorization: `Bearer ${session.access_token}` },
       })
       if (!res.ok) {
-        setError('알림을 불러오지 못했습니다.')
+        setError('Could not load notifications.')
         return
       }
       const data = await res.json()
       setNotifications(data.notifications ?? [])
     } catch {
-      setError('알림을 불러오지 못했습니다.')
+      setError('Could not load notifications.')
     } finally {
       setLoading(false)
     }
@@ -92,14 +92,14 @@ export default function MyNotificationsPanel() {
       <div className="flex items-center justify-between p-4 border-b border-gray-100">
         <h3 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
           <Bell className="w-4 h-4 text-blue-500" />
-          내 주문 알림 이력
+          My Order Notifications
         </h3>
         <button
           type="button"
           onClick={loadNotifications}
           disabled={loading}
           className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
-          aria-label="새로고침"
+          aria-label="Refresh"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
         </button>
@@ -112,8 +112,8 @@ export default function MyNotificationsPanel() {
       {!loading && merged.length === 0 && (
         <div className="p-8 text-center text-sm text-gray-400">
           <Bell className="w-8 h-8 mx-auto mb-2 opacity-30" />
-          <p>아직 노출된 알림이 없어요.</p>
-          <p className="text-xs mt-1">주문 후 사이트에서 내 주문 토스트를 확인하세요.</p>
+          <p>No notifications yet.</p>
+          <p className="text-xs mt-1">After placing an order, you may see it featured on the site.</p>
         </div>
       )}
 
@@ -127,9 +127,9 @@ export default function MyNotificationsPanel() {
               <div className="flex-1 min-w-0">
                 <p className="text-sm text-gray-800">
                   {n.productName ? (
-                    <>내 <span className="font-medium">{n.productName}</span> 주문이 노출됐어요</>
+                    <>Your <span className="font-medium">{n.productName}</span> order was featured</>
                   ) : (
-                    '내 주문이 사이트에 노출됐어요'
+                    'Your order was featured on the site'
                   )}
                 </p>
                 <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">

@@ -41,80 +41,80 @@ const PRODUCTS = [
 ]
 
 const STATS = [
-  { value: '10,000+', label: '누적 주문', icon: '📦' },
-  { value: '40+', label: '배송 국가', icon: '🌏' },
-  { value: '4.9★', label: '평균 평점', icon: '⭐' },
-  { value: '7–10일', label: '제작 리드타임', icon: '⚡' },
+  { value: '10,000+', label: 'Orders Placed', icon: '📦' },
+  { value: '40+', label: 'Countries Shipped', icon: '🌏' },
+  { value: '4.9★', label: 'Avg. Rating', icon: '⭐' },
+  { value: '7–10 days', label: 'Production Lead Time', icon: '⚡' },
 ]
 
 const FEATURES = [
   {
     icon: Printer,
-    title: '오프셋 인쇄 품질',
-    desc: '로스앤젤레스에서 직접 발송. CMYK+1 전문 인쇄, 선명한 색감과 완벽한 재단.',
+    title: 'Offset Print Quality',
+    desc: 'Shipped directly from Los Angeles. Professional CMYK+1 printing with vibrant color and clean cuts.',
     color: 'bg-blue-50',
     iconColor: 'text-blue-600',
   },
   {
     icon: Truck,
-    title: 'FedEx 전 세계 배송',
-    desc: 'LA 출발 FedEx Express. 제작 7–10일 + 배송 5–8일. 도어투도어 전 세계 배달.',
+    title: 'FedEx Worldwide Shipping',
+    desc: 'FedEx Express from LA. 7–10 day production + 5–8 day delivery. Door-to-door worldwide.',
     color: 'bg-green-50',
     iconColor: 'text-green-600',
   },
   {
     icon: Star,
-    title: '투명한 실시간 가격',
-    desc: 'KRW→USD 실시간 환율 반영. 체크아웃 전 최종 가격 확인 — 숨겨진 비용 없음.',
+    title: 'Transparent Pricing',
+    desc: 'Real-time exchange rate. Confirm your final USD price before checkout — no hidden fees.',
     color: 'bg-amber-50',
     iconColor: 'text-amber-600',
   },
 ]
 
 const HOW_IT_WORKS = [
-  { icon: Settings, step: '01', title: '옵션 선택', desc: '제품·사이즈·수량·마감재 선택. 가격이 실시간으로 업데이트됩니다.' },
-  { icon: Upload, step: '02', title: '디자인 업로드', desc: 'PDF, AI, PSD 파일 업로드. 인쇄 적합성 자동 검증.' },
-  { icon: CreditCard, step: '03', title: 'Stripe 결제', desc: '안전한 결제 완료 즉시 제작 시작. 숨겨진 비용 없음.' },
-  { icon: CheckCircle, step: '04', title: '도착 확인', desc: '제작 7–10일 + FedEx 배송. 전 세계 어디든 도어투도어.' },
+  { icon: Settings, step: '01', title: 'Configure Options', desc: 'Choose product, size, quantity, and finish. Price updates in real time.' },
+  { icon: Upload, step: '02', title: 'Upload Your Design', desc: 'Upload PDF, AI, or PSD. Print readiness is auto-checked.' },
+  { icon: CreditCard, step: '03', title: 'Pay via Stripe', desc: 'Secure payment. Production starts immediately — no hidden fees.' },
+  { icon: CheckCircle, step: '04', title: 'Receive Your Order', desc: '7–10 day production + FedEx shipping. Door-to-door anywhere in the world.' },
 ]
 
 const STATIC_TESTIMONIALS = [
   {
     name: 'Sarah M.',
-    role: '프리랜서 디자이너',
+    role: 'Freelance Designer',
     initials: 'SM',
     color: 'bg-blue-600',
     rating: 5,
     product: 'Premium Business Cards',
-    body: '퀄리티에 놀랐어요. 클라이언트들이 항상 어디서 인쇄했냐고 물어봐요 — 저만의 비밀 무기로 쓰고 있습니다.',
+    body: 'The quality blew me away. My clients always ask where I print — it\'s my secret weapon.',
   },
   {
     name: 'James K.',
-    role: '소상공인',
+    role: 'Small Business Owner',
     initials: 'JK',
     color: 'bg-green-600',
     rating: 5,
     product: 'Stickers 500pcs',
-    body: '스티커 500장 주문했는데 2주도 안 돼서 도착했어요. 색감 선명하고 재단 완벽. 재주문 확정입니다.',
+    body: 'Ordered 500 stickers and they arrived in under two weeks. Vibrant colors, perfect cuts. Will definitely reorder.',
   },
   {
     name: 'Priya S.',
-    role: '이벤트 플래너',
+    role: 'Event Planner',
     initials: 'PS',
     color: 'bg-purple-600',
     rating: 5,
     product: 'Flyers',
-    body: '가격 투명성이 정말 좋아요. 클라이언트에게 정확한 비용을 바로 알려줄 수 있습니다.',
+    body: 'I love the pricing transparency. I can give clients an exact quote right away.',
   },
 ]
 
 const TRUST_ITEMS = [
-  { icon: Shield, text: '품질 보증', sub: '불량 시 무상 재인쇄' },
-  { icon: Zap, text: '빠른 제작', sub: '7–10 영업일' },
-  { icon: Globe, text: '전 세계 배송', sub: 'FedEx Express' },
-  { icon: Package, text: '안전 포장', sub: '파손 없는 배송' },
-  { icon: BadgeCheck, text: 'Stripe 결제', sub: '256-bit SSL' },
-  { icon: Clock, text: '주문 추적', sub: '실시간 현황' },
+  { icon: Shield, text: 'Quality Guarantee', sub: 'Free reprint if defective' },
+  { icon: Zap, text: 'Fast Production', sub: '7–10 business days' },
+  { icon: Globe, text: 'Worldwide Shipping', sub: 'FedEx Express' },
+  { icon: Package, text: 'Safe Packaging', sub: 'Damage-free delivery' },
+  { icon: BadgeCheck, text: 'Stripe Payments', sub: '256-bit SSL' },
+  { icon: Clock, text: 'Order Tracking', sub: 'Real-time updates' },
 ]
 
 function pickTopCampaign(campaigns: Campaign[]): Campaign | null {
@@ -227,13 +227,13 @@ export default async function HomePage() {
             {/* 신뢰 pill */}
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 text-xs font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-              10,000+ 고객이 선택한 전문 인쇄 서비스
+              Trusted by 10,000+ customers worldwide
             </div>
 
             {/* 긴급성 pill */}
             <div className="inline-flex items-center gap-2 bg-red-500/20 border border-red-400/30 text-red-200 text-xs font-medium px-4 py-1.5 rounded-full mb-8 ml-2 backdrop-blur-sm">
               <Clock className="w-3.5 h-3.5" />
-              이번 주 마감 목요일 5PM KST
+              This week closes Thursday 5PM KST
             </div>
 
             <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
@@ -246,7 +246,7 @@ export default async function HomePage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-blue-100/70 mb-10 max-w-2xl mx-auto leading-relaxed">
-              로스앤젤레스 발송 · 실시간 가격 · 숨겨진 비용 없음 · FedEx 전 세계 배달
+              Shipped from Los Angeles · Real-time pricing · No hidden fees · FedEx worldwide delivery
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
@@ -254,13 +254,13 @@ export default async function HomePage() {
                 href="/products"
                 className="inline-flex items-center justify-center gap-2 bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-blue-50 transition-all text-base shadow-2xl shadow-blue-900/30 hover:scale-[1.02]"
               >
-                제품 보기 <ArrowRight className="w-4 h-4" />
+                Browse Products <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/order"
                 className="inline-flex items-center justify-center gap-2 bg-blue-600/80 border border-blue-400/30 text-white px-8 py-4 rounded-xl font-semibold hover:bg-blue-600 transition-all text-base backdrop-blur-sm"
               >
-                지금 주문하기
+                Order Now
                 <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -302,12 +302,12 @@ export default async function HomePage() {
       {/* Product Grid */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
         <div className="text-center mb-14">
-          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">전체 제품</p>
+          <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">All Products</p>
           <h2 className="text-4xl font-bold text-gray-900 mb-4">
-            어떤 인쇄물이 필요하신가요?
+            What do you need printed?
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto text-lg">
-            옵션 선택 즉시 USD 가격 확인 — 투명한 견적, 즉시 주문.
+            Configure your options and see the USD price instantly.
           </p>
         </div>
 
@@ -322,7 +322,7 @@ export default async function HomePage() {
               >
                 {product.hot && (
                   <div className="absolute top-3 left-3 z-10 flex items-center gap-1 bg-orange-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide shadow-sm">
-                    🔥 인기
+                    🔥 Popular
                   </div>
                 )}
 
@@ -351,9 +351,9 @@ export default async function HomePage() {
                   </div>
                   <p className="text-sm text-gray-500 mb-4 leading-relaxed">{product.desc}</p>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-400">실시간 가격 · 즉시 주문</span>
+                    <span className="text-xs text-gray-400">Live pricing · Order instantly</span>
                     <span className="flex items-center gap-1 text-sm text-blue-600 font-semibold group-hover:gap-2 transition-all">
-                      주문하기 <ArrowRight className="w-3.5 h-3.5" />
+                      Order Now <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>
                 </div>
@@ -367,7 +367,7 @@ export default async function HomePage() {
             href="/products"
             className="inline-flex items-center gap-2 border-2 border-blue-600 text-blue-600 px-8 py-3.5 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all text-sm"
           >
-            전체 제품 카탈로그 보기 <ArrowRight className="w-4 h-4" />
+            View Full Product Catalog <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
@@ -376,9 +376,9 @@ export default async function HomePage() {
       <section className="bg-gradient-to-b from-gray-50 to-white py-20 px-4">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">주문 방법</p>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">4단계로 완성되는 주문</h2>
-            <p className="text-gray-500 text-lg">몇 분 안에 설정, 며칠 안에 배달.</p>
+            <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">How It Works</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">Order in 4 Simple Steps</h2>
+            <p className="text-gray-500 text-lg">Set up in minutes, delivered in days.</p>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {HOW_IT_WORKS.map((step, idx) => (
@@ -408,10 +408,10 @@ export default async function HomePage() {
       <section className="py-20 px-4 bg-white">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">왜 Procardcrafters?</p>
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">LA 생산 · 전 세계 배달</h2>
+            <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Why Procardcrafters?</p>
+            <h2 className="text-4xl font-bold text-gray-900 mb-4">LA Production · Global Delivery</h2>
             <p className="text-gray-500 text-lg max-w-xl mx-auto">
-              제조 품질과 LA 물류를 결합한 글로벌 인쇄 서비스.
+              Premium print quality combined with LA-based fulfillment for global delivery.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
@@ -433,10 +433,10 @@ export default async function HomePage() {
         <section className="py-20 px-4 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">실제 납품 사례</p>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">최근 인쇄 프로젝트</h2>
+              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Real Projects</p>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Recent Print Projects</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">
-                전 세계 고객에게 납품한 실제 작업물입니다.
+                Real work delivered to clients worldwide.
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">
@@ -464,7 +464,7 @@ export default async function HomePage() {
                 href="/portfolio"
                 className="inline-flex items-center gap-2 border border-gray-300 text-gray-700 px-6 py-3 rounded-xl font-semibold hover:border-gray-400 hover:bg-white transition-all text-sm"
               >
-                전체 포트폴리오 보기 <ArrowRight className="w-4 h-4" />
+                View Full Portfolio <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
           </div>
@@ -475,14 +475,14 @@ export default async function HomePage() {
       <section className="py-20 px-4 bg-gray-900">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-14">
-            <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-3">고객 후기</p>
-            <h2 className="text-4xl font-bold text-white mb-4">실제 고객 리뷰</h2>
+            <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-3">Customer Reviews</p>
+            <h2 className="text-4xl font-bold text-white mb-4">What Our Customers Say</h2>
             <div className="flex items-center justify-center gap-1 mb-2">
               {[...Array(5)].map((_, i) => (
                 <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
               ))}
             </div>
-            <p className="text-gray-400">800+ 검증된 리뷰 기준 4.9 / 5.0</p>
+            <p className="text-gray-400">4.9 / 5.0 from 800+ verified reviews</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {(displayReviews ?? STATIC_TESTIMONIALS).map((review, i) => {
@@ -533,27 +533,27 @@ export default async function HomePage() {
           <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl mb-6 border border-white/30">
             <Printer className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">지금 바로 시작하세요</h2>
+          <h2 className="text-4xl sm:text-5xl font-bold text-white mb-4">Start Your Order Today</h2>
           <p className="text-blue-100 mb-10 text-lg leading-relaxed">
-            온라인으로 옵션을 선택하고 즉시 USD 견적 확인.<br />
-            회원가입 없이도 시작 가능합니다.
+            Configure your options online and get an instant USD quote.<br />
+            No account required to get started.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Link
               href="/products"
               className="inline-flex items-center justify-center gap-2 bg-white text-blue-700 px-10 py-4 rounded-xl font-bold hover:bg-blue-50 transition-all text-base shadow-2xl hover:scale-[1.02]"
             >
-              제품 둘러보기 <ArrowRight className="w-4 h-4" />
+              Browse Products <ArrowRight className="w-4 h-4" />
             </Link>
             <Link
               href="/contact"
               className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white px-8 py-4 rounded-xl font-semibold hover:bg-white/10 transition-colors text-base backdrop-blur-sm"
             >
-              문의하기
+              Contact Us
             </Link>
           </div>
           <p className="text-blue-200/70 text-sm mt-6">
-            이번 주 마감: 목요일 5PM KST · 평균 제작 7–10일 · FedEx 배송
+            This week closes Thursday 5PM KST · 7–10 day production · FedEx shipping
           </p>
         </div>
       </section>

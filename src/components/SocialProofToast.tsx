@@ -63,27 +63,27 @@ function toastMessage(item: SocialProofItem): { icon: React.ReactNode; text: str
     case 'recent_order':
       return {
         icon: <TrendingUp className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />,
-        text: `${item.maskedName ?? '고객'} 님이 ${item.relativeTime ?? '방금'} ${item.productName ?? '제품'} 주문${item.city ? ` (${item.city})` : ''}`,
+        text: `${item.maskedName ?? 'Customer'} ordered ${item.productName ?? 'products'} ${item.relativeTime ?? 'just now'}${item.city ? ` (${item.city})` : ''}`,
       }
     case 'viewer_count':
       return {
         icon: <Users className="w-4 h-4 text-indigo-500 shrink-0 mt-0.5" />,
-        text: `지금 ${item.viewerCount}명이 이 디자인 보는 중`,
+        text: `${item.viewerCount} people are viewing this right now`,
       }
     case 'weekly_stats':
       return {
         icon: <TrendingUp className="w-4 h-4 text-green-500 shrink-0 mt-0.5" />,
-        text: `이번 주 ${item.weeklyCount?.toLocaleString()}건 출고`,
+        text: `${item.weeklyCount?.toLocaleString()} orders shipped this week`,
       }
     case 'stock_alert':
       return {
         icon: <AlertCircle className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />,
-        text: `오늘 ${item.productName ?? '이 제품'} ${item.stockCount}개 남음`,
+        text: `Only ${item.stockCount} left today for ${item.productName ?? 'this product'}`,
       }
     case 'deadline':
       return {
         icon: <Clock className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />,
-        text: item.deadlineLabel ?? '이번 주말 마감 — 다음 출고 +N일',
+        text: item.deadlineLabel ?? 'Closes this week — next batch ships later',
       }
     default:
       return { icon: null, text: '' }
@@ -119,7 +119,7 @@ function ShareButtons({ entry, userId }: { entry: ToastEntry; userId: string | n
         setTimeout(() => setCopied(false), 2000)
       } catch {}
     } else if (method === 'twitter') {
-      const msg = encodeURIComponent(`방금 ${entry.productName ?? 'print'} 주문했어요! ${shareUrl}`)
+      const msg = encodeURIComponent(`Just ordered ${entry.productName ?? 'prints'} from Procardcrafters! ${shareUrl}`)
       window.open(`https://twitter.com/intent/tweet?text=${msg}`, '_blank')
     }
   }
@@ -130,16 +130,16 @@ function ShareButtons({ entry, userId }: { entry: ToastEntry; userId: string | n
         type="button"
         onClick={() => handleShare('url_copy')}
         className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md transition-colors"
-        aria-label="링크 복사"
+        aria-label="Copy link"
       >
         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-        {copied ? '복사됨' : 'URL'}
+        {copied ? 'Copied!' : 'URL'}
       </button>
       <button
         type="button"
         onClick={() => handleShare('twitter')}
         className="flex items-center gap-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded-md transition-colors"
-        aria-label="X(트위터) 공유"
+        aria-label="Share on X"
       >
         <Share2 className="w-3 h-3" />
         X
@@ -279,7 +279,7 @@ export default function SocialProofToast() {
       <button
         type="button"
         onClick={toggleDisabled}
-        aria-label="실시간 알림 켜기"
+        aria-label="Enable live notifications"
         className="fixed bottom-4 right-4 z-50 p-2 bg-white border border-gray-200 rounded-full shadow-md text-gray-400 hover:text-gray-600 transition-colors"
       >
         <BellOff className="w-4 h-4" />
@@ -314,7 +314,7 @@ export default function SocialProofToast() {
           {/* self-recognition 배지 */}
           {current.isSelf && (
             <p className="text-xs font-semibold text-blue-600 mb-1 flex items-center gap-1">
-              🎉 내 주문이 노출됐어요!
+              🎉 Your order is featured!
             </p>
           )}
 
@@ -331,7 +331,7 @@ export default function SocialProofToast() {
           <button
             type="button"
             onClick={() => { dismiss() }}
-            aria-label="토스트 닫기"
+            aria-label="Close notification"
             className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <X className="w-4 h-4" />
@@ -339,7 +339,7 @@ export default function SocialProofToast() {
           <button
             type="button"
             onClick={toggleDisabled}
-            aria-label="실시간 알림 끄기"
+            aria-label="Disable live notifications"
             className="p-1 text-gray-300 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
           >
             <Bell className="w-3.5 h-3.5" />
