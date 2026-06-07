@@ -6,6 +6,7 @@
  */
 
 import { createServerClient } from '@/lib/supabase'
+import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
 
 // 내부 상품명 → Swadpia 카테고리 코드 매핑
 const SLUG_TO_CATEGORY: Record<string, string> = {
@@ -59,7 +60,8 @@ export async function queueFactoryOrdersForPrintOrder(
     print_order_item_id: item.id,
     status: 'pending',
     category_code: toCategoryCode(item.product_name_en),
-    options_snapshot: item.selected_options ?? {},
+    // 후가공(finishing)을 성원 발주 폼 필드코드로 확장(OMO-2635). finishing 키 없으면 무영향.
+    options_snapshot: expandFinishingToSwadpiaFields(item.selected_options ?? {}),
     quantity: item.quantity,
   }))
 
