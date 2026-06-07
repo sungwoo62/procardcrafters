@@ -382,6 +382,44 @@ export async function sendWelcomeCouponEmail(data: WelcomeCouponEmailData): Prom
   })
 }
 
+// OMO-2612: 사이트 문의폼 인입 → 관리자 알림 메일 (best-effort, 키 미설정 시 no-op)
+export interface ContactInquiryEmailData {
+  name: string
+  email: string
+  subject: string
+  message: string
+  orderNumber?: string
+}
+
+export async function sendContactInquiryEmail(data: ContactInquiryEmailData): Promise<void> {
+  if (!resend) return
+
+  const { name, email, subject, message, orderNumber } = data
+  const safeMessage = message.replace(/\n/g, '<br/>')
+
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <h2>New Contact Inquiry</h2>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:4px 0;font-weight:bold;width:120px">From</td><td>${name} (${email})</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Subject</td><td>${subject}</td></tr>
+        ${orderNumber ? `<tr><td style="padding:4px 0;font-weight:bold">Order #</td><td>${orderNumber}</td></tr>` : ''}
+      </table>
+      <h3>Message</h3>
+      <p style="white-space:pre-wrap;background:#f8f8f8;padding:12px 16px;border-radius:6px">${safeMessage}</p>
+      <p style="color:#888;font-size:12px">Reply directly to ${email} to respond.</p>
+    </div>
+  `
+
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    replyTo: email,
+    subject: `[Contact] ${subject} — ${name}`,
+    html,
+  })
+}
+
 // OMO-2314: 빌드 통과용 임시 스텁 (WIP 가 실제 구현 가져올 때까지)
 export async function sendDesignProofEmail(_data: {
   customerEmail: string
