@@ -97,6 +97,7 @@ async function fetchProductCardData(): Promise<Record<string, ProductCardData>> 
       {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
         cache: 'no-store',
+        signal: AbortSignal.timeout(8000),
       },
     )
     if (!res.ok) return {}
@@ -109,17 +110,26 @@ async function fetchProductCardData(): Promise<Record<string, ProductCardData>> 
   }
 }
 
+// 빌드 시 정적 프리렌더가 외부 데이터 지연에 인질이 되지 않도록 가드.
+// no-store fetch/Supabase 쿼리가 행(hang) 걸려도 N초 후 폴백으로 진행 → 배포 결정성 확보. (OMO-2629)
+function withTimeout<T>(p: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return Promise.race([
+    p,
+    new Promise<T>(resolve => setTimeout(() => resolve(fallback), ms)),
+  ])
+}
+
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const [productData, rawCampaigns] = await Promise.all([
-    fetchProductCardData(),
-    getActiveCampaigns().catch((): Campaign[] => []),
+    withTimeout(fetchProductCardData(), 9000, {} as Record<string, ProductCardData>),
+    withTimeout(getActiveCampaigns().catch((): Campaign[] => []), 9000, [] as Campaign[]),
   ])
   const activeCampaigns = [...rawCampaigns].sort(
     (a, b) => getCampaignPriority(b.calendar.key) - getCampaignPriority(a.calendar.key),
   )
   const primaryCampaign = activeCampaigns[0] ?? null
   const primaryPromoCode = primaryCampaign
-    ? await getTopPromoCode(primaryCampaign.id).catch(() => null)
+    ? await withTimeout(getTopPromoCode(primaryCampaign.id).catch(() => null), 9000, null)
     : null
   return (
     <html lang="en" className={`${geist.variable} h-full`}>
