@@ -60,7 +60,11 @@ export async function GET(req: NextRequest) {
         'CLF2000': 'brochures',
         'CDP3000': 'postcards',
         'CPR2000': 'posters',
-        'CPR5000': 'banners',
+        // OMO-2636: 배너 4종 성원 실사출력(CRP) 계열 정정 (구 CPR5000=종이홀더 오매핑)
+        'CRP5100': 'banners',
+        'CRP4000': 'x-banners',
+        'CRP3000': 'rollup-banners',
+        'COD1100': 'mini-banners',
       }).find(([code]) => code === swData.categoryCode)?.[1]
 
       if (!slug) continue

@@ -89,10 +89,12 @@ const CATEGORY_MAP: Record<string, string> = {
   'postcards': 'CDP3000',
   // 디스플레이
   'posters': 'CPR2000',
-  'banners': 'CPR5000',
-  'x-banners': 'CPR5000',
-  'rollup-banners': 'CPR5000',
-  'mini-banners': 'CPR5000',
+  // ⚠️ OMO-2636: 기존 CPR5000 은 "종이홀더"(포켓홀더/책커버)였음 — 배너 아님.
+  // 성원 실사출력(CRP) 계열 라이브 검증(2026-06-08): paper_code/size 실측 매핑.
+  'banners': 'CRP5100',        // 현수막 150denier · 5000×900mm
+  'x-banners': 'CRP4000',      // 실사배너 페트 210µ · 150×300/180×420mm (탁상·X배너 인서트)
+  'rollup-banners': 'CRP3000', // 페트 210µ/메쉬 1000d · 600×1600/1800mm (롤업 표준)
+  'mini-banners': 'COD1100',   // 종이미니배너 · 팬시지 · 150×300/180×420mm
   // 봉투·서식
   'standard-envelopes': 'CEV1000',
   'admin-envelopes': 'CEV1000',
