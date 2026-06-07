@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { summarizePipeline, type PipelineCounts } from '@/lib/factory-pipeline-health'
+import { summarizePipeline, isTestEmail, type PipelineCounts } from '@/lib/factory-pipeline-health'
 
 const base: PipelineCounts = {
   total: 0,
@@ -58,5 +58,29 @@ describe('summarizePipeline — 자동화 커버리지/심각도', () => {
     expect(s.automationCoveragePct).toBe(0)
     expect(s.manualInterventionPct).toBe(0)
     expect(s.severity).toBe('ok')
+  })
+})
+
+describe('isTestEmail — QA/테스트 주문 식별 (OMO-2598)', () => {
+  it('회사 도메인 + test 토큰이면 테스트 주문', () => {
+    expect(isTestEmail('batch-test@procardcrafters.com')).toBe(true)
+    expect(isTestEmail('e2e-test@procardcrafters.com')).toBe(true)
+    expect(isTestEmail('test@procardcrafters.com')).toBe(true)
+    expect(isTestEmail('BATCH-TEST@Procardcrafters.com')).toBe(true) // 대소문자 무시
+  })
+
+  it('실제 고객 이메일은 테스트 주문이 아님', () => {
+    expect(isTestEmail('jane@gmail.com')).toBe(false)
+    expect(isTestEmail('orders@acme.co')).toBe(false)
+    // 외부 도메인이면 test 토큰이 있어도 제외하지 않음 (실고객 보호)
+    expect(isTestEmail('test.user@gmail.com')).toBe(false)
+    // 회사 도메인이지만 test 토큰 없으면 실제 운영 메일로 간주
+    expect(isTestEmail('hello@procardcrafters.com')).toBe(false)
+  })
+
+  it('빈 값/null/undefined는 false', () => {
+    expect(isTestEmail('')).toBe(false)
+    expect(isTestEmail(null)).toBe(false)
+    expect(isTestEmail(undefined)).toBe(false)
   })
 })
