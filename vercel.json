@@ -9,6 +9,10 @@
       "schedule": "0 0 * * 1-5"
     },
     {
+      "path": "/api/cron/factory-pipeline-health",
+      "schedule": "0 * * * *"
+    },
+    {
       "path": "/api/cron/cleanup-orphan-files",
       "schedule": "0 3 * * *"
     },
