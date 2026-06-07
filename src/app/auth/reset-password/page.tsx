@@ -35,11 +35,11 @@ export default function ResetPasswordPage() {
     setError(null)
 
     if (password.length < 8) {
-      setError('비밀번호는 8자 이상이어야 합니다.')
+      setError('Password must be at least 8 characters.')
       return
     }
     if (password !== confirm) {
-      setError('비밀번호 확인이 일치하지 않습니다.')
+      setError('Passwords do not match.')
       return
     }
 
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
     setLoading(false)
 
     if (updateError) {
-      setError(updateError.message || '비밀번호 변경에 실패했습니다. 다시 시도해주세요.')
+      setError(updateError.message || 'Failed to update your password. Please try again.')
       return
     }
 
@@ -67,26 +67,26 @@ export default function ResetPasswordPage() {
             <Package className="w-7 h-7 text-blue-600" />
             Procardcrafters
           </Link>
-          <p className="mt-2 text-sm text-gray-500">새 비밀번호 설정</p>
+          <p className="mt-2 text-sm text-gray-500">Set a new password</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
           {!sessionChecked ? (
-            <p className="text-center text-sm text-gray-500">확인 중...</p>
+            <p className="text-center text-sm text-gray-500">Checking...</p>
           ) : !hasSession ? (
             <div className="text-center">
               <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
                 <AlertCircle className="w-6 h-6 text-red-600" />
               </div>
-              <h2 className="text-base font-semibold text-gray-900">링크가 만료되었거나 유효하지 않습니다</h2>
+              <h2 className="text-base font-semibold text-gray-900">This link is invalid or has expired</h2>
               <p className="mt-2 text-sm text-gray-600">
-                비밀번호 재설정 메일의 링크는 1시간 후 만료됩니다. 다시 요청해주세요.
+                Password reset links expire after 1 hour. Please request a new one.
               </p>
               <Link
                 href="/auth/forgot-password"
                 className="mt-6 inline-flex items-center justify-center w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors"
               >
-                재설정 링크 다시 받기
+                Request a new reset link
               </Link>
             </div>
           ) : done ? (
@@ -94,8 +94,8 @@ export default function ResetPasswordPage() {
               <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle2 className="w-6 h-6 text-green-600" />
               </div>
-              <h2 className="text-base font-semibold text-gray-900">비밀번호가 변경되었습니다</h2>
-              <p className="mt-2 text-sm text-gray-600">마이페이지로 이동 중...</p>
+              <h2 className="text-base font-semibold text-gray-900">Your password has been changed</h2>
+              <p className="mt-2 text-sm text-gray-600">Redirecting to your account...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -108,7 +108,7 @@ export default function ResetPasswordPage() {
 
               <div>
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  새 비밀번호
+                  New password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -122,14 +122,14 @@ export default function ResetPasswordPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="8자 이상"
+                    placeholder="At least 8 characters"
                   />
                 </div>
               </div>
 
               <div>
                 <label htmlFor="confirm" className="block text-sm font-medium text-gray-700 mb-1.5">
-                  새 비밀번호 확인
+                  Confirm new password
                 </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -143,7 +143,7 @@ export default function ResetPasswordPage() {
                     value={confirm}
                     onChange={(e) => setConfirm(e.target.value)}
                     className="w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="다시 입력"
+                    placeholder="Re-enter password"
                   />
                 </div>
               </div>
@@ -153,7 +153,7 @@ export default function ResetPasswordPage() {
                 disabled={loading}
                 className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {loading ? '변경 중...' : '비밀번호 변경'}
+                {loading ? 'Updating...' : 'Update password'}
               </button>
             </form>
           )}

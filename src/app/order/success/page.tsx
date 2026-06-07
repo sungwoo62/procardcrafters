@@ -24,7 +24,12 @@ async function SuccessContent({ searchParams }: PageProps) {
 
       <div>
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Order Confirmed!</h1>
-        <p className="text-gray-500">Your payment has been processed successfully. A confirmation email has been sent.</p>
+        <p className="text-gray-500">
+          Your payment has been processed successfully.
+          {orderNumber
+            ? ' Save your order number below to track your order anytime.'
+            : ' Please save your order details to track your order.'}
+        </p>
       </div>
 
       {orderNumber && (

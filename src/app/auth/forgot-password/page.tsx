@@ -25,7 +25,7 @@ export default function ForgotPasswordPage() {
     setLoading(false)
 
     if (resetError) {
-      setError(resetError.message || '비밀번호 재설정 메일 전송에 실패했습니다.')
+      setError(resetError.message || 'Failed to send the password reset email. Please try again.')
       return
     }
 
@@ -40,7 +40,7 @@ export default function ForgotPasswordPage() {
             <Package className="w-7 h-7 text-blue-600" />
             Procardcrafters
           </Link>
-          <p className="mt-2 text-sm text-gray-500">비밀번호 재설정</p>
+          <p className="mt-2 text-sm text-gray-500">Reset your password</p>
         </div>
 
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
@@ -49,24 +49,24 @@ export default function ForgotPasswordPage() {
               <div className="mx-auto mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100">
                 <CheckCircle2 className="w-6 h-6 text-green-600" />
               </div>
-              <h2 className="text-base font-semibold text-gray-900">메일을 확인하세요</h2>
+              <h2 className="text-base font-semibold text-gray-900">Check your email</h2>
               <p className="mt-2 text-sm text-gray-600">
-                <span className="font-medium">{email}</span> 로 비밀번호 재설정 링크를 보냈습니다.
+                We've sent a password reset link to <span className="font-medium">{email}</span>.
               </p>
               <p className="mt-2 text-xs text-gray-500">
-                메일이 안 오면 스팸함을 확인하거나, 가입된 이메일이 맞는지 확인해주세요.
+                If you don't see it, check your spam folder or make sure you entered the email you signed up with.
               </p>
               <Link
                 href="/auth/login"
                 className="mt-6 inline-flex items-center gap-1 text-sm text-blue-600 hover:underline"
               >
-                <ArrowLeft size={14} /> 로그인 페이지로 돌아가기
+                <ArrowLeft size={14} /> Back to login
               </Link>
             </div>
           ) : (
             <>
               <p className="mb-5 text-sm text-gray-600">
-                가입하신 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.
+                Enter the email address you signed up with and we'll send you a password reset link.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
 
                 <div>
                   <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
-                    이메일
+                    Email
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
                   disabled={loading}
                   className="w-full bg-blue-600 text-white py-2.5 rounded-lg text-sm font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {loading ? '전송 중...' : '재설정 링크 받기'}
+                  {loading ? 'Sending...' : 'Send reset link'}
                 </button>
               </form>
             </>
@@ -112,7 +112,7 @@ export default function ForgotPasswordPage() {
         {!sent && (
           <p className="text-center text-sm text-gray-500 mt-6">
             <Link href="/auth/login" className="text-blue-600 font-medium hover:underline">
-              로그인으로 돌아가기
+              Back to login
             </Link>
           </p>
         )}
