@@ -1,0 +1,55 @@
+{
+  "categories": [
+    {
+      "slug": "guides",
+      "name": "Printing Guides",
+      "description": "Practical guides on paper stocks, finishes, and print specs.",
+      "sort_order": 1
+    },
+    {
+      "slug": "design-tips",
+      "name": "Design Tips",
+      "description": "Make your business cards, stickers, and flyers look their best.",
+      "sort_order": 2
+    }
+  ],
+  "posts": [
+    {
+      "slug": "choosing-the-right-business-card-stock",
+      "category": "guides",
+      "title": "Choosing the Right Business Card Stock",
+      "excerpt": "Matte, glossy, soft-touch, or textured? A plain-English guide to picking the paper that matches your brand.",
+      "cover_image_url": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=1280&q=80",
+      "body_md": "Picking a paper **stock** is the single biggest decision for how your business card *feels* in someone's hand. Here's how to choose.\n\n## Weight matters first\n\nStock weight is measured in gsm (grams per square meter). For premium cards we recommend **400gsm or higher** — anything lighter feels flimsy.\n\n- 300gsm — standard, everyday cards\n- 400gsm — premium, the sweet spot\n- 600gsm — ultra-thick, luxury feel\n\n## Finish changes everything\n\n![Soft-touch matte business card](https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=1280&q=80)\n\nA **soft-touch matte** laminate gives a velvety surface that resists fingerprints. Glossy finishes make colors pop but show smudges.\n\n> Pro tip: pair a matte finish with spot-UV on your logo for a tactile contrast that people can't stop touching.\n\nReady to try a few? Browse our [business card products](/products/business-cards) and order a sample pack.",
+      "body_images": [
+        {
+          "url": "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=1280&q=80",
+          "alt": "Soft-touch matte business card",
+          "caption": "Soft-touch matte laminate on 400gsm stock.",
+          "width": 1280,
+          "height": 720
+        }
+      ],
+      "tags": ["business-cards", "paper", "finishes"],
+      "seo_title": "Choosing the Right Business Card Stock — Weight & Finish Guide",
+      "seo_description": "A plain-English guide to business card paper stock: gsm weight, matte vs glossy vs soft-touch, and when to add spot-UV.",
+      "og_image_url": "https://images.unsplash.com/photo-1586281380349-632531db7ed4?w=1280&q=80",
+      "is_published": true,
+      "published_at": "2026-06-01T09:00:00Z"
+    },
+    {
+      "slug": "5-sticker-design-mistakes-to-avoid",
+      "category": "design-tips",
+      "title": "5 Sticker Design Mistakes to Avoid",
+      "excerpt": "Bleed, safe zones, and resolution — the small details that ruin a sticker print. Here's how to get them right.",
+      "cover_image_url": "https://images.unsplash.com/photo-1527049214551-1b7ea6a8c9d3?w=1280&q=80",
+      "body_md": "Stickers look simple, but a few common mistakes lead to disappointing prints. Avoid these five.\n\n## 1. Forgetting the bleed\n\nAlways extend your background **3mm past the cut line**. Without bleed, you'll get thin white slivers along the edges.\n\n## 2. Text too close to the edge\n\nKeep important text inside the **safe zone** — at least 3mm from the cut. Die-cutting has a small tolerance.\n\n## 3. Low-resolution artwork\n\nUpload artwork at **300 DPI** at final size. A logo that looks crisp on screen can pixelate when printed.\n\n## 4. Ignoring the cut shape\n\nDie-cut, kiss-cut, and circle cuts each frame your design differently. Design with the final shape in mind.\n\n## 5. Skipping a proof\n\nAlways review the digital proof. It's the cheapest insurance against a costly reprint.\n\nWant the full spec sheet? Check our [sticker products](/products/stickers).",
+      "body_images": [],
+      "tags": ["stickers", "design", "prepress"],
+      "seo_title": "5 Sticker Design Mistakes to Avoid (and How to Fix Them)",
+      "seo_description": "Bleed, safe zones, resolution, cut shape, and proofing — the five sticker design mistakes that cause reprints, and how to avoid each.",
+      "is_published": true,
+      "published_at": "2026-06-03T09:00:00Z"
+    }
+  ]
+}

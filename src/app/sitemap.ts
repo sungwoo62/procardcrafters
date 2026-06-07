@@ -11,6 +11,42 @@ interface ProductRow {
   updated_at: string | null
 }
 
+interface BlogCategoryRow {
+  id: string
+  slug: string
+}
+
+interface BlogPostRow {
+  slug: string
+  category_id: string | null
+  updated_at: string | null
+}
+
+// 발행 블로그 글 + 카테고리 조회 — sitemap 의 /blog/[category]/[slug] canonical URL 구성용.
+async function fetchBlogData(): Promise<{ categories: BlogCategoryRow[]; posts: BlogPostRow[] }> {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  if (!url || !key) return { categories: [], posts: [] }
+  const headers = { apikey: key, Authorization: `Bearer ${key}` }
+  try {
+    const [catRes, postRes] = await Promise.all([
+      fetch(`${url}/rest/v1/print_blog_categories?select=id,slug`, { headers, next: { revalidate: 86400 } }),
+      fetch(`${url}/rest/v1/print_blog_posts?select=slug,category_id,updated_at&is_published=eq.true`, {
+        headers,
+        next: { revalidate: 86400 },
+      }),
+    ])
+    const categories = catRes.ok ? ((await catRes.json()) as BlogCategoryRow[]) : []
+    const posts = postRes.ok ? ((await postRes.json()) as BlogPostRow[]) : []
+    return {
+      categories: Array.isArray(categories) ? categories : [],
+      posts: Array.isArray(posts) ? posts : [],
+    }
+  } catch {
+    return { categories: [], posts: [] }
+  }
+}
+
 // 활성 제품 슬러그를 DB 에서 직접 조회 (layout.tsx 의 REST 패턴 재사용).
 // 88개 활성 제품 전체가 sitemap 에 포함되도록 하드코딩 목록을 대체한다.
 async function fetchActiveProducts(): Promise<ProductRow[]> {
@@ -39,11 +75,12 @@ async function fetchActiveProducts(): Promise<ProductRow[]> {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date()
-  const products = await fetchActiveProducts()
+  const [products, blog] = await Promise.all([fetchActiveProducts(), fetchBlogData()])
 
   const staticPages: MetadataRoute.Sitemap = [
     { url: SITE_URL, changeFrequency: 'daily', priority: 1.0, lastModified: now },
     { url: `${SITE_URL}/products`, changeFrequency: 'daily', priority: 0.9, lastModified: now },
+    { url: `${SITE_URL}/blog`, changeFrequency: 'daily', priority: 0.7, lastModified: now },
     { url: `${SITE_URL}/promotions`, changeFrequency: 'weekly', priority: 0.7, lastModified: now },
     { url: `${SITE_URL}/portfolio`, changeFrequency: 'weekly', priority: 0.6, lastModified: now },
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.5, lastModified: now },
@@ -67,5 +104,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...productPages, ...templatePages]
+  // 블로그 — 카테고리 아카이브 + 글 본문. 글 URL 은 canonical /blog/[category]/[slug] 형태.
+  const catSlugById = new Map(blog.categories.map((c) => [c.id, c.slug]))
+  const blogCategoryPages: MetadataRoute.Sitemap = blog.categories.map((c) => ({
+    url: `${SITE_URL}/blog/${c.slug}`,
+    lastModified: now,
+    changeFrequency: 'weekly',
+    priority: 0.6,
+  }))
+  const blogPostPages: MetadataRoute.Sitemap = blog.posts.map((p) => {
+    const catSlug = p.category_id ? catSlugById.get(p.category_id) ?? 'general' : 'general'
+    return {
+      url: `${SITE_URL}/blog/${catSlug}/${p.slug}`,
+      lastModified: p.updated_at ? new Date(p.updated_at) : now,
+      changeFrequency: 'monthly',
+      priority: 0.7,
+    }
+  })
+
+  return [...staticPages, ...productPages, ...templatePages, ...blogCategoryPages, ...blogPostPages]
 }
