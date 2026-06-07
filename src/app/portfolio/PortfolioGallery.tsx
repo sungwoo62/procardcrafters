@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Image from 'next/image'
+import PortfolioImage from '@/components/PortfolioImage'
 import { ZoomIn, Star } from 'lucide-react'
 import Lightbox from '@/components/Lightbox'
 import type { PortfolioItem } from './page'
@@ -82,10 +82,10 @@ export default function PortfolioGallery({ items }: Props) {
                 onClick={() => openLightbox(idx)}
                 className="group relative aspect-[4/3] rounded-xl overflow-hidden bg-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
-                <Image
+                <PortfolioImage
                   src={item.thumbnail_url ?? item.image_url}
                   alt={item.title}
-                  fill
+                  category={item.category}
                   className="object-cover group-hover:scale-105 transition-transform duration-500"
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                 />

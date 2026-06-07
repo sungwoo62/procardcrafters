@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import Image from 'next/image'
+import PortfolioImage from '@/components/PortfolioImage'
 import {
   ArrowRight,
   Printer,
@@ -446,10 +446,10 @@ export default async function HomePage() {
                   href="/portfolio"
                   className="group relative aspect-[4/3] rounded-2xl overflow-hidden bg-gray-200 shadow-sm hover:shadow-xl transition-all duration-300"
                 >
-                  <Image
+                  <PortfolioImage
                     src={item.thumbnail_url ?? item.image_url}
                     alt={item.title}
-                    fill
+                    category={item.category}
                     className="object-cover group-hover:scale-105 transition-transform duration-500"
                     sizes="(max-width: 768px) 50vw, 33vw"
                   />
