@@ -1,6 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
+import { recordCsThread } from '@/lib/cs-threads'
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -99,6 +100,18 @@ export async function POST(req: NextRequest) {
     } catch {
       // Log save failure does not affect response
     }
+
+    // OMO-2600: CS 응답시간 계측 — 챗(CSAgent) 인입을 print_cs_threads에 멱등 기록.
+    // 세션 첫 메시지에 스레드 open, AI 첫 응답에 first_response_at 기록.
+    // 자동 셀프서비스 채널이므로 is_automated=true (사람 CS SLA에서 분리).
+    const now = new Date().toISOString()
+    await recordCsThread({
+      channel: 'chat',
+      externalRef: sessionId,
+      isAutomated: true,
+      openedAt: now,
+      firstResponseAt: assistantText ? now : null,
+    })
   })()
 
   // Pass [ESTIMATE_READY: ...] tag to client but strip from display text
