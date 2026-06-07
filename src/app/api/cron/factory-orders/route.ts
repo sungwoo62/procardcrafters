@@ -76,7 +76,9 @@ async function sendFactoryOrderAlert(pending: number, failed: number) {
       Authorization: `Bearer ${resendKey}`,
     },
     body: JSON.stringify({
-      from: 'Procardcrafters <orders@procardcrafters.com>',
+      // OMO-2624: procardcrafters.com 미검증 무음 실패 임시복구 — verified medaloffinisher.com 발신, Reply-To 원래주소 유지
+      from: 'Procardcrafters <orders@medaloffinisher.com>',
+      reply_to: 'orders@procardcrafters.com',
       to: adminEmail,
       subject,
       html,
