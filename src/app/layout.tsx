@@ -27,7 +27,13 @@ const geist = Geist({
   subsets: ['latin'],
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+// `||` 사용 주의: 빈 문자열("") env 도 폴백시켜야 함.
+// `??` 는 ""를 유효값으로 통과시켜 `new URL("")` 빌드 크래시 + 잘못된 canonical 을 유발한다(OMO-2561).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
+
+// GSC 소유권 인증용 토큰. 값이 있으면 <meta name="google-site-verification"> 자동 삽입.
+// 보드가 토큰만 제공하면 에이전트가 env 주입 + 재배포로 인증 완료 가능(OMO-2561).
+const GOOGLE_SITE_VERIFICATION = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -50,6 +56,9 @@ export const metadata: Metadata = {
     description: 'Business cards, stickers, flyers, postcards, and posters — produced at certified global print facilities and delivered worldwide.',
   },
   robots: { index: true, follow: true },
+  ...(GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: GOOGLE_SITE_VERIFICATION } }
+    : {}),
 }
 
 export interface ProductCardData {
