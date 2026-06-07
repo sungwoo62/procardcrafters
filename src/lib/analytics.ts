@@ -156,14 +156,24 @@ export function trackPurchase(params: {
   })
 }
 
-export function trackGenerateLead(params?: { value?: number; currency?: string }) {
+// 리드 정의는 여러 종류를 둘 수 있다(이메일 구독 / 챗 견적 요청 등).
+// leadType 으로 구분해 GTM/Google Ads 에서 단일 트리거를 여러 전환 액션으로 분기한다.
+export type LeadType = 'email_signup' | 'chat_quote'
+
+export function trackGenerateLead(params?: {
+  leadType?: LeadType
+  value?: number
+  currency?: string
+}) {
   const eventParams = {
+    lead_type: params?.leadType,
     currency: params?.currency ?? 'USD',
     value: params?.value,
   }
   pushDataLayerEvent('generate_lead', eventParams)
   gtagEvent('generate_lead', eventParams)
   metaPixelEvent('Lead', {
+    content_category: params?.leadType,
     currency: params?.currency ?? 'USD',
     value: params?.value,
   })

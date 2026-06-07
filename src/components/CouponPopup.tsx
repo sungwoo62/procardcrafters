@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { X, Mail, Tag } from 'lucide-react'
-import { gtagEvent } from '@/lib/analytics'
+import { gtagEvent, trackGenerateLead } from '@/lib/analytics'
 
 const LS_SHOWN = 'coupon_popup_shown'
 const LS_DISMISSED_UNTIL = 'coupon_popup_dismissed_until'
@@ -118,6 +118,8 @@ export default function CouponPopup() {
       setCouponCode(data.couponCode ?? '')
       setState('success')
       gtagEvent('coupon_popup_submitted', { coupon_code: data.couponCode })
+      // 이메일 구독 = 리드 전환
+      trackGenerateLead({ leadType: 'email_signup' })
     } catch {
       setError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
       setState('visible')
