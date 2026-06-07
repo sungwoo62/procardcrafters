@@ -122,10 +122,23 @@ async function runReviewRequests(request: NextRequest): Promise<NextResponse> {
 
   const d14Raw = d14LogRows
 
+  // 발송 실패(예외)는 의도적 skip(이미발송·수신거부)과 구분해 표면화한다.
+  // 무음 swallow는 cron이 ok로 보고하면서 리뷰요청 KPI를 0으로 비우는 '조용한 공백'을
+  // 유발하므로(OMO-2601), 실패를 카운트+로그+응답으로 노출한다. (실패 시 로그 미적재 — 미발송을
+  // 발송이력으로 남기지 않는 기존 의미는 유지)
+  const sendErrors: string[] = []
+  const recordError = (emailType: string, orderNumber: string, e: unknown) => {
+    const msg = e instanceof Error ? e.message : String(e)
+    if (sendErrors.length < 10) sendErrors.push(`${emailType} ${orderNumber}: ${msg}`)
+    // eslint-disable-next-line no-console
+    console.error(`[review-requests] ${emailType} 발송 실패 order=${orderNumber}: ${msg}`)
+  }
+
   // ─── 4. D+7 발송 루프 ────────────────────────────────────────
   const d7Logs: { order_id: string; email: string; email_type: string; resend_message_id: string | null }[] = []
   let d7Sent = 0
   let d7Skipped = 0
+  let d7Failed = 0
 
   for (const order of d7Candidates) {
     if (alreadySentD7Set.has(order.id)) { d7Skipped++; continue }
@@ -140,8 +153,9 @@ async function runReviewRequests(request: NextRequest): Promise<NextResponse> {
       })
       d7Logs.push({ order_id: order.id, email: order.customer_email, email_type: 'd7', resend_message_id: messageId })
       d7Sent++
-    } catch {
-      d7Skipped++
+    } catch (e) {
+      d7Failed++
+      recordError('d7', order.order_number, e)
     }
   }
 
@@ -153,6 +167,7 @@ async function runReviewRequests(request: NextRequest): Promise<NextResponse> {
   const d14Logs: { order_id: string; email: string; email_type: string; resend_message_id: string | null }[] = []
   let d14Sent = 0
   let d14Skipped = 0
+  let d14Failed = 0
 
   for (const row of d14Raw) {
     const order = d14OrderMap.get(row.order_id)
@@ -170,8 +185,9 @@ async function runReviewRequests(request: NextRequest): Promise<NextResponse> {
       })
       d14Logs.push({ order_id: row.order_id, email: order.customer_email, email_type: 'd14', resend_message_id: messageId })
       d14Sent++
-    } catch {
-      d14Skipped++
+    } catch (e) {
+      d14Failed++
+      recordError('d14', order.order_number, e)
     }
   }
 
@@ -179,11 +195,14 @@ async function runReviewRequests(request: NextRequest): Promise<NextResponse> {
     await supabase.from('print_review_request_log').insert(d14Logs)
   }
 
+  const totalFailed = d7Failed + d14Failed
   return NextResponse.json({
-    ok: true,
-    d7: { sent: d7Sent, skipped: d7Skipped, candidates: d7Candidates.length },
-    d14: { sent: d14Sent, skipped: d14Skipped, candidates: d14Raw.length },
-  })
+    // 발송 실패가 있으면 ok=false로 보고해 모니터링/cron 로그가 '조용한 공백'을 잡도록 한다.
+    ok: totalFailed === 0,
+    d7: { sent: d7Sent, skipped: d7Skipped, failed: d7Failed, candidates: d7Candidates.length },
+    d14: { sent: d14Sent, skipped: d14Skipped, failed: d14Failed, candidates: d14Raw.length },
+    ...(totalFailed > 0 ? { failed: totalFailed, errors: sendErrors } : {}),
+  }, { status: totalFailed > 0 ? 500 : 200 })
 }
 
 export async function GET(request: NextRequest) {
