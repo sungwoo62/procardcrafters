@@ -96,7 +96,9 @@ async function fetchProductCardData(): Promise<Record<string, ProductCardData>> 
       `${url}/rest/v1/print_products?select=slug,hero_image_url,description_en&is_active=eq.true`,
       {
         headers: { apikey: key, Authorization: `Bearer ${key}` },
-        cache: 'no-store',
+        // 빌드 시 88개 페이지가 각자 이 쿼리를 재실행하면 Supabase 커넥션 고갈 →
+        // 정적 생성 60s 타임아웃 → 빌드 실패. fetch 캐시로 빌드 전역 1회만 실행. (OMO-2629)
+        next: { revalidate: 300 },
         signal: AbortSignal.timeout(8000),
       },
     )
