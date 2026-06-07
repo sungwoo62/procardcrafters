@@ -33,8 +33,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 })
   }
 
-  // 소유권: 전달된 paypalOrderId가 이 주문에 바인딩된 값과 일치해야 함
-  if (existing.paypal_order_id && existing.paypal_order_id !== paypalOrderId) {
+  // 소유권: 전달된 paypalOrderId가 이 주문에 바인딩된 값과 일치해야 함.
+  // 정상 플로우에서는 create-order가 paypal_order_id를 채운 뒤에야 클라가 capture를 호출하므로
+  // 바인딩이 비어있으면(=정상 플로우 미경유) 거절한다 (OMO-2589 #3 — 금액 대조는 백스톱).
+  if (!existing.paypal_order_id || existing.paypal_order_id !== paypalOrderId) {
     return NextResponse.json({ error: 'PayPal order does not match this order' }, { status: 409 })
   }
 
@@ -81,6 +83,21 @@ export async function POST(request: NextRequest) {
   // 경쟁 캡처가 먼저 처리한 경우 — 멱등 성공 반환 (후처리/이메일 중복 방지)
   if (!order) {
     return NextResponse.json({ orderNumber: existing.order_number, duplicate: true })
+  }
+
+  // 쿠폰 소각: 결제 성공(paid 전이) 직후 (OMO-2589 item3 — create-order의 조기소각에서 이동).
+  // review_coupon_id는 create-order에서 주문에 바인딩됨. optimistic update로 sent→used 1회 전이.
+  // 이 블록은 pending→paid 전이에 성공한 경쟁 승자만 도달하므로 중복 소각/이메일과 분리됨.
+  if (order.review_coupon_id) {
+    await supabase
+      .from('print_review_coupons')
+      .update({
+        status: 'used',
+        redeemed_at: new Date().toISOString(),
+        redeemed_order_id: order.id,
+      })
+      .eq('id', order.review_coupon_id)
+      .eq('status', 'sent')
   }
 
   const items = (order.print_order_items ?? []).map((i: { product_name_en: string; quantity: number; subtotal_usd: number }) => ({

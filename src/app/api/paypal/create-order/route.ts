@@ -227,18 +227,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 쿠폰 redemption 기록 (optimistic lock — status='sent'인 경우에만)
-  if (verifiedCouponId && couponDiscountUsd > 0) {
-    await supabase
-      .from('print_review_coupons')
-      .update({
-        status: 'used',
-        redeemed_at: new Date().toISOString(),
-        redeemed_order_id: order.id,
-      })
-      .eq('id', verifiedCouponId)
-      .eq('status', 'sent')
-  }
+  // 쿠폰 소각은 결제 성공(capture) 시점으로 이동 (OMO-2589 item3).
+  // 주문 생성 시점에 소각하면 결제 이탈 시 쿠폰이 영구 소실되고 pending 고아가 남음.
+  // review_coupon_id는 위 INSERT에서 주문에 바인딩되며, capture-order가 paid 전이 직후 sent→used 소각함.
 
   // Create PayPal Order
   const productNames = orderItemsData.map((i) => i.product_name_en).join(', ')
