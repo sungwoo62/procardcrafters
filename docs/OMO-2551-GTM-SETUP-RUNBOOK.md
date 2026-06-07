@@ -76,6 +76,15 @@ Google Ads → Goals → Conversions → New conversion action → **Website**.
 
 > ℹ️ Google Ads 전환 태그(`awct`)는 base에 **포함하지 않음**. GTM import는 `conversionId`가 **숫자**여야 하므로 placeholder로는 import가 거부된다(에러: "양의 정수 또는 0"). AW 전환 ID/라벨 확보 후 §3-3대로 수동 3개 추가하거나, 숫자 채운 2차 import 파일을 사용한다.
 
+> ✅ **OMO-2557 자동화 준비 완료**: 2차 import 파일을 손으로 만들 필요 없음. 값 4개(AW 숫자 ID + 라벨 3개) 확보 즉시 아래 한 줄이면 import-ready 파일이 생성된다.
+> ```bash
+> scripts/omo-2557-fill-ads-tags.sh <AW숫자ID> <PurchaseLabel> <Lead_email_Label> <Lead_chat_Label>
+> # → docs/OMO-2557-gtm-ads-tags.filled.json 생성 (Merge/Overwrite import)
+> ```
+> - 템플릿: `docs/OMO-2557-gtm-ads-tags.template.json` (awct 3개: purchase→trigger 103, email_signup→105, chat_quote→106. 변수 value/currency/transaction_id 와이어 완료)
+> - 리드 라벨 1개 통합 운영 시: email/chat 인자에 같은 라벨을 넣으면 됨.
+> - `AW-` 접두사가 섞여 들어와도 자동 제거, 비숫자 ID는 거부.
+
 ### 3-1. Data Layer 변수 (Variables → New → Data Layer Variable)
 - `dlv.transaction_id`, `dlv.value`, `dlv.currency`, `dlv.items`, `dlv.lead_type`
 
