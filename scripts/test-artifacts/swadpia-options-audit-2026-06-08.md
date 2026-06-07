@@ -33,7 +33,24 @@ estimate `json_data` 의 `product=name` 쿼리는 카테고리 대표 goods 만 
 DOM). 따라서 불일치 6종 + 봉투 3종의 확정 수정은 Playwright 런타임 추출이 필요
 (swadpia-order 자동화는 설계상 VPS/로컬 전용).
 
-## 4. 남은 작업 (9종)
-제품별 goods_view 런타임 추출 → 정확한 paper_code/paper_size/paper_qty/
-print_color_type 확정 → CATEGORY_MAP 매핑 정정(필요 시) + print_product_options
-재시드. 후가공 실옵션 와이어링은 [OMO-2635] 소관.
+## 4. 런타임 권위검증 (goods_view DOM, Playwright — 2026-06-08)
+estimate JSON 의 비결정성을 우회해 실제 goods_view 페이지가 JS로 렌더링한 select
+옵션을 직접 추출(=selectOrderOptions 가 실제로 보는 DOM). 결정적 결과:
+
+- **CPR5000 = 포스터/대형출력 제품** (paper_code: ART300W00/SNW300W00/VLD26001E,
+  paper_qty: 400/800/1200…). 즉 **banners/mini/rollup/x-banners → CPR5000 은
+  카테고리 오매핑.** DB의 배너 코드(BNR510W00, MBS/RBS/XBS, 수량 1~10)는 실제
+  현수막/배너용으로 합당하나 CPR5000 에 속하지 않음. → 올바른 현수막 카테고리
+  코드를 찾아 CATEGORY_MAP 정정 필요. (기존 `banners` "완료" 제품도 동일 버그)
+- **CLP1000 = 라벨(스티커계열) — 카테고리는 맞음, DB 코드가 틀림.** 실제 코드:
+  paper_code `STR*`(예: STR080ABN 아트지80g, STR050SL1 샤인실버pet), paper_size
+  `CLP01`(라벨 60*50), print_color_type `CMK40`, paper_qty 10000(롤),
+  fside_color_amount=4. → 라벨 3종(barcode/food/price) DB를 런타임 코드로 재시드.
+
+방법 검증 완료: chromium 캐시 사용 가능, goods_view 옵션 추출 동작 확인.
+
+## 5. 남은 작업 (9종) — 런타임 기반, [OMO-2634-C]로 추적
+- 배너 4종: 올바른 현수막 카테고리 코드 식별 → CATEGORY_MAP 정정 + GOODS_MAP override.
+- 라벨 3종(CLP1000): STR*/CLP01/CMK40/10000 런타임 코드로 print_product_options 재시드.
+- 봉투 3종(CEV1000): goods_view 런타임으로 paper/size/color 코드 확정 후 재시드.
+후가공 실옵션 와이어링은 [OMO-2635] 소관(commit f852d98로 FIELD_ALIAS 토대 반영).
