@@ -23,6 +23,10 @@
     {
       "path": "/api/cron/review-requests",
       "schedule": "0 4 * * *"
+    },
+    {
+      "path": "/api/cron/optimize-experiments",
+      "schedule": "0 5 * * *"
     }
   ]
 }
