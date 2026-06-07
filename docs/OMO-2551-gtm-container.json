@@ -1,0 +1,296 @@
+{
+  "exportFormatVersion": 2,
+  "containerVersion": {
+    "container": {
+      "publicId": "GTM-K3SCHZX3",
+      "name": "procardcrafters.com",
+      "usageContext": ["WEB"]
+    },
+    "tag": [
+      {
+        "name": "GA4 Configuration",
+        "type": "googtag",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "tagId", "value": "G-8WLFZ1GTTJ" }
+        ],
+        "firingTriggerId": ["2147479553"],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      },
+      {
+        "name": "GA4 - view_item",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "view_item" },
+          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+              ] },
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "value" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+              ] }
+            ]
+          }
+        ],
+        "firingTriggerId": ["T_view_item"]
+      },
+      {
+        "name": "GA4 - add_to_cart",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "add_to_cart" },
+          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" }
+        ],
+        "firingTriggerId": ["T_add_to_cart"]
+      },
+      {
+        "name": "GA4 - begin_checkout",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "begin_checkout" },
+          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+              ] },
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "value" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+              ] }
+            ]
+          }
+        ],
+        "firingTriggerId": ["T_begin_checkout"]
+      },
+      {
+        "name": "GA4 - purchase",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "purchase" },
+          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "transaction_id" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - transaction_id}}" }
+              ] },
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "currency" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
+              ] },
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "value" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
+              ] }
+            ]
+          }
+        ],
+        "firingTriggerId": ["T_purchase"]
+      },
+      {
+        "name": "GA4 - generate_lead",
+        "type": "gaawe",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
+          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
+          {
+            "type": "LIST",
+            "key": "eventParameters",
+            "list": [
+              { "type": "MAP", "map": [
+                { "type": "TEMPLATE", "key": "name", "value": "lead_type" },
+                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - lead_type}}" }
+              ] }
+            ]
+          }
+        ],
+        "firingTriggerId": ["T_generate_lead"]
+      },
+      {
+        "name": "Google Ads - Conversion Linker",
+        "type": "gclidw",
+        "parameter": [],
+        "firingTriggerId": ["2147479553"]
+      },
+      {
+        "name": "Google Ads - Purchase Conversion",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "REPLACE_AW_CONVERSION_ID" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "REPLACE_PURCHASE_LABEL" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - transaction_id}}" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "firingTriggerId": ["T_purchase"]
+      },
+      {
+        "name": "Google Ads - Lead (email_signup)",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "REPLACE_AW_CONVERSION_ID" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "REPLACE_LEAD_EMAIL_LABEL" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "firingTriggerId": ["T_generate_lead_email"]
+      },
+      {
+        "name": "Google Ads - Lead (chat_quote)",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "REPLACE_AW_CONVERSION_ID" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "REPLACE_LEAD_CHAT_LABEL" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "firingTriggerId": ["T_generate_lead_chat"]
+      }
+    ],
+    "trigger": [
+      {
+        "triggerId": "T_view_item",
+        "name": "CE - view_item",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "view_item" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_add_to_cart",
+        "name": "CE - add_to_cart",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "add_to_cart" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_begin_checkout",
+        "name": "CE - begin_checkout",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "begin_checkout" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_purchase",
+        "name": "CE - purchase",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "purchase" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_generate_lead",
+        "name": "CE - generate_lead (all)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_generate_lead_email",
+        "name": "CE - generate_lead (email_signup)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+          ] }
+        ],
+        "filter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - lead_type}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "email_signup" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "T_generate_lead_chat",
+        "name": "CE - generate_lead (chat_quote)",
+        "type": "CUSTOM_EVENT",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+          ] }
+        ],
+        "filter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - lead_type}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "chat_quote" }
+          ] }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "name": "DLV - value",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "TEMPLATE", "key": "name", "value": "value" }
+        ]
+      },
+      {
+        "name": "DLV - currency",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "TEMPLATE", "key": "name", "value": "currency" }
+        ]
+      },
+      {
+        "name": "DLV - transaction_id",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "TEMPLATE", "key": "name", "value": "transaction_id" }
+        ]
+      },
+      {
+        "name": "DLV - items",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "TEMPLATE", "key": "name", "value": "items" }
+        ]
+      },
+      {
+        "name": "DLV - lead_type",
+        "type": "v",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "TEMPLATE", "key": "name", "value": "lead_type" }
+        ]
+      }
+    ]
+  }
+}

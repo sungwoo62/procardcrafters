@@ -69,6 +69,17 @@ Google Ads → Goals → Conversions → New conversion action → **Website**.
 
 ## 3. GTM 컨테이너 구성
 
+### 3-0. (권장 가속) 컨테이너 JSON 임포트
+수동으로 태그/트리거/변수를 일일이 만들 필요 없이, 미리 작성한 컨테이너를 임포트할 수 있다:
+1. GTM(`GTM-K3SCHZX3`) → Admin → **Import Container**
+2. 파일 `docs/OMO-2551-gtm-container.json` 선택 → Workspace=Existing(Default) → **Merge** → Overwrite conflicts
+3. 임포트 후 **Google Ads 태그 3개**의 placeholder 치환:
+   - `REPLACE_AW_CONVERSION_ID` → `AW-XXXXXXXXX`
+   - `REPLACE_PURCHASE_LABEL` / `REPLACE_LEAD_EMAIL_LABEL` / `REPLACE_LEAD_CHAT_LABEL` → 각 Conversion Label
+4. Preview로 §7 검증 → Publish.
+
+> ⚠️ best-effort 임포트: GA4 event 태그의 measurement ID 연결이 GTM 버전에 따라 재지정이 필요할 수 있음. 임포트가 거부되면 아래 3-1~3-4 수동 절차를 따른다.
+
 ### 3-1. Data Layer 변수 (Variables → New → Data Layer Variable)
 - `dlv.transaction_id`, `dlv.value`, `dlv.currency`, `dlv.items`, `dlv.lead_type`
 
