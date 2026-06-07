@@ -10,6 +10,44 @@ export interface AttributionInput {
   referrer_host?: string | null
 }
 
+// print_orders 귀속 컬럼 전체 형태 (체크아웃 INSERT 용, OMO-2594).
+export interface OrderAttributionColumns {
+  utm_source: string | null
+  utm_medium: string | null
+  utm_campaign: string | null
+  utm_term: string | null
+  utm_content: string | null
+  gclid: string | null
+  fbclid: string | null
+  landing_path: string | null
+  referrer_host: string | null
+}
+
+/**
+ * 체크아웃에서 클라이언트가 보낸 귀속 페이로드를 print_orders 컬럼 형태로 정규화한다 (OMO-2594).
+ * 신뢰 경계: 문자열만 허용 + 길이 제한. 신호가 없으면 전 컬럼 null → deriveChannel 이 'direct'.
+ * 주문 파이프라인은 P0 영역이므로 어떤 입력에도 throw 하지 않고 additive 로만 동작한다.
+ */
+export function sanitizeAttribution(input: unknown): OrderAttributionColumns {
+  const o = input && typeof input === 'object' ? (input as Record<string, unknown>) : {}
+  const s = (v: unknown, max: number): string | null => {
+    if (typeof v !== 'string') return null
+    const t = v.trim()
+    return t ? t.slice(0, max) : null
+  }
+  return {
+    utm_source: s(o.utm_source, 255),
+    utm_medium: s(o.utm_medium, 255),
+    utm_campaign: s(o.utm_campaign, 255),
+    utm_term: s(o.utm_term, 255),
+    utm_content: s(o.utm_content, 255),
+    gclid: s(o.gclid, 512),
+    fbclid: s(o.fbclid, 512),
+    landing_path: s(o.landing_path, 512),
+    referrer_host: s(o.referrer_host, 255),
+  }
+}
+
 // 표준 채널 라벨 — 대시보드/ROAS 매칭 키와 동일하게 유지할 것.
 export type MarketingChannel =
   | 'paid_search' // Google Ads 등 유료 검색

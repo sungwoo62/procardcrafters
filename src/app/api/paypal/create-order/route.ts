@@ -5,6 +5,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
+import { sanitizeAttribution } from '@/lib/attribution'
 
 interface OrderItemInput {
   productId: string
@@ -31,6 +32,8 @@ interface OrderRequest {
     shippingServiceCode?: string
   }
   couponCode?: string
+  // first-touch 채널 귀속 (OMO-2594) — 클라이언트 localStorage 에서 전달, 서버에서 sanitize
+  attribution?: unknown
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +44,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
-  const { items, customer, shipping, couponCode } = body
+  const { items, customer, shipping, couponCode, attribution } = body
+  // 귀속 신호 정규화 (P0 안전: throw 없이 전 컬럼 null 폴백)
+  const attributionCols = sanitizeAttribution(attribution)
 
   if (!items?.length || !customer?.email || !shipping?.addressLine1) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 })
@@ -200,6 +205,8 @@ export async function POST(request: NextRequest) {
       payment_provider: 'paypal',
       shipping_service_code: shippingQuote.serviceCode ?? null,
       shipping_service_name_en: shippingQuote.serviceNameEn ?? null,
+      // 채널 귀속 (OMO-2594, additive)
+      ...attributionCols,
     })
     .select()
     .single()
