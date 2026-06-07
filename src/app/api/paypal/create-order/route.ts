@@ -1,14 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-const PAYPAL_API_BASE =
-  process.env.PAYPAL_ENV === "live"
+// [환경 호환] 프로덕션은 PAYPAL_API_URL/PAYPAL_SECRET/NEXT_PUBLIC_PAYPAL_CLIENT_ID 네이밍을 사용.
+// 명시적 PAYPAL_API_URL 이 있으면 우선 사용하고, 없으면 PAYPAL_ENV 로 모드 결정.
+const PAYPAL_API_BASE = (() => {
+  const explicit = process.env.PAYPAL_API_URL?.trim();
+  if (explicit && /^https?:\/\//.test(explicit)) {
+    return explicit.replace(/\/$/, "");
+  }
+  return process.env.PAYPAL_ENV === "live"
     ? "https://api-m.paypal.com"
     : "https://api-m.sandbox.paypal.com";
+})();
 
 async function getAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID;
-  const secret = process.env.PAYPAL_CLIENT_SECRET;
+  const clientId =
+    process.env.PAYPAL_CLIENT_ID ?? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID;
+  const secret = process.env.PAYPAL_CLIENT_SECRET ?? process.env.PAYPAL_SECRET;
 
   if (!clientId || !secret) {
     throw new Error("PayPal 자격증명이 설정되지 않았습니다.");
