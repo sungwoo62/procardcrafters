@@ -264,7 +264,7 @@ async function queueFactoryOrder(
     'brochures': 'CLF2000',
     'postcards': 'CDP3000',
     'posters': 'CPR2000',
-    'banners': 'CPR5000',
+    'banners': 'CRP5100', // OMO-2636: 정정 (구 CPR5000=종이홀더)
   }
   const categoryCode = SLUG_TO_CATEGORY[slug] ?? 'UNKNOWN'
 

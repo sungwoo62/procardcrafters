@@ -40,7 +40,11 @@ const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: strin
   'brochures':              { categoryCode: 'CLF2000', goodsCode: '1' },
   'postcards':              { categoryCode: 'CDP3000', goodsCode: '1' },
   'posters':                { categoryCode: 'CPR2000', goodsCode: '1' },
-  'banners':                { categoryCode: 'CPR5000', goodsCode: '1' },
+  // OMO-2636: 배너 4종 성원 실사출력(CRP) 계열 정정 (구 CPR5000=종이홀더 오매핑 제거)
+  'banners':                { categoryCode: 'CRP5100', goodsCode: '1' },
+  'x-banners':              { categoryCode: 'CRP4000', goodsCode: '1' },
+  'rollup-banners':         { categoryCode: 'CRP3000', goodsCode: '1' },
+  'mini-banners':           { categoryCode: 'COD1100', goodsCode: '1' },
 }
 
 // ─── Types ────────────────────────────────────────────────────

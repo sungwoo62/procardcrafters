@@ -136,7 +136,7 @@ const ROWS: Row[] = [
     ourLabel: '배너 / 현수막',
     ourCurrentQty: '1 / 2 / 3 / 5 / 10',
     ourPlannedQty: '변경 없음',
-    swadpiaCode: 'CPR5000',
+    swadpiaCode: 'CRP5100', // OMO-2636: 현수막 150denier (구 CPR5000=종이홀더 오매핑 정정)
     swadpiaMatrix: '없음 (DB 폴백)',
     swadpiaMinQty: '1 (DB)',
     interproRoute: '/order/form/photobanner',

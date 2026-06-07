@@ -17,7 +17,11 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'brochures':              'CLF2000',
   'postcards':              'CDP3000',
   'posters':                'CPR2000',
-  'banners':                'CPR5000',
+  // OMO-2636: 배너 4종 성원 실사출력(CRP) 계열 정정 (구 CPR5000=종이홀더 오매핑)
+  'banners':                'CRP5100',
+  'x-banners':              'CRP4000',
+  'rollup-banners':         'CRP3000',
+  'mini-banners':           'COD1100',
 }
 
 export function toCategoryCode(productNameEn: string): string {
