@@ -19,6 +19,9 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: '*.supabase.co', pathname: '/storage/v1/object/public/**' },
+      // OMO-2562: 포트폴리오 샘플 디자인 이미지(Unsplash 스톡) 허용. 카피를 "Sample Designs"로
+      // 정직하게 표기하여 실제 납품작이 아님을 명시(허위표시 방지).
+      { protocol: 'https', hostname: 'images.unsplash.com', pathname: '/**' },
     ],
   },
   async headers() {
