@@ -28,7 +28,8 @@ const geist = Geist({
   subsets: ['latin'],
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 metadataBase/OG URL 깨짐 유발).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),

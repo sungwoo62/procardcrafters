@@ -24,7 +24,8 @@ import FinishingSection from '@/components/FinishingSection'
 import JsonLd from '@/components/JsonLd'
 import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 canonical/JSON-LD URL 깨짐 유발).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 interface Props {
   params: Promise<{ slug: string }>

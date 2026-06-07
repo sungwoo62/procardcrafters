@@ -77,7 +77,8 @@ const CATEGORY_TAG: Record<string, { label: string; color: string } | null> = {
   sample_pack: { label: 'Free Shipping', color: 'bg-blue-100 text-blue-700' },
 }
 
-const PRODUCTS_CANONICAL = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'}/products`
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 canonical 깨짐 유발).
+const PRODUCTS_CANONICAL = `${process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'}/products`
 
 export const metadata = {
   title: 'Custom Printing Products — Business Cards, Brochures, Flyers & More',

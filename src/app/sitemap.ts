@@ -1,6 +1,7 @@
 import type { MetadataRoute } from 'next'
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 상대경로/교차도메인 sitemap 유발).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 // DB fetch 실패 시 최소한의 핵심 제품은 항상 sitemap 에 남도록 폴백.
 const FALLBACK_PRODUCT_SLUGS = ['business-cards', 'stickers', 'flyers', 'postcards', 'posters', 'brochures']
