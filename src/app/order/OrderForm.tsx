@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Upload, FileText, CheckCircle, AlertCircle, Loader2, Tag } from 'lucide-react'
 import { PayPalScriptProvider, PayPalButtons } from '@paypal/react-paypal-js'
 import { trackBeginCheckout } from '@/lib/analytics'
+import { getStoredAttribution } from '@/lib/attribution-capture'
 import type { PrintProduct } from '@/types/database'
 import { COUNTRIES, STATES_BY_COUNTRY, getCountry, isPostalCodeValid } from '@/lib/intl-address'
 
@@ -296,6 +297,8 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           shippingServiceCode: selectedOption?.serviceCode ?? undefined,
         },
         couponCode: couponResult?.valid ? couponResult.code : undefined,
+        // first-touch 채널 귀속 (OMO-2594) — 서버에서 sanitize 후 print_orders 에 기록
+        attribution: getStoredAttribution(),
       }),
     })
 

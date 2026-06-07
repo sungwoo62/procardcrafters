@@ -7,6 +7,7 @@ import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 import { validateCode, applyCode } from '@/lib/promotion-engine'
 import { createAuthRouteClient } from '@/lib/supabase-server'
+import { sanitizeAttribution } from '@/lib/attribution'
 
 interface OrderItemInput {
   productId: string
@@ -32,6 +33,8 @@ interface OrderRequest {
     postalCode: string
   }
   promoCode?: string
+  // first-touch 채널 귀속 (OMO-2594) — 서버에서 sanitize
+  attribution?: unknown
 }
 
 export async function POST(request: NextRequest) {
@@ -44,7 +47,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
-  const { items, customer, shipping, promoCode } = body
+  const { items, customer, shipping, promoCode, attribution } = body
+  // 귀속 신호 정규화 (P0 안전: throw 없이 전 컬럼 null 폴백)
+  const attributionCols = sanitizeAttribution(attribution)
 
   // 로그인 사용자 추출 (per_user_max 검증용)
   let userId: string | undefined
@@ -242,6 +247,8 @@ export async function POST(request: NextRequest) {
       total_usd: totalUsd,
       exchange_rate_krw_usd: exchangeRate,
       status: 'pending',
+      // 채널 귀속 (OMO-2594, additive)
+      ...attributionCols,
     })
     .select()
     .single()

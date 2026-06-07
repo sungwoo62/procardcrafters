@@ -10,6 +10,7 @@ import SeasonalToast from '@/components/SeasonalToast'
 import SocialProofToast from '@/components/SocialProofToast'
 import CouponPopup from '@/components/CouponPopup'
 import JsonLd from '@/components/JsonLd'
+import AttributionTracker from '@/components/AttributionTracker'
 import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
 import type { Campaign } from '@/lib/promotion-engine'
 
@@ -194,6 +195,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-full flex flex-col bg-white text-gray-900 antialiased">
         {/* 사이트 전역 구조화 데이터 (Organization + WebSite) */}
         <JsonLd data={ORG_WEBSITE_JSONLD} />
+        {/* first-touch 채널 귀속 캡처 (OMO-2594) */}
+        <AttributionTracker />
         {/* GTM noscript fallback */}
         {GTM_CONTAINER_ID && (
           <noscript>
