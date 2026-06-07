@@ -183,3 +183,74 @@ export const SWADPIA_FINISHING_BY_VALUE: Record<string, SwadpiaFinishingMapping>
 export const AUTO_ORDERABLE_FINISHINGS: string[] = SWADPIA_FINISHING_FIELDS.filter(
   (m) => m.status === 'mapped',
 ).map((m) => m.finishingValue)
+
+// ─── 자동발주 기본값(가장 보편적인 선택) — OMO-2635 ────────────────────────
+//
+// 후가공을 고객이 "토글"로만 선택하는 v1에서, 각 후가공의 성원 폼 필드를
+// 어떤 값으로 채울지 정한다. (서브 선택 UI가 추가되면 selected_options 에
+// 개별 필드코드를 직접 넣어 override 가능 — expandFinishingToSwadpiaFields 가
+// 명시값을 기본값보다 우선한다.)
+//   - runtimeOnly 필드(bak_exist_dongpan_1 등)는 사이즈/보유여부 선택 후
+//     성원 페이지가 JS로 채우므로 여기서 비움.
+export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, string>> = {
+  foil_stamp: {
+    bak_section_1: 'BKS10', // 신규
+    bak_side_1: 'BKD10',    // 전면
+    bak_type_1: 'BKT02',    // 금박(유광)
+    bak_compare_1: 'BAC10', // 내용같음
+  },
+  deboss_emboss: {
+    ap_section_1: 'APS10', // 신규
+    ap_type_1: 'APT10',    // 앞으로 돌출
+    ap_compare_1: 'BAC10', // 내용같음
+  },
+  die_cut: {
+    domusong_section: 'DMS20', // 전체도무송
+    domusong_type: 'DMT51',    // 라운드,사각,원
+    domusong_num: '1',
+  },
+  drilled_hole: {
+    tagong_num: '1',
+    tagong_size: '4', // 4mm
+  },
+  numbering: {
+    numbering_type: 'NBT10', // 일반넘버링
+    numbering_kind: 'NBN11', // 6자리 1개 정매수
+  },
+}
+
+/**
+ * 주문의 selected_options 를 성원 발주 폼 필드코드로 확장한다.
+ *
+ * 흐름: 고객 selected_options(`finishing` = 콤마구분 value 목록, 예 "foil_stamp,drilled_hole")
+ *  → 각 후가공의 DEFAULT_FINISHING_FIELD_VALUES(또는 selected_options 에 직접 넣은
+ *    명시 필드코드)를 병합한 성원 필드코드 맵을 반환.
+ *
+ * selectOrderOptions(swadpia-order.ts) 가 이 키들을 select[name]/radio[name] 에
+ * 그대로 적용하므로, 반환 맵을 options_snapshot 에 병합하면 자동발주에 후가공이 적용된다.
+ *
+ * 안전성: `finishing` 키가 없으면 입력을 그대로 반환(기존 주문 무영향).
+ *         성원 폼에 존재하지 않는 `finishing` 키 자체는 반환 맵에서 제거한다.
+ */
+export function expandFinishingToSwadpiaFields(
+  selectedOptions: Record<string, string>,
+): Record<string, string> {
+  const finishingRaw = selectedOptions.finishing
+  if (!finishingRaw) return { ...selectedOptions }
+
+  // finishing 키를 제외한 나머지(명시 필드코드 포함)는 그대로 통과
+  const { finishing: _drop, ...rest } = selectedOptions
+  void _drop
+  const out: Record<string, string> = { ...rest }
+
+  const values = finishingRaw.split(',').map((v) => v.trim()).filter(Boolean)
+  for (const value of values) {
+    const defaults = DEFAULT_FINISHING_FIELD_VALUES[value]
+    if (!defaults) continue // runtime/needs_audit 후가공은 자동발주 미지원(스킵)
+    for (const [field, code] of Object.entries(defaults)) {
+      // 이미 명시된 필드코드가 있으면 우선(서브 선택 UI override)
+      if (out[field] === undefined) out[field] = code
+    }
+  }
+  return out
+}

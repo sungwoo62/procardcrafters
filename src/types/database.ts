@@ -5,7 +5,16 @@ export type ProductCategory =
   | 'postcards' | 'posters' | 'banners'
   | 'letterpress_cards'
   | 'sample_pack'
-export type OptionType = 'quantity' | 'paper' | 'paper_code' | 'coating' | 'size' | 'finish' | 'corners' | 'sides' | 'pages'
+// OMO-2635: 실제 print_product_options.option_type 값과 타입을 동기화(드리프트 정리).
+//   paper_qty/paper_size/print_color_type 는 시드 데이터에 이미 존재했으나 union 누락.
+//   finishing 은 후가공을 실주문옵션으로 전환하며 신설(성원 자동발주 와이어링).
+export type OptionType =
+  | 'quantity' | 'paper_qty'
+  | 'paper' | 'paper_code'
+  | 'coating' | 'size' | 'paper_size'
+  | 'finish' | 'finishing'
+  | 'print_color_type'
+  | 'corners' | 'sides' | 'pages'
 export type OrderStatus = 'pending' | 'paid' | 'processing' | 'shipped' | 'delivered' | 'cancelled' | 'refunded'
 export type FileStatus = 'uploaded' | 'approved' | 'rejected' | 'processing'
 export type DesignProofStatus = 'pending' | 'approved' | 'revision_requested'
