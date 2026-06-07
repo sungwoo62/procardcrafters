@@ -15,6 +15,20 @@ export const STALLED_PLACING_MIN = 30 // placing 잠금 후 30분 초과 → 워
 export const STALE_PENDING_HOURS = 2 // pending 2시간 초과 → 큐 미배출(워커 다운)
 export const MAX_ATTEMPTS = 3 // place-factory-orders.ts 와 동일
 
+// QA/테스트 주문 식별용 ilike 패턴 (OMO-2598). batch-test@/e2e-test@/test@procardcrafters.com 등
+// 회사 도메인을 쓰는 내부 검증 주문만 매칭한다. 실제 고객은 회사 도메인 메일을 쓰지 않는다.
+export const TEST_EMAIL_ILIKE = '%test%@procardcrafters.com'
+
+/**
+ * 커버리지 지표를 오염시키는 QA/테스트 주문 여부 (순수 함수, TEST_EMAIL_ILIKE 와 동일 의미).
+ * 회사 도메인(@procardcrafters.com) + 'test' 토큰을 가진 내부 검증 주문만 true.
+ */
+export function isTestEmail(email: string | null | undefined): boolean {
+  if (!email) return false
+  const e = email.toLowerCase()
+  return e.endsWith('@procardcrafters.com') && e.includes('test')
+}
+
 export interface PipelineCounts {
   /** print_factory_orders 전체 (cancelled 제외) */
   total: number
@@ -102,11 +116,20 @@ export async function runPipelineHealthCheck(nowMs: number): Promise<RunResult> 
   const placingCutoff = new Date(nowMs - STALLED_PLACING_MIN * 60_000).toISOString()
   const pendingCutoff = new Date(nowMs - STALE_PENDING_HOURS * 3_600_000).toISOString()
 
+  // QA/테스트 주문을 지표에서 제외 (OMO-2598). 이 id들에 속한 발주는 자동화율 계산에서 빼서
+  // batch-test/e2e-test 등 내부 검증 주문이 manual_intervention 비율을 부풀리지 않게 한다.
+  const testOrderIds = await getTestPrintOrderIds(supabase)
+  const testOrderIdSet = new Set(testOrderIds)
+  // PostgREST `not in (...)` 필터에 쓸 uuid 리스트 (비어있으면 필터 미적용)
+  const excludeFilter = testOrderIds.length > 0 ? `(${testOrderIds.join(',')})` : null
+
   const countByStatus = async (status: string): Promise<number> => {
-    const { count } = await supabase
+    let query = supabase
       .from('print_factory_orders')
       .select('id', { count: 'exact', head: true })
       .eq('status', status)
+    if (excludeFilter) query = query.not('print_order_id', 'in', excludeFilter)
+    const { count } = await query
     return count ?? 0
   }
 
@@ -118,24 +141,28 @@ export async function runPipelineHealthCheck(nowMs: number): Promise<RunResult> 
   ])
   const total = placed + pending + placing + failed
 
-  // 적체된 pending (큐 미배출)
-  const { count: stalePending } = await supabase
+  // 적체된 pending (큐 미배출) — 테스트 주문 제외
+  let stalePendingQuery = supabase
     .from('print_factory_orders')
     .select('id', { count: 'exact', head: true })
     .eq('status', 'pending')
     .lt('queued_at', pendingCutoff)
+  if (excludeFilter) stalePendingQuery = stalePendingQuery.not('print_order_id', 'in', excludeFilter)
+  const { count: stalePending } = await stalePendingQuery
 
-  // 정체된 placing (워커 사망 추정) — self-heal 대상 조회
-  const { data: stalledRows } = await supabase
+  // 정체된 placing (워커 사망 추정) — self-heal 대상 조회, 테스트 주문 제외
+  let stalledQuery = supabase
     .from('print_factory_orders')
     .select('id, print_order_id, attempt_count')
     .eq('status', 'placing')
     .lt('updated_at', placingCutoff)
+  if (excludeFilter) stalledQuery = stalledQuery.not('print_order_id', 'in', excludeFilter)
+  const { data: stalledRows } = await stalledQuery
 
   const stalledList = stalledRows ?? []
 
-  // unowned drift: 결제(paid)+시안승인(approved)됐으나 발주 레코드가 0건인 주문
-  const unownedPaid = await countUnownedPaidOrders(supabase)
+  // unowned drift: 결제(paid)+시안승인(approved)됐으나 발주 레코드가 0건인 주문 (테스트 주문 제외)
+  const unownedPaid = await countUnownedPaidOrders(supabase, testOrderIdSet)
 
   // --- self-heal: stalled placing 을 pending 으로 재할당 (재시도 여유분만) ---
   let requeued = 0
@@ -205,15 +232,17 @@ export async function runPipelineHealthCheck(nowMs: number): Promise<RunResult> 
  */
 async function countUnownedPaidOrders(
   supabase: ReturnType<typeof createServerClient>,
+  testOrderIdSet: Set<string>,
 ): Promise<number> {
-  // paid 상태 주문 id
+  // paid 상태 주문 id (테스트 주문 제외)
   const { data: paidOrders } = await supabase
     .from('print_orders')
     .select('id')
     .eq('status', 'paid')
 
   if (!paidOrders || paidOrders.length === 0) return 0
-  const paidIds = paidOrders.map((o) => o.id)
+  const paidIds = paidOrders.map((o) => o.id).filter((id) => !testOrderIdSet.has(id))
+  if (paidIds.length === 0) return 0
 
   // 그 중 시안 승인된 주문 id
   const { data: approvedProofs } = await supabase
@@ -233,4 +262,18 @@ async function countUnownedPaidOrders(
 
   const ownedIds = new Set((withFactory ?? []).map((f) => f.print_order_id))
   return approvedOrderIds.filter((id) => !ownedIds.has(id)).length
+}
+
+/**
+ * QA/테스트 주문(print_orders)의 id 목록 (OMO-2598).
+ * 자동화 커버리지 지표가 batch-test/e2e-test 등 내부 검증 주문으로 오염되는 것을 막는다.
+ */
+async function getTestPrintOrderIds(
+  supabase: ReturnType<typeof createServerClient>,
+): Promise<string[]> {
+  const { data } = await supabase
+    .from('print_orders')
+    .select('id')
+    .ilike('customer_email', TEST_EMAIL_ILIKE)
+  return (data ?? []).map((o) => o.id)
 }
