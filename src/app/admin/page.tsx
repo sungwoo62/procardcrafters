@@ -110,6 +110,7 @@ export default function AdminDashboardPage() {
           <nav className="flex gap-2 flex-wrap">
             {[
               { href: '/admin', label: 'Dashboard', icon: BarChart2 },
+              { href: '/admin/marketing', label: 'Marketing', icon: TrendingUp },
               { href: '/admin/orders', label: 'Orders', icon: ShoppingBag },
               { href: '/admin/shipping', label: 'Shipping', icon: Truck },
               { href: '/admin/files', label: 'File Review', icon: FileText },
