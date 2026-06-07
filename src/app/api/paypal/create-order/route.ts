@@ -5,6 +5,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
+import { sanitizeAttribution } from '@/lib/attribution'
 
 interface OrderItemInput {
   productId: string
@@ -31,6 +32,8 @@ interface OrderRequest {
     shippingServiceCode?: string
   }
   couponCode?: string
+  // first-touch 채널 귀속 (OMO-2594) — 클라이언트 localStorage 에서 전달, 서버에서 sanitize
+  attribution?: unknown
 }
 
 export async function POST(request: NextRequest) {
@@ -41,7 +44,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid request format' }, { status: 400 })
   }
 
-  const { items, customer, shipping, couponCode } = body
+  const { items, customer, shipping, couponCode, attribution } = body
+  // 귀속 신호 정규화 (P0 안전: throw 없이 전 컬럼 null 폴백)
+  const attributionCols = sanitizeAttribution(attribution)
 
   if (!items?.length || !customer?.email || !shipping?.addressLine1) {
     return NextResponse.json({ error: 'Required fields are missing' }, { status: 400 })
@@ -200,6 +205,8 @@ export async function POST(request: NextRequest) {
       payment_provider: 'paypal',
       shipping_service_code: shippingQuote.serviceCode ?? null,
       shipping_service_name_en: shippingQuote.serviceNameEn ?? null,
+      // 채널 귀속 (OMO-2594, additive)
+      ...attributionCols,
     })
     .select()
     .single()
@@ -227,18 +234,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  // 쿠폰 redemption 기록 (optimistic lock — status='sent'인 경우에만)
-  if (verifiedCouponId && couponDiscountUsd > 0) {
-    await supabase
-      .from('print_review_coupons')
-      .update({
-        status: 'used',
-        redeemed_at: new Date().toISOString(),
-        redeemed_order_id: order.id,
-      })
-      .eq('id', verifiedCouponId)
-      .eq('status', 'sent')
-  }
+  // 쿠폰 소각은 결제 성공(capture) 시점으로 이동 (OMO-2589 item3).
+  // 주문 생성 시점에 소각하면 결제 이탈 시 쿠폰이 영구 소실되고 pending 고아가 남음.
+  // review_coupon_id는 위 INSERT에서 주문에 바인딩되며, capture-order가 paid 전이 직후 sent→used 소각함.
 
   // Create PayPal Order
   const productNames = orderItemsData.map((i) => i.product_name_en).join(', ')
