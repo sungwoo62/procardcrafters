@@ -12,6 +12,16 @@ node scripts/omo-2557-ads-api.mjs
 
 ---
 
+## ⚡ 빠른 경로(권장) — 대화형 설정 도우미
+웹 콘솔에서 **OAuth 클라이언트(Desktop app) + 개발자 토큰**만 만든 뒤, 아래 한 줄을 실행하면 OAuth Playground 없이 동의 1번으로 refresh token까지 받아 **secrets 파일을 자동 작성**합니다:
+```bash
+node scripts/omo-2557-ads-setup.mjs
+```
+- Client ID/Secret 입력 → 브라우저 자동 오픈 → 동의 클릭 → (로컬 루프백으로 코드 자동 수신) → Developer token / Customer ID 입력 → 끝.
+- 아래 1~5단계는 이 도우미가 묻는 값을 "어디서 얻는지" 상세 설명입니다. (OAuth 클라이언트 타입은 반드시 **Desktop app**)
+
+---
+
 ## 회수해야 할 자격증명 5종
 
 | 키 | 무엇 | 어디서 |
