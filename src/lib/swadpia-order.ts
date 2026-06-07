@@ -43,6 +43,26 @@ const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: strin
     ]),
   )
 
+// ─── 카테고리별 폼 필드명 차이 (OMO-2634 라이브 조사) ──────────────
+//
+// print_product_options 는 CHECK 제약상 canonical option_type 4종
+// (paper_code/print_color_type/paper_size/paper_qty)만 저장 가능하다.
+// 그러나 성원 goods_view 의 실제 select name 은 카드형(명함/스티커) 외
+// 제품군마다 다르다. 자동발주 시 canonical option_type 을 아래 맵으로
+// 실제 select name 으로 변환해야 옵션이 폼에 적용된다.
+// 키는 categoryCode (동일 카테고리 제품군이 폼을 공유하므로).
+// 매핑이 없는 카테고리(명함·스티커 CST5000/CST7000 등)는 1:1 → 변환 없음.
+const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
+  CEV1000: { paper_size: 'bongto_type', print_color_type: 'fside_color_amount' },        // 봉투
+  CLP1000: { print_color_type: 'fside_color_amount1', paper_size: 'small_size_type', paper_qty: 'paper_qty_select' }, // 라벨
+  CPR4000: { paper_code: 'cover_paper_code', print_color_type: 'binding_type', paper_qty: 'bundle_qty' }, // 책자
+  CCD1000: { print_color_type: 'print_method', paper_qty: 'paper_qty_select' },           // 벽걸이 캘린더
+  CCD2000: { print_color_type: 'print_method', paper_qty: 'paper_qty_select' },           // 탁상/미니 캘린더
+  CNR2000: { print_color_type: 'fside_color_amount', paper_size: 'code_size_type' },       // 서식/양식
+  CPR3000: { print_color_type: 'print_method' },                                          // 리플렛
+  CLF2000: { print_color_type: 'print_method' },                                          // 메뉴/브로슈어
+}
+
 // ─── Types ────────────────────────────────────────────────────
 
 export interface SwadpiaOrderInput {
@@ -124,7 +144,8 @@ export async function placeSwadpiaOrder(
     // 2. 상품 페이지 + 옵션 선택
     await page.goto(goodsPageUrl, { waitUntil: 'networkidle', timeout: 30000 })
     await page.waitForTimeout(2000)
-    await selectOrderOptions(page, input.selectedOptions, input.quantity)
+    const fieldAlias = SWADPIA_FIELD_ALIAS[categoryCode] ?? {}
+    await selectOrderOptions(page, input.selectedOptions, input.quantity, fieldAlias)
 
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
@@ -447,9 +468,12 @@ async function selectOrderOptions(
   page: Page,
   options: Record<string, string>,
   quantity: number,
+  fieldAlias: Record<string, string> = {},
 ): Promise<void> {
-  for (const [key, value] of Object.entries(options)) {
-    if (key === 'quantity') continue
+  for (const [optKey, value] of Object.entries(options)) {
+    if (optKey === 'quantity' || optKey === 'paper_qty') continue
+    // canonical option_type → 성원 실제 select name 변환 (OMO-2634)
+    const key = fieldAlias[optKey] ?? optKey
 
     // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
     const selectEl = await page.$(`select[name="${key}"]`)
@@ -477,9 +501,10 @@ async function selectOrderOptions(
     }
   }
 
-  // 수량 (paper_qty select)
+  // 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
   if (quantity) {
-    const qtySelect = await page.$('select[name="paper_qty"]')
+    const qtyField = fieldAlias['paper_qty'] ?? 'paper_qty'
+    const qtySelect = await page.$(`select[name="${qtyField}"]`)
     if (qtySelect) {
       await qtySelect.selectOption(String(quantity))
       await page.waitForTimeout(300)
