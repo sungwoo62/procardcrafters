@@ -5,11 +5,11 @@ import PortfolioGallery from './PortfolioGallery'
 export const dynamic = 'force-dynamic'
 
 export const metadata: Metadata = {
-  title: 'Portfolio — Print Work Gallery',
-  description: 'Browse our portfolio of premium print work — business cards, stickers, flyers, postcards, and posters printed with precision.',
+  title: 'Sample Designs — Print Style Gallery',
+  description: 'Browse sample designs showcasing our print styles, stocks, and finishes — business cards, stickers, flyers, postcards, and posters.',
   openGraph: {
-    title: 'Portfolio — Procardcrafters',
-    description: 'Browse our portfolio of premium print work.',
+    title: 'Sample Designs — Procardcrafters',
+    description: 'Browse sample designs showcasing our print styles and finishes.',
   },
 }
 
@@ -46,12 +46,12 @@ export default async function PortfolioPage() {
     <div className="min-h-screen">
       {/* Header */}
       <section className="bg-gradient-to-br from-slate-900 via-gray-900 to-slate-800 py-20 px-4 text-center">
-        <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-4">Our Work</p>
+        <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-4">Design Samples</p>
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4 leading-tight">
-          Print Portfolio
+          Sample Designs &amp; Finishes
         </h1>
         <p className="text-gray-400 text-lg max-w-xl mx-auto">
-          Real projects, real quality. Browse {items.length}+ samples of premium print work delivered worldwide.
+          Browse {items.length}+ sample designs showcasing the print styles, stocks, and finishes we offer.
         </p>
       </section>
 

@@ -433,10 +433,10 @@ export default async function HomePage() {
         <section className="py-20 px-4 bg-gray-50">
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-12">
-              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Real Projects</p>
-              <h2 className="text-4xl font-bold text-gray-900 mb-4">Recent Print Projects</h2>
+              <p className="text-blue-600 text-sm font-semibold uppercase tracking-widest mb-3">Design Samples</p>
+              <h2 className="text-4xl font-bold text-gray-900 mb-4">Sample Designs &amp; Finishes</h2>
               <p className="text-gray-500 text-lg max-w-xl mx-auto">
-                Real work delivered to clients worldwide.
+                A showcase of the print styles, stocks, and finishes we offer.
               </p>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-10">

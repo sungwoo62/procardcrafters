@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useEffect } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
+import { assignVariant, trackImpression, trackClick } from '@/lib/experiments/client'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
@@ -103,6 +104,25 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const [uploadedFileName, setUploadedFileName] = useState<string | null>(null)
   const [uploadError, setUploadError] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  // ── A/B 실험: PDP 1차 CTA 카피 (OMO-2610). 미배정/오류 시 현행 카피 폴백 ──
+  const EXPERIMENT_KEY = 'pdp_cta_copy'
+  const [ctaVariantKey, setCtaVariantKey] = useState<string | null>(null)
+  const [ctaLabel, setCtaLabel] = useState('Design Online')
+  useEffect(() => {
+    let cancelled = false
+    assignVariant(EXPERIMENT_KEY).then((variant) => {
+      if (cancelled || !variant) return
+      setCtaVariantKey(variant.key)
+      const label = variant.config?.ctaLabel
+      if (typeof label === 'string' && label) setCtaLabel(label)
+      // 노출 1회 기록 (배정된 세션 한정)
+      trackImpression(EXPERIMENT_KEY, variant.key)
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -520,11 +540,14 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       <div className="space-y-2">
         <Link
           href={`/design/${product.slug}?${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
+          onClick={() => {
+            if (ctaVariantKey) trackClick(EXPERIMENT_KEY, ctaVariantKey)
+          }}
           className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
             <Pencil className="w-5 h-5" />
-            Design Online
+            {ctaLabel}
           </span>
         </Link>
         <Link
