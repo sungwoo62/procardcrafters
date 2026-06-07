@@ -77,9 +77,30 @@ const CATEGORY_TAG: Record<string, { label: string; color: string } | null> = {
   sample_pack: { label: 'Free Shipping', color: 'bg-blue-100 text-blue-700' },
 }
 
+const PRODUCTS_CANONICAL = `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'}/products`
+
 export const metadata = {
-  title: 'Products — Procardcrafters',
-  description: 'Custom printing: business cards, stickers, flyers, postcards, posters, banners, and more — delivered worldwide.',
+  title: 'Custom Printing Products — Business Cards, Brochures, Flyers & More',
+  description:
+    'Custom printing online: business cards, brochures, stickers, flyers, postcards, posters, labels, and banners. Premium quality, fast worldwide FedEx delivery.',
+  keywords: [
+    'custom printing',
+    'business cards',
+    'brochure printing',
+    'flyer printing',
+    'sticker printing',
+    'online printing',
+    'print on demand',
+  ],
+  alternates: { canonical: PRODUCTS_CANONICAL },
+  openGraph: {
+    type: 'website',
+    title: 'Custom Printing Products — Procardcrafters',
+    description:
+      'Business cards, brochures, stickers, flyers, postcards, posters, and more — premium quality printing delivered worldwide.',
+    url: PRODUCTS_CANONICAL,
+    siteName: 'Procardcrafters',
+  },
 }
 
 export default async function ProductsPage() {
