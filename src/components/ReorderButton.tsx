@@ -41,7 +41,8 @@ export default function ReorderButton({
         return
       }
 
-      window.location.href = data.checkoutUrl
+      // 새 주문 생성 완료 → PayPal 결제 페이지로 이동 (PayPal 전용 스토어)
+      window.location.href = `/order/${data.orderNumber}/pay`
     } catch {
       setError('Network error occurred.')
     } finally {
