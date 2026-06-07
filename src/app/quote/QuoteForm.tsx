@@ -1,10 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2, Lock, Star, Zap } from "lucide-react";
 import { submitQuote } from "./actions";
-import { trackGenerateLead, trackPurchase } from "@/lib/analytics";
+import {
+  trackGenerateLead,
+  trackRequestQuote,
+  trackContactSubmit,
+  trackBeginCheckout,
+  trackPurchase,
+} from "@/lib/analytics";
 
 const PayPalCheckout = dynamic(
   () => import("@/components/PayPalCheckout"),
@@ -35,6 +41,9 @@ export default function QuoteForm({
     setError(null);
 
     const formData = new FormData(e.currentTarget);
+    const product = (formData.get("product") as string) || undefined;
+    const quantityRaw = formData.get("quantity") as string | null;
+    const quantity = quantityRaw ? Number(quantityRaw) : undefined;
     const result = await submitQuote(formData);
 
     setPending(false);
@@ -43,9 +52,19 @@ export default function QuoteForm({
     } else {
       setSubmitted(true);
       setOrderId(result.orderId ?? null);
+      // PCCF 핵심 리드 전환 (OMO-2442)
+      trackRequestQuote({ product, quantity, value: 50, currency: "USD" });
       trackGenerateLead({ value: 50, currency: "USD" });
+      trackContactSubmit({ method: "quote_form" });
     }
   }
+
+  // 디파짓 결제 UI 노출 시점 = 체크아웃 시작
+  useEffect(() => {
+    if (submitted && !paid && orderId) {
+      trackBeginCheckout({ value: parseFloat(DEPOSIT_AMOUNT), currency: "USD" });
+    }
+  }, [submitted, paid, orderId]);
 
   if (submitted) {
     return (

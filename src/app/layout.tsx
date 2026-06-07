@@ -13,6 +13,9 @@ const inter = Inter({
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.com";
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+// PCCF 분석 (OMO-2442) — GTM-first. GTM 주입 시 GA4 Config Tag 는 GTM 컨테이너에서
+// 관리하므로 직접 gtag 로더는 끄고, GTM 미주입 환경에서만 GA4 fallback 로 동작한다.
+const GTM_ID = process.env.NEXT_PUBLIC_GTM_ID;
 // PCCF Auto Pixel (OMO-2376) — env override 가능, fallback 하드코딩 유지
 const META_PIXEL_ID =
   process.env.NEXT_PUBLIC_META_PIXEL_ID ?? "1421706653319003";
@@ -115,6 +118,19 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.className} h-full antialiased`}>
       <head>
+        {/* GTM (OMO-2442) — primary 태그 매니저. dataLayer 초기화 후 컨테이너 로드 */}
+        {GTM_ID && (
+          <Script id="gtm-init" strategy="afterInteractive">
+            {`
+              window.dataLayer = window.dataLayer || [];
+              (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+              new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+              j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+              'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+              })(window,document,'script','dataLayer','${GTM_ID}');
+            `}
+          </Script>
+        )}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
@@ -125,7 +141,20 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
-        {GA_ID && (
+        {/* GTM noscript fallback */}
+        {GTM_ID && (
+          <noscript>
+            <iframe
+              src={`https://www.googletagmanager.com/ns.html?id=${GTM_ID}`}
+              height="0"
+              width="0"
+              style={{ display: "none", visibility: "hidden" }}
+              title="gtm"
+            />
+          </noscript>
+        )}
+        {/* GA4 direct fallback — GTM 미주입 시에만 동작 (GTM 있으면 컨테이너 GA4 태그 사용) */}
+        {!GTM_ID && GA_ID && (
           <>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

@@ -7,7 +7,7 @@ import PriceCalculator from "@/components/print/PriceCalculator";
 import WishlistButton from "@/components/ui/WishlistButton";
 import { ImageOff, ChevronRight, ArrowRight, Zap, Shield, RotateCcw, Star } from "lucide-react";
 import type { Product, OptionGroup, OptionValue, PriceRule } from "@/lib/types";
-import { trackViewItem } from "@/lib/analytics";
+import { trackViewItem, trackSelectItem } from "@/lib/analytics";
 
 export default function ProductDetail({
   product,
@@ -140,6 +140,13 @@ export default function ProductDetail({
           <div>
             <Link
               href={`/quote?product=${encodeURIComponent(product.name)}`}
+              onClick={() =>
+                trackSelectItem({
+                  itemId: product.id,
+                  itemName: product.name,
+                  itemCategory: product.category_id ?? "print",
+                })
+              }
               className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-accent px-6 py-4 text-sm font-bold text-white hover:bg-accent-dark transition-all duration-200 shadow-lg shadow-accent/30 hover:scale-[1.01] active:scale-[0.99]"
             >
               Get a Free Quote
