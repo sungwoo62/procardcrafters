@@ -1,0 +1,12 @@
+[CNC1000] paper_code=2 print_color_type=3 paper_size=4 paper_qty=57
+[CEV1000] paper_code=3 print_color_type=∅ paper_size=∅ paper_qty=76
+[CLP1000] paper_code=11 print_color_type=∅ paper_size=1 paper_qty=∅
+[CPR4000] paper_code=∅ print_color_type=∅ paper_size=4 paper_qty=∅
+[CCD2000] paper_code=9 print_color_type=0 paper_size=4 paper_qty=∅
+[CCD1000] paper_code=17 print_color_type=0 paper_size=22 paper_qty=∅
+[CST5000] paper_code=9 print_color_type=2 paper_size=4 paper_qty=63
+[CST7000] paper_code=1 print_color_type=2 paper_size=1 paper_qty=63
+[CPR3000] paper_code=7 print_color_type=∅ paper_size=10 paper_qty=106
+[CLF2000] paper_code=7 print_color_type=∅ paper_size=10 paper_qty=106
+[CNR2000] paper_code=7 print_color_type=∅ paper_size=∅ paper_qty=22
+[CPR5000] paper_code=3 print_color_type=∅ paper_size=∅ paper_qty=36
