@@ -13,6 +13,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
   ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup, Loader2,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
+  Monitor, Upload,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
@@ -721,6 +722,51 @@ export default function EditorClient({ product, options }: Props) {
 
   // OMO-2325: Custom fields (동적 추가/삭제)
   const [customFields, setCustomFields] = useState<CustomField[]>([])
+
+  // OMO-2617: 모바일 폴백 — 에디터는 데스크톱 전용 레이아웃이라 좁은 폭에서 잘림.
+  // 모바일 뷰포트에서는 "데스크톱 권장" 안내 + 인쇄용 파일 직접 업로드 → 주문 직행 경로를 노출한다.
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileUploading, setMobileUploading] = useState(false)
+  const [mobileUploadError, setMobileUploadError] = useState('')
+  const mobileFileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  async function handleMobileDirectUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // 동일 파일 재선택 허용
+    if (!file) return
+    setMobileUploading(true)
+    setMobileUploadError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file, file.name)
+      const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
+      const data = await uploadRes.json()
+      if (uploadRes.ok && data.fileId) {
+        const optionParams = new URLSearchParams()
+        for (const opt of options) {
+          const val = searchParams.get(opt.option_type)
+          if (val) optionParams.set(opt.option_type, val)
+        }
+        const optStr = optionParams.toString()
+        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
+      } else {
+        setMobileUploading(false)
+        setMobileUploadError(data.error || '업로드에 실패했습니다. 다시 시도해 주세요.')
+      }
+    } catch {
+      setMobileUploading(false)
+      setMobileUploadError('오류가 발생했습니다. 다시 시도해 주세요.')
+    }
+  }
 
   function getMissingRequired(values: Record<string, string>) {
     // 인쇄물의 진실은 캔버스다. 폼이 비어 있어도 캔버스의 해당 필드 텍스트가 차 있으면
@@ -4345,6 +4391,55 @@ export default function EditorClient({ product, options }: Props) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
+      {/* OMO-2617: 모바일 폴백 오버레이 — 에디터는 데스크톱 전용. 좁은 폭에서 안내 + 파일 직행 업로드 노출 */}
+      {isMobile && (
+        <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center overflow-y-auto bg-white px-6 py-10 text-center">
+          <input
+            ref={mobileFileInputRef}
+            type="file"
+            accept="application/pdf,application/illustrator,application/postscript,image/vnd.adobe.photoshop,image/png,image/jpeg,image/tiff,.pdf,.ai,.eps,.psd,.png,.jpg,.jpeg,.tif,.tiff"
+            onChange={handleMobileDirectUpload}
+            className="hidden"
+          />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
+            <Monitor className="h-8 w-8 text-indigo-600" />
+          </div>
+          <h2 className="mt-5 text-xl font-bold text-gray-900">에디터는 데스크톱에서 가장 잘 작동합니다</h2>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
+            정밀한 디자인 도구가 많아 모바일 화면에는 최적화되어 있지 않습니다.
+            컴퓨터에서 접속하시면 디자인 에디터를 온전히 사용하실 수 있어요.
+          </p>
+
+          <div className="mt-8 w-full max-w-sm rounded-2xl border border-gray-200 bg-gray-50 p-5 text-left">
+            <p className="text-sm font-semibold text-gray-800">이미 인쇄용 파일이 있으신가요?</p>
+            <p className="mt-1 text-xs leading-relaxed text-gray-500">
+              완성된 디자인 파일(PDF·AI·PNG·JPG 등)을 바로 업로드하고 주문을 시작하세요.
+            </p>
+            <button
+              onClick={() => mobileFileInputRef.current?.click()}
+              disabled={mobileUploading}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {mobileUploading ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> 업로드 중...</>
+              ) : (
+                <><Upload className="h-4 w-4" /> 파일 업로드 후 주문하기</>
+              )}
+            </button>
+            {mobileUploadError && (
+              <p className="mt-2 text-xs text-red-500">{mobileUploadError}</p>
+            )}
+          </div>
+
+          <Link
+            href={`/products/${product.slug}`}
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft className="h-4 w-4" /> 제품 페이지로 돌아가기
+          </Link>
+        </div>
+      )}
+
       {/* Upload toast */}
       {imageToast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm text-white shadow-xl pointer-events-none">
