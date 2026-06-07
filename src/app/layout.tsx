@@ -9,6 +9,7 @@ import FreeShippingBanner from '@/components/FreeShippingBanner'
 import SeasonalToast from '@/components/SeasonalToast'
 import SocialProofToast from '@/components/SocialProofToast'
 import CouponPopup from '@/components/CouponPopup'
+import JsonLd from '@/components/JsonLd'
 import { getActiveCampaigns, getCampaignPriority, getTopPromoCode } from '@/lib/promotion-engine'
 import type { Campaign } from '@/lib/promotion-engine'
 
@@ -27,7 +28,8 @@ const geist = Geist({
   subsets: ['latin'],
 })
 
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 metadataBase/OG URL 깨짐 유발).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
@@ -51,6 +53,34 @@ export const metadata: Metadata = {
   },
   robots: { index: true, follow: true },
 }
+
+// 브랜드 지식패널 + 사이트링크 검색창을 위한 Organization / WebSite 구조화 데이터.
+const ORG_WEBSITE_JSONLD: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Procardcrafters',
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon.ico`,
+    description:
+      'Premium print on demand — business cards, stickers, flyers, brochures, postcards, and posters produced at certified global facilities and delivered worldwide.',
+    sameAs: [] as string[],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'Procardcrafters',
+    url: SITE_URL,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${SITE_URL}/products?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  },
+]
 
 export interface ProductCardData {
   image: string | null
@@ -162,6 +192,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
       </head>
       <body className="min-h-full flex flex-col bg-white text-gray-900 antialiased">
+        {/* 사이트 전역 구조화 데이터 (Organization + WebSite) */}
+        <JsonLd data={ORG_WEBSITE_JSONLD} />
         {/* GTM noscript fallback */}
         {GTM_CONTAINER_ID && (
           <noscript>

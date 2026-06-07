@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Loader2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
+import { trackGenerateLead } from '@/lib/analytics'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -44,6 +45,7 @@ export default function ChatWidget() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const sessionId = useRef('')
+  const leadFired = useRef(false)
 
   useEffect(() => {
     sessionId.current = getSessionId()
@@ -90,7 +92,14 @@ export default function ChatWidget() {
 
     const data = await res.json()
     setMessages((prev) => [...prev, { role: 'assistant', content: data.text }])
-    if (data.estimate) setEstimate(data.estimate)
+    if (data.estimate) {
+      setEstimate(data.estimate)
+      // 챗 견적 산출 = 리드 전환 (세션당 1회만 집계)
+      if (!leadFired.current) {
+        leadFired.current = true
+        trackGenerateLead({ leadType: 'chat_quote', value: data.estimate.priceUsd })
+      }
+    }
   }, [input, loading, messages])
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {

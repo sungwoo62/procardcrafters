@@ -1,0 +1,144 @@
+{
+  "exportFormatVersion": 2,
+  "_comment": "OMO-2557 — Google Ads 전환 태그(awct) 3개 추가용 GTM Merge-import 템플릿. 그대로 import 금지: conversionId는 숫자여야 하므로 placeholder 상태로는 import가 거부됨. scripts/omo-2557-fill-ads-tags.sh 로 실제 값(AW 숫자ID + 라벨 3개)을 채워 OMO-2557-gtm-ads-tags.filled.json 생성 후 import(Merge/Overwrite). 트리거 103/105/106 및 변수 300/301/302 는 base 컨테이너(GTM-K3SCHZX3)에 이미 존재하며 동일 ID로 merge된다.",
+  "containerVersion": {
+    "container": {
+      "publicId": "GTM-K3SCHZX3",
+      "name": "procardcrafters.com",
+      "usageContext": [
+        "WEB"
+      ]
+    },
+    "tag": [
+      {
+        "tagId": "210",
+        "name": "Google Ads - Conversion - Purchase",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "__AW_CONVERSION_ID__" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "__PURCHASE_LABEL__" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - transaction_id}}" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [ "103" ],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      },
+      {
+        "tagId": "211",
+        "name": "Google Ads - Conversion - Lead (email_signup)",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "__AW_CONVERSION_ID__" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "__LEAD_EMAIL_LABEL__" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [ "105" ],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      },
+      {
+        "tagId": "212",
+        "name": "Google Ads - Conversion - Lead (chat_quote)",
+        "type": "awct",
+        "parameter": [
+          { "type": "TEMPLATE", "key": "conversionId", "value": "__AW_CONVERSION_ID__" },
+          { "type": "TEMPLATE", "key": "conversionLabel", "value": "__LEAD_CHAT_LABEL__" },
+          { "type": "TEMPLATE", "key": "conversionValue", "value": "{{DLV - value}}" },
+          { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
+          { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": [ "106" ],
+        "tagFiringOption": "ONCE_PER_EVENT"
+      }
+    ],
+    "trigger": [
+      {
+        "triggerId": "103",
+        "name": "CE - purchase",
+        "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "purchase" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "105",
+        "name": "CE - generate_lead (email_signup)",
+        "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+          ] }
+        ],
+        "filter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - lead_type}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "email_signup" }
+          ] }
+        ]
+      },
+      {
+        "triggerId": "106",
+        "name": "CE - generate_lead (chat_quote)",
+        "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
+        "customEventFilter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "generate_lead" }
+          ] }
+        ],
+        "filter": [
+          { "type": "EQUALS", "parameter": [
+            { "type": "TEMPLATE", "key": "arg0", "value": "{{DLV - lead_type}}" },
+            { "type": "TEMPLATE", "key": "arg1", "value": "chat_quote" }
+          ] }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "variableId": "300",
+        "name": "DLV - value",
+        "type": "v",
+        "fingerprint": "0",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "value" }
+        ]
+      },
+      {
+        "variableId": "301",
+        "name": "DLV - currency",
+        "type": "v",
+        "fingerprint": "0",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "currency" }
+        ]
+      },
+      {
+        "variableId": "302",
+        "name": "DLV - transaction_id",
+        "type": "v",
+        "fingerprint": "0",
+        "parameter": [
+          { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
+          { "type": "TEMPLATE", "key": "name", "value": "transaction_id" }
+        ]
+      }
+    ]
+  }
+}

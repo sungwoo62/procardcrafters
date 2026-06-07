@@ -273,11 +273,18 @@ const LAYOUT_COUNT = LAYOUT_NAMES.length
 
 function generateCardTemplates(): TemplateDef[] {
   const out: TemplateDef[] = []
+  // 이름 충돌 방지 — 같은 직군 라벨이 중복되면 "{라벨} {레이아웃}" 이름도 겹친다.
+  // 그리드는 배열 순서(첫 항목)를, 에디터는 이름→스펙 맵(마지막 항목)을 쓰므로
+  // 충돌 시 썸네일과 에디터가 서로 다른 샘플/팔레트로 갈라진다. 첫 항목만 채택.
+  const seen = new Set<string>()
   PROFESSIONS.forEach((prof, pi) => {
     for (let layout = 0; layout < LAYOUT_COUNT; layout++) {
+      const name = `${prof.label} ${LAYOUT_NAMES[layout]}`
+      if (seen.has(name)) continue
+      seen.add(name)
       const pal = CARD_PALETTES[(pi * 5 + layout * 3) % CARD_PALETTES.length]
       out.push({
-        name: `${prof.label} ${LAYOUT_NAMES[layout]}`,
+        name,
         category: prof.category,
         bg: pal.bg,
         description: `${prof.sample.title} — ${LAYOUT_NAMES[layout].toLowerCase()} layout`,

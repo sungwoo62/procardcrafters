@@ -6,6 +6,7 @@ import { CheckCircle, Clock, Globe, Shield, Star, LayoutTemplate, ArrowRight, Pe
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
+import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import { isPccfSlug } from '@/config/pccf-catalog'
@@ -20,7 +21,11 @@ import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 import ProductReviews from '@/components/ProductReviews'
 import FinishingSection from '@/components/FinishingSection'
+import JsonLd from '@/components/JsonLd'
 import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
+
+// `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 canonical/JSON-LD URL 깨짐 유발).
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 interface Props {
   params: Promise<{ slug: string }>
@@ -32,16 +37,46 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const supabase = createServerClient()
   const { data } = await supabase
     .from('print_products')
-    .select('name_en, description_en')
+    .select('name_en, description_en, recommended_use_en, hero_image_url, category')
     .eq('slug', slug)
     .eq('is_active', true)
     .single()
 
   if (!data) return { title: 'Product Not Found' }
 
+  const canonical = `${SITE_URL}/products/${slug}`
+  // 제품명 자체가 핵심 키워드 — 타이틀 앞쪽에 배치하고 "custom"/"printing" 변형으로 검색 의도 커버.
+  const title = `${data.name_en} | Custom ${data.name_en} Printing`
+  const description =
+    data.description_en ??
+    `Order custom ${data.name_en.toLowerCase()} online. Premium quality, fast worldwide FedEx delivery, and easy online design. ${data.recommended_use_en ?? ''}`.trim()
+  const ogImage = data.hero_image_url ?? undefined
+
   return {
-    title: `${data.name_en} — Procardcrafters`,
-    description: data.description_en ?? undefined,
+    title,
+    description,
+    keywords: [
+      data.name_en.toLowerCase(),
+      `custom ${data.name_en.toLowerCase()}`,
+      `${data.name_en.toLowerCase()} printing`,
+      `order ${data.name_en.toLowerCase()} online`,
+      'print on demand',
+    ],
+    alternates: { canonical },
+    openGraph: {
+      type: 'website',
+      title,
+      description,
+      url: canonical,
+      siteName: 'Procardcrafters',
+      images: ogImage ? [{ url: ogImage, alt: data.name_en }] : undefined,
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: ogImage ? [ogImage] : undefined,
+    },
   }
 }
 
@@ -154,8 +189,57 @@ export default async function ProductDetailPage({ params }: Props) {
   const competitorPrices = (competitorData as CompetitorPriceSummary[] | null) ?? []
   const templates = getTemplatesForProduct(product.category).slice(0, 8)
 
+  // 구조화 데이터(JSON-LD) — 구글 리치 결과(별점·가격·breadcrumb)용.
+  const canonical = `${SITE_URL}/products/${product.slug}`
+  const startingPriceUsd = calculateItemPriceUsd({
+    basePriceKrw: product.base_price_krw,
+    marginMultiplier: product.margin_multiplier,
+    extraPricesKrw: [],
+    exchangeRate,
+  })
+  const productJsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: product.name_en,
+    description: product.description_en ?? `Custom ${product.name_en} printing with premium quality and worldwide delivery.`,
+    sku: product.slug,
+    category: product.category,
+    brand: { '@type': 'Brand', name: 'Procardcrafters' },
+    ...(product.hero_image_url ? { image: [product.hero_image_url] } : {}),
+    offers: {
+      '@type': 'AggregateOffer',
+      priceCurrency: 'USD',
+      lowPrice: Number(startingPriceUsd.toFixed(2)),
+      availability: 'https://schema.org/InStock',
+      url: canonical,
+      seller: { '@type': 'Organization', name: 'Procardcrafters' },
+    },
+    // 별점은 실제 승인 리뷰가 있을 때만 — Google 정책상 reviewCount > 0 필수.
+    ...(initialStats && initialStats.total_reviews > 0
+      ? {
+          aggregateRating: {
+            '@type': 'AggregateRating',
+            ratingValue: Number(initialStats.avg_rating.toFixed(1)),
+            reviewCount: initialStats.total_reviews,
+            bestRating: 5,
+            worstRating: 1,
+          },
+        }
+      : {}),
+  }
+  const breadcrumbJsonLd: Record<string, unknown> = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 2, name: 'Products', item: `${SITE_URL}/products` },
+      { '@type': 'ListItem', position: 3, name: product.name_en, item: canonical },
+    ],
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <JsonLd data={[productJsonLd, breadcrumbJsonLd]} />
       <ViewItemTracker
         id={product.id}
         name={product.name_en}
