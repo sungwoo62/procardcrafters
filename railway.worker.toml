@@ -23,6 +23,7 @@ restartPolicyMaxRetries = 10
 #   SWADPIA_PASSWORD
 #   RESEND_API_KEY
 #   ADMIN_NOTIFICATION_EMAIL
+#   CRON_SECRET  (파이프라인 헬스 엔드포인트 인증 — 매 루프 드리프트/self-heal 점검에 필요)
 # 선택:
 #   NEXT_PUBLIC_SITE_URL  (기본값: https://procardcrafters.com)
 #   POLL_INTERVAL_SECONDS  (기본값: 300)
