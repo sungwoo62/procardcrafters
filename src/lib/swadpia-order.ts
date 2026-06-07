@@ -16,6 +16,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 import type { Page, Frame, Response, BrowserType } from 'playwright'
+import { CATEGORY_MAP } from './swadpia'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
@@ -25,23 +26,22 @@ async function getChromium(): Promise<BrowserType> {
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
 // ─── Category → Swadpia goods_code mapping ────────────────────
-const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: string }> = {
-  'business-cards':              { categoryCode: 'CNC1000', goodsCode: '1' },
-  'premium-business-cards':     { categoryCode: 'CNC2000', goodsCode: '1' },
-  'premium-foil-cards':         { categoryCode: 'CNC3000', goodsCode: '1' },
-  'metallic-business-cards':    { categoryCode: 'CNC3000', goodsCode: '1' },
-  'letterpress-business-cards': { categoryCode: 'CNC4000', goodsCode: '1' },
-  'transparent-business-cards': { categoryCode: 'CNC5000', goodsCode: '1' },
-  'uv-business-cards':          { categoryCode: 'CNC6000', goodsCode: '1' },
-  'pearl-business-cards':       { categoryCode: 'CNC8000', goodsCode: '1' },
-  'stickers':               { categoryCode: 'CST1000', goodsCode: '1' },
-  'die-cut-stickers':       { categoryCode: 'CST2000', goodsCode: '1' },
-  'flyers':                 { categoryCode: 'CLF1000', goodsCode: '1' },
-  'brochures':              { categoryCode: 'CLF2000', goodsCode: '1' },
-  'postcards':              { categoryCode: 'CDP3000', goodsCode: '1' },
-  'posters':                { categoryCode: 'CPR2000', goodsCode: '1' },
-  'banners':                { categoryCode: 'CPR5000', goodsCode: '1' },
-}
+//
+// 자동발주 라우팅 맵. 가격조회(swadpia.ts CATEGORY_MAP)와 단일 소스로 유지하기
+// 위해 CATEGORY_MAP 에서 파생한다. 이전엔 별도 15종 맵이라 나머지 23종이 누락돼
+// 자동발주 대상에서 빠졌다(OMO-2634). 이제 가격조회에 등록된 모든 제품이 동일하게
+// 자동발주 goods_view URL 로 라우팅된다.
+//
+// goodsCode 는 카테고리별 기본 상품(보통 '1'). '1' 이 아닌 예외만 아래에 등록.
+const SWADPIA_GOODS_CODE_OVERRIDES: Record<string, string> = {}
+
+const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: string }> =
+  Object.fromEntries(
+    Object.entries(CATEGORY_MAP).map(([slug, categoryCode]) => [
+      slug,
+      { categoryCode, goodsCode: SWADPIA_GOODS_CODE_OVERRIDES[slug] ?? '1' },
+    ]),
+  )
 
 // ─── Types ────────────────────────────────────────────────────
 

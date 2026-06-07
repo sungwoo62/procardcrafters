@@ -58,8 +58,14 @@ export interface SwadpiaCategoryData {
 
 // ─── Category mapping ───────────────────────────────────────
 
-/** Product slug to Swadpia category_code */
-const CATEGORY_MAP: Record<string, string> = {
+/**
+ * Product slug to Swadpia category_code.
+ *
+ * 자동발주 라우팅(`swadpia-order.ts` 의 SWADPIA_GOODS_MAP)이 이 맵을 단일
+ * 소스로 사용한다. 이전엔 발주맵을 따로 15종만 두어 23종이 누락됐다(OMO-2634).
+ * 새 제품 추가 시 여기에만 등록하면 가격조회 + 자동발주 라우팅이 함께 적용된다.
+ */
+export const CATEGORY_MAP: Record<string, string> = {
   // 명함류
   'business-cards': 'CNC1000',
   'premium-business-cards': 'CNC2000',
