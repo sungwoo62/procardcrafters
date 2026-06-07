@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import Stripe from 'stripe'
 import { createServerClient } from '@/lib/supabase'
+import { createPaypalOrder } from '@/lib/paypal'
 import { createAuthServerClient } from '@/lib/supabase-server'
 import { requireAdmin } from '@/lib/admin-auth'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
@@ -196,6 +196,7 @@ export async function POST(
       total_usd: totalUsd,
       exchange_rate_krw_usd: exchangeRate,
       status: 'pending',
+      payment_provider: 'paypal',
     })
     .select()
     .single()
@@ -238,48 +239,21 @@ export async function POST(
     }
   }
 
-  // Stripe Checkout 세션 생성
-  const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000'
-
-  interface StripeLineItem {
-    price_data: { currency: string; product_data: { name: string }; unit_amount: number }
-    quantity: number
+  // PayPal 주문 생성 (라이브 스토어는 PayPal 전용 — create-order 플로우와 동일)
+  const productNames = orderItemsCalc.map((i) => i.product_name_en).join(', ')
+  let paypalOrderId: string
+  try {
+    paypalOrderId = await createPaypalOrder(totalUsd, `Procardcrafters: ${productNames}`)
+  } catch (err) {
+    return NextResponse.json(
+      { error: `결제 준비에 실패했습니다: ${(err as Error).message}` },
+      { status: 502 }
+    )
   }
-
-  const lineItems: StripeLineItem[] = orderItemsCalc.map((item) => ({
-    price_data: {
-      currency: 'usd',
-      product_data: { name: `${item.product_name_en} (×${item.quantity})` },
-      unit_amount: Math.round(item.subtotal_usd * 100),
-    },
-    quantity: 1,
-  }))
-
-  if (shippingUsd > 0) {
-    lineItems.push({
-      price_data: {
-        currency: 'usd',
-        product_data: { name: `Shipping (FedEx ${shippingQuote.zoneCode})` },
-        unit_amount: Math.round(shippingUsd * 100),
-      },
-      quantity: 1,
-    })
-  }
-
-  const stripeSession = await stripe.checkout.sessions.create({
-    mode: 'payment',
-    line_items: lineItems,
-    customer_email: order.customer_email,
-    metadata: { orderId: newOrder.id, orderNumber: newOrder.order_number },
-    success_url: `${baseUrl}/order/success?session_id={CHECKOUT_SESSION_ID}&order=${newOrder.order_number}`,
-    cancel_url: `${baseUrl}/orders/${orderNumber}`,
-    payment_intent_data: { metadata: { orderId: newOrder.id } },
-  })
 
   await supabase
     .from('print_orders')
-    .update({ stripe_session_id: stripeSession.id })
+    .update({ paypal_order_id: paypalOrderId })
     .eq('id', newOrder.id)
 
   // 재주문 이벤트 기록
@@ -295,7 +269,8 @@ export async function POST(
   })
 
   return NextResponse.json({
-    checkoutUrl: stripeSession.url,
+    paypalOrderId,
+    orderId: newOrder.id,
     orderNumber: newOrder.order_number,
   })
 }
