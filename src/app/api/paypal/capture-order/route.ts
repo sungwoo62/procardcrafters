@@ -43,35 +43,42 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // [C][보안] supabaseOrderId 필수: 없으면 소유권·멱등·금액 검증 우회 가능
+    if (!supabaseOrderId) {
+      return NextResponse.json(
+        { error: "주문 ID가 필요합니다." },
+        { status: 400 }
+      );
+    }
+
+    const supabase = await createClient();
+
     // [보안] 소유권 검증: create-order 시 연결된 paypal_order_id와 일치해야 캡처 허용
-    if (supabaseOrderId) {
-      const supabase = await createClient();
-      const { data: orderRecord } = await supabase
-        .from("print_orders")
-        .select("id, payment_status, paypal_order_id")
-        .eq("id", supabaseOrderId)
-        .single();
+    const { data: orderRecord } = await supabase
+      .from("print_orders")
+      .select("id, payment_status, paypal_order_id, total_amount")
+      .eq("id", supabaseOrderId)
+      .single();
 
-      if (!orderRecord) {
-        return NextResponse.json(
-          { error: "주문을 찾을 수 없습니다." },
-          { status: 404 }
-        );
-      }
+    if (!orderRecord) {
+      return NextResponse.json(
+        { error: "주문을 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
 
-      if (orderRecord.payment_status === "paid") {
-        return NextResponse.json(
-          { error: "이미 결제가 완료된 주문입니다." },
-          { status: 409 }
-        );
-      }
+    if (orderRecord.payment_status === "paid") {
+      return NextResponse.json(
+        { error: "이미 결제가 완료된 주문입니다." },
+        { status: 409 }
+      );
+    }
 
-      if (orderRecord.paypal_order_id !== paypalOrderId) {
-        return NextResponse.json(
-          { error: "결제 정보가 일치하지 않습니다." },
-          { status: 403 }
-        );
-      }
+    if (orderRecord.paypal_order_id !== paypalOrderId) {
+      return NextResponse.json(
+        { error: "결제 정보가 일치하지 않습니다." },
+        { status: 403 }
+      );
     }
 
     const accessToken = await getAccessToken();
@@ -99,21 +106,44 @@ export async function POST(req: NextRequest) {
     const captureData = await res.json();
     const captureStatus = captureData.status; // "COMPLETED"
 
-    // Supabase 주문 상태 업데이트
-    if (supabaseOrderId) {
-      const supabase = await createClient();
-      await supabase
-        .from("print_orders")
-        .update({
-          payment_status: captureStatus === "COMPLETED" ? "paid" : "pending",
-          paypal_order_id: paypalOrderId,
-        })
-        .eq("id", supabaseOrderId);
+    // [B][보안] 캡처 금액 ↔ 주문 total_amount 대조. 불일치 시 paid 처리 금지.
+    const captured =
+      captureData?.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value;
+    if (
+      captureStatus === "COMPLETED" &&
+      captured !== Number(orderRecord.total_amount).toFixed(2)
+    ) {
+      return NextResponse.json(
+        { error: "결제 금액 불일치" },
+        { status: 409 }
+      );
     }
 
+    // 캡처 미완료(PENDING 등)는 paid 처리하지 않고 상태만 반영
+    if (captureStatus !== "COMPLETED") {
+      await supabase
+        .from("print_orders")
+        .update({ paypal_order_id: paypalOrderId })
+        .eq("id", supabaseOrderId)
+        .eq("payment_status", "unpaid");
+
+      return NextResponse.json({ status: captureStatus, paypalOrderId });
+    }
+
+    // [D][보안] 멱등 update guard (TOCTOU): unpaid → paid 조건부 전이
+    const { data: upd } = await supabase
+      .from("print_orders")
+      .update({ payment_status: "paid", paypal_order_id: paypalOrderId })
+      .eq("id", supabaseOrderId)
+      .eq("payment_status", "unpaid")
+      .select("id")
+      .maybeSingle();
+
+    // upd === null → 동시 중복 capture. 멱등 처리(중복 후처리 금지), 성공 응답만 반환.
     return NextResponse.json({
       status: captureStatus,
       paypalOrderId,
+      duplicate: upd === null,
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : "알 수 없는 오류";

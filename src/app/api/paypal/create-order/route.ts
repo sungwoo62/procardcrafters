@@ -34,14 +34,47 @@ async function getAccessToken(): Promise<string> {
 
 export async function POST(req: NextRequest) {
   try {
-    const { amount, currency = "USD", orderId } = await req.json();
+    // [보안] 금액은 클라이언트 입력을 신뢰하지 않는다. orderId 필수.
+    const { currency = "USD", orderId } = await req.json();
 
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    if (!orderId) {
       return NextResponse.json(
-        { error: "유효하지 않은 금액입니다." },
+        { error: "주문 ID가 필요합니다." },
         { status: 400 }
       );
     }
+
+    // [보안] 서버측 금액 바인딩: print_orders.total_amount 를 권위 있는 값으로 사용
+    const supabase = await createClient();
+    const { data: ord } = await supabase
+      .from("print_orders")
+      .select("id, total_amount, payment_status, is_complimentary")
+      .eq("id", orderId)
+      .single();
+
+    if (!ord) {
+      return NextResponse.json(
+        { error: "주문을 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+
+    // 무상 주문이거나 이미 결제 대상이 아닌 경우 결제 생성 거부
+    if (ord.is_complimentary || ord.payment_status !== "unpaid") {
+      return NextResponse.json(
+        { error: "결제 대상 주문이 아닙니다." },
+        { status: 409 }
+      );
+    }
+
+    if (!(Number(ord.total_amount) > 0)) {
+      return NextResponse.json(
+        { error: "유효하지 않은 결제 금액입니다." },
+        { status: 400 }
+      );
+    }
+
+    const value = Number(ord.total_amount).toFixed(2);
 
     const accessToken = await getAccessToken();
 
@@ -49,11 +82,11 @@ export async function POST(req: NextRequest) {
       intent: "CAPTURE",
       purchase_units: [
         {
-          reference_id: orderId ?? `pcc-${Date.now()}`,
+          reference_id: orderId,
           description: "Procardcrafters 인쇄 주문",
           amount: {
             currency_code: currency,
-            value: Number(amount).toFixed(2),
+            value,
           },
         },
       ],
@@ -70,6 +103,8 @@ export async function POST(req: NextRequest) {
       headers: {
         Authorization: `Bearer ${accessToken}`,
         "Content-Type": "application/json",
+        // [F] 멱등성: 동일 주문에 대한 중복 PayPal 주문 생성 방지
+        "PayPal-Request-Id": `pcc-create-${orderId}`,
       },
       body: JSON.stringify(orderPayload),
     });
@@ -86,14 +121,11 @@ export async function POST(req: NextRequest) {
     const order = await res.json();
 
     // [보안] PayPal 주문 ID를 print_orders에 저장하여 캡처 시 소유권 검증에 사용
-    if (orderId) {
-      const supabase = await createClient();
-      await supabase
-        .from("print_orders")
-        .update({ paypal_order_id: order.id })
-        .eq("id", orderId)
-        .eq("payment_status", "unpaid");
-    }
+    await supabase
+      .from("print_orders")
+      .update({ paypal_order_id: order.id })
+      .eq("id", orderId)
+      .eq("payment_status", "unpaid");
 
     return NextResponse.json({ id: order.id });
   } catch (err) {
