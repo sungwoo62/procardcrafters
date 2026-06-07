@@ -59,10 +59,8 @@ const env = (name) => process.env[name] || local[name];
 
 const SUPABASE_URL = env('NEXT_PUBLIC_SUPABASE_URL');
 const SERVICE_KEY = env('SUPABASE_SERVICE_ROLE_KEY');
-if (!SUPABASE_URL || !SERVICE_KEY) {
-  console.error('[cvr] 환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
-  process.exit(1);
-}
+// 주의: import 시점에 process.exit 하면 안 된다(computeCvr를 import하는 대시보드가 죽음).
+// 자격증명 검증은 실제로 fetch가 일어나는 fetchOrdersByDay에서 throw로 처리한다.
 
 // --- 날짜 유틸 (Date.now 없이 인자 기반) ---------------------------------
 // 분석 종료일은 print_orders 최신 주문 일자 또는 GA4 최신 데이터로 정한다.
@@ -79,6 +77,9 @@ function addDays(ymdStr, delta) {
 // ① 분모: print_orders 주문수(일자별)
 // ─────────────────────────────────────────────────────────────────────
 async function fetchOrdersByDay() {
+  if (!SUPABASE_URL || !SERVICE_KEY) {
+    throw new Error('환경변수 누락: NEXT_PUBLIC_SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY');
+  }
   const url = `${SUPABASE_URL}/rest/v1/print_orders?select=created_at,status&order=created_at.asc`;
   const res = await fetch(url, {
     headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
@@ -256,7 +257,10 @@ async function main() {
   console.log('→ Analytics는 이 스냅샷 또는 computeCvr()을 북극성 고객만족 대시보드 조인에 사용.\n');
 }
 
-main().catch((e) => {
-  console.error('[cvr] 실패:', e.message);
-  process.exit(1);
-});
+// CLI로 직접 실행할 때만 main()을 돈다(import 시엔 computeCvr만 노출).
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((e) => {
+    console.error('[cvr] 실패:', e.message);
+    process.exit(1);
+  });
+}

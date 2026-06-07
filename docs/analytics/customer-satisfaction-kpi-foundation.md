@@ -91,7 +91,28 @@ cron→review_request_log).
 
 ---
 
-## 4. Analytics 조인 컨트랙트 (대시보드 갱신용)
+## 4. Analytics 조인 컨트랙트 (대시보드 갱신용) — ✅ 구현됨
+
+**구현:** [`scripts/analytics/customer-satisfaction-dashboard.mjs`](../../scripts/analytics/customer-satisfaction-dashboard.mjs)
+- `node scripts/analytics/customer-satisfaction-dashboard.mjs [--days 30] [--json]`
+  → 4개 KPI 조인 리포트 + `scripts/test-artifacts/customer-satisfaction-snapshot.json`.
+- `export async function buildSnapshot({days})` 로 대시보드/리포트가 직접 import.
+- CVR은 Marketing의 `computeCvr()`를 재사용(중복 구현 없음). 미가용 KPI는 `null` +
+  `status`(INSUFFICIENT_DATA / NOT_INSTRUMENTED) + **unblock 액션(담당 child)** 으로 정직 표기.
+
+**상태 구분:** `instrumented` 플래그로 *'인프라 가동, 데이터 공백'* 과 *'인프라 자체 부재'* 를 분리.
+| status | 의미 | 해당 KPI(2026-06-07) |
+|---|---|---|
+| `INSUFFICIENT_DATA` | 계측됨, 값만 공백 | CVR(GA4 미연동) · 배송리드(배송완료 0) · 리뷰요청율(배송완료 0) |
+| `NOT_INSTRUMENTED` | 인프라 자체 부재 | CS 응답시간(print_cs_* 미신설) |
+
+**실측 스냅샷(2026-06-07):** 4개 KPI 전부 미산출(⚠️3 데이터부족 + ⛔1 미계측). 모두 추측 없이
+unblock 액션 표기. 데이터/자격증명 주입 시 코드 변경 없이 자동 산출(재실행만).
+
+> 코드 보강: `cvr-join.mjs`의 `main()`을 `import.meta.url` 가드로 감싸 `computeCvr` import가
+> CLI를 부작용으로 실행하지 않도록 수정(대시보드가 안전하게 재사용 가능).
+
+### 조인 대상 (소스·조건)
 
 북극성 고객만족 대시보드는 아래를 조인한다:
 
