@@ -8,52 +8,50 @@
     },
     "tag": [
       {
+        "tagId": "200",
         "name": "GA4 Configuration",
         "type": "googtag",
         "parameter": [
           { "type": "TEMPLATE", "key": "tagId", "value": "G-8WLFZ1GTTJ" }
         ],
+        "fingerprint": "0",
         "firingTriggerId": ["2147479553"],
         "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "201",
         "name": "GA4 - view_item",
         "type": "gaawe",
         "parameter": [
-          { "type": "TEMPLATE", "key": "eventName", "value": "view_item" },
-          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
-          {
-            "type": "LIST",
-            "key": "eventParameters",
-            "list": [
-              { "type": "MAP", "map": [
-                { "type": "TEMPLATE", "key": "name", "value": "currency" },
-                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - currency}}" }
-              ] },
-              { "type": "MAP", "map": [
-                { "type": "TEMPLATE", "key": "name", "value": "value" },
-                { "type": "TEMPLATE", "key": "value", "value": "{{DLV - value}}" }
-              ] }
-            ]
-          }
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TAG_REFERENCE", "key": "measurementId", "value": "GA4 Configuration" },
+          { "type": "TEMPLATE", "key": "eventName", "value": "view_item" }
         ],
-        "firingTriggerId": ["T_view_item"]
+        "fingerprint": "0",
+        "firingTriggerId": ["100"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "202",
         "name": "GA4 - add_to_cart",
         "type": "gaawe",
         "parameter": [
-          { "type": "TEMPLATE", "key": "eventName", "value": "add_to_cart" },
-          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" }
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TAG_REFERENCE", "key": "measurementId", "value": "GA4 Configuration" },
+          { "type": "TEMPLATE", "key": "eventName", "value": "add_to_cart" }
         ],
-        "firingTriggerId": ["T_add_to_cart"]
+        "fingerprint": "0",
+        "firingTriggerId": ["101"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "203",
         "name": "GA4 - begin_checkout",
         "type": "gaawe",
         "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TAG_REFERENCE", "key": "measurementId", "value": "GA4 Configuration" },
           { "type": "TEMPLATE", "key": "eventName", "value": "begin_checkout" },
-          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
           {
             "type": "LIST",
             "key": "eventParameters",
@@ -69,14 +67,18 @@
             ]
           }
         ],
-        "firingTriggerId": ["T_begin_checkout"]
+        "fingerprint": "0",
+        "firingTriggerId": ["102"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "204",
         "name": "GA4 - purchase",
         "type": "gaawe",
         "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TAG_REFERENCE", "key": "measurementId", "value": "GA4 Configuration" },
           { "type": "TEMPLATE", "key": "eventName", "value": "purchase" },
-          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
           {
             "type": "LIST",
             "key": "eventParameters",
@@ -96,14 +98,18 @@
             ]
           }
         ],
-        "firingTriggerId": ["T_purchase"]
+        "fingerprint": "0",
+        "firingTriggerId": ["103"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "205",
         "name": "GA4 - generate_lead",
         "type": "gaawe",
         "parameter": [
+          { "type": "BOOLEAN", "key": "sendEcommerceData", "value": "false" },
+          { "type": "TAG_REFERENCE", "key": "measurementId", "value": "GA4 Configuration" },
           { "type": "TEMPLATE", "key": "eventName", "value": "generate_lead" },
-          { "type": "TEMPLATE", "key": "measurementId", "value": "G-8WLFZ1GTTJ" },
           {
             "type": "LIST",
             "key": "eventParameters",
@@ -115,15 +121,23 @@
             ]
           }
         ],
-        "firingTriggerId": ["T_generate_lead"]
+        "fingerprint": "0",
+        "firingTriggerId": ["104"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "206",
         "name": "Google Ads - Conversion Linker",
         "type": "gclidw",
-        "parameter": [],
-        "firingTriggerId": ["2147479553"]
+        "parameter": [
+          { "type": "BOOLEAN", "key": "enableCrossDomain", "value": "false" }
+        ],
+        "fingerprint": "0",
+        "firingTriggerId": ["2147479553"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "207",
         "name": "Google Ads - Purchase Conversion",
         "type": "awct",
         "parameter": [
@@ -134,9 +148,12 @@
           { "type": "TEMPLATE", "key": "orderId", "value": "{{DLV - transaction_id}}" },
           { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
         ],
-        "firingTriggerId": ["T_purchase"]
+        "fingerprint": "0",
+        "firingTriggerId": ["103"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "208",
         "name": "Google Ads - Lead (email_signup)",
         "type": "awct",
         "parameter": [
@@ -144,9 +161,12 @@
           { "type": "TEMPLATE", "key": "conversionLabel", "value": "REPLACE_LEAD_EMAIL_LABEL" },
           { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
         ],
-        "firingTriggerId": ["T_generate_lead_email"]
+        "fingerprint": "0",
+        "firingTriggerId": ["105"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       },
       {
+        "tagId": "209",
         "name": "Google Ads - Lead (chat_quote)",
         "type": "awct",
         "parameter": [
@@ -156,14 +176,17 @@
           { "type": "TEMPLATE", "key": "currencyCode", "value": "{{DLV - currency}}" },
           { "type": "BOOLEAN", "key": "enableConversionLinker", "value": "true" }
         ],
-        "firingTriggerId": ["T_generate_lead_chat"]
+        "fingerprint": "0",
+        "firingTriggerId": ["106"],
+        "tagFiringOption": "ONCE_PER_EVENT"
       }
     ],
     "trigger": [
       {
-        "triggerId": "T_view_item",
+        "triggerId": "100",
         "name": "CE - view_item",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -172,9 +195,10 @@
         ]
       },
       {
-        "triggerId": "T_add_to_cart",
+        "triggerId": "101",
         "name": "CE - add_to_cart",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -183,9 +207,10 @@
         ]
       },
       {
-        "triggerId": "T_begin_checkout",
+        "triggerId": "102",
         "name": "CE - begin_checkout",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -194,9 +219,10 @@
         ]
       },
       {
-        "triggerId": "T_purchase",
+        "triggerId": "103",
         "name": "CE - purchase",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -205,9 +231,10 @@
         ]
       },
       {
-        "triggerId": "T_generate_lead",
+        "triggerId": "104",
         "name": "CE - generate_lead (all)",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -216,9 +243,10 @@
         ]
       },
       {
-        "triggerId": "T_generate_lead_email",
+        "triggerId": "105",
         "name": "CE - generate_lead (email_signup)",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -233,9 +261,10 @@
         ]
       },
       {
-        "triggerId": "T_generate_lead_chat",
+        "triggerId": "106",
         "name": "CE - generate_lead (chat_quote)",
         "type": "CUSTOM_EVENT",
+        "fingerprint": "0",
         "customEventFilter": [
           { "type": "EQUALS", "parameter": [
             { "type": "TEMPLATE", "key": "arg0", "value": "{{_event}}" },
@@ -252,45 +281,64 @@
     ],
     "variable": [
       {
+        "variableId": "300",
         "name": "DLV - value",
         "type": "v",
+        "fingerprint": "0",
         "parameter": [
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "value" }
         ]
       },
       {
+        "variableId": "301",
         "name": "DLV - currency",
         "type": "v",
+        "fingerprint": "0",
         "parameter": [
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "currency" }
         ]
       },
       {
+        "variableId": "302",
         "name": "DLV - transaction_id",
         "type": "v",
+        "fingerprint": "0",
         "parameter": [
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "transaction_id" }
         ]
       },
       {
+        "variableId": "303",
         "name": "DLV - items",
         "type": "v",
+        "fingerprint": "0",
         "parameter": [
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "items" }
         ]
       },
       {
+        "variableId": "304",
         "name": "DLV - lead_type",
         "type": "v",
+        "fingerprint": "0",
         "parameter": [
           { "type": "INTEGER", "key": "dataLayerVersion", "value": "2" },
+          { "type": "BOOLEAN", "key": "setDefaultValue", "value": "false" },
           { "type": "TEMPLATE", "key": "name", "value": "lead_type" }
         ]
       }
-    ]
+    ],
+    "builtInVariable": [
+      { "type": "EVENT", "name": "Event" }
+    ],
+    "fingerprint": "0"
   }
 }
