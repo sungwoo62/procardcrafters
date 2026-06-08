@@ -5,9 +5,10 @@
  * Paperclip activity 피드 스냅샷을 공유DB `ops_workpool_transitions`에 적재한다.
  *
  * 왜: activity API(`/companies/{id}/activity`)는 offset/before가 무시되고 최근 ~500건
- *     (≈수시간)만 반환한다(원장 t011). 따라서 전기간 MTTR/재작업률/재오픈율을 산출하려면
- *     상태전이를 주기적으로 스냅샷해 영속화해야 한다. 본 스크립트를 주 1회(또는 heartbeat)
- *     실행하면 윈도우가 겹쳐도 activity_id 유니크 dedup으로 중복 없이 누적된다.
+ *     (≈4.2시간)만 반환한다(원장 t011). 따라서 전기간 MTTR/재작업률/재오픈율을 산출하려면
+ *     상태전이를 주기적으로 스냅샷해 영속화해야 한다. 본 스크립트를 매 2시간(Paperclip 루틴
+ *     "OMO-2592 work-pool 상태전이 스냅샷 적재", cron `0 */2 * * *`) 실행하면 윈도우가 50%
+ *     겹쳐 누락 없이, activity_id 유니크 dedup으로 중복 없이 누적된다.
  *
  * 적재 대상(상태전이만):
  *   - issue.updated  : details.status 존재 시 → from=details._previous.status, to=details.status
