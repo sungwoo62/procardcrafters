@@ -2,7 +2,11 @@ import { Resend } from 'resend'
 import { OrderStatus } from '@/types/database'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
-const FROM = 'Procardcrafters <orders@procardcrafters.com>'
+// OMO-2624: procardcrafters.com 도메인 Resend 미검증으로 인한 무음 실패 임시복구.
+// 이미 verified 된 medaloffinisher.com 으로 발신, 표시명은 Procardcrafters 유지.
+// procardcrafters.com 검증(OMO-1491c934) 완료 시 orders@procardcrafters.com 으로 원복.
+const FROM = 'Procardcrafters <orders@medaloffinisher.com>'
+const REPLY_TO = 'orders@procardcrafters.com'
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'admin@procardcrafters.com'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
 
@@ -136,6 +140,7 @@ export async function sendOrderStatusEmail(
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: data.customerEmail,
     subject: `[Procardcrafters] ${subject} — #${data.orderNumber}`,
     html,
@@ -167,6 +172,7 @@ export async function sendAdminNewOrderEmail(
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: ADMIN_EMAIL,
     subject: `[New Order] #${data.orderNumber} — $${data.totalUsd.toFixed(2)} from ${data.customerName}`,
     html,
@@ -195,6 +201,7 @@ export async function sendAdminFraudAlertEmail(
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: ADMIN_EMAIL,
     subject: `[FRAUD ALERT] Amount mismatch — #${data.orderNumber} (${data.paymentMethod})`,
     html,
@@ -242,6 +249,7 @@ export async function sendFileRejectionEmail(data: FileRejectionEmailData): Prom
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: data.customerEmail,
     subject: `[Action Required] File Re-upload Needed — Order #${data.orderNumber}`,
     html,
@@ -271,6 +279,7 @@ export async function sendAdminStatusChangeEmail(
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: ADMIN_EMAIL,
     subject: `[Order ${status}] #${data.orderNumber} — ${data.customerName}`,
     html,
@@ -311,6 +320,7 @@ export async function sendReviewCouponEmail(data: ReviewCouponEmailData): Promis
 
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: reviewerEmail,
     subject: `[Procardcrafters] Thank you — here's your $${amountUsd.toFixed(2)} review coupon`,
     html,
@@ -339,6 +349,7 @@ export async function sendReviewRejectionEmail(data: {
   `
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: reviewerEmail,
     subject: `[Procardcrafters] Review submission update`,
     html,
@@ -376,6 +387,7 @@ export async function sendWelcomeCouponEmail(data: WelcomeCouponEmailData): Prom
   `
   await resend.emails.send({
     from: FROM,
+    replyTo: REPLY_TO,
     to: email,
     subject: `첫 주문 5% 할인 쿠폰이 도착했습니다 — ${couponCode}`,
     html,
