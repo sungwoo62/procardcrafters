@@ -1,6 +1,21 @@
 # OMO-2646 — 성원/adpiamall 마이그레이션 진단 (2026-06-08, Dev-Print)
 
-## TL;DR — 이슈 전제 정정
+## ⛔ 정정 (2026-06-08 후속 재검증) — 아래 "엔드포인트 폐지" 결론은 틀렸음
+보드 지시("adpiamall 배제, 성원 사이트만 확인")로 swadpia.co.kr 을 정밀 재검증한 결과,
+**공개 엔드포인트는 폐지되지 않았고 정상 동작한다.** 앞선 404 진단은 오류였다.
+
+- `POST /estimate/estimate_goods/json_data` (params `t`, `product=name`, `category_code=CNC1000`)
+  → **HTTP 200 + 유효 JSON**(paper_info 2 / print_info1 174 / size_info 4). 인증·세션·Referer·UA **불필요**(bare POST 도 200).
+- `GET /goods/goods_view/CNC1000/GNC1001`(일반지명함) 등 → **비로그인 HTTP 200**(600KB+ 정상 페이지).
+- 여러 카테고리 확인: CPR2000(포스터) paper_info=67, CPR5000 paper_info=10, CCD1000 paper_info=17, CST5000=9, CLP1000=11 — 모두 정상.
+- 즉 우리 기존 `fetchSwadpiaCategoryData` 요청(POST product=name)은 **원래 정상 동작했다.**
+
+**조치:** SWADPIA_PUBLIC_ENDPOINT_LIVE 가드 제거 → 라이브 도매가 fetch 복원(PR #26 의 가드를 되돌림).
+adpiamall 은 우리 소형인쇄 카탈로그와 무관하므로 무시. 아래 본문은 오진 당시 기록(이력 보존).
+
+---
+
+## TL;DR — 이슈 전제 정정 (※ 위 정정으로 일부 무효)
 이슈는 "성원이 견적/가격 플랫폼을 adpiamall.com 으로 마이그레이션"으로 봤으나,
 라이브 검증 결과 **부분적으로 다름**:
 
