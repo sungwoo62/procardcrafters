@@ -102,3 +102,32 @@ export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string,
   }
   return total
 }
+
+/** 후가공/면적 직렬화 키 집합(정확일치 가격합산에서 제외 대상). */
+export const FINISHING_KEY_SET: ReadonlySet<string> = new Set<string>(FINISHING_PASSTHROUGH_KEYS)
+
+/**
+ * OMO-2673: 주문 extra surcharge(KRW) 배열을 단일 권위로 산정한다.
+ *
+ * 마이그레이션(20260608000020)이 option_type='finishing' 행을 non-zero extra_price_krw 로
+ * 시드하므로, 정확일치(option_type+value) 합산에 후가공 키를 포함하면 단일 후가공이
+ * (시드 행 단가 + finishingSurchargeKrwFromOptions) 로 **2배 청구**된다. 후가공 가격은
+ * finishingSurchargeKrwFromOptions 만 권위로 삼고 정확일치 루프에서는 제외한다.
+ *
+ *  - 비후가공 옵션: 기존 정확일치(option_type+value) → extra_price_krw 합산.
+ *  - 후가공: finishingSurchargeKrwFromOptions(다중·면적 반영) 1회만 가산.
+ *  - 후가공 미선택: surcharge=0 → 회귀 없음.
+ */
+export function buildOrderExtraPricesKrw(
+  selectedOptions: Record<string, string>,
+  productOptions: { option_type: string; value: string; extra_price_krw: number }[],
+): number[] {
+  const base = Object.entries(selectedOptions)
+    .filter(([type]) => !FINISHING_KEY_SET.has(type))
+    .map(([type, value]) => {
+      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
+      return opt?.extra_price_krw ?? 0
+    })
+  const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+  return finishingSurchargeKrw > 0 ? [...base, finishingSurchargeKrw] : base
+}
