@@ -383,7 +383,10 @@ export default async function ProductDetailPage({ params }: Props) {
       </div>
 
       {/* Finishing Options Section */}
-      <FinishingSection productCategory={product.category} />
+      <FinishingSection
+        productCategory={product.category}
+        orderable={options.some((o) => o.option_type === 'finishing' || o.option_type === 'finish')}
+      />
 
       {/* Template Gallery Section */}
       {templates.length > 0 && (

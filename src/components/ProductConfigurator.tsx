@@ -1,9 +1,15 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
+import {
+  finishingSurchargeKrw,
+  AREA_PRICED_FINISHINGS,
+  FINISHING_DEFAULT_AREA_MM,
+  FINISHING_SURCHARGE,
+} from '@/config/finishing-surcharge'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
@@ -45,6 +51,9 @@ const RICH_PREVIEW_TYPES = new Set(['paper', 'paper_code', 'finish', 'finishing'
 /** Option types that represent quantity (so the selected qty is parsed from this). */
 const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
 
+/** Option types for 후가공(finishing) — rendered as a separate multi-select section (OMO-2664). */
+const FINISHING_TYPES = new Set(['finishing', 'finish'])
+
 /**
  * Look up cost from the Swadpia print price matrix.
  * If no exact quantity match, use the nearest higher quantity.
@@ -73,14 +82,21 @@ function lookupSwadpiaCost(
 }
 
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
-  // Group options by type
-  const grouped = useMemo(() => {
+  // Group options by type. 후가공(finishing)은 별도 멀티셀렉트 섹션으로 분리 — 기본 단가에
+  // 포함하지 않고 surcharge 를 따로 계산(OMO-2664).
+  const { grouped, finishingOptions } = useMemo(() => {
     const map = new Map<string, PrintProductOption[]>()
+    const fin: PrintProductOption[] = []
     for (const opt of options) {
+      if (FINISHING_TYPES.has(opt.option_type)) {
+        // 고객가 surcharge 가 매핑된 후가공만 주문 옵션으로 노출(검증된 값만 — OMO-2647).
+        if (FINISHING_SURCHARGE[opt.value]) fin.push(opt)
+        continue
+      }
       if (!map.has(opt.option_type)) map.set(opt.option_type, [])
       map.get(opt.option_type)!.push(opt)
     }
-    return map
+    return { grouped: map, finishingOptions: fin }
   }, [options])
 
   // Initialize defaults
@@ -96,6 +112,38 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
   const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
   const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
+
+  // 후가공 선택 상태(멀티셀렉트) + 박/형압 면적(가로×세로 mm) — OMO-2664
+  const [finishings, setFinishings] = useState<Set<string>>(new Set())
+  const [areas, setAreas] = useState<Record<string, { w: number; h: number }>>({})
+
+  function toggleFinishing(value: string) {
+    setFinishings((prev) => {
+      const next = new Set(prev)
+      if (next.has(value)) {
+        next.delete(value)
+      } else {
+        next.add(value)
+        // 면적 비례 후가공은 기본 면적(50×30mm)으로 초기화 — 고객이 조정 가능.
+        if ((AREA_PRICED_FINISHINGS as readonly string[]).includes(value) && !areas[value]) {
+          setAreas((a) => ({ ...a, [value]: { w: FINISHING_DEFAULT_AREA_MM.width, h: FINISHING_DEFAULT_AREA_MM.height } }))
+        }
+      }
+      return next
+    })
+  }
+
+  function setArea(value: string, dim: 'w' | 'h', raw: string) {
+    const n = parseInt(raw, 10)
+    setAreas((a) => ({
+      ...a,
+      [value]: {
+        w: a[value]?.w ?? FINISHING_DEFAULT_AREA_MM.width,
+        h: a[value]?.h ?? FINISHING_DEFAULT_AREA_MM.height,
+        [dim]: Number.isFinite(n) && n > 0 ? n : 0,
+      },
+    }))
+  }
 
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
@@ -253,7 +301,49 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     : 0
 
   const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
-  const totalUsd = itemPriceUsd + rushUsd + shippingUsd
+
+  // 후가공 surcharge(고객가, USD) — 도매 KRW × margin_multiplier × 환율 (OMO-2664).
+  const finishingUnitUsd = useCallback(
+    (value: string, areaMm2?: number) => {
+      const krw = finishingSurchargeKrw(value, areaMm2)
+      if (krw <= 0) return 0
+      return calculatePriceFromSwadpia({
+        swadpiaCostKrw: krw,
+        marginMultiplier: product.margin_multiplier,
+        exchangeRate,
+      })
+    },
+    [product.margin_multiplier, exchangeRate],
+  )
+
+  const finishingSurchargeUsd = useMemo(() => {
+    let total = 0
+    for (const v of finishings) {
+      const area = areas[v]
+      total += finishingUnitUsd(v, area ? area.w * area.h : undefined)
+    }
+    return total
+  }, [finishings, areas, finishingUnitUsd])
+
+  // 선택된 후가공을 성원 자동발주 필드명으로 직렬화(URL 파라미터). expandFinishingToSwadpiaFields 가 소비.
+  const finishingParams = useMemo(() => {
+    const p: Record<string, string> = {}
+    if (finishings.size === 0) return p
+    p.finishing = Array.from(finishings).join(',')
+    const fa = areas['foil_stamp']
+    if (finishings.has('foil_stamp') && fa && fa.w > 0 && fa.h > 0) {
+      p.bak_x_size_1 = String(fa.w)
+      p.bak_y_size_1 = String(fa.h)
+    }
+    const ea = areas['deboss_emboss']
+    if (finishings.has('deboss_emboss') && ea && ea.w > 0 && ea.h > 0) {
+      p.ap_x_size_1 = String(ea.w)
+      p.ap_y_size_1 = String(ea.h)
+    }
+    return p
+  }, [finishings, areas])
+
+  const totalUsd = itemPriceUsd + rushUsd + finishingSurchargeUsd + shippingUsd
   const productionWindow = formatProductionWindow(product, leadTier)
 
   return (
@@ -349,6 +439,79 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         )
       })}
 
+      {/* Finishing (후가공) — multi-select with margin-reflected surcharge (OMO-2664) */}
+      {finishingOptions.length > 0 && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Finishing <span className="text-xs font-normal text-gray-400">(optional add-ons)</span>
+          </label>
+          <div className="space-y-2">
+            {finishingOptions.map((opt) => {
+              const selected = finishings.has(opt.value)
+              const isArea = (AREA_PRICED_FINISHINGS as readonly string[]).includes(opt.value)
+              const area = areas[opt.value]
+              const usd = finishingUnitUsd(opt.value, isArea && area ? area.w * area.h : undefined)
+              return (
+                <div
+                  key={opt.value}
+                  className={`border rounded-lg transition-all ${
+                    selected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => toggleFinishing(opt.value)}
+                    className="w-full flex items-center justify-between gap-3 px-3 py-2.5 text-left"
+                  >
+                    <span className="flex items-center gap-2.5">
+                      <span
+                        className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                          selected ? 'border-blue-500 bg-blue-500' : 'border-gray-300 bg-white'
+                        }`}
+                      >
+                        {selected && <CheckCircle className="w-3 h-3 text-white" />}
+                      </span>
+                      <span className="text-sm font-medium text-gray-800">{opt.label_en}</span>
+                    </span>
+                    <span className={`text-sm font-semibold ${selected ? 'text-blue-700' : 'text-gray-500'}`}>
+                      + ${usd.toFixed(2)}
+                    </span>
+                  </button>
+                  {selected && isArea && (
+                    <div className="px-3 pb-3 -mt-0.5">
+                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                        <span className="font-medium">Area (mm):</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={area?.w ?? ''}
+                          onChange={(e) => setArea(opt.value, 'w', e.target.value)}
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          aria-label="width mm"
+                        />
+                        <span className="text-gray-400">×</span>
+                        <input
+                          type="number"
+                          min={1}
+                          value={area?.h ?? ''}
+                          onChange={(e) => setArea(opt.value, 'h', e.target.value)}
+                          className="w-16 border border-gray-300 rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400"
+                          aria-label="height mm"
+                        />
+                        <span className="text-gray-400">(W × H of the stamped area)</span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-gray-400">
+                        Price scales with area. Final amount is confirmed by our production system.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* Production speed */}
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -431,6 +594,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                 </span>
               )}
             </span>
+          </div>
+        )}
+        {finishingSurchargeUsd > 0 && (
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Finishing ({finishings.size} selected)</span>
+            <span>+ ${finishingSurchargeUsd.toFixed(2)}</span>
           </div>
         )}
         {rushUsd > 0 && (
@@ -519,7 +688,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       {/* Order / Editor Buttons */}
       <div className="space-y-2">
         <Link
-          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
+          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier }).toString()}`}
           className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
@@ -528,7 +697,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           </span>
         </Link>
         <Link
-          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
+          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
           className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">

@@ -3,9 +3,11 @@ import { FINISHING_CATALOG } from '@/config/finishing-catalog'
 
 interface Props {
   productCategory: string
+  /** 이 카테고리에서 후가공이 구성기(Configurator)에서 직접 주문/가격반영 되는지 (OMO-2664). */
+  orderable?: boolean
 }
 
-export default function FinishingSection({ productCategory }: Props) {
+export default function FinishingSection({ productCategory, orderable = false }: Props) {
   const relevant = FINISHING_CATALOG.filter(f => f.fits.includes(productCategory))
   if (relevant.length === 0) return null
 
@@ -16,7 +18,9 @@ export default function FinishingSection({ productCategory }: Props) {
           <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">후가공 옵션</span>
           <h2 className="text-2xl font-bold text-gray-900 mt-1.5">Finishing Options</h2>
           <p className="text-gray-500 text-sm mt-1">
-            Premium add-ons to elevate your print. Available at checkout — ask us for a quote.
+            {orderable
+              ? 'Premium add-ons to elevate your print. Select foil, emboss, die-cut, or drilled-hole right in the configurator above — pricing is included instantly.'
+              : 'Premium add-ons to elevate your print. Available at checkout — ask us for a quote.'}
           </p>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
@@ -43,11 +47,24 @@ export default function FinishingSection({ productCategory }: Props) {
           ))}
         </div>
         <p className="text-xs text-gray-400 mt-6">
-          * Finishing options are quoted separately. Contact us at{' '}
-          <a href="mailto:hello@procardcrafters.com" className="text-blue-500 hover:underline">
-            hello@procardcrafters.com
-          </a>{' '}
-          with your specifications.
+          {orderable ? (
+            <>
+              * Foil, emboss, die-cut and drilled-hole are priced and ordered directly above. For other
+              finishings or custom specs, contact{' '}
+              <a href="mailto:hello@procardcrafters.com" className="text-blue-500 hover:underline">
+                hello@procardcrafters.com
+              </a>
+              .
+            </>
+          ) : (
+            <>
+              * Finishing options are quoted separately. Contact us at{' '}
+              <a href="mailto:hello@procardcrafters.com" className="text-blue-500 hover:underline">
+                hello@procardcrafters.com
+              </a>{' '}
+              with your specifications.
+            </>
+          )}
         </p>
       </div>
     </section>
