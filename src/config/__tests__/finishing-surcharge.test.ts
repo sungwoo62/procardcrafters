@@ -196,3 +196,36 @@ describe('3경로 라운드트립 일치 (구성기↔결제↔자동발주, 단
     )
   })
 })
+
+// OMO-2670 검증항목 4(성원 calcuEstimate 대조) — 앵커 회귀.
+// OMO-2647 라이브 검증(CNC1000 명함 GNC1001, 1,000매, 로그인)에서 성원 calcuEstimate 가
+// 산출한 후가공별 wholesale amt(권위값)를 단일소스 config 가 정확히 재현하는지 고정한다.
+//   출처: scripts/test-artifacts/omo2647/{surcharge.json,SUMMARY.md}
+//   - tagong_amt   = 3,800   (타공)
+//   - domusong_amt = 21,500  (도무송)
+//   - bak_amt      = 22,300  (박,  면적 50×30mm 기본값)
+//   - ap_amt      ≈ 22,300  (형압, 면적 50×30mm 기본값)
+// 누군가 surcharge 상수를 라이브 검증값에서 멀어지게 바꾸면 이 테스트가 잡는다.
+// 한계: 비기본 면적(off-anchor) 선형성은 라이브 calcuEstimate 재호출 필요 → 별도 인터랙티브 이슈.
+describe('성원 calcuEstimate 권위 앵커 (OMO-2647 라이브 검증값 고정)', () => {
+  const AUTHORITY_AT_DEFAULT_AREA: Record<string, number> = {
+    drilled_hole: 3800,
+    die_cut: 21500,
+    foil_stamp: 22300,
+    deboss_emboss: 22300,
+  }
+
+  for (const [value, authority] of Object.entries(AUTHORITY_AT_DEFAULT_AREA)) {
+    it(`${value}: config wholesale KRW = 성원 calcuEstimate 권위값 ${authority.toLocaleString()}`, () => {
+      // 면적비례 후가공은 기본면적(50×30)에서 평가 — 라이브 검증 면적과 동일.
+      expect(finishingSurchargeKrw(value, BASE_AREA_MM2)).toBe(authority)
+    })
+  }
+
+  it('복합(타공+박) = 각 권위값 합 (OMO-2647 복합 +29,700 = 4,180+25,520 라인과 정합)', () => {
+    const serialized = serializeFinishingParams(['drilled_hole', 'foil_stamp'], {
+      foil_stamp: { w: 50, h: 30 },
+    })
+    expect(finishingSurchargeKrwFromOptions(serialized)).toBe(3800 + 22300)
+  })
+})
