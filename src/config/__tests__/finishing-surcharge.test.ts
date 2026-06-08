@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   finishingSurchargeKrw,
   finishingSurchargeKrwFromOptions,
+  buildOrderExtraPricesKrw,
   FINISHING_DEFAULT_AREA_MM,
 } from '../finishing-surcharge'
 import { expandFinishingToSwadpiaFields } from '../swadpia-finishing-fields'
@@ -66,6 +67,51 @@ describe('finishingSurchargeKrwFromOptions — 결제 권위 재계산', () => {
     expect(finishingSurchargeKrwFromOptions({ finishing: 'unknown_xyz,die_cut' })).toBe(
       finishingSurchargeKrw('die_cut'),
     )
+  })
+})
+
+describe('buildOrderExtraPricesKrw — 결제/표시 extra 합산 단일권위 (OMO-2673 이중청구 회귀)', () => {
+  // 마이그레이션(20260608000020)이 시드하는 option_type='finishing' 행을 재현.
+  const seededOptions = [
+    { option_type: 'finishing', value: 'foil_stamp', extra_price_krw: 22300 },
+    { option_type: 'finishing', value: 'die_cut', extra_price_krw: 21500 },
+    { option_type: 'paper', value: 'premium', extra_price_krw: 5000 },
+  ]
+
+  it('단일 후가공(박)은 정확히 1회만 가산 — 시드 행 + surcharge 이중청구(2×) 방지', () => {
+    const extras = buildOrderExtraPricesKrw({ finishing: 'foil_stamp' }, seededOptions)
+    const total = extras.reduce((a, b) => a + b, 0)
+    // 권위값 = surcharge 함수 1회 (44,600 이면 회귀)
+    expect(total).toBe(finishingSurchargeKrw('foil_stamp', BASE_AREA_MM2))
+    expect(total).not.toBe(22300 * 2)
+  })
+
+  it('평면 후가공(도무송) 단일도 1회만 가산', () => {
+    const extras = buildOrderExtraPricesKrw({ finishing: 'die_cut' }, seededOptions)
+    expect(extras.reduce((a, b) => a + b, 0)).toBe(finishingSurchargeKrw('die_cut'))
+  })
+
+  it('비후가공 옵션(paper)은 정확일치로 그대로 합산 + 후가공은 surcharge 권위', () => {
+    const extras = buildOrderExtraPricesKrw(
+      { paper: 'premium', finishing: 'foil_stamp' },
+      seededOptions,
+    )
+    expect(extras.reduce((a, b) => a + b, 0)).toBe(
+      5000 + finishingSurchargeKrw('foil_stamp', BASE_AREA_MM2),
+    )
+  })
+
+  it('면적 입력은 surcharge 에 비례 반영(시드 flat 22300 과 무관)', () => {
+    const total = buildOrderExtraPricesKrw(
+      { finishing: 'foil_stamp', bak_x_size_1: '100', bak_y_size_1: '60' },
+      seededOptions,
+    ).reduce((a, b) => a + b, 0)
+    expect(total).toBe(finishingSurchargeKrw('foil_stamp', 100 * 60))
+  })
+
+  it('후가공 미선택 시 후가공 가산 없음 (None 회귀)', () => {
+    expect(buildOrderExtraPricesKrw({ paper: 'premium' }, seededOptions)).toEqual([5000])
+    expect(buildOrderExtraPricesKrw({}, seededOptions)).toEqual([])
   })
 })
 

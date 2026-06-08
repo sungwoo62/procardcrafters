@@ -3,7 +3,7 @@ import { createServerClient } from '@/lib/supabase'
 import { createAuthRouteClient } from '@/lib/supabase-server'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
-import { finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
+import { buildOrderExtraPricesKrw } from '@/config/finishing-surcharge'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
 
@@ -94,16 +94,9 @@ export async function POST(request: NextRequest) {
       extra_price_krw: number
     }[]
 
-    const extraPricesKrw = Object.entries(item.selectedOptions).map(([type, value]) => {
-      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
-      return opt?.extra_price_krw ?? 0
-    })
-
-    // OMO-2667: 후가공 surcharge 서버 권위 재계산. 기존 정확일치(option_type+value)는 콤마결합된
-    // `finishing` 값·면적키를 0/flat 으로 처리해 과소청구 → 다중·면적 surcharge 를 별도 합산.
-    // (`finishing` 은 option_type 이 아니므로 위 정확일치 루프에서 이미 0 으로 처리되어 중복 없음.)
-    const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(item.selectedOptions)
-    if (finishingSurchargeKrw > 0) extraPricesKrw.push(finishingSurchargeKrw)
+    // OMO-2667/2673: 비후가공 정확일치 + 후가공 surcharge(단일 권위)를 합산. 시드된 finishing
+    // 행과 surcharge 함수가 동시 가산되어 단일 후가공이 2배 청구되던 회귀를 헬퍼에서 차단한다.
+    const extraPricesKrw = buildOrderExtraPricesKrw(item.selectedOptions, productOptions)
 
     const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,
