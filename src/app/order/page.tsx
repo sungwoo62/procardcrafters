@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { calculateItemPriceUsd } from '@/lib/pricing'
+import { FINISHING_PASSTHROUGH_KEYS, finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
 import OrderForm from './OrderForm'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -51,14 +52,24 @@ async function OrderPageContent({ searchParams }: PageProps) {
     }
   }
 
+  // OMO-2667: 후가공 직렬화 키(finishing + 박/형압 면적)는 option_type 화이트리스트에 없어
+  // 위 루프가 드롭한다. 별도 패스스루로 selected_options 에 보존 → 결제 surcharge 재계산 및
+  // 자동발주(expandFinishingToSwadpiaFields) 면적단가에 반영.
+  for (const key of FINISHING_PASSTHROUGH_KEYS) {
+    if (params[key]) selectedOptions[key] = params[key]
+  }
+
   const extraPricesKrw = options
     .filter((o) => selectedOptions[o.option_type] === o.value)
     .map((o) => o.extra_price_krw)
 
+  // OMO-2667: 후가공 surcharge 를 서버 권위로 재계산해 합산(다중·면적 반영). 구성기 표시가와 일치.
+  const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+
   const itemPriceUsd = calculateItemPriceUsd({
     basePriceKrw: product.base_price_krw,
     marginMultiplier: product.margin_multiplier,
-    extraPricesKrw,
+    extraPricesKrw: finishingSurchargeKrw > 0 ? [...extraPricesKrw, finishingSurchargeKrw] : extraPricesKrw,
     exchangeRate,
   })
 
