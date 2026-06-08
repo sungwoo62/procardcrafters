@@ -8,6 +8,7 @@ import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 import { validateCode, applyCode } from '@/lib/promotion-engine'
 import { createAuthRouteClient } from '@/lib/supabase-server'
 import { sanitizeAttribution } from '@/lib/attribution'
+import { buildOrderExtraPricesKrw } from '@/config/finishing-surcharge'
 
 interface OrderItemInput {
   productId: string
@@ -113,10 +114,9 @@ export async function POST(request: NextRequest) {
       extra_price_krw: number
     }[]
 
-    const extraPricesKrw = Object.entries(item.selectedOptions).map(([type, value]) => {
-      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
-      return opt?.extra_price_krw ?? 0
-    })
+    // OMO-2672: 후가공 가격을 단일 권위 빌더로 산출(시드된 finishing 행 충돌 → 단일 이중·
+    // 다중 과소청구 방지). create-order·order/page·reorder 와 동일 헬퍼로 통일.
+    const extraPricesKrw = buildOrderExtraPricesKrw(item.selectedOptions, productOptions)
 
     const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,
