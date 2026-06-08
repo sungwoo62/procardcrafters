@@ -1,0 +1,349 @@
+{
+  "code": "CNC1000",
+  "goods": "GNC1001",
+  "loggedIn": true,
+  "fns": [
+    "ValidatePrice",
+    "addAP",
+    "addBak",
+    "addCommas",
+    "addCommas_set",
+    "addCommas_set_return",
+    "addDBak",
+    "addDesign",
+    "addEventListener",
+    "addFavorate",
+    "bakSizeReadonly",
+    "calcuIsSat",
+    "calcuIsToday",
+    "cancelBak",
+    "cancelDBak",
+    "checkEstimate",
+    "chgAPSection",
+    "chgAPSize",
+    "chgAPType",
+    "chgApExistDongpan",
+    "chgApExistDongpanPrice",
+    "chgBakExistDongpan",
+    "chgBakExistDongpanPrice",
+    "chgBakSection",
+    "chgBakSide",
+    "chgBakSize",
+    "chgBakType",
+    "chgDBakExistDongpanPrice",
+    "chgDBakSection",
+    "chgDBakSize",
+    "chgDBakType",
+    "chgDbakSide",
+    "chgDesignAddShowHide",
+    "chgDesignAmtModule",
+    "chgDomusongExistMok",
+    "chgDomusongExistMokPrice",
+    "chgDomusongNum",
+    "chgDomusongSection",
+    "chgDomusongSize",
+    "chgDomusongType",
+    "chgEpoxyType",
+    "chgGuidoriPosition",
+    "chgGuidoriType",
+    "chgIsSat",
+    "chgIsToday",
+    "chgMissingDirection",
+    "chgMissingNum",
+    "chgNumberingKind",
+    "chgNumberingStart",
+    "chgNumberingType",
+    "chgOrderCount",
+    "chgOsiDirection",
+    "chgOsiNum",
+    "chgPaperCode",
+    "chgPaperImages",
+    "chgPaperQty",
+    "chgPaperSize",
+    "chgPostpressPreview",
+    "chgPreview",
+    "chgPrintColor",
+    "chgShowHide",
+    "chgSizeInput",
+    "chgSizeType",
+    "chgTagongNum",
+    "chgTagongSize",
+    "chgWorkMemoPreview",
+    "chgWorkTemplateDownload",
+    "dBakPreview",
+    "domusongSizeReadonly",
+    "domusongTypeCode",
+    "estimateGoto_pcms",
+    "estimatePostpressContent",
+    "estimateValidationCheckAp",
+    "estimateValidationCheckBak",
+    "fncIlarkEstimateSetting_pcms",
+    "getDateAdd",
+    "getDateAddWeek",
+    "getLastCalculateLoop_new",
+    "goodsQnaTotal",
+    "goodsReviewTotal",
+    "goodsSummary",
+    "initCalcuEstimate",
+    "initExistBakDongpan",
+    "isValidIPaddr",
+    "optionPreview",
+    "order_price_detail",
+    "postpress_preview_position",
+    "postpress_preview_position_mouseover",
+    "ppEpoxyPopup",
+    "ppEpoxySelectCheck",
+    "settingExistBakDongpan",
+    "settingExistDomusongMok",
+    "slideEstimate",
+    "swguide_osi_folding",
+    "userBakExistDongpan",
+    "userDomusongExistMok",
+    "validate_Price"
+  ],
+  "toggles": [
+    {
+      "tag": "SPAN",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "chkPostPress('1','bak')",
+      "txt": ""
+    },
+    {
+      "tag": "SPAN",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "chkPostPress('1','tagong')",
+      "txt": ""
+    },
+    {
+      "tag": "SPAN",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "chkPostPress('1','dbak')",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "swguide_postpress('bak');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_hide('bak');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_show('bak');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "optionPreview('pnl_dbak_postpress_preview','');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "optionPreview('pnl_dbak_postpress','');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_hide('dbak');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_show('dbak');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "optionPreview('pnl_dbak_postpress_preview','pnl_dbak_postpress_preview.jpg');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "swguide_postpress('tagong');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_hide('tagong');",
+      "txt": ""
+    },
+    {
+      "tag": "A",
+      "type": "",
+      "name": "",
+      "id": "",
+      "onclick": "pp_preview_layer_img_show('tagong');",
+      "txt": ""
+    }
+  ],
+  "sizeSelects": [
+    {
+      "name": "size_type",
+      "id": "size_type",
+      "optCount": 2,
+      "opts": [
+        "SZT10=규격사이즈",
+        "SZT20=사이즈직접입력"
+      ],
+      "onchange": "chgSizeType();"
+    },
+    {
+      "name": "paper_size",
+      "id": "paper_size",
+      "optCount": 4,
+      "opts": [
+        "N0100=90mm*50mm",
+        "N0200=86mm*52mm",
+        "N0500=91mm*55mm",
+        "N0600=85mm*55mm"
+      ],
+      "onchange": "chgPaperSize();"
+    },
+    {
+      "name": "tagong_size",
+      "id": "tagong_size",
+      "optCount": 6,
+      "opts": [
+        "3=3mm",
+        "4=4mm",
+        "5=5mm",
+        "6=6mm",
+        "7=7mm",
+        "8=8mm"
+      ],
+      "onchange": "chgTagongSize()"
+    }
+  ],
+  "finSelects": {
+    "bak_section_1": {
+      "optCount": 1,
+      "visible": false,
+      "onchange": "chgBakSection('1');",
+      "container": null
+    },
+    "bak_type_1": {
+      "optCount": 14,
+      "visible": false,
+      "onchange": "chgBakType('1');",
+      "container": null
+    },
+    "ap_section_1": {
+      "optCount": 1,
+      "visible": false,
+      "onchange": "chgAPSection('1')",
+      "container": null
+    },
+    "ap_type_1": {
+      "optCount": 2,
+      "visible": false,
+      "onchange": "chgAPType('1')",
+      "container": null
+    },
+    "domusong_section": {
+      "optCount": 2,
+      "visible": false,
+      "onchange": "chgDomusongSection();",
+      "container": null
+    },
+    "domusong_type": {
+      "optCount": 5,
+      "visible": false,
+      "onchange": "chgDomusongType();",
+      "container": null
+    },
+    "tagong_num": {
+      "optCount": 4,
+      "visible": false,
+      "onchange": "chgTagongNum()",
+      "container": null
+    },
+    "tagong_size": {
+      "optCount": 6,
+      "visible": false,
+      "onchange": "chgTagongSize()",
+      "container": null
+    },
+    "numbering_type": {
+      "optCount": 2,
+      "visible": false,
+      "onchange": "chgNumberingType()",
+      "container": null
+    },
+    "numbering_kind": {
+      "optCount": 0,
+      "visible": false,
+      "onchange": "chgNumberingKind()",
+      "container": null
+    },
+    "guidori_type": {
+      "optCount": 0,
+      "visible": false,
+      "onchange": "chgGuidoriType()",
+      "container": null
+    },
+    "epoxy_type": {
+      "optCount": 0,
+      "visible": false,
+      "onchange": "chgEpoxyType()",
+      "container": null
+    },
+    "osi_num": {
+      "optCount": 0,
+      "visible": false,
+      "onchange": "chgOsiNum()",
+      "container": null
+    },
+    "missing_num": {
+      "optCount": 0,
+      "visible": false,
+      "onchange": "chgMissingNum()",
+      "container": null
+    }
+  },
+  "scriptBodies": {
+    "chgBakType": "function chgBakType(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+    "chgTagongNum": "function chgTagongNum() {\n\t\tif ($('chk_is_tagong').checked == true) {\n\t\t\tproduct1.ppTagong();\n\t\t}\n\t}",
+    "chgTagongSize": "function chgTagongSize() {\n\t\tif ($('chk_is_tagong').checked == true) {\n\t\t\tproduct1.ppTagong();\n\t\t}\n\t}",
+    "addBak": "function addBak(seq) {\n\t\t$j('#pnl_bak' + seq).show();\n\t\t$j('#btn_add_bak' + seq).hide();\n\n\t\t//박 합계금액\n\t\tproduct1.setPPBakAmtSum();\n\t\tproduct1.calcuEstimate();\n\n\t}",
+    "addAP": "function addAP(seq) {\n\t\t$j('#pnl_ap' + seq).show();\n\t\t$j('#btn_add_ap' + seq).hide();\n\n\t\t//박 합계금액\n\t\tproduct1.setPPApAmtSum();\n\t\tproduct1.calcuEstimate();\n\n\t}"
+  }
+}

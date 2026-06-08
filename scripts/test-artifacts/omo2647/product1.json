@@ -1,0 +1,277 @@
+{
+  "chkPostPress": "function chkPostPress(ppSection, ppType) {\n\n\t\tvar size_type = $('size_type').value; //규격형\n\t\tvar paper_code = $('paper_code').value;\n\n\n\t\t//아쿠아사틴256g,아르미 울트라화이트 310g,인버코트 350g,랑데뷰 내츄럴 310g,스노우지 백색 300g,반누보 화이트 204g,반누보 스노우화이트 227g,반누보 화이트 250g,아르미 울트라화이트 230g\n\t\tvar dbak_paper_arr = Array('AQS256W00','ARM310W00','INV350MT0','RDV310N00','SNW300W00','VNV186W00','VNV227SW0','VNV233W00','ARM230W00');\n\n\t\tif (category_code == 'CNC2000') {\n\t\t\tif (paper_code == 'RBE359W00' || paper_code == 'VVT359W00' || paper_code == 'BKN350BL0' || paper_code == 'BKN380BL0') { //러버화이트,벨벳화이트,매트블랙,매트블랙 380\n\t\t\t\tif ($('chk_is_epoxy').checked == true) {\n\t\t\t\t\talert(\"선택한 용지는 에폭시를 할 수 없습니다.\");\n\t\t\t\t\t$('chk_is_epoxy').checked = false;\n\t\t\t\t\treturn false;\n\t\t\t\t}\n\t\t\t}\n\n\t\t\tprint1.optionPrintColorType();\n\n\t\t}\n\n\n\t\tif(!dbak_paper_arr.includes(paper_code) ){//디지털 박 가능 용지가 아닌경우\n\t\t\tif( $('chk_is_dbak').checked == true) { //디지털 박\n\t\t\t\talert(\"디지털 박이 불가능한 용지입니다.\");\n\t\t\t\t$('chk_is_dbak').checked = false;\n\t\t\t\t$('pnl_dbak').hide();\n\t\t\t\treturn false;\n\t\t\t}\n\n\t\t}\n\t\tif((ppType == \"dbak\" && $('chk_is_bak').checked == true && $('chk_is_dbak').checked == true)){\n\t\t\talert(\"디지털 박은 박과 동시에 주문 하실 수 없습니다.\");\n\t\t\t$('chk_is_dbak').checked = false; $('dbak_amt').value = 0; $('dbak_dp_amt').value = 0;\n\t\t\t\treturn false;\n\t\t}\n\t\tif((ppType == \"bak\" && $('chk_is_bak').checked == true && $('chk_is_dbak').checked == true)){\n\t\t\talert(\"박은 디지털 박과 동시에 주문 하실 수 없습니다.\");\n\t\t\t$('chk_is_bak').checked = false; $('bak_amt').value = 0; $('bak_dp_amt').value = 0;\n\t\t\t\treturn false;\n\t\t}\n\t\tif (!staff_id) {\n\t\t\tif(category_code == 'CNC2000' && dbak_paper_arr.includes(paper_code) ){//디지털 박 가능 용지\n\t\t\t\tif( ppType==\"bak\" && $('chk_is_bak').checked == true) { //박\n\t\t\t\t//팝업\n\t\t\t\t\tdBakPreview();\n\t\t\t\t}\n\n\t\t\t}\n\t\t}\n\t\tif (category_code.match('CVS') && size_type == 'SZT10' && ppType == 'domusong') { //초대장\n\t\t\talert('초대장 규격형은 후가공 도무송을 뺄 수 없습니다.');\n\t\t\t$('chk_is_domusong').checked = true;\n\t\t\treturn false;\n\t\t}\n\n\t\tif ((category_code.match('CNC6000') || category_code.match('CVS6000')) && ppType == 'epoxy') { //에폭시명함,초대장\n\t\t\tif($j(\"#chk_is_epoxy\").attr('checked') == false){\n\t\t\t\talert('에폭시명함,초대장은 에폭시 후가공을 뺄 수 없습니다.');\n\t\t\t\t$('chk_is_epoxy').checked = true;\n\t\t\t\treturn false;\n\t\t\t}\n\t\t}\n\t\tif ((category_code.match('CNC8000') ) && ppType == 'dbak') { //디지털박명함, 디지털 박\n\t\t\tif($j(\"#chk_is_dbak\").attr('checked') == false){\n\t\t\t\talert('디지털박 명함은 디지털 박 후가공을 뺄 수 없습니다.');\n\t\t\t\t$('chk_is_dbak').checked = true;\n\t\t\t\treturn false;\n\t\t\t}\n\t\t}\n\t\tif (ppType == 'numbering' && (paper_code == 'NEC350BL0' || paper_code == 'BKN350BL0' || paper_code == 'BKN380BL0')) {\n\t\t\talert('해당 용지는 용지색상이 어두워서 넘버링이 잘 안보입니다.\\n\\n넘버링이 필요하신분은 별도로 상담해주세요.');\n\t\t\t$('chk_is_numbering').checked = false;\n\t\t\treturn false;\n\t\t}\n\n\t\tif (ppType == 'numbering' && (paper_code == 'VVT359W00') ) { //넘버링 + 벨벳 화이트 359g \n\t\t\talert(\"벨벳 화이트 359g 용지는 넘버링을 할 수 없습니다.\");\n\t\t\t$('chk_is_numbering').checked = false;\n\t\t}\n\n\t\tif (ppType == 'epoxy') {\n\t\t\tppEpoxySelectCheck();\n\t\t}\n\n\t\tchkVar = $j(\"#chk_is_\" + ppType).attr('checked');\n\n\t\tif (ppSection == \"1\") {\n\t\t\tif (chkVar) {\n\t\t\t\tchkVar2 = true;\n\t\t\t} else {\n\t\t\t\tchkVar2 = false;\n\t\t\t}\n\t\t} else {\n\t\t\tif (chkVar) {\n\t\t\t\tchkVar2 = false;\n\t\t\t} else {\n\t\t\t\tchkVar2 = true;\n\t\t\t}\n\t\t}\n\n\t\tif ((category_code == \"CNC5000\" || category_code == \"CNC3000\") && ppType == 'guidori') {\n\t\t\t$('chk_is_guidori').checked = true;\n\t\t\tchkVar2 = true;\n\t\t}\n\n\t\tif (chkVar2) {\n\t\t\t$j(\"#pnl_\" + ppType).show();\n\t\t\t$j(\"#chk_is_\" + ppType).attr('checked', 'true');\n\t\t\t$j(\"#chk_is_\" + ppType + \"2\").attr('checked', 'true');\n\t\t} else {\n\t\t\t$j(\"#pnl_\" + ppType).hide();\n\t\t\t$j(\"#chk_is_\" + ppType).attr('checked', '');\n\t\t\t$j(\"#chk_is_\" + ppType + \"2\").attr('checked', '');\n\t\t}\n\n\t\tsetIsPostpress(ppType); //후가공 DB data 가져오기\n\t\tproduct1.printEstimate();\n\t\tisTodayPPCheck();\n\n\t\t//후가공 미리보기 이미지 숨김\n\t\tif (staff_id) {\n\t\t\tpp_preview_layer_img_hide(ppType);\n\t\t} else {\n\t\t\tpp_preview_layer_img_show(ppType);\n\t\t}\n\n\t\t//선택시 귀도리 초기화값\n\t\tif (ppType == 'guidori') {\n\t\t\tchgGuidoriType();\n\t\t}\n\n\t\texpect_release_date(); //예상출고일\n\n\t}",
+  "chgPaperSize": "function chgPaperSize() {\n\n\t\tproduct1.changePaperSize();\n\n\t\tif ($('chk_is_osi').checked == true) {\n\t\t\tchgOsiNum();\n\t\t}\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tinitExistBakDongpan(1);\n\t\t\tinitExistBakDongpan(2);\n\t\t\tinitExistBakDongpan(3);\n\t\t}\n\n\t\tif ($('chk_is_ap').checked == true) {\n\t\t\tinitExistAPDongpan(1);\n\t\t\tinitExistAPDongpan(2);\n\t\t\tinitExistAPDongpan(3);\n\t\t}\n\n\t\tif ($('chk_is_domusong').checked == true) {\n\t\t\tinitExistMoghyeong(); //보유목형 초기화\n\t\t}\n\n\n\t\tchgIsToday(); //당일판체크\n\t\tchgIsSat(); //토요판체크\n\n\t\tif (category_code.match('CVS') && $(\"size_type\").value == 'SZT10') { //규격형만\n\t\t\tproductVideoPreview(); //동영상가이드 미리보기\n\t\t} else {\n\t\t\tproductSizePreview(); //제품사이즈 미리보기\n\t\t}\n\n\t}",
+  "chgSizeType": "function chgSizeType() {\n\n\t\tvar checks = $('size_type').value;\n\n\t\tif (checks == 'SZT10') {\n\t\t\t$('sp_x_size_change').show();\n\t\t\t$('sp_y_size_change').show();\n\t\t\t$('sp_size_change_view').show();\n\t\t\t$('size_change').value = 'STC10';\n\t\t\t$('etc2').value = 'STC10';\n\n\t\t\t$j('#btn_preview').show(); //미리보기 버튼\n\t\t\t$j('#btn_download').show(); //다운로드 버튼\n\n\t\t\t$(\"paper_size\").show();\n\n\t\t\t$j('#cut_x_size').css('background', '#FFFFFF'); //흰색변경\n\t\t\t$j('#cut_y_size').css('background', '#FFFFFF'); //흰색변경\n\n\t\t\t$j('#cut_x_size').attr('readonly', true);\n\t\t\t$j('#cut_y_size').attr('readonly', true);\n\n\t\t\tif (category_code == 'CNC3000' || category_code == 'CNC5000') { //카드,투명명함\n\t\t\t\t$('guidori_position1').checked = true;\n\t\t\t\t$('guidori_position2').checked = true;\n\t\t\t\t$('guidori_position3').checked = true;\n\t\t\t\t$('guidori_position4').checked = true;\n\t\t\t}\n\t\t} else {\n\t\t\t$('sp_x_size_change').hide();\n\t\t\t$('sp_y_size_change').hide();\n\t\t\t$('sp_size_change_view').hide();\n\t\t\t$('size_change').value = '';\n\t\t\t$('etc2').value = '';\n\n\t\t\t$j('#btn_preview').hide(); //미리보기 버튼\n\t\t\t$j('#btn_download').hide(); //다운로드 버튼\n\n\t\t\t$(\"paper_size\").hide();\n\n\t\t\t$('cut_x_size').value = '90';\n\t\t\t$('cut_y_size').value = '50';\n\t\t\t$('work_x_size').value = '0';\n\t\t\t$('work_y_size').value = '0';\n\n\t\t\t$j('#cut_x_size').css('background', '#FFFF66'); //노란색변경\n\t\t\t$j('#cut_y_size').css('background', '#FFFF66'); //노란색변경\n\n\t\t\t$j('#cut_x_size').attr('readonly', false);\n\t\t\t$j('#cut_y_size').attr('readonly', false);\n\t\t}\n\n\t\tproduct1.changePaperSize();\n\n\t\tchgIsToday(); //당일판체크\n\t\tchgIsSat(); //토요판체크\n\n\t\tproductSizePreview(); //제품사이즈 미리보기\n\n\t}",
+  "chgBakType": "function chgBakType(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+  "chgBakSection": "function chgBakSection(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+  "initCalcuEstimate": "function initCalcuEstimate() {\n\t\tproduct1.calcuEstimate();\n\t}",
+  "order_price_detail": "function order_price_detail(){\n\n\t\tif(staff_id != '' && staff_id != 'guest'){//관리자만 표시//\n\t\t\tvar paper_price = $('paper_price').value;\n\t\t\tvar plate_price = $('plate_price').value;\n\t\t\tvar print_price = $('print_price').value;\n\t\t\tvar postpress_amt = $('postpress_amt').value;\n\t\t\tvar design_price = $('design_price').value;\n\n\t\t\tvar html = \"\";\n\t\t\thtml += \"<table border='0' align='left' width='100' cellspacing='1' cellpadding='1' bgcolor='#CCCCCC'>\";\n\t\t\thtml += \"<tr bgcolor='#FFFFFF'><td>용지비 : </td><td align='right'>\"+numberFormat(paper_price)+\"</td></tr>\";\n\t\t\thtml += \"<tr bgcolor='#FFFFFF'><td>판비용 : </td><td align='right'>\"+numberFormat(plate_price)+\"</td></tr>\";\n\t\t\thtml += \"<tr bgcolor='#FFFFFF'><td>인쇄비 : </td><td align='right'>\"+numberFormat(print_price)+\"</td></tr>\";\n\t\t\thtml += \"<tr bgcolor='#FFFFFF'><td>후가공 : </td><td align='right'>\"+numberFormat(postpress_amt)+\"</td></tr>\";\n\t\t\thtml += \"<tr bgcolor='#FFFFFF'><td>디자인 : </td><td align='right'>\"+numberFormat(design_price)+\"</td></tr>\";\n\t\t\thtml += \"</table>\";\n\t\t\tif(category_code.indexOf(\"COR\")>=0){html='';}\n\t\t\t$j('#pnl_order_price_detail').html(html);\n\t\t}\n\n\t\tvar is_auth_view_order_amt = '';//금액노출권한\n\t\tif(is_auth_view_order_amt == '1'){\n\t\t\t$('pnl_total_price_hide').hide();\n\t\t\t$('pnl_order_price_detail').hide();\n\t\t}\n\n\n\t}",
+  "product1_keys": [
+    "jsonOBJ:undefined",
+    "PLATE_UNIT_PRICE:number",
+    "primary_color_amount:number",
+    "spot_color_amount:number",
+    "save_paper_code:string",
+    "save_paper_size:string",
+    "save_paper_qty:string",
+    "save_size_type:string",
+    "nowDate:number",
+    "paper_margin_1:string",
+    "paper_margin_2:string",
+    "paper_margin_add:string",
+    "initialize:function",
+    "init:function",
+    "saveDataLoad:function",
+    "saveIsPostpress:function",
+    "changePaper:function",
+    "changePaperSize:function",
+    "changePaperQty:function",
+    "changeOrderCount:function",
+    "changePrintColor:function",
+    "changePrintPrice:function",
+    "ilarkEstimateSettingProduct:function",
+    "ppOsi:function",
+    "ppMissing:function",
+    "ppDomusong:function",
+    "ppDomusongExistMok:function",
+    "ppBak:function",
+    "setPPBakAmtSum:function",
+    "ppBakExistDongpan:function",
+    "ppDBak:function",
+    "setPPDBakAmtSum:function",
+    "ppDBakExistDongpan:function",
+    "ppAP:function",
+    "setPPApAmtSum:function",
+    "ppApExistDongpan:function",
+    "ppNumbering:function",
+    "ppTagong:function",
+    "ppGuidori:function",
+    "ppEpoxy:function",
+    "changePPPrice:function",
+    "calcuEstimate:function",
+    "printEstimate:function",
+    "settingDB:function",
+    "printHtmlMsg:function",
+    "printEstimatePrint:function",
+    "printHtmlMsgPrint:function",
+    "printEstimateTotPrint:function",
+    "printHtmlMsgTotPrint:function",
+    "printEstimateLeftPrint:function",
+    "printHtmlMsgLeftPrint:function",
+    "constructor:function",
+    "setCommonId:function",
+    "getCommonId:function",
+    "getGoodsCode:function",
+    "getCategoryCode:function",
+    "setPaperCode:function",
+    "getPaperCode:function",
+    "setPaperWeight:function",
+    "getPaperWeight:function",
+    "setPaperSideType:function",
+    "getPaperSideType:function",
+    "setPaperSideTypeTxt:function",
+    "setSizeType:function",
+    "getSizeType:function",
+    "setPaperPrice:function",
+    "getPaperPrice:function",
+    "setPrintPrice:function",
+    "getPrintPrice:function",
+    "getPaperQty:function",
+    "getOrderCount:function",
+    "setFsideColorAmount:function",
+    "getFsideColorAmount:function",
+    "setBsideColorAmount:function",
+    "getBsideColorAmount:function",
+    "setFsideSpotColor:function",
+    "getFsideSpotColor:function",
+    "setBsideSpotColor:function",
+    "getBsideSpotColor:function",
+    "getPrintColorType:function",
+    "getPaperSize:function",
+    "setPaperSizeDomusong:function",
+    "getPaperSizeDomusong:function",
+    "setCutXSize:function",
+    "getCutXSize:function",
+    "setCutYSize:function",
+    "getCutYSize:function",
+    "setWorkXSize:function",
+    "getWorkXSize:function",
+    "setWorkYSize:function",
+    "getWorkYSize:function",
+    "setCutMargin:function",
+    "getCutMargin:function",
+    "setPrintSideAmount:function",
+    "getPrintSideAmount:function",
+    "setPlateDC:function",
+    "getSavePlateDC:function",
+    "setBakXOverMsg:function",
+    "getBakXOverMsg:function",
+    "setBakYOverMsg:function",
+    "getBakYOverMsg:function",
+    "setApXOverMsg:function",
+    "getApXOverMsg:function",
+    "setApYOverMsg:function",
+    "getApYOverMsg:function",
+    "getPartsNum:function",
+    "getIsPPOsi:function",
+    "getIsPPMissing:function",
+    "getIsPPDomusong:function",
+    "getIsPPBak:function",
+    "getIsPPAp:function",
+    "getIsPPNumbering:function",
+    "getIsPPTagong:function",
+    "getIsPPGuidori:function",
+    "optionPaperCode:function",
+    "optionPrintColorType:function",
+    "optionPaperQty:function",
+    "getPrintUnit:function",
+    "caluPrintArea:function",
+    "caluPrintDigitNumber:function",
+    "caluPrintPrice:function",
+    "caluPrintColorPrice:function",
+    "settingPaperSize:function",
+    "setSizeInfo:function",
+    "settingSizeChange:function",
+    "settingRegularSize:function",
+    "getOtherSizeOptimize:function",
+    "settingA2B2PartsNum:function",
+    "bakApCompare:function",
+    "ilarkEstimateSettingPrintHide:function",
+    "ilarkEstimateSettingPrint:function",
+    "errorMsg:function",
+    "checkMsg:function",
+    "showFocusMsg:function",
+    "initSelectOptions:function",
+    "thisPositionSelectOptions:function",
+    "outputDebugMsg:function"
+  ],
+  "product1_ppTagong": "function(){ppTagong.calcuTagongPrice();this.calcuEstimate()}",
+  "product1_calcuEstimate": "function(){$('fun_chk').value='false';var order_count=1;var total_price=0;var pp_price=0;var tax_amt=0;var order_amt=0;var pay_amt=0;var sale_amt=0;var add_amt=0;var sale_rate=0;var agree_date_price=0;order_count=parseInt($('order_count').value);sale_rate=parseFloat($('sale_rate').value);total_price=parseInt($('print_price').value);if(parseInt($('design_price').value)){total_price+=parseInt($('design_price').value)}if($('osi_amt').value>0&&$('chk_is_osi').checked)pp_price+=parseInt($('osi_amt').value);if($('missing_amt').value>0&&$('chk_is_missing').checked)pp_price+=parseInt($('missing_amt').value);if($('domusong_amt').value>0&&$('chk_is_domusong').checked)pp_price+=parseInt($('domusong_amt').value);if($('bak_amt').value>0&&$('chk_is_bak').checked)pp_price+=parseInt($('bak_amt').value);if($('ap_amt').value>0&&$('chk_is_ap').checked)pp_price+=parseInt($('ap_amt').value);if($('numbering_amt').value>0&&$('chk_is_numbering').checked)pp_price+=parseInt($('numbering_amt').value);if($('tagong_amt').value>0&&$('chk_is_tagong').checked)pp_price+=parseInt($('tagong_amt').value);if($('guidori_amt').value>0&&$('chk_is_guidori').checked)pp_price+=parseInt($('guidori_amt').value);if($('epoxy_amt').value>0&&$('chk_is_epoxy').checked)pp_price+=parseInt($('epoxy_amt').value);if($('dbak_amt').value>0&&$('chk_is_dbak').checked)pp_price+=parseInt($('dbak_amt').value);if($('agree_date_price').value>0)agree_date_price=parseInt($('agree_date_price').value);total_price=parseInt(total_price)+parseInt(pp_price)+parseInt(agree_date_price);origin_price=parseInt(total_price)+parseInt(pp_price)+parseInt(agree_date_price);if(sale_rate>0){sale_amt=total_price*(sale_rate/100);total_price=total_price-parseInt(sale_amt)}supply_amt=total_price;if(tax_type==\"TXT20\"){tax_amt=0}else{tax_amt=Math.round(total_price*0.1)}order_amt=parseInt(supply_amt);pay_amt=parseInt(supply_amt)+parseInt(tax_amt);$('total_price').value=total_price;$('supply_amt').value=supply_amt;$('tax_amt').value=tax_amt;$('order_amt').value=order_amt;$('pay_amt').value=pay_amt;$('postpress_amt').value=pp_price;$('sale_amt').value=sale_amt;$('add_amt').value=add_amt;$('lbl_pay_amt').update(numberFormat(pay_amt));$('lbl_supply_amt').update(numberFormat(supply_amt));$('lbl_tax_amt').update(numberFormat(tax_amt));if(sale_rate>0){sale_info=\"정상가 : <strike>\"+numberFormat(origin_price)+\"</strike>원,\"+\" 할인액(할인율) : \"+numberFormat(sale_amt)+\"원(\"+sale_rate+\"%)\";$('pnl_sale_amt').update(sale_info)}this.printEstimate();if($(\"print_estimate_list\")){this.printEstimatePrint();this.printEstimateTotPrint();this.printEstimateLeftPrint()}}",
+  "product1_setPPBakAmtSum": "function(){if($('chk_is_bak').checked==true){$('bak_amt').value=parseInt($('bak_amt_1').value)+parseInt($('bak_amt_2').value)+parseInt($('bak_amt_3').value);$('bak_dp_amt').value=parseInt($('etc1_1').value)+parseInt($('etc1_2').value)+parseInt($('etc1_3').value)}else{$('bak_amt').value=0;$('bak_dp_amt').value=0}this.changePrintPrice()}",
+  "product1_ppBak": "function(seq){ppBak.dataLoad();ppBak.setBakSeq(seq);settingExistBakDongpan(seq);ppBak.calcuBakPrice();if($('save_bak_x_size_2').value!=\"\"&&$('save_bak_y_size_2').value!=\"\"){settingExistBakDongpan(2);ppBak.calcuBakPrice()}if($('save_bak_x_size_3').value!=\"\"&&$('save_bak_y_size_3').value!=\"\"){settingExistBakDongpan(3);ppBak.calcuBakPrice()}this.setPPBakAmtSum();this.setPPApAmtSum()}",
+  "product1_getEstimatePrice": "undefined",
+  "checkboxes": [
+    {
+      "id": "chk_is_osi",
+      "name": "chk_is_osi",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_missing",
+      "name": "chk_is_missing",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_bak",
+      "name": "chk_is_bak",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_ap",
+      "name": "chk_is_ap",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_numbering",
+      "name": "chk_is_numbering",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_domusong",
+      "name": "chk_is_domusong",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_tagong",
+      "name": "chk_is_tagong",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_guidori",
+      "name": "chk_is_guidori",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_epoxy",
+      "name": "chk_is_epoxy",
+      "checked": false,
+      "type": "checkbox"
+    },
+    {
+      "id": "chk_is_dbak",
+      "name": "chk_is_dbak",
+      "checked": false,
+      "type": "checkbox"
+    }
+  ],
+  "priceEls": [
+    {
+      "sel": "#estimate",
+      "txt": "제작비 :\\4,200주문건 :1건합 계 :\\4,200부"
+    },
+    {
+      "sel": "#tbl_estimate",
+      "txt": "제작비 :\\4,200주문건 :1건합 계 :\\4,200부"
+    },
+    {
+      "sel": "#estimate_make",
+      "txt": "제작비 :\\4,200"
+    },
+    {
+      "sel": ".estimate_pay_price",
+      "txt": "결제액 :\\4,620"
+    },
+    {
+      "sel": "#total_price",
+      "txt": ""
+    },
+    {
+      "sel": "#pnl_estimate_left",
+      "txt": ""
+    },
+    {
+      "sel": "#total_price",
+      "txt": "결제금액 : 4,620원 (공급가 : 4,200원 + "
+    },
+    {
+      "sel": "#pnl_total_price_hide",
+      "txt": "결제금액 : 4,620원 (공급가 : 4,200원 + "
+    },
+    {
+      "sel": "#estimate_box_popup",
+      "txt": "파일압축방법 ① 2건 이상 접수할 때에는 파일명에 각 "
+    },
+    {
+      "sel": "#ui-dialog-title-pnl_estimate_print",
+      "txt": "견적서인쇄"
+    },
+    {
+      "sel": "#pnl_estimate_print",
+      "txt": "견적일 : 2026년 06월 08일 수 신 : 귀하 공"
+    },
+    {
+      "sel": "#pnl_estimate_printing_area",
+      "txt": "견적일 : 2026년 06월 08일 수 신 : 귀하 공"
+    },
+    {
+      "sel": "#print_estimate_tot",
+      "txt": "합계금액 \\4,200원 + 부가세 \\420원 + 배송비"
+    },
+    {
+      "sel": "#print_estimate_title",
+      "txt": "합계금액 \\4,200원 + 부가세 \\420원 + 배송비"
+    },
+    {
+      "sel": "#print_estimate_list01",
+      "txt": "재질 및 규격품명일반지명함재질스노우지 백색 250g규격"
+    }
+  ]
+}
