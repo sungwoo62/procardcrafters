@@ -5,10 +5,29 @@
  *
  * Endpoint: POST /estimate/estimate_goods/json_data
  * Params: t (timestamp), product=name, category_code
+ *
+ * ⚠️ OMO-2646 (2026-06-08): 성원애드피아가 사이트를 개편하면서 우리가 의존하던
+ * **비인증 공개 엔드포인트가 전면 폐지**됐다. 라이브 확인 결과:
+ *   - POST /estimate/estimate_goods/json_data → 404 (Apache Not Found)
+ *   - GET  /goods/goods_view/{cat}/{goodsCode} → 비로그인 404 (로그인 게이트)
+ *   - GET  /member/login → 404 (로그인은 홈페이지 모달, 필드 mem_login_id)
+ * 소형인쇄 카탈로그 자체는 adpiamall로 이전되지 않았고 swadpia.co.kr에 그대로 있으나,
+ * 견적/가격 조회가 모두 세션 인증 뒤로 들어갔다. 신규 엔드포인트는 인증 세션 없이는
+ * 확인 불가하여 미정. 그래서 아래 SWADPIA_PUBLIC_ENDPOINT_LIVE 가드로 죽은 엔드포인트
+ * 호출을 차단하고 DB 가격 폴백을 명시적으로 사용한다(소비자는 fetchSuccess:false 시
+ * 이미 DB 폴백 — ProductConfigurator useSwadpia 가드). 재연동 방향은 보드 결정 대기.
  */
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 const FETCH_TIMEOUT_MS = 15_000
+
+/**
+ * OMO-2646: 공개 견적 엔드포인트가 살아있는지 여부.
+ * 현재 false — 엔드포인트가 404로 폐지됐으므로 매 렌더/크론마다 무의미한 404 왕복과
+ * print_price_history 실패행 누적을 막기 위해 네트워크 호출을 건너뛴다.
+ * 신규 인증 기반 엔드포인트로 재연동되면 true 로 되돌리고 fetch 로직을 교체한다.
+ */
+const SWADPIA_PUBLIC_ENDPOINT_LIVE = false
 
 // ─── Type definitions ───────────────────────────────────────
 
@@ -157,6 +176,19 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
   const cached = cache.get(slug)
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return cached
+  }
+
+  // OMO-2646: 공개 엔드포인트 폐지 — 죽은 404 호출을 건너뛰고 즉시 폴백 사유 반환.
+  if (!SWADPIA_PUBLIC_ENDPOINT_LIVE) {
+    return {
+      categoryCode,
+      papers: [],
+      printEntries: [],
+      sizes: [],
+      fetchedAt: Date.now(),
+      fetchSuccess: false,
+      errorMessage: 'OMO-2646: swadpia public estimate endpoint retired (now auth-gated); using DB price fallback',
+    }
   }
 
   try {
