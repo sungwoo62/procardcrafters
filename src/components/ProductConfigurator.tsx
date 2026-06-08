@@ -6,6 +6,7 @@ import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCi
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import {
   finishingSurchargeKrw,
+  serializeFinishingParams,
   AREA_PRICED_FINISHINGS,
   FINISHING_DEFAULT_AREA_MM,
   FINISHING_SURCHARGE,
@@ -329,23 +330,13 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return total
   }, [finishings, areas, finishingUnitUsd])
 
-  // 선택된 후가공을 성원 자동발주 필드명으로 직렬화(URL 파라미터). expandFinishingToSwadpiaFields 가 소비.
-  const finishingParams = useMemo(() => {
-    const p: Record<string, string> = {}
-    if (finishings.size === 0) return p
-    p.finishing = Array.from(finishings).join(',')
-    const fa = areas['foil_stamp']
-    if (finishings.has('foil_stamp') && fa && fa.w > 0 && fa.h > 0) {
-      p.bak_x_size_1 = String(fa.w)
-      p.bak_y_size_1 = String(fa.h)
-    }
-    const ea = areas['deboss_emboss']
-    if (finishings.has('deboss_emboss') && ea && ea.w > 0 && ea.h > 0) {
-      p.ap_x_size_1 = String(ea.w)
-      p.ap_y_size_1 = String(ea.h)
-    }
-    return p
-  }, [finishings, areas])
+  // 선택된 후가공을 직렬화 키로 변환(URL 파라미터) — 단일소스 serializeFinishingParams 사용.
+  // 결제/SSR 의 finishingSurchargeKrwFromOptions 및 자동발주 expandFinishingToSwadpiaFields 가
+  // 동일 키 매핑으로 소비하므로 표시가↔청구가 키 드리프트가 불가능(OMO-2670).
+  const finishingParams = useMemo(
+    () => serializeFinishingParams(finishings, areas),
+    [finishings, areas],
+  )
 
   const totalUsd = itemPriceUsd + rushUsd + finishingSurchargeUsd + shippingUsd
   const productionWindow = formatProductionWindow(product, leadTier)

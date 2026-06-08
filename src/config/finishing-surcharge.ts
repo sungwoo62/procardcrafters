@@ -102,3 +102,30 @@ export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string,
   }
   return total
 }
+
+/**
+ * OMO-2670: 구성기(ProductConfigurator)의 선택 상태(finishings Set + 면적)를 직렬화 키로 변환.
+ * 결제·SSR 의 finishingSurchargeKrwFromOptions 가 읽는 것과 **동일한** AREA_KEYS_BY_FINISHING
+ * 매핑을 사용하므로 직렬화↔재계산 키 드리프트가 구조적으로 불가능하다(3경로 단일소스).
+ *
+ *  - finishing: 선택된 value 콤마 직렬화(예 "foil_stamp,die_cut").
+ *  - 면적비례 후가공: 유효 면적(w,h>0)일 때만 해당 면적키를 채움(미지정 시 소비측 기본면적).
+ *  - 선택 없음 → 빈 객체(기존 주문 무영향).
+ */
+export function serializeFinishingParams(
+  finishings: Iterable<string>,
+  areas: Record<string, { w: number; h: number }>,
+): Record<string, string> {
+  const values = Array.from(finishings)
+  if (values.length === 0) return {}
+  const params: Record<string, string> = { finishing: values.join(',') }
+  for (const value of values) {
+    const areaKeys = AREA_KEYS_BY_FINISHING[value]
+    const area = areas[value]
+    if (areaKeys && area && area.w > 0 && area.h > 0) {
+      params[areaKeys.x] = String(area.w)
+      params[areaKeys.y] = String(area.h)
+    }
+  }
+  return params
+}
