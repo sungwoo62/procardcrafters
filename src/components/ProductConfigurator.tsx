@@ -136,12 +136,16 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   function setArea(value: string, dim: 'w' | 'h', raw: string) {
     const n = parseInt(raw, 10)
+    // OMO-2667(WARN): 무효입력(빈칸/0)은 0 저장 대신 기본면적으로 클램프한다.
+    // 0 을 저장하면 가격은 기본면적(50×30)으로 표시되는데 직렬화는 `>0` 가드로 면적키를
+    // 드롭해 표시가↔직렬화(결제/발주) 면적이 불일치할 수 있다. 양쪽 모두 기본값으로 정합.
+    const fallback = dim === 'w' ? FINISHING_DEFAULT_AREA_MM.width : FINISHING_DEFAULT_AREA_MM.height
     setAreas((a) => ({
       ...a,
       [value]: {
         w: a[value]?.w ?? FINISHING_DEFAULT_AREA_MM.width,
         h: a[value]?.h ?? FINISHING_DEFAULT_AREA_MM.height,
-        [dim]: Number.isFinite(n) && n > 0 ? n : 0,
+        [dim]: Number.isFinite(n) && n > 0 ? n : fallback,
       },
     }))
   }

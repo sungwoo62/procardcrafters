@@ -59,3 +59,46 @@ export function finishingSurchargeKrw(value: string, areaMm2?: number): number {
   }
   return def.flatKrw ?? 0
 }
+
+// OMO-2667: 후가공 직렬화 키 — option_type 화이트리스트와 별개로 /order·/design 진입 시
+// 별도 복원·저장해야 하는 키들. ProductConfigurator.finishingParams 가 내보내는 키와 일치.
+//   - finishing: 콤마구분 value 목록(예 "foil_stamp,die_cut") — expandFinishingToSwadpiaFields 소비
+//   - bak_*/ap_* size: 박/형압 면적(mm). 결제 surcharge 면적비례 + 자동발주 면적단가에 사용.
+export const FINISHING_PASSTHROUGH_KEYS = [
+  'finishing',
+  'bak_x_size_1',
+  'bak_y_size_1',
+  'ap_x_size_1',
+  'ap_y_size_1',
+] as const
+
+/** 면적 키 → 해당 면적비례 후가공 value. (server surcharge 재계산용) */
+const AREA_KEYS_BY_FINISHING: Record<string, { x: string; y: string }> = {
+  foil_stamp: { x: 'bak_x_size_1', y: 'bak_y_size_1' },
+  deboss_emboss: { x: 'ap_x_size_1', y: 'ap_y_size_1' },
+}
+
+/**
+ * OMO-2667: selected_options(직렬화된 `finishing` + 면적키)에서 후가공 surcharge 총합(KRW)을
+ * 서버 권위로 재계산한다. 클라이언트 표시가를 신뢰하지 않고 결제·SSR 양쪽에서 동일 로직으로 산출.
+ *
+ *  - `finishing` 콤마분해 후 각 value 의 finishingSurchargeKrw 를 합산.
+ *  - 면적비례 후가공(박/형압)은 선택된 면적키(bak_x_size_1 등)로 areaMm2 산출, 없으면 기본면적.
+ *  - `finishing` 키가 없으면 0(후가공 미선택 — 회귀 없음).
+ */
+export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string, string>): number {
+  const raw = selectedOptions.finishing
+  if (!raw) return 0
+  let total = 0
+  for (const value of raw.split(',').map((v) => v.trim()).filter(Boolean)) {
+    let areaMm2: number | undefined
+    const areaKeys = AREA_KEYS_BY_FINISHING[value]
+    if (areaKeys) {
+      const w = Number(selectedOptions[areaKeys.x])
+      const h = Number(selectedOptions[areaKeys.y])
+      if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) areaMm2 = w * h
+    }
+    total += finishingSurchargeKrw(value, areaMm2)
+  }
+  return total
+}
