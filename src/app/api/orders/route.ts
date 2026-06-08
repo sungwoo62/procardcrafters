@@ -7,6 +7,7 @@ import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
 import { validateCode, applyCode } from '@/lib/promotion-engine'
 import { createAuthRouteClient } from '@/lib/supabase-server'
+import { buildExtraPricesKrw } from '@/config/finishing-surcharge'
 
 interface OrderItemInput {
   productId: string
@@ -108,10 +109,8 @@ export async function POST(request: NextRequest) {
       extra_price_krw: number
     }[]
 
-    const extraPricesKrw = Object.entries(item.selectedOptions).map(([type, value]) => {
-      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
-      return opt?.extra_price_krw ?? 0
-    })
+    // OMO-2672: 정확일치 단가 + 후가공 surcharge 를 단일 권위 빌더로 산출(이중청구·다중 과소청구 방지).
+    const extraPricesKrw = buildExtraPricesKrw(item.selectedOptions, productOptions)
 
     const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,

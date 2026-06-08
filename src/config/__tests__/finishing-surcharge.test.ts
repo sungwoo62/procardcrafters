@@ -3,6 +3,7 @@ import {
   finishingSurchargeKrw,
   finishingSurchargeKrwFromOptions,
   serializeFinishingParams,
+  buildExtraPricesKrw,
   FINISHING_DEFAULT_AREA_MM,
 } from '../finishing-surcharge'
 import { expandFinishingToSwadpiaFields } from '../swadpia-finishing-fields'
@@ -80,6 +81,70 @@ describe('finishingSurchargeKrwFromOptions — 결제 권위 재계산', () => {
     expect(finishingSurchargeKrwFromOptions({ finishing: 'unknown_xyz,die_cut' })).toBe(
       finishingSurchargeKrw('die_cut'),
     )
+  })
+})
+
+// OMO-2672: extraPricesKrw 빌더 통합 경로 — 결제(create-order)·SSR(order/page)·재주문(reorder)·
+// Stripe(orders) 4경로가 공유하는 buildExtraPricesKrw 가 후가공을 정확히 1회만 청구하는지 단언.
+// PR #30 회귀: option_type='finishing' 시드행(extra_price_krw≠0)이 존재해, 단일 후가공이
+// 정확일치 루프에서 시드행에 매칭(+가산) + finishingSurchargeKrwFromOptions(+재가산) = 2배 청구.
+describe('buildExtraPricesKrw — 후가공 단일 권위(이중청구 회귀 방지)', () => {
+  // 명함 시드(20260608000020_print_finishing_options.sql)를 재현한 productOptions.
+  const PRODUCT_OPTIONS = [
+    { option_type: 'paper', value: 'matte', extra_price_krw: 5000 },
+    { option_type: 'finishing', value: 'foil_stamp', extra_price_krw: 22300 }, // 시드행 — 이중청구 유발원
+    { option_type: 'finishing', value: 'deboss_emboss', extra_price_krw: 22300 },
+    { option_type: 'finishing', value: 'die_cut', extra_price_krw: 21500 },
+    { option_type: 'finishing', value: 'drilled_hole', extra_price_krw: 3800 },
+  ]
+  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+
+  it('(BLOCK) 단일 박 1개 → surcharge 1회만 청구(44,600 아님, 22,300)', () => {
+    const result = buildExtraPricesKrw({ finishing: 'foil_stamp' }, PRODUCT_OPTIONS)
+    // 기본면적(50×30) 박 surcharge = 22,300 (시드행 가산이 제외돼 2배 아님).
+    expect(sum(result)).toBe(finishingSurchargeKrw('foil_stamp', BASE_AREA_MM2))
+    expect(sum(result)).toBe(22300)
+    expect(sum(result)).not.toBe(44600)
+  })
+
+  it('단일 박 + 비후가공 옵션(용지) → 용지 단가 + 박 surcharge 1회', () => {
+    const result = buildExtraPricesKrw({ paper: 'matte', finishing: 'foil_stamp' }, PRODUCT_OPTIONS)
+    expect(sum(result)).toBe(5000 + 22300)
+  })
+
+  it('단일 박(고객면적 100×60) → 시드 정액 아닌 면적단가로 1회 청구', () => {
+    const result = buildExtraPricesKrw(
+      { finishing: 'foil_stamp', bak_x_size_1: '100', bak_y_size_1: '60' },
+      PRODUCT_OPTIONS,
+    )
+    expect(sum(result)).toBe(finishingSurchargeKrwFromOptions({
+      finishing: 'foil_stamp',
+      bak_x_size_1: '100',
+      bak_y_size_1: '60',
+    }))
+    // 시드 정액(22,300) 이 아니라 면적비례(~4×) 값이어야 한다.
+    expect(sum(result)).toBeGreaterThan(22300)
+  })
+
+  it('다중(박+도무송) → 각 surcharge 합 1회(회귀 없음)', () => {
+    const result = buildExtraPricesKrw({ finishing: 'foil_stamp,die_cut' }, PRODUCT_OPTIONS)
+    expect(sum(result)).toBe(
+      finishingSurchargeKrw('foil_stamp') + finishingSurchargeKrw('die_cut'),
+    )
+  })
+
+  it('후가공 미선택 → 비후가공 단가만(후가공 0 기여)', () => {
+    const result = buildExtraPricesKrw({ paper: 'matte' }, PRODUCT_OPTIONS)
+    expect(sum(result)).toBe(5000)
+  })
+
+  it('빌더 결과 = 구성기 표시가(비후가공 0 기준) — 구성기 Total 과 일치', () => {
+    for (const c of [['foil_stamp'], ['die_cut'], ['foil_stamp', 'deboss_emboss']]) {
+      const selected = { finishing: c.join(',') }
+      const built = sum(buildExtraPricesKrw(selected, PRODUCT_OPTIONS))
+      const configurator = configuratorKrwTotal(c, {})
+      expect(built).toBe(configurator)
+    }
   })
 })
 

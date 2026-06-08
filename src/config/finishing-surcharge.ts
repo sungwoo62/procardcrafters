@@ -72,6 +72,36 @@ export const FINISHING_PASSTHROUGH_KEYS = [
   'ap_y_size_1',
 ] as const
 
+/** 정확일치 단가 루프에서 제외해야 하는 후가공 키 집합(finishing + 면적키). */
+const FINISHING_EXACT_MATCH_EXCLUDE = new Set<string>(FINISHING_PASSTHROUGH_KEYS)
+
+/**
+ * OMO-2672: 주문 항목의 extra 단가(KRW) 배열을 산출하는 단일 권위 빌더.
+ * 결제(create-order)·SSR(order/page)·재주문(reorder)·Stripe(orders) 4경로가 동일 로직을
+ * 공유해 드리프트를 구조적으로 차단한다.
+ *
+ *  1) 정확일치(option_type+value) 단가 — 단, 후가공 키(finishing + 면적키)는 제외한다.
+ *     print_product_options 에 option_type='finishing' 시드행(extra_price_krw≠0)이 있어
+ *     제외하지 않으면 단일 후가공이 시드행에 매칭돼 가산된다.
+ *  2) 후가공 surcharge — finishingSurchargeKrwFromOptions 단독 권위로 재계산(다중·면적 반영).
+ *
+ * 두 단계가 분리돼 후가공이 정확히 1회만 청구된다(PR #30 이중청구 회귀 방지).
+ */
+export function buildExtraPricesKrw(
+  selectedOptions: Record<string, string>,
+  productOptions: Array<{ option_type: string; value: string; extra_price_krw: number }>,
+): number[] {
+  const extraPricesKrw = Object.entries(selectedOptions)
+    .filter(([type]) => type !== 'finishing' && !FINISHING_EXACT_MATCH_EXCLUDE.has(type))
+    .map(([type, value]) => {
+      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
+      return opt?.extra_price_krw ?? 0
+    })
+  const finishingKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+  if (finishingKrw > 0) extraPricesKrw.push(finishingKrw)
+  return extraPricesKrw
+}
+
 /** 면적 키 → 해당 면적비례 후가공 value. (server surcharge 재계산용) */
 const AREA_KEYS_BY_FINISHING: Record<string, { x: string; y: string }> = {
   foil_stamp: { x: 'bak_x_size_1', y: 'bak_y_size_1' },

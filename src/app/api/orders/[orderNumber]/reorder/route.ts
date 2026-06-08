@@ -7,6 +7,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { logOrderEvent } from '@/lib/order-events'
+import { buildExtraPricesKrw } from '@/config/finishing-surcharge'
 
 export async function POST(
   _request: NextRequest,
@@ -107,10 +108,8 @@ export async function POST(
     }[]
 
     const selectedOpts = item.selected_options as Record<string, string>
-    const extraPricesKrw = Object.entries(selectedOpts).map(([type, value]) => {
-      const opt = productOptions.find((o) => o.option_type === type && o.value === value)
-      return opt?.extra_price_krw ?? 0
-    })
+    // OMO-2672: 정확일치 단가 + 후가공 surcharge 를 단일 권위 빌더로 산출(이중청구·다중 과소청구 방지).
+    const extraPricesKrw = buildExtraPricesKrw(selectedOpts, productOptions)
 
     const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,

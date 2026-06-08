@@ -4,7 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { calculateItemPriceUsd } from '@/lib/pricing'
-import { FINISHING_PASSTHROUGH_KEYS, finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
+import { FINISHING_PASSTHROUGH_KEYS, buildExtraPricesKrw } from '@/config/finishing-surcharge'
 import OrderForm from './OrderForm'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -59,17 +59,14 @@ async function OrderPageContent({ searchParams }: PageProps) {
     if (params[key]) selectedOptions[key] = params[key]
   }
 
-  const extraPricesKrw = options
-    .filter((o) => selectedOptions[o.option_type] === o.value)
-    .map((o) => o.extra_price_krw)
-
-  // OMO-2667: 후가공 surcharge 를 서버 권위로 재계산해 합산(다중·면적 반영). 구성기 표시가와 일치.
-  const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+  // OMO-2672: 정확일치 단가 + 후가공 surcharge 를 단일 권위 빌더로 산출. 결제(create-order)와
+  // 동일 로직이므로 SSR 표시가↔청구가 드리프트가 없다(PR #30 이중청구 회귀 방지).
+  const extraPricesKrw = buildExtraPricesKrw(selectedOptions, options)
 
   const itemPriceUsd = calculateItemPriceUsd({
     basePriceKrw: product.base_price_krw,
     marginMultiplier: product.margin_multiplier,
-    extraPricesKrw: finishingSurchargeKrw > 0 ? [...extraPricesKrw, finishingSurchargeKrw] : extraPricesKrw,
+    extraPricesKrw,
     exchangeRate,
   })
 
