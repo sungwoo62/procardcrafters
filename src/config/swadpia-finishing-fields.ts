@@ -192,17 +192,26 @@ export const AUTO_ORDERABLE_FINISHINGS: string[] = SWADPIA_FINISHING_FIELDS.filt
 // 명시값을 기본값보다 우선한다.)
 //   - runtimeOnly 필드(bak_exist_dongpan_1 등)는 사이즈/보유여부 선택 후
 //     성원 페이지가 JS로 채우므로 여기서 비움.
+//   - 박/형압 단가는 박 면적(가로×세로 mm)에 비례한다(성원 calcuBakPrice:
+//     bak_x_size>0 && bak_y_size>0 이어야 단가 산출, OMO-2647 라이브 검증).
+//     면적 미지정 시 surcharge=0 이 되어 무료 발주가 되므로, 면적 입력 UI가
+//     붙기 전까지 보수적 기본 면적(50×30mm, 로고 영역 가정)을 채운다. 고객이
+//     selected_options 에 bak_x_size_1/bak_y_size_1 을 직접 넣으면 그 값이 우선.
 export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, string>> = {
   foil_stamp: {
     bak_section_1: 'BKS10', // 신규
     bak_side_1: 'BKD10',    // 전면
     bak_type_1: 'BKT02',    // 금박(유광)
     bak_compare_1: 'BAC10', // 내용같음
+    bak_x_size_1: '50',     // 박 면적 기본값(mm) — 면적 입력 UI 전 placeholder
+    bak_y_size_1: '30',
   },
   deboss_emboss: {
     ap_section_1: 'APS10', // 신규
     ap_type_1: 'APT10',    // 앞으로 돌출
     ap_compare_1: 'BAC10', // 내용같음
+    ap_x_size_1: '50',     // 형압 면적 기본값(mm) — 면적 입력 UI 전 placeholder
+    ap_y_size_1: '30',
   },
   die_cut: {
     domusong_section: 'DMS20', // 전체도무송
@@ -216,6 +225,10 @@ export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, strin
   numbering: {
     numbering_type: 'NBT10', // 일반넘버링
     numbering_kind: 'NBN11', // 6자리 1개 정매수
+    // numbering_kind 옵션은 정적 HTML 에 주석처리돼 있고 성원 settingNumberingKind()
+    // 가 런타임에 채운다(activateFinishings 가 chk 체크 후 자동 호출). 단, 일부 용지
+    // (스노우지 250/300g 등)는 calcuNumberingPrice 가 넘버링을 차단한다 — 그 상품/용지
+    // 에선 surcharge=0 이며 자동발주에서 자동 제외된다(OMO-2647 라이브 검증).
   },
 }
 

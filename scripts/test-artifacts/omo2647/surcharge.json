@@ -1,0 +1,112 @@
+{
+  "code": "CNC1000",
+  "goods": "GNC1001",
+  "loggedIn": true,
+  "baseline": {
+    "pay": 4620,
+    "total": 4200,
+    "pp": 0,
+    "label": "4,620"
+  },
+  "results": {
+    "drilled_hole": {
+      "ppType": "tagong",
+      "setRes": {
+        "tagong_num": "SET",
+        "tagong_size": "SET"
+      },
+      "log": [
+        "setIsPostpress ok",
+        "calcuEstimate ok"
+      ],
+      "chkExists": true,
+      "amtField": "tagong_amt",
+      "surcharge_wholesale": 3800,
+      "payBefore": 4620,
+      "payAfter": 8800,
+      "payDelta": 4180,
+      "ppAmtAfter": 3800,
+      "labelAfter": "8,800"
+    },
+    "foil_stamp": {
+      "ppType": "bak",
+      "setRes": {
+        "bak_section_1": "SET",
+        "bak_side_1": "SET",
+        "bak_type_1": "SET",
+        "bak_compare_1": "SET"
+      },
+      "log": [
+        "setIsPostpress ok",
+        "calcuEstimate ok"
+      ],
+      "chkExists": true,
+      "amtField": "bak_amt",
+      "surcharge_wholesale": 0,
+      "payBefore": 4620,
+      "payAfter": 4620,
+      "payDelta": 0,
+      "ppAmtAfter": 0,
+      "labelAfter": "4,620"
+    },
+    "deboss_emboss": {
+      "ppType": "ap",
+      "setRes": {
+        "ap_section_1": "SET",
+        "ap_type_1": "SET",
+        "ap_compare_1": "SET"
+      },
+      "log": [
+        "setIsPostpress ok",
+        "calcuEstimate ok"
+      ],
+      "chkExists": true,
+      "amtField": "ap_amt",
+      "surcharge_wholesale": 0,
+      "payBefore": 4620,
+      "payAfter": 4620,
+      "payDelta": 0,
+      "ppAmtAfter": 0,
+      "labelAfter": "4,620"
+    },
+    "die_cut": {
+      "ppType": "domusong",
+      "setRes": {
+        "domusong_section": "SET",
+        "domusong_type": "SET",
+        "domusong_num": "SET"
+      },
+      "log": [
+        "setIsPostpress ok",
+        "calcuEstimate ok"
+      ],
+      "chkExists": true,
+      "amtField": "domusong_amt",
+      "surcharge_wholesale": 21500,
+      "payBefore": 4620,
+      "payAfter": 28270,
+      "payDelta": 23650,
+      "ppAmtAfter": 21500,
+      "labelAfter": "28,270"
+    },
+    "numbering": {
+      "ppType": "numbering",
+      "setRes": {
+        "numbering_type": "SET",
+        "numbering_kind": "SET"
+      },
+      "log": [
+        "setIsPostpress ok",
+        "calcuEstimate ok"
+      ],
+      "chkExists": true,
+      "amtField": "numbering_amt",
+      "surcharge_wholesale": 0,
+      "payBefore": 4620,
+      "payAfter": 4620,
+      "payDelta": 0,
+      "ppAmtAfter": 0,
+      "labelAfter": "4,620"
+    }
+  }
+}

@@ -464,7 +464,102 @@ async function tryEnableSameDay(page: Page, maxDeltaPct: number): Promise<SameDa
   return { decision: 'rejected_too_expensive', basePrice, todayPrice, deltaPct }
 }
 
-async function selectOrderOptions(
+// ─── 후가공 인터랙티브 활성화 (OMO-2647) ───────────────────────────
+//
+// 단순 select 옵션과 달리, 후가공(박/형압/도무송/타공/넘버링)은 성원 goods_view
+// 에서 숨김 select 다. 값+change 만으로는 가격이 안 잡힌다(라이브 검증). 실제 단가는
+// 다음 시퀀스로만 잡힌다(omo2647-* RE 스크립트로 확정):
+//   1) chk_is_{type} 체크 + pnl_{type} 노출(활성화)
+//   2) section/type 등 select 설정 → 런타임 옵션 populate 유발
+//   3) 넘버링: chgNumberingType() 로 numbering_kind 동적 채움 후 선택
+//   4) setIsPostpress(type) → product1.pp{Type}('1' for bak/ap) → {type}_amt 산출
+//   5) product1.calcuEstimate() → pay_amt 합산
+// 박/형압은 면적(bak_x_size_1/bak_y_size_1)이 >0 이어야 단가가 잡힌다
+// (DEFAULT_FINISHING_FIELD_VALUES 에서 기본 면적 주입).
+const FINISHING_GROUPS: { ppType: string; prefix: string }[] = [
+  { ppType: 'bak', prefix: 'bak_' },
+  { ppType: 'ap', prefix: 'ap_' },
+  { ppType: 'domusong', prefix: 'domusong_' },
+  { ppType: 'tagong', prefix: 'tagong_' },
+  { ppType: 'numbering', prefix: 'numbering_' },
+]
+
+function isFinishingKey(key: string): boolean {
+  return FINISHING_GROUPS.some((g) => key.startsWith(g.prefix))
+}
+
+async function activateFinishings(
+  page: Page,
+  finishingOpts: Record<string, string>,
+): Promise<void> {
+  const keys = Object.keys(finishingOpts)
+  for (const g of FINISHING_GROUPS) {
+    const groupKeys = keys.filter((k) => k.startsWith(g.prefix))
+    if (groupKeys.length === 0) continue
+    const fieldMap: Record<string, string> = {}
+    for (const k of groupKeys) fieldMap[k] = finishingOpts[k]
+
+    await page.evaluate(
+      (params: { ppType: string; fieldMap: Record<string, string> }) => {
+        const { ppType, fieldMap } = params
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const w = window as any
+        const setField = (name: string, value: string) => {
+          const el = document.querySelector(`[name="${name}"]`) as
+            | HTMLSelectElement
+            | HTMLInputElement
+            | null
+          if (!el) return
+          if (el.tagName === 'SELECT') {
+            const sel = el as HTMLSelectElement
+            if (!Array.from(sel.options).some((o) => o.value === value)) return
+          }
+          el.value = value
+          el.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+        // 1. 활성화 (체크박스 + 패널 노출)
+        const chk = document.getElementById(`chk_is_${ppType}`) as HTMLInputElement | null
+        if (chk) chk.checked = true
+        const chk2 = document.getElementById(`chk_is_${ppType}2`) as HTMLInputElement | null
+        if (chk2) chk2.checked = true
+        try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
+        // 2. section/type/size 설정 (kind 는 populate 후 별도)
+        for (const [n, v] of Object.entries(fieldMap)) {
+          if (n.endsWith('_kind')) continue
+          setField(n, v)
+        }
+        // 3. 넘버링: type 변경 후 kind 동적 populate → 지정값(없으면 첫 옵션) 선택
+        if (ppType === 'numbering') {
+          try { w.chgNumberingType && w.chgNumberingType() } catch { /* */ }
+          const ke = document.querySelector('select[name="numbering_kind"]') as HTMLSelectElement | null
+          if (ke) {
+            const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
+            const want = fieldMap['numbering_kind']
+            const chosen = want && opts.includes(want) ? want : opts[0] || ''
+            if (chosen) {
+              ke.value = chosen
+              ke.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+          }
+        }
+        // 4. canonical 재계산 (올바른 seq 로 pp 메서드 호출 → {type}_amt)
+        try { w.setIsPostpress && w.setIsPostpress(ppType) } catch { /* */ }
+        try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+      },
+      { ppType: g.ppType, fieldMap },
+    )
+    await page.waitForTimeout(900)
+    // 런타임/AJAX populate 반영 후 합산 한 번 더 보장
+    await page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any
+      try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+    })
+    await page.waitForTimeout(200)
+  }
+}
+
+export async function selectOrderOptions(
   page: Page,
   options: Record<string, string>,
   quantity: number,
@@ -472,6 +567,9 @@ async function selectOrderOptions(
 ): Promise<void> {
   for (const [optKey, value] of Object.entries(options)) {
     if (optKey === 'quantity' || optKey === 'paper_qty') continue
+    // 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리.
+    // 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647).
+    if (isFinishingKey(optKey)) continue
     // canonical option_type → 성원 실제 select name 변환 (OMO-2634)
     const key = fieldAlias[optKey] ?? optKey
 
@@ -512,6 +610,16 @@ async function selectOrderOptions(
   }
 
   await page.waitForTimeout(1000)
+
+  // 후가공 인터랙티브 활성화 (OMO-2647) — 단순옵션·수량 설정 후 실행해야
+  // 사이즈/수량 의존 단가가 올바르게 잡힌다.
+  const finishingOpts: Record<string, string> = {}
+  for (const [k, v] of Object.entries(options)) {
+    if (isFinishingKey(k)) finishingOpts[k] = v
+  }
+  if (Object.keys(finishingOpts).length > 0) {
+    await activateFinishings(page, finishingOpts)
+  }
 }
 
 async function uploadViaPlupload(page: Page, filePath: string): Promise<string | null> {
