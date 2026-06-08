@@ -18,6 +18,7 @@ import {
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
+import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -4277,6 +4278,12 @@ export default function EditorClient({ product, options }: Props) {
         for (const opt of options) {
           const val = searchParams.get(opt.option_type)
           if (val) optionParams.set(opt.option_type, val)
+        }
+        // OMO-2667: 후가공 직렬화 키(finishing + 박/형압 면적)는 option_type 이 아니므로 위 루프가
+        // 누락한다. /order 가 surcharge·자동발주에 쓰도록 별도 패스스루.
+        for (const key of FINISHING_PASSTHROUGH_KEYS) {
+          const val = searchParams.get(key)
+          if (val) optionParams.set(key, val)
         }
         const optStr = optionParams.toString()
         window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
