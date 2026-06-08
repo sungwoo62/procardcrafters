@@ -4,6 +4,7 @@ import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
 import { calculateItemPriceUsd } from '@/lib/pricing'
+import { FINISHING_PASSTHROUGH_KEYS, finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
 import OrderForm from './OrderForm'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -51,9 +52,20 @@ async function OrderPageContent({ searchParams }: PageProps) {
     }
   }
 
-  const extraPricesKrw = options
-    .filter((o) => selectedOptions[o.option_type] === o.value)
-    .map((o) => o.extra_price_krw)
+  // OMO-2667: 후가공 집계키(finishing)·면적키(bak_*/ap_*)는 option_type 에 없으므로
+  // 별도 패스스루해 selected_options 에 보존(주문 저장·자동발주 면적단가 산출에 필수).
+  for (const key of FINISHING_PASSTHROUGH_KEYS) {
+    if (params[key]) selectedOptions[key] = params[key]
+  }
+
+  // OMO-2667: 후가공 surcharge(도매 KRW)를 가격에 합산 — 다중선택·면적을 서버에서 재계산.
+  const finishingKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+  const extraPricesKrw = [
+    ...options
+      .filter((o) => selectedOptions[o.option_type] === o.value)
+      .map((o) => o.extra_price_krw),
+    ...(finishingKrw > 0 ? [finishingKrw] : []),
+  ]
 
   const itemPriceUsd = calculateItemPriceUsd({
     basePriceKrw: product.base_price_krw,

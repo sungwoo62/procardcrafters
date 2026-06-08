@@ -15,6 +15,7 @@ import {
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
+import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 
@@ -4231,6 +4232,11 @@ export default function EditorClient({ product, options }: Props) {
         for (const opt of options) {
           const val = searchParams.get(opt.option_type)
           if (val) optionParams.set(opt.option_type, val)
+        }
+        // OMO-2667: 후가공 집계키·면적키는 option_type 이 아니므로 별도 패스스루.
+        for (const key of FINISHING_PASSTHROUGH_KEYS) {
+          const val = searchParams.get(key)
+          if (val) optionParams.set(key, val)
         }
         const optStr = optionParams.toString()
         window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`

@@ -3,6 +3,7 @@ import { createServerClient } from '@/lib/supabase'
 import { createAuthRouteClient } from '@/lib/supabase-server'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
+import { finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
 
@@ -97,6 +98,11 @@ export async function POST(request: NextRequest) {
       const opt = productOptions.find((o) => o.option_type === type && o.value === value)
       return opt?.extra_price_krw ?? 0
     })
+
+    // OMO-2667: 후가공 surcharge 는 정확일치(option_type+value)로 잡히지 않는다
+    // (집계키 finishing="a,b" · 면적키 bak_*/ap_*). 서버에서 권위적으로 재계산해 합산.
+    const finishingKrw = finishingSurchargeKrwFromOptions(item.selectedOptions)
+    if (finishingKrw > 0) extraPricesKrw.push(finishingKrw)
 
     const batchPriceUsd = calculateItemPriceUsd({
       basePriceKrw: product.base_price_krw,

@@ -488,6 +488,36 @@ function isFinishingKey(key: string): boolean {
   return FINISHING_GROUPS.some((g) => key.startsWith(g.prefix))
 }
 
+// OMO-2667: 구성기(ProductConfigurator)는 후가공을 집계키 finishing="foil_stamp,die_cut"
+// (catalog value 리스트)로 직렬화한다. 자동발주는 ppType prefix 키만 인식하므로
+// 집계키를 ppType 활성화 키로 확장해야 die_cut(도무송)·drilled_hole(타공) 등이 활성화된다.
+const FINISHING_VALUE_TO_PPTYPE: Record<string, string> = {
+  foil_stamp: 'bak',
+  deboss_emboss: 'ap',
+  die_cut: 'domusong',
+  drilled_hole: 'tagong',
+  numbering: 'numbering',
+}
+
+// 집계키 finishing="a,b" 를 ppType prefix 활성화키로 확장.
+// - 면적형(bak/ap)은 이미 직렬화된 bak_ / ap_ 면적키를 그대로 사용.
+// - 그룹에 prefix 키가 하나도 없으면(정액형 도무송/타공 등) 활성화 마커를 주입해
+//   activateFinishings 가 chk_is_{pp}+setIsPostpress 로 해당 후가공을 켜도록 한다.
+//   (마커 키는 실제 폼 필드와 충돌하지 않는 sentinel — setField 는 element 없으면 no-op.)
+function expandAggregateFinishing(options: Record<string, string>): Record<string, string> {
+  const out: Record<string, string> = { ...options }
+  const raw = out['finishing']
+  if (!raw) return out
+  delete out['finishing']
+  for (const v of raw.split(',').map((s) => s.trim()).filter(Boolean)) {
+    const pp = FINISHING_VALUE_TO_PPTYPE[v]
+    if (!pp) continue
+    const hasGroupKey = Object.keys(out).some((k) => k.startsWith(`${pp}_`))
+    if (!hasGroupKey) out[`${pp}_activate`] = '1'
+  }
+  return out
+}
+
 async function activateFinishings(
   page: Page,
   finishingOpts: Record<string, string>,
@@ -565,7 +595,10 @@ export async function selectOrderOptions(
   quantity: number,
   fieldAlias: Record<string, string> = {},
 ): Promise<void> {
-  for (const [optKey, value] of Object.entries(options)) {
+  // OMO-2667: 구성기의 후가공 집계키(finishing=...)를 ppType prefix 활성화키로 확장.
+  const normalized = expandAggregateFinishing(options)
+
+  for (const [optKey, value] of Object.entries(normalized)) {
     if (optKey === 'quantity' || optKey === 'paper_qty') continue
     // 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리.
     // 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647).
@@ -614,7 +647,7 @@ export async function selectOrderOptions(
   // 후가공 인터랙티브 활성화 (OMO-2647) — 단순옵션·수량 설정 후 실행해야
   // 사이즈/수량 의존 단가가 올바르게 잡힌다.
   const finishingOpts: Record<string, string> = {}
-  for (const [k, v] of Object.entries(options)) {
+  for (const [k, v] of Object.entries(normalized)) {
     if (isFinishingKey(k)) finishingOpts[k] = v
   }
   if (Object.keys(finishingOpts).length > 0) {

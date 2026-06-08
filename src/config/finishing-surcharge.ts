@@ -59,3 +59,48 @@ export function finishingSurchargeKrw(value: string, areaMm2?: number): number {
   }
   return def.flatKrw ?? 0
 }
+
+// ── OMO-2667: 소비측(주문/결제/자동발주) 배선용 공유 헬퍼 ──────────────────
+// 구성기는 후가공을 집계키 finishing="foil_stamp,die_cut" + 면적키 bak_*/ap_* 로
+// 직렬화한다. 이 키들은 print_product_options.option_type 에 없으므로 /order·/design
+// 진입 시 별도 패스스루가 필요하고, 결제 서버는 정확일치가 아니라 아래 헬퍼로 surcharge 를
+// 재계산해야 한다(다중선택 0청구·면적 무시 회귀 방지).
+
+/** /order·/design URL 및 selected_options 에서 별도 복원해야 하는 후가공 키 화이트리스트. */
+export const FINISHING_PASSTHROUGH_KEYS = [
+  'finishing',
+  'bak_x_size_1',
+  'bak_y_size_1',
+  'ap_x_size_1',
+  'ap_y_size_1',
+] as const
+
+/** 집계키 finishing="foil_stamp,die_cut" → 개별 value 배열. */
+export function parseFinishingValues(options: Record<string, string>): string[] {
+  const raw = options['finishing']
+  if (!raw) return []
+  return raw.split(',').map((s) => s.trim()).filter(Boolean)
+}
+
+/**
+ * selected_options 전체에서 후가공 surcharge 합계(도매 KRW)를 계산.
+ * 구성기 finishingSurchargeUsd 와 동일 규칙: 면적형(박/형압)은 bak_ / ap_ 입력 면적을
+ * 반영하고, 정액형(타공/도무송)은 flat 을 사용. 면적키 미존재 시 기본 면적(50×30).
+ */
+export function finishingSurchargeKrwFromOptions(options: Record<string, string>): number {
+  let total = 0
+  for (const v of parseFinishingValues(options)) {
+    let areaMm2: number | undefined
+    if (v === 'foil_stamp') {
+      const w = Number(options['bak_x_size_1'])
+      const h = Number(options['bak_y_size_1'])
+      if (w > 0 && h > 0) areaMm2 = w * h
+    } else if (v === 'deboss_emboss') {
+      const w = Number(options['ap_x_size_1'])
+      const h = Number(options['ap_y_size_1'])
+      if (w > 0 && h > 0) areaMm2 = w * h
+    }
+    total += finishingSurchargeKrw(v, areaMm2)
+  }
+  return total
+}
