@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
 import { toCategoryCode } from '@/lib/factory-queue'
+import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
 
 type RouteContext = { params: Promise<{ id: string }> }
 
@@ -89,7 +90,8 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
       print_order_item_id: item.id,
       status: 'pending',
       category_code: categoryCode,
-      options_snapshot: item.selected_options ?? {},
+      // 후가공(finishing)을 성원 발주 폼 필드코드로 확장(OMO-2635). finishing 키 없으면 무영향.
+      options_snapshot: expandFinishingToSwadpiaFields(item.selected_options ?? {}),
       quantity: item.quantity,
       file_url: approvedFile ? null : null, // resolved by script via storage_path
     }

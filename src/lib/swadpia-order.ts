@@ -16,6 +16,7 @@ import * as path from 'path'
 import * as fs from 'fs'
 import * as os from 'os'
 import type { Page, Frame, Response, BrowserType } from 'playwright'
+import { CATEGORY_MAP } from './swadpia'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
@@ -25,22 +26,41 @@ async function getChromium(): Promise<BrowserType> {
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
 // ─── Category → Swadpia goods_code mapping ────────────────────
-const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: string }> = {
-  'business-cards':              { categoryCode: 'CNC1000', goodsCode: '1' },
-  'premium-business-cards':     { categoryCode: 'CNC2000', goodsCode: '1' },
-  'premium-foil-cards':         { categoryCode: 'CNC3000', goodsCode: '1' },
-  'metallic-business-cards':    { categoryCode: 'CNC3000', goodsCode: '1' },
-  'letterpress-business-cards': { categoryCode: 'CNC4000', goodsCode: '1' },
-  'transparent-business-cards': { categoryCode: 'CNC5000', goodsCode: '1' },
-  'uv-business-cards':          { categoryCode: 'CNC6000', goodsCode: '1' },
-  'pearl-business-cards':       { categoryCode: 'CNC8000', goodsCode: '1' },
-  'stickers':               { categoryCode: 'CST1000', goodsCode: '1' },
-  'die-cut-stickers':       { categoryCode: 'CST2000', goodsCode: '1' },
-  'flyers':                 { categoryCode: 'CLF1000', goodsCode: '1' },
-  'brochures':              { categoryCode: 'CLF2000', goodsCode: '1' },
-  'postcards':              { categoryCode: 'CDP3000', goodsCode: '1' },
-  'posters':                { categoryCode: 'CPR2000', goodsCode: '1' },
-  'banners':                { categoryCode: 'CPR5000', goodsCode: '1' },
+//
+// 자동발주 라우팅 맵. 가격조회(swadpia.ts CATEGORY_MAP)와 단일 소스로 유지하기
+// 위해 CATEGORY_MAP 에서 파생한다. 이전엔 별도 15종 맵이라 나머지 23종이 누락돼
+// 자동발주 대상에서 빠졌다(OMO-2634). 이제 가격조회에 등록된 모든 제품이 동일하게
+// 자동발주 goods_view URL 로 라우팅된다.
+//
+// goodsCode 는 카테고리별 기본 상품(보통 '1'). '1' 이 아닌 예외만 아래에 등록.
+const SWADPIA_GOODS_CODE_OVERRIDES: Record<string, string> = {}
+
+const SWADPIA_GOODS_MAP: Record<string, { categoryCode: string; goodsCode: string }> =
+  Object.fromEntries(
+    Object.entries(CATEGORY_MAP).map(([slug, categoryCode]) => [
+      slug,
+      { categoryCode, goodsCode: SWADPIA_GOODS_CODE_OVERRIDES[slug] ?? '1' },
+    ]),
+  )
+
+// ─── 카테고리별 폼 필드명 차이 (OMO-2634 라이브 조사) ──────────────
+//
+// print_product_options 는 CHECK 제약상 canonical option_type 4종
+// (paper_code/print_color_type/paper_size/paper_qty)만 저장 가능하다.
+// 그러나 성원 goods_view 의 실제 select name 은 카드형(명함/스티커) 외
+// 제품군마다 다르다. 자동발주 시 canonical option_type 을 아래 맵으로
+// 실제 select name 으로 변환해야 옵션이 폼에 적용된다.
+// 키는 categoryCode (동일 카테고리 제품군이 폼을 공유하므로).
+// 매핑이 없는 카테고리(명함·스티커 CST5000/CST7000 등)는 1:1 → 변환 없음.
+const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
+  CEV1000: { paper_size: 'bongto_type', print_color_type: 'fside_color_amount' },        // 봉투
+  CLP1000: { print_color_type: 'fside_color_amount1', paper_size: 'small_size_type', paper_qty: 'paper_qty_select' }, // 라벨
+  CPR4000: { paper_code: 'cover_paper_code', print_color_type: 'binding_type', paper_qty: 'bundle_qty' }, // 책자
+  CCD1000: { print_color_type: 'print_method', paper_qty: 'paper_qty_select' },           // 벽걸이 캘린더
+  CCD2000: { print_color_type: 'print_method', paper_qty: 'paper_qty_select' },           // 탁상/미니 캘린더
+  CNR2000: { print_color_type: 'fside_color_amount', paper_size: 'code_size_type' },       // 서식/양식
+  CPR3000: { print_color_type: 'print_method' },                                          // 리플렛
+  CLF2000: { print_color_type: 'print_method' },                                          // 메뉴/브로슈어
 }
 
 // ─── Types ────────────────────────────────────────────────────
@@ -124,7 +144,8 @@ export async function placeSwadpiaOrder(
     // 2. 상품 페이지 + 옵션 선택
     await page.goto(goodsPageUrl, { waitUntil: 'networkidle', timeout: 30000 })
     await page.waitForTimeout(2000)
-    await selectOrderOptions(page, input.selectedOptions, input.quantity)
+    const fieldAlias = SWADPIA_FIELD_ALIAS[categoryCode] ?? {}
+    await selectOrderOptions(page, input.selectedOptions, input.quantity, fieldAlias)
 
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
@@ -443,13 +464,114 @@ async function tryEnableSameDay(page: Page, maxDeltaPct: number): Promise<SameDa
   return { decision: 'rejected_too_expensive', basePrice, todayPrice, deltaPct }
 }
 
-async function selectOrderOptions(
+// ─── 후가공 인터랙티브 활성화 (OMO-2647) ───────────────────────────
+//
+// 단순 select 옵션과 달리, 후가공(박/형압/도무송/타공/넘버링)은 성원 goods_view
+// 에서 숨김 select 다. 값+change 만으로는 가격이 안 잡힌다(라이브 검증). 실제 단가는
+// 다음 시퀀스로만 잡힌다(omo2647-* RE 스크립트로 확정):
+//   1) chk_is_{type} 체크 + pnl_{type} 노출(활성화)
+//   2) section/type 등 select 설정 → 런타임 옵션 populate 유발
+//   3) 넘버링: chgNumberingType() 로 numbering_kind 동적 채움 후 선택
+//   4) setIsPostpress(type) → product1.pp{Type}('1' for bak/ap) → {type}_amt 산출
+//   5) product1.calcuEstimate() → pay_amt 합산
+// 박/형압은 면적(bak_x_size_1/bak_y_size_1)이 >0 이어야 단가가 잡힌다
+// (DEFAULT_FINISHING_FIELD_VALUES 에서 기본 면적 주입).
+const FINISHING_GROUPS: { ppType: string; prefix: string }[] = [
+  { ppType: 'bak', prefix: 'bak_' },
+  { ppType: 'ap', prefix: 'ap_' },
+  { ppType: 'domusong', prefix: 'domusong_' },
+  { ppType: 'tagong', prefix: 'tagong_' },
+  { ppType: 'numbering', prefix: 'numbering_' },
+]
+
+function isFinishingKey(key: string): boolean {
+  return FINISHING_GROUPS.some((g) => key.startsWith(g.prefix))
+}
+
+async function activateFinishings(
+  page: Page,
+  finishingOpts: Record<string, string>,
+): Promise<void> {
+  const keys = Object.keys(finishingOpts)
+  for (const g of FINISHING_GROUPS) {
+    const groupKeys = keys.filter((k) => k.startsWith(g.prefix))
+    if (groupKeys.length === 0) continue
+    const fieldMap: Record<string, string> = {}
+    for (const k of groupKeys) fieldMap[k] = finishingOpts[k]
+
+    await page.evaluate(
+      (params: { ppType: string; fieldMap: Record<string, string> }) => {
+        const { ppType, fieldMap } = params
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const w = window as any
+        const setField = (name: string, value: string) => {
+          const el = document.querySelector(`[name="${name}"]`) as
+            | HTMLSelectElement
+            | HTMLInputElement
+            | null
+          if (!el) return
+          if (el.tagName === 'SELECT') {
+            const sel = el as HTMLSelectElement
+            if (!Array.from(sel.options).some((o) => o.value === value)) return
+          }
+          el.value = value
+          el.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+        // 1. 활성화 (체크박스 + 패널 노출)
+        const chk = document.getElementById(`chk_is_${ppType}`) as HTMLInputElement | null
+        if (chk) chk.checked = true
+        const chk2 = document.getElementById(`chk_is_${ppType}2`) as HTMLInputElement | null
+        if (chk2) chk2.checked = true
+        try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
+        // 2. section/type/size 설정 (kind 는 populate 후 별도)
+        for (const [n, v] of Object.entries(fieldMap)) {
+          if (n.endsWith('_kind')) continue
+          setField(n, v)
+        }
+        // 3. 넘버링: type 변경 후 kind 동적 populate → 지정값(없으면 첫 옵션) 선택
+        if (ppType === 'numbering') {
+          try { w.chgNumberingType && w.chgNumberingType() } catch { /* */ }
+          const ke = document.querySelector('select[name="numbering_kind"]') as HTMLSelectElement | null
+          if (ke) {
+            const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
+            const want = fieldMap['numbering_kind']
+            const chosen = want && opts.includes(want) ? want : opts[0] || ''
+            if (chosen) {
+              ke.value = chosen
+              ke.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+          }
+        }
+        // 4. canonical 재계산 (올바른 seq 로 pp 메서드 호출 → {type}_amt)
+        try { w.setIsPostpress && w.setIsPostpress(ppType) } catch { /* */ }
+        try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+      },
+      { ppType: g.ppType, fieldMap },
+    )
+    await page.waitForTimeout(900)
+    // 런타임/AJAX populate 반영 후 합산 한 번 더 보장
+    await page.evaluate(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const w = window as any
+      try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+    })
+    await page.waitForTimeout(200)
+  }
+}
+
+export async function selectOrderOptions(
   page: Page,
   options: Record<string, string>,
   quantity: number,
+  fieldAlias: Record<string, string> = {},
 ): Promise<void> {
-  for (const [key, value] of Object.entries(options)) {
-    if (key === 'quantity') continue
+  for (const [optKey, value] of Object.entries(options)) {
+    if (optKey === 'quantity' || optKey === 'paper_qty') continue
+    // 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리.
+    // 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647).
+    if (isFinishingKey(optKey)) continue
+    // canonical option_type → 성원 실제 select name 변환 (OMO-2634)
+    const key = fieldAlias[optKey] ?? optKey
 
     // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
     const selectEl = await page.$(`select[name="${key}"]`)
@@ -477,9 +599,10 @@ async function selectOrderOptions(
     }
   }
 
-  // 수량 (paper_qty select)
+  // 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
   if (quantity) {
-    const qtySelect = await page.$('select[name="paper_qty"]')
+    const qtyField = fieldAlias['paper_qty'] ?? 'paper_qty'
+    const qtySelect = await page.$(`select[name="${qtyField}"]`)
     if (qtySelect) {
       await qtySelect.selectOption(String(quantity))
       await page.waitForTimeout(300)
@@ -487,6 +610,16 @@ async function selectOrderOptions(
   }
 
   await page.waitForTimeout(1000)
+
+  // 후가공 인터랙티브 활성화 (OMO-2647) — 단순옵션·수량 설정 후 실행해야
+  // 사이즈/수량 의존 단가가 올바르게 잡힌다.
+  const finishingOpts: Record<string, string> = {}
+  for (const [k, v] of Object.entries(options)) {
+    if (isFinishingKey(k)) finishingOpts[k] = v
+  }
+  if (Object.keys(finishingOpts).length > 0) {
+    await activateFinishings(page, finishingOpts)
+  }
 }
 
 async function uploadViaPlupload(page: Page, filePath: string): Promise<string | null> {

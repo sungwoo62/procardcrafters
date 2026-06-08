@@ -1,0 +1,160 @@
+[
+  {
+    "slug": "admin-envelopes",
+    "code": "CEV1000",
+    "status": "fetch_fail",
+    "error": "TypeError: (d.paper_info ?? []).map is not a function"
+  },
+  {
+    "slug": "barcode-labels",
+    "code": "CLP1000",
+    "status": "fix",
+    "paper_code": "match(3)",
+    "paper_size": "mismatch:SST01,SST50"
+  },
+  {
+    "slug": "catalogs",
+    "code": "CPR4000",
+    "status": "ok",
+    "paper_code": "match(3)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "desk-calendars",
+    "code": "CCD2000",
+    "status": "ok",
+    "paper_code": "match(3)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "food-labels",
+    "code": "CLP1000",
+    "status": "fix",
+    "paper_code": "match(2)",
+    "paper_size": "mismatch:SST01,SST50"
+  },
+  {
+    "slug": "gusset-envelopes",
+    "code": "CEV1000",
+    "status": "fetch_fail",
+    "error": "TypeError: (d.paper_info ?? []).map is not a function"
+  },
+  {
+    "slug": "holographic-stickers",
+    "code": "CST5000",
+    "status": "ok",
+    "paper_code": "match(4)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "invoice-forms",
+    "code": "CNR2000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(2)"
+  },
+  {
+    "slug": "leaflets",
+    "code": "CPR3000",
+    "status": "ok",
+    "paper_code": "match(4)",
+    "paper_size": "match(4)"
+  },
+  {
+    "slug": "menus",
+    "code": "CLF2000",
+    "status": "ok",
+    "paper_code": "match(4)",
+    "paper_size": "match(4)"
+  },
+  {
+    "slug": "mini-banners",
+    "code": "CPR5000",
+    "status": "fix",
+    "paper_code": "mismatch:BNR510W00",
+    "paper_size": "mismatch:SZT20"
+  },
+  {
+    "slug": "mini-calendars",
+    "code": "CCD2000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(2)"
+  },
+  {
+    "slug": "ncr-forms",
+    "code": "CNR2000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(2)"
+  },
+  {
+    "slug": "perfect-bound-booklet",
+    "code": "CPR4000",
+    "status": "ok",
+    "paper_code": "match(3)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "price-labels",
+    "code": "CLP1000",
+    "status": "fix",
+    "paper_code": "match(2)",
+    "paper_size": "mismatch:SST01,SST20"
+  },
+  {
+    "slug": "quotation-forms",
+    "code": "CNR2000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(2)"
+  },
+  {
+    "slug": "receipts",
+    "code": "CNR2000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "roll-stickers",
+    "code": "CST7000",
+    "status": "ok",
+    "paper_code": "match(1)",
+    "paper_size": "match(1)"
+  },
+  {
+    "slug": "rollup-banners",
+    "code": "CPR5000",
+    "status": "fix",
+    "paper_code": "mismatch:BNR510W00",
+    "paper_size": "mismatch:SZT20"
+  },
+  {
+    "slug": "saddle-stitch-booklet",
+    "code": "CPR4000",
+    "status": "ok",
+    "paper_code": "match(2)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "standard-envelopes",
+    "code": "CEV1000",
+    "status": "fetch_fail",
+    "error": "TypeError: (d.paper_info ?? []).map is not a function"
+  },
+  {
+    "slug": "wall-calendars",
+    "code": "CCD1000",
+    "status": "ok",
+    "paper_code": "match(3)",
+    "paper_size": "match(3)"
+  },
+  {
+    "slug": "x-banners",
+    "code": "CPR5000",
+    "status": "fix",
+    "paper_code": "mismatch:BNR440W00,BNR510W00",
+    "paper_size": "mismatch:SZT20"
+  }
+]
