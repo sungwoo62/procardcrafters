@@ -3986,22 +3986,108 @@ export default function EditorClient({ product, options }: Props) {
     return dataUrl
   }
 
+  // OMO-2706: M100 별색 후가공판 — data.finish 켜진 오브젝트만 단색 M100(C0 M100 Y0 K0)/
+  // 배경 백색으로 렌더. 크롭 지오메트리는 getExportDataUrl 와 픽셀 동일 → 디자인판과 정합 일치.
+  // 후가공 오브젝트가 없으면 '' 반환(별색판 미생성).
+  function getFinishPlateDataUrl(targetDpi = 300, includeBleed = true): string {
+    const canvas = fabricRef.current
+    if (!canvas) return ''
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs = canvas.getObjects() as any[]
+    const finishObjs = objs.filter((o) => o.data?.finish && o.visible !== false)
+    if (finishObjs.length === 0) return ''
+
+    // 원복용 상태 스냅샷
+    const prevBg = canvas.backgroundColor
+    const saved = objs.map((o) => ({
+      o,
+      visible: o.visible,
+      fill: o.fill,
+      stroke: o.stroke,
+      opacity: o.opacity,
+      shadow: o.shadow,
+    }))
+    const finishSet = new Set(finishObjs)
+    for (const o of objs) {
+      if (finishSet.has(o)) {
+        // 별색 실루엣: M100 단색 채움, 불투명, 그림자 제거(망점 방지 — 1도 스팟).
+        o.set({ opacity: 1, shadow: null })
+        o.set('fill', M100_RGB_HEX)
+        if (o.stroke) o.set('stroke', M100_RGB_HEX)
+      } else {
+        // 디자인 요소·가이드(트림/블리드/세이프)는 별색판에서 숨김.
+        o.set('visible', false)
+      }
+    }
+    canvas.backgroundColor = '#FFFFFF'
+
+    // ── 크롭 지오메트리: getExportDataUrl 와 동일하게 계산 ──
+    const bleedPx = mmToPx(dims.bleedMm, scale)
+    const padPx = mmToPx(PASTEBOARD_MM, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+    const exportLeft = padPx + (includeBleed ? 0 : bleedPx)
+    const exportTop = padPx + (includeBleed ? 0 : bleedPx)
+    const exportW = includeBleed ? trimW + 2 * bleedPx : trimW
+    const exportH = includeBleed ? trimH + 2 * bleedPx : trimH
+    const exportWmm = includeBleed ? dims.widthMm + 2 * dims.bleedMm : dims.widthMm
+    const exportHmm = includeBleed ? dims.heightMm + 2 * dims.bleedMm : dims.heightMm
+    const MM_PER_INCH = 25.4
+    const needW = (exportWmm / MM_PER_INCH) * targetDpi
+    const needH = (exportHmm / MM_PER_INCH) * targetDpi
+    const multiplier = Math.max(1, Math.ceil(Math.max(needW / exportW, needH / exportH)))
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const vpt: any = [...(canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0])]
+    canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
+    const dataUrl = canvas.toDataURL({
+      format: 'png',
+      left: exportLeft,
+      top: exportTop,
+      width: exportW,
+      height: exportH,
+      multiplier,
+    })
+    canvas.setViewportTransform(vpt)
+
+    // 원복
+    for (const s of saved) {
+      s.o.set({ visible: s.visible, fill: s.fill, stroke: s.stroke, opacity: s.opacity, shadow: s.shadow })
+    }
+    canvas.backgroundColor = prevBg
+    canvas.renderAll()
+    return dataUrl
+  }
+
   function exportPng() {
     // PNG 미리보기는 trim 영역만 (블리드 제외) — 디자인 시안 확인용
     const dataUrl = getExportDataUrl(150, false)
     if (!dataUrl) return
+    const code = generateDownloadCode()
     const link = document.createElement('a')
-    link.download = `pcc-${product.slug}-${generateDownloadCode()}.png`
+    link.download = `pcc-${product.slug}-${code}.png`
     link.href = dataUrl
     link.click()
+    // OMO-2706: 박이 있으면 M100 별색판도 동일 기준으로 함께 내려받는다.
+    const finishUrl = getFinishPlateDataUrl(150, false)
+    if (finishUrl) {
+      const fl = document.createElement('a')
+      fl.download = `pcc-${product.slug}-${code}-m100.png`
+      fl.href = finishUrl
+      fl.click()
+    }
   }
 
   // ── Phase 6: PDF export ────────────────────────────────────────────────────
 
+  // OMO-2706: 디자인판 + (박이 있으면) M100 별색 후가공판을 단일 PDF로 산출.
+  // 두 페이지는 동일 치수/블리드/재단선을 공유 → 인쇄소 정합(레지스트레이션) 픽셀 일치.
+  // 단일 파일·1슬롯(OMO-2704 결정 준수): 페이지1=디자인(CMYK), 페이지2=M100 별색 1도.
   async function buildPdfBlob(): Promise<Blob> {
-    const dataUrl = getExportDataUrl(300, true)
-    if (!dataUrl) throw new Error('Export failed')
-    const { PDFDocument, rgb } = await import('pdf-lib')
+    const designUrl = getExportDataUrl(300, true)
+    if (!designUrl) throw new Error('Export failed')
+    const finishUrl = getFinishPlateDataUrl(300, true) // 박 없으면 ''
+    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
     const pdfDoc = await PDFDocument.create()
     const MM_PER_PT = 2.8346
     const bleedPt = dims.bleedMm * MM_PER_PT
@@ -4009,16 +4095,10 @@ export default function EditorClient({ product, options }: Props) {
     const trimHpt = dims.heightMm * MM_PER_PT
     const pageW = trimWpt + 2 * bleedPt
     const pageH = trimHpt + 2 * bleedPt
-    const page = pdfDoc.addPage([pageW, pageH])
 
-    const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
-    const image = await pdfDoc.embedPng(pngBytes)
-    page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH })
-
-    // 재단선(crop marks): 4모서리에 trim 경계 외부로 가는 검정선
+    // 재단선(crop marks) 지오메트리 — 두 페이지 공통(정합 일치).
     const markLenPt = Math.max(bleedPt, 3 * MM_PER_PT)
     const markStroke = 0.25
-    const markColor = rgb(0, 0, 0)
     const trimL = bleedPt
     const trimB = bleedPt
     const trimR = bleedPt + trimWpt
@@ -4028,17 +4108,33 @@ export default function EditorClient({ product, options }: Props) {
     const outB = Math.max(0, trimB - markLenPt)
     const outT = Math.min(pageH, trimT + markLenPt)
 
-    const drawMark = (x1: number, y1: number, x2: number, y2: number) => {
-      page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: markStroke, color: markColor })
+    const helv = await pdfDoc.embedFont(StandardFonts.Helvetica)
+
+    // 한 페이지(이미지 + 재단선 + 선택적 라벨) 추가. 라벨은 블리드(재단 폐기) 구간에만.
+    const addPlate = async (dataUrl: string, label?: string) => {
+      const page = pdfDoc.addPage([pageW, pageH])
+      const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
+      const image = await pdfDoc.embedPng(pngBytes)
+      page.drawImage(image, { x: 0, y: 0, width: pageW, height: pageH })
+      const markColor = rgb(0, 0, 0)
+      const drawMark = (x1: number, y1: number, x2: number, y2: number) => {
+        page.drawLine({ start: { x: x1, y: y1 }, end: { x: x2, y: y2 }, thickness: markStroke, color: markColor })
+      }
+      drawMark(outL, trimB, trimL, trimB)
+      drawMark(trimL, outB, trimL, trimB)
+      drawMark(trimR, trimB, outR, trimB)
+      drawMark(trimR, outB, trimR, trimB)
+      drawMark(outL, trimT, trimL, trimT)
+      drawMark(trimL, trimT, trimL, outT)
+      drawMark(trimR, trimT, outR, trimT)
+      drawMark(trimR, trimT, trimR, outT)
+      if (label) {
+        page.drawText(label, { x: 1.5, y: 1.5, size: 4, font: helv, color: rgb(0.92, 0, 0.55) })
+      }
     }
-    drawMark(outL, trimB, trimL, trimB)
-    drawMark(trimL, outB, trimL, trimB)
-    drawMark(trimR, trimB, outR, trimB)
-    drawMark(trimR, outB, trimR, trimB)
-    drawMark(outL, trimT, trimL, trimT)
-    drawMark(trimL, trimT, trimL, outT)
-    drawMark(trimR, trimT, outR, trimT)
-    drawMark(trimR, trimT, trimR, outT)
+
+    await addPlate(designUrl)
+    if (finishUrl) await addPlate(finishUrl, 'M100 SPOT PLATE / FINISH ONLY (C0 M100 Y0 K0)')
 
     const pdfBytes = await pdfDoc.save()
     return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
@@ -5225,7 +5321,7 @@ export default function EditorClient({ product, options }: Props) {
                   )}
                 </div>
                 <p className="text-[10px] text-gray-400 leading-snug border-t border-gray-100 pt-2">
-                  박은 캔버스에 금박 시머 아웃라인으로 미리보기됩니다. 실제 박 별색판은 주문 시 분리 출력됩니다.
+                  박은 캔버스에 금박 시머 아웃라인으로 미리보기됩니다. PDF 내보내기 시 디자인판과 정합이 일치하는 M100 별색 후가공판이 같은 파일에 함께 출력됩니다.
                 </p>
               </div>
             )
