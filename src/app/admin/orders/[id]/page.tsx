@@ -1,5 +1,8 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { useParams } from 'next/navigation'
 import { OrderStatus, DesignProofStatus } from '@/types/database'
@@ -628,11 +631,11 @@ export default function AdminOrderDetailPage() {
         {/* 이벤트 타임라인 */}
         <div className="bg-white rounded-lg shadow p-5">
           <h2 className="font-semibold text-gray-700 mb-4">이벤트 기록</h2>
-          {order.print_order_events.length === 0 ? (
+          {(order.print_order_events ?? []).length === 0 ? (
             <p className="text-sm text-gray-400">기록된 이벤트가 없습니다.</p>
           ) : (
             <ol className="relative border-l border-gray-200 ml-3 space-y-6">
-              {order.print_order_events.map((ev) => (
+              {(order.print_order_events ?? []).map((ev) => (
                 <li key={ev.id} className="ml-4">
                   <div className={`absolute -left-1.5 mt-1.5 w-3 h-3 rounded-full border border-white ${EVENT_TYPE_DOTS[ev.event_type]}`} />
                   <div className="flex items-start justify-between gap-4">
