@@ -151,3 +151,14 @@ export const FINISHING_CATALOG: FinishingDef[] = [
 export const FINISHING_BY_VALUE: Record<string, FinishingDef> = Object.fromEntries(
   FINISHING_CATALOG.map(f => [f.value, f])
 )
+
+// ── OMO-2705: 요소(element) 단위 후가공 (Vistaprint식) ─────────────────────────
+// 에디터에서 텍스트/벡터 요소에 직접 켜는 후가공 종류. 카탈로그 value 재사용.
+// MVP = 박(foil_stamp) 1종. 새 종류 추가 시 ELEMENT_FINISH_KINDS 에만 더하면 됨.
+export type FinishKind = 'foil_stamp'
+
+/** 에디터 Finishes 패널에 노출되는 요소 후가공 목록 (MVP: 박만). */
+export const ELEMENT_FINISH_KINDS: FinishKind[] = ['foil_stamp']
+
+/** 박 기본 별색 — 설계안 §2 A1 (M100 별색판). */
+export const DEFAULT_FOIL_SPOT_COLOR = 'M100'

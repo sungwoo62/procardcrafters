@@ -13,8 +13,10 @@ import {
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
   ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup, Loader2,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
+  Monitor, Upload, Sparkles,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
+import { FINISHING_BY_VALUE, ELEMENT_FINISH_KINDS, DEFAULT_FOIL_SPOT_COLOR, type FinishKind } from '@/config/finishing-catalog'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 
@@ -52,6 +54,12 @@ interface ImageQuality {
   fileBytes: number
 }
 
+// OMO-2705: 오브젝트 data.finish 모델 — 요소 단위 후가공 지정.
+interface FinishData {
+  kind: FinishKind
+  spotColor: string
+}
+
 interface LayerInfo {
   id: string
   name: string
@@ -59,6 +67,8 @@ interface LayerInfo {
   visible: boolean
   locked: boolean
   imageQuality?: ImageQuality
+  /** OMO-2705: 켜진 후가공 (없으면 undefined). 사진(image)에는 적용 불가. */
+  finish?: FinishData
 }
 
 interface EditorDimensions {
@@ -652,7 +662,7 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
-  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo'>('yourinfo')
+  const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo' | 'finishes'>('yourinfo')
   const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
   const allFormFields: (FieldDef & { required: boolean })[] =
     productFields.map(f => ({ ...f, required: f.required ?? true }))
@@ -834,7 +844,7 @@ export default function EditorClient({ product, options }: Props) {
     const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o) && o.data?.role !== 'crop')
     const layerList: LayerInfo[] = [...objs].reverse().map((o: {
       type?: string
-      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality }
+      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality; finish?: FinishData }
       visible?: boolean
       selectable?: boolean
     }) => ({
@@ -844,6 +854,7 @@ export default function EditorClient({ product, options }: Props) {
       visible: o.visible ?? true,
       locked: !(o.selectable ?? true),
       imageQuality: o.type === 'image' ? (o.data?.imageQuality ?? undefined) : undefined,
+      finish: o.data?.finish ?? undefined,
     }))
     setLayers(layerList)
   }
@@ -3059,6 +3070,13 @@ export default function EditorClient({ product, options }: Props) {
       canvas.on('selection:updated', () => syncSelected(canvas))
       canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null) })
 
+      // OMO-2705: 박 오버레이 — 화면 ctx 에서만 그린다 (export ctx 는 제외).
+      canvas.on('after:render', (opt: { ctx?: CanvasRenderingContext2D }) => {
+        const ctx = opt?.ctx
+        if (!ctx || ctx !== canvas.getContext()) return
+        renderFinishOverlays(canvas, ctx)
+      })
+
       canvas.on('object:modified', () => {
         syncLayers(canvas)
         syncSelected(canvas)
@@ -3671,6 +3689,65 @@ export default function EditorClient({ product, options }: Props) {
       canvas.renderAll()
       syncSelected(canvas)
     }
+  }
+
+  // ── OMO-2705: 요소 단위 후가공(박) ─────────────────────────────────────────
+  // Finishes 탭에서 요소 체크 → 오브젝트 data.finish on/off. 사진(raster)에는 박
+  // 금지 — 벡터/텍스트만 후가공 가능 (Done 기준 raster 가드).
+  function toggleElementFinish(id: string, kind: FinishKind = 'foil_stamp') {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
+    if (!obj) return
+    if (obj.type === 'image') {
+      showUploadToast('사진에는 박을 적용할 수 없어요 — 텍스트·도형 요소만 가능합니다.')
+      return
+    }
+    const cur = obj.data?.finish as FinishData | undefined
+    const next: FinishData | undefined = cur ? undefined : { kind, spotColor: DEFAULT_FOIL_SPOT_COLOR }
+    obj.set('data', { ...obj.data, finish: next })
+    canvas.requestRenderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+  }
+
+  // 박 켜진 오브젝트에 비파괴 금박 오버레이(시머 아웃라인) 렌더.
+  // after:render 에서 화면 ctx 에만 그린다 — 인쇄 export(toDataURL)에는 칠하지 않음.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function renderFinishOverlays(canvas: any, ctx: CanvasRenderingContext2D) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs = canvas.getObjects().filter((o: any) => o.data?.finish && o.visible !== false)
+    if (objs.length === 0) return
+    const vpt = canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0]
+    const zoom = canvas.getZoom?.() || 1
+    ctx.save()
+    ctx.transform(vpt[0], vpt[1], vpt[2], vpt[3], vpt[4], vpt[5])
+    for (const o of objs) {
+      o.setCoords()
+      const c = o.getCoords()
+      if (!c || c.length < 4) continue
+      ctx.beginPath()
+      ctx.moveTo(c[0].x, c[0].y)
+      ctx.lineTo(c[1].x, c[1].y)
+      ctx.lineTo(c[2].x, c[2].y)
+      ctx.lineTo(c[3].x, c[3].y)
+      ctx.closePath()
+      // 금박 틴트
+      ctx.fillStyle = 'rgba(212,175,55,0.20)'
+      ctx.fill()
+      // 시머 아웃라인 — 외곽 골드 + 안쪽 밝은 점선
+      ctx.lineJoin = 'round'
+      ctx.setLineDash([])
+      ctx.lineWidth = 2.5 / zoom
+      ctx.strokeStyle = '#b8860b'
+      ctx.stroke()
+      ctx.lineWidth = 1.5 / zoom
+      ctx.strokeStyle = '#ffe27a'
+      ctx.setLineDash([6 / zoom, 4 / zoom])
+      ctx.stroke()
+    }
+    ctx.restore()
   }
 
   function toggleVisibility(id: string) {
@@ -4675,6 +4752,7 @@ export default function EditorClient({ product, options }: Props) {
               { key: 'yourinfo',   icon: FileText,       label: 'Your Info' },
               { key: 'templates',  icon: LayoutTemplate, label: 'Tmpl' },
               { key: 'shapes',     icon: Star,           label: 'Shapes' },
+              { key: 'finishes',   icon: Sparkles,       label: 'Finishes' },
               { key: 'layers',     icon: Layers,         label: 'Layers' },
               { key: 'properties', icon: null,           label: 'Props' },
             ] as const).map(({ key, icon: Icon, label }) => (
@@ -5017,6 +5095,79 @@ export default function EditorClient({ product, options }: Props) {
               )}
             </div>
           )}
+
+          {/* OMO-2705: Finishes panel — 요소 단위 후가공(박 MVP) */}
+          {activePanel === 'finishes' && (() => {
+            const foilCount = layers.filter(l => l.finish?.kind === 'foil_stamp').length
+            return (
+              <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs">
+                {ELEMENT_FINISH_KINDS.map(kind => {
+                  const def = FINISHING_BY_VALUE[kind]
+                  if (!def) return null
+                  return (
+                    <div key={kind} className="rounded-lg border border-amber-200 bg-gradient-to-br from-amber-50 to-yellow-50 overflow-hidden">
+                      <div className="flex items-center gap-2 p-2.5">
+                        <div className="w-9 h-9 rounded-md bg-gradient-to-br from-yellow-300 to-amber-500 flex items-center justify-center shrink-0 shadow-inner">
+                          <Sparkles className="w-4 h-4 text-amber-900" />
+                        </div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-amber-900 flex items-center gap-1">
+                            {def.label_ko} <span className="text-[10px] font-normal text-amber-700">({def.label_en})</span>
+                          </div>
+                          <div className="text-[10px] text-amber-700 leading-tight">별색 {DEFAULT_FOIL_SPOT_COLOR} · 켜진 요소 {foilCount}개</div>
+                        </div>
+                      </div>
+                      <p className="px-2.5 pb-2 text-[10px] text-amber-700/90 leading-snug">{def.description_en}</p>
+                    </div>
+                  )
+                })}
+
+                <div>
+                  <p className="text-[11px] font-medium text-gray-600 mb-1">요소별 박 지정</p>
+                  <p className="text-[10px] text-gray-400 mb-2 leading-snug">박을 입힐 텍스트·도형 요소를 체크하세요. 사진(이미지)에는 박을 적용할 수 없습니다.</p>
+                  {layers.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center h-20 text-gray-400 text-[11px] gap-1">
+                      <Sparkles className="w-5 h-5" /> 요소가 없습니다
+                    </div>
+                  ) : (
+                    <ul className="space-y-1">
+                      {layers.map(layer => {
+                        const eligible = layer.type !== 'image'
+                        const on = layer.finish?.kind === 'foil_stamp'
+                        return (
+                          <li
+                            key={layer.id}
+                            onClick={() => { if (eligible) toggleElementFinish(layer.id) }}
+                            className={`flex items-center gap-2 px-2 py-1.5 rounded-md border transition-colors ${
+                              !eligible
+                                ? 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-60'
+                                : on
+                                  ? 'border-amber-300 bg-amber-50 cursor-pointer'
+                                  : 'border-gray-200 hover:border-amber-200 hover:bg-amber-50/40 cursor-pointer'
+                            }`}
+                          >
+                            <span className={`w-4 h-4 rounded flex items-center justify-center shrink-0 border ${
+                              on ? 'bg-amber-500 border-amber-500 text-white' : 'border-gray-300 bg-white'
+                            }`}>
+                              {on && <CheckCircle className="w-3 h-3" />}
+                            </span>
+                            <span className="truncate flex-1 text-gray-700">{layer.name}</span>
+                            {!eligible
+                              ? <span className="shrink-0 text-[9px] text-gray-400 flex items-center gap-0.5"><Lock className="w-2.5 h-2.5" /> 사진</span>
+                              : on && <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
+                            }
+                          </li>
+                        )
+                      })}
+                    </ul>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-400 leading-snug border-t border-gray-100 pt-2">
+                  박은 캔버스에 금박 시머 아웃라인으로 미리보기됩니다. 실제 박 별색판은 주문 시 분리 출력됩니다.
+                </p>
+              </div>
+            )
+          })()}
 
           {/* Shapes panel */}
           {activePanel === 'shapes' && (
