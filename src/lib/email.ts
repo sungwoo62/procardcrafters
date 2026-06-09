@@ -3,6 +3,30 @@ import { OrderStatus } from '@/types/database'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'Procardcrafters <orders@procardcrafters.com>'
+const SUPPORT_FROM = 'ProCardCrafters <hello@procardcrafters.com>'
+
+// OMO-2774: 고객지원 1차 회신용 범용 발송기 (plain-text → 간단 HTML)
+export async function sendSupportReplyEmail(input: {
+  to: string
+  subject: string
+  text: string
+  replyTo?: string
+}): Promise<{ ok: boolean; error?: string }> {
+  if (!resend) return { ok: false, error: 'resend_not_configured' }
+  try {
+    await resend.emails.send({
+      from: SUPPORT_FROM,
+      to: input.to,
+      subject: input.subject,
+      html: input.text.replace(/\n/g, '<br/>'),
+      text: input.text,
+      replyTo: input.replyTo ?? 'hello@procardcrafters.com',
+    })
+    return { ok: true }
+  } catch (e) {
+    return { ok: false, error: (e as Error).message }
+  }
+}
 const ADMIN_EMAIL = process.env.ADMIN_NOTIFICATION_EMAIL ?? 'admin@procardcrafters.com'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://procardcrafters.com'
 
