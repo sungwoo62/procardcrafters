@@ -52,8 +52,13 @@ export interface FinishingSpotRule {
   /** finishing-catalog.ts value 와 동일 키 */
   value: string
   label_ko: string
-  /** 별색 레이어명(일러스트에서 그대로 보임). */
+  /** 별색 레이어명(SVG/UTF-8 표시용, 일러스트에서 그대로 보임). */
   spotLayerName: string
+  /**
+   * ASCII-only 레이어 ID. PDF/AI 의 표준폰트(WinAnsi)는 한글을 인코딩 못 하므로
+   * PDF 캔버스 텍스트·OCG 레이어명에는 이 ASCII ID 를 쓴다(한글 의미는 메타데이터/SVG 에 보존).
+   */
+  spotLayerId: string
   /** 고객 안내 문구(템플릿 상단 주석). */
   note: string
 }
@@ -65,24 +70,28 @@ export const FINISHING_SPOT_RULES: Record<string, FinishingSpotRule> = {
     value: 'foil_stamp',
     label_ko: '박',
     spotLayerName: 'M100_별색_박',
+    spotLayerId: 'M100_SPOT_FOIL',
     note: '박 적용 영역을 이 레이어에 M100(별색 1도)으로 작도하세요. K100·CMYK 금지.',
   },
   deboss_emboss: {
     value: 'deboss_emboss',
     label_ko: '형압',
     spotLayerName: 'M100_별색_형압',
+    spotLayerId: 'M100_SPOT_EMBOSS',
     note: '형압(엠보/디보스) 영역을 이 레이어에 M100(별색 1도)으로 작도하세요.',
   },
   domusong: {
     value: 'domusong',
     label_ko: '도무송',
     spotLayerName: 'M100_별색_도무송',
+    spotLayerId: 'M100_SPOT_DIECUT',
     note: '도무송(칼선) 경로를 이 레이어에 M100(별색 1도) 선으로 작도하세요.',
   },
   spot_uv: {
     value: 'spot_uv',
     label_ko: '에폭시/스팟UV',
     spotLayerName: 'M100_별색_에폭시',
+    spotLayerId: 'M100_SPOT_EPOXY',
     note: '에폭시(스팟UV) 영역을 이 레이어에 M100(별색 1도)으로 작도하세요.',
   },
 }

@@ -11,7 +11,7 @@
 //   · AI  : Illustrator 9 이후 .ai 는 PDF 컨테이너이므로 PDF 바이트를 그대로 .ai 로 제공.
 //           (일러스트레이터가 PDF-호환 .ai 로 그대로 연다.)
 
-import { PDFDocument, StandardFonts, cmyk, PDFName, PDFArray } from 'pdf-lib'
+import { PDFDocument, StandardFonts, cmyk, PDFName, PDFArray, PDFHexString } from 'pdf-lib'
 import {
   resolveSpecDims,
   resolveFinishingRules,
@@ -21,6 +21,14 @@ import {
 } from '@/config/printSpecs'
 
 const MM_TO_PT = 2.834645669 // 1mm in PDF points (72dpi)
+
+// PDF 표준폰트(Helvetica)는 WinAnsi 라 한글을 인코딩하지 못한다(throw).
+// 캔버스에 그리는 텍스트는 ASCII 로 한정하고, 한글 의미는 PDF 메타데이터(UTF-16 안전)와
+// SVG(UTF-8)에 보존한다. WinAnsi 밖 문자는 '?' 로 치환한다.
+function asciiSafe(s: string): string {
+  // eslint-disable-next-line no-control-regex
+  return s.replace(/[^\x20-\x7E]/g, '?').replace(/\?+/g, '?').trim() || '-'
+}
 
 export interface TemplateSpec {
   productSlug: string
@@ -163,10 +171,11 @@ export async function buildTemplatePdf(spec: TemplateSpec): Promise<Uint8Array> 
     borderColor: cmyk(1, 0.6, 0, 0), borderWidth: 0.7, borderDashArray: [2, 2],
   })
 
-  page.drawText(`성원 규격 템플릿 / Swadpia template`, {
+  // 캔버스 텍스트는 ASCII 한정(한글 제목/제품명은 PDF 메타데이터·SVG 에 보존).
+  page.drawText('Swadpia print template (M100 spot finishing)', {
     x: bleedPt + 2, y: fullHpt - bleedPt - 8, size: 5, font, color: cmyk(0, 0, 0, 1),
   })
-  page.drawText(`${label}  ${r.trimW}x${r.trimH}mm  bleed ${bleedMm}  safe ${safeMm}`, {
+  page.drawText(`${asciiSafe(label)}  ${r.trimW}x${r.trimH}mm  bleed ${bleedMm}  safe ${safeMm}`, {
     x: bleedPt + 2, y: fullHpt - bleedPt - 15, size: 4.5, font, color: cmyk(0, 0, 0, 0.7),
   })
 
@@ -181,7 +190,7 @@ export async function buildTemplatePdf(spec: TemplateSpec): Promise<Uint8Array> 
       width: pw, height: ph,
       borderColor: cmyk(0, 1, 0, 0), borderWidth: 0.6, borderDashArray: [3, 3],
     })
-    page.drawText(`${f.spotLayerName} (M100 spot)`, {
+    page.drawText(`${f.spotLayerId} (M100 spot / ${asciiSafe(f.label_ko)})`, {
       x: bleedPt + 2, y: noteY, size: 4, font, color: cmyk(0, 1, 0, 0),
     })
     noteY += 6
@@ -209,9 +218,10 @@ function addSpotLayers(doc: PDFDocument, rules: FinishingSpotRule[]): void {
   const context = doc.context
   const ocgRefs: ReturnType<typeof context.register>[] = []
   for (const f of rules) {
+    // Name 은 UTF-16 hex 로 인코딩해야 한글 레이어명이 일러/아크로뱃에서 깨지지 않는다.
     const ocg = context.obj({
       Type: PDFName.of('OCG'),
-      Name: f.spotLayerName,
+      Name: PDFHexString.fromText(f.spotLayerName),
     })
     ocgRefs.push(context.register(ocg))
   }
