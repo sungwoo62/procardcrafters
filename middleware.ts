@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/auth-helpers-nextjs'
 import { NextRequest, NextResponse } from 'next/server'
+import { isAllowedAdmin } from '@/lib/admin-access'
 
 export async function middleware(req: NextRequest) {
   let supabaseResponse = NextResponse.next({ request: req })
@@ -39,25 +40,16 @@ export async function middleware(req: NextRequest) {
         return NextResponse.redirect(loginUrl)
       }
 
-      const allowedEmails = (process.env.ADMIN_EMAILS ?? '')
-        .split(',')
-        .map((e) => e.trim().toLowerCase())
-        .filter(Boolean)
-
-      const userEmail = user.email?.toLowerCase() ?? ''
-      if (allowedEmails.length > 0 && !allowedEmails.includes(userEmail)) {
+      // Fail-closed: 화이트리스트가 비어 있으면 모두 거부(설정 누락 = 접근 불가).
+      if (!isAllowedAdmin(user.email, process.env.ADMIN_EMAILS)) {
         const loginUrl = new URL('/admin/login', req.url)
         loginUrl.searchParams.set('error', 'unauthorized')
         return NextResponse.redirect(loginUrl)
       }
     } else if (user) {
-      // 이미 로그인된 어드민이 /admin/login 접근 시 대시보드로 리다이렉트
-      const allowedEmails = (process.env.ADMIN_EMAILS ?? '')
-        .split(',')
-        .map((e) => e.trim().toLowerCase())
-        .filter(Boolean)
-      const userEmail = user.email?.toLowerCase() ?? ''
-      if (allowedEmails.length === 0 || allowedEmails.includes(userEmail)) {
+      // 이미 로그인된 어드민이 /admin/login 접근 시 대시보드로 리다이렉트.
+      // Fail-closed: 허용 목록에 있을 때만 대시보드로 보냄(비면 로그인 화면 유지).
+      if (isAllowedAdmin(user.email, process.env.ADMIN_EMAILS)) {
         return NextResponse.redirect(new URL('/admin', req.url))
       }
     }

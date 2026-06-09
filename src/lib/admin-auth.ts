@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/auth-helpers-nextjs'
 import { cookies } from 'next/headers'
+import { isAllowedAdmin } from './admin-access'
 
 export async function requireAdmin() {
   const cookieStore = await cookies()
@@ -27,13 +28,8 @@ export async function requireAdmin() {
 
   if (!user) return null
 
-  const allowedEmails = (process.env.ADMIN_EMAILS ?? '')
-    .split(',')
-    .map((e) => e.trim().toLowerCase())
-    .filter(Boolean)
-
-  const userEmail = user.email?.toLowerCase() ?? ''
-  if (allowedEmails.length > 0 && !allowedEmails.includes(userEmail)) return null
+  // Fail-closed 접근 판정(공유 헬퍼). ADMIN_EMAILS 가 비면 거부.
+  if (!isAllowedAdmin(user.email, process.env.ADMIN_EMAILS)) return null
 
   return user
 }
