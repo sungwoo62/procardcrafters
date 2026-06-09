@@ -1,5 +1,8 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { Truck, Globe, Settings, Layers, Package2, ArrowLeft, FileSpreadsheet, AlertTriangle, CheckCircle2 } from 'lucide-react'
@@ -109,7 +112,7 @@ export default function AdminShippingPage() {
         </div>
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading...</p>
+          <p className="text-sm text-gray-500">불러오는 중...</p>
         ) : (
           <>
             {tab === 'zones'     && <ZonesPanel zones={zones} reload={loadAll} setMsg={setMsg} />}
@@ -363,7 +366,7 @@ function ShipmentsPanel() {
       .finally(() => setLoading(false))
   }, [])
 
-  if (loading) return <p className="text-sm text-gray-500">Loading...</p>
+  if (loading) return <p className="text-sm text-gray-500">불러오는 중...</p>
 
   return (
     <div className="rounded-2xl bg-white border border-gray-200 overflow-hidden">
@@ -660,7 +663,7 @@ function ReconciliationPanel({ setMsg }: { setMsg: (s: string) => void }) {
       {/* 송장 리스트 */}
       <div className="rounded-2xl bg-white border border-gray-200 overflow-x-auto">
         {loading ? (
-          <p className="p-6 text-sm text-gray-500">Loading...</p>
+          <p className="p-6 text-sm text-gray-500">불러오는 중...</p>
         ) : rows.length === 0 ? (
           <p className="p-6 text-sm text-gray-400">기간 내 송장 없음</p>
         ) : (

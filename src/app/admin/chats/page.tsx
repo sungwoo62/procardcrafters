@@ -1,5 +1,8 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import { MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
 
@@ -74,15 +77,15 @@ export default function AdminChatsPage() {
       <div className="mx-auto max-w-4xl">
         <div className="mb-6 flex items-center gap-3">
           <MessageCircle className="h-6 w-6 text-gray-700" />
-          <h1 className="text-2xl font-bold text-gray-900">AI Chat History</h1>
+          <h1 className="text-2xl font-bold text-gray-900">AI 챗봇 대화 기록</h1>
         </div>
 
         {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
         {loading ? (
-          <p className="text-sm text-gray-500">Loading...</p>
+          <p className="text-sm text-gray-500">불러오는 중...</p>
         ) : sessions.length === 0 ? (
-          <p className="text-sm text-gray-500">No chat sessions yet.</p>
+          <p className="text-sm text-gray-500">아직 대화 세션이 없습니다.</p>
         ) : (
           <div className="space-y-3">
             {sessions.map((session) => {
@@ -122,9 +125,9 @@ export default function AdminChatsPage() {
                   {isExpanded && (
                     <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-gray-50">
                       {isLoadingMsgs ? (
-                        <p className="text-xs text-gray-400">Loading...</p>
+                        <p className="text-xs text-gray-400">불러오는 중...</p>
                       ) : msgs.length === 0 ? (
-                        <p className="text-xs text-gray-400">No messages</p>
+                        <p className="text-xs text-gray-400">메시지 없음</p>
                       ) : (
                         msgs.map((msg) => (
                           <div
@@ -141,7 +144,7 @@ export default function AdminChatsPage() {
                               {msg.content}
                               {msg.estimate_price_usd && (
                                 <div className="mt-1.5 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                                  Quote: {msg.estimate_product} {msg.estimate_quantity} pcs ({msg.estimate_size},{' '}
+                                  견적: {msg.estimate_product} {msg.estimate_quantity}개 ({msg.estimate_size},{' '}
                                   {msg.estimate_finish}) — ${msg.estimate_price_usd.toFixed(2)}
                                 </div>
                               )}
@@ -164,15 +167,15 @@ export default function AdminChatsPage() {
             onClick={() => setPage((p) => p - 1)}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 hover:bg-gray-50 transition-colors"
           >
-            Previous
+            이전
           </button>
-          <span className="text-sm text-gray-500">Page {page}</span>
+          <span className="text-sm text-gray-500">페이지 {page}</span>
           <button
             disabled={sessions.length < 50}
             onClick={() => setPage((p) => p + 1)}
             className="rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 disabled:opacity-40 hover:bg-gray-50 transition-colors"
           >
-            Next
+            다음
           </button>
         </div>
       </div>

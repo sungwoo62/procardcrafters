@@ -1,17 +1,20 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import { OrderStatus } from '@/types/database'
 import { Download } from 'lucide-react'
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'Pending',
-  paid: 'Paid',
-  processing: 'Processing',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-  refunded: 'Refunded',
+  pending: '대기',
+  paid: '결제완료',
+  processing: '처리중',
+  shipped: '발송됨',
+  delivered: '배송완료',
+  cancelled: '취소됨',
+  refunded: '환불됨',
 }
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
@@ -111,9 +114,9 @@ export default function AdminOrdersPage() {
 
     const data = await res.json()
     if (!res.ok) {
-      setBulkMessage(`Error: ${data.error}`)
+      setBulkMessage(`오류: ${data.error}`)
     } else {
-      setBulkMessage(`${data.updated} order(s) updated.`)
+      setBulkMessage(`${data.updated}건 변경됨.`)
       fetchOrders()
     }
     setBulkLoading(false)
@@ -148,15 +151,15 @@ export default function AdminOrdersPage() {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold">Orders Dashboard</h1>
+          <h1 className="text-2xl font-bold">주문 대시보드</h1>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">Total: {total}</span>
+            <span className="text-sm text-gray-500">총 {total}건</span>
             <button
               onClick={exportCSV}
               className="flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
             >
               <Download className="h-4 w-4" />
-              Export CSV
+              CSV 내보내기
             </button>
           </div>
         </div>
@@ -169,7 +172,7 @@ export default function AdminOrdersPage() {
               statusFilter === '' ? 'bg-black text-white' : 'bg-white text-gray-700 border hover:bg-gray-50'
             }`}
           >
-            All
+            전체
           </button>
           {ALL_STATUSES.map((s) => (
             <button
@@ -187,7 +190,7 @@ export default function AdminOrdersPage() {
         {/* Bulk update toolbar */}
         {selectedIds.size > 0 && (
           <div className="mb-4 flex items-center gap-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3">
-            <span className="text-sm font-medium text-blue-800">{selectedIds.size} selected</span>
+            <span className="text-sm font-medium text-blue-800">{selectedIds.size}건 선택</span>
             <select
               value={bulkStatus}
               onChange={(e) => setBulkStatus(e.target.value as OrderStatus)}
@@ -202,7 +205,7 @@ export default function AdminOrdersPage() {
               disabled={bulkLoading}
               className="rounded-lg bg-blue-700 px-4 py-1.5 text-sm font-medium text-white hover:bg-blue-800 disabled:opacity-50 transition-colors"
             >
-              {bulkLoading ? 'Processing...' : 'Update Status'}
+              {bulkLoading ? '처리 중...' : '상태 변경'}
             </button>
             {bulkMessage && (
               <span className="text-sm text-blue-700">{bulkMessage}</span>
@@ -211,11 +214,11 @@ export default function AdminOrdersPage() {
         )}
 
         {loading ? (
-          <div className="text-center py-12 text-gray-500">Loading...</div>
+          <div className="text-center py-12 text-gray-500">불러오는 중...</div>
         ) : error ? (
           <div className="text-center py-12 text-red-500">{error}</div>
         ) : orders.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">No orders found.</div>
+          <div className="text-center py-12 text-gray-500">주문이 없습니다.</div>
         ) : (
           <div className="bg-white rounded-lg shadow overflow-hidden">
             <table className="w-full text-sm">
@@ -229,11 +232,11 @@ export default function AdminOrdersPage() {
                       className="rounded border-gray-300"
                     />
                   </th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Order #</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Customer</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Total</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Status</th>
-                  <th className="px-4 py-3 text-left font-medium text-gray-600">Date</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">주문번호</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">고객</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">합계</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">상태</th>
+                  <th className="px-4 py-3 text-left font-medium text-gray-600">날짜</th>
                   <th className="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -270,7 +273,7 @@ export default function AdminOrdersPage() {
                         href={`/admin/orders/${order.id}`}
                         className="text-blue-600 hover:underline"
                       >
-                        View
+                        보기
                       </a>
                     </td>
                   </tr>
@@ -285,15 +288,15 @@ export default function AdminOrdersPage() {
                 disabled={page === 1}
                 className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
               >
-                Previous
+                이전
               </button>
-              <span className="text-sm text-gray-500">Page {page}</span>
+              <span className="text-sm text-gray-500">페이지 {page}</span>
               <button
                 onClick={() => setPage((p) => p + 1)}
                 disabled={orders.length < 20}
                 className="px-3 py-1.5 text-sm border rounded disabled:opacity-40 hover:bg-gray-50"
               >
-                Next
+                다음
               </button>
             </div>
           </div>

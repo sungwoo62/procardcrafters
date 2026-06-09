@@ -1,5 +1,8 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 
@@ -96,7 +99,7 @@ export default function PackingSlipPage() {
   }, [id])
 
   if (err) return <p className="p-6 text-red-600">{err}</p>
-  if (!order) return <p className="p-6 text-gray-500">Loading...</p>
+  if (!order) return <p className="p-6 text-gray-500">불러오는 중...</p>
 
   const shipment = shipments[0]
 
@@ -119,10 +122,10 @@ export default function PackingSlipPage() {
             <div>
               <h1 className="text-2xl font-bold">Packing Slip / 패킹 슬립</h1>
               <p className="text-sm text-gray-600 mt-1">
-                Order: <span className="font-mono font-semibold">{order.order_number}</span>
+                Order / 주문번호: <span className="font-mono font-semibold">{order.order_number}</span>
               </p>
               <p className="text-sm text-gray-600">
-                Date: {new Date(order.created_at).toLocaleDateString()}
+                Date / 날짜: {new Date(order.created_at).toLocaleDateString()}
               </p>
             </div>
             <div className="text-right">
@@ -157,10 +160,10 @@ export default function PackingSlipPage() {
           {shipment && (
             <section className="mb-6 rounded-lg border-2 border-gray-900 p-4">
               <div className="grid grid-cols-4 gap-4 text-sm">
-                <KV label="Carrier" value={shipment.carrier.toUpperCase()} />
-                <KV label="Service" value={shipment.print_shipping_services?.name_en ?? '-'} />
-                <KV label="Zone" value={shipment.print_shipping_zones?.code ?? '-'} />
-                <KV label="Weight" value={shipment.weight_kg ? `${shipment.weight_kg} kg` : '-'} />
+                <KV label="Carrier / 택배사" value={shipment.carrier.toUpperCase()} />
+                <KV label="Service / 서비스" value={shipment.print_shipping_services?.name_en ?? '-'} />
+                <KV label="Zone / 지역" value={shipment.print_shipping_zones?.code ?? '-'} />
+                <KV label="Weight / 무게" value={shipment.weight_kg ? `${shipment.weight_kg} kg` : '-'} />
               </div>
               {shipment.tracking_number && (
                 <div className="mt-3 pt-3 border-t border-gray-200">
@@ -178,10 +181,10 @@ export default function PackingSlipPage() {
               <thead>
                 <tr className="border-b-2 border-gray-900 text-left">
                   <th className="py-2 pr-2">#</th>
-                  <th className="py-2 pr-2">Product</th>
-                  <th className="py-2 pr-2">Options</th>
-                  <th className="py-2 pr-2 text-right">Qty</th>
-                  <th className="py-2 pl-2 text-right">Subtotal</th>
+                  <th className="py-2 pr-2">Product / 상품</th>
+                  <th className="py-2 pr-2">Options / 옵션</th>
+                  <th className="py-2 pr-2 text-right">Qty / 수량</th>
+                  <th className="py-2 pl-2 text-right">Subtotal / 소계</th>
                 </tr>
               </thead>
               <tbody>
@@ -207,9 +210,9 @@ export default function PackingSlipPage() {
 
           {/* 총액 */}
           <section className="ml-auto w-72 text-sm">
-            <Row label="Subtotal" value={`$${Number(order.subtotal_usd).toFixed(2)}`} />
-            <Row label="Shipping (incl. 10% VAT)" value={`$${Number(order.shipping_usd).toFixed(2)}`} />
-            <Row label="TOTAL" value={`$${Number(order.total_usd).toFixed(2)}`} bold />
+            <Row label="Subtotal / 소계" value={`$${Number(order.subtotal_usd).toFixed(2)}`} />
+            <Row label="Shipping (incl. 10% VAT) / 배송비 (부가세 10% 포함)" value={`$${Number(order.shipping_usd).toFixed(2)}`} />
+            <Row label="TOTAL / 합계" value={`$${Number(order.total_usd).toFixed(2)}`} bold />
           </section>
 
           <footer className="mt-8 pt-4 border-t text-xs text-gray-500">

@@ -42,13 +42,13 @@ const PROOF_STATUS_COLORS: Record<DesignProofStatus, string> = {
 }
 
 const STATUS_LABELS: Record<OrderStatus, string> = {
-  pending: 'Pending',
-  paid: 'Paid',
-  processing: 'Processing',
-  shipped: 'Shipped',
-  delivered: 'Delivered',
-  cancelled: 'Cancelled',
-  refunded: 'Refunded',
+  pending: '대기',
+  paid: '결제완료',
+  processing: '처리중',
+  shipped: '발송됨',
+  delivered: '배송완료',
+  cancelled: '취소됨',
+  refunded: '환불됨',
 }
 
 const STATUS_COLORS: Record<OrderStatus, string> = {
@@ -317,8 +317,8 @@ export default function AdminOrderDetailPage() {
     setFactoryLoading(false)
   }
 
-  if (loading) return <div className="p-8 text-center text-gray-500">Loading...</div>
-  if (error || !order) return <div className="p-8 text-center text-red-500">{error || 'Order not found'}</div>
+  if (loading) return <div className="p-8 text-center text-gray-500">불러오는 중...</div>
+  if (error || !order) return <div className="p-8 text-center text-red-500">{error || '주문을 찾을 수 없습니다'}</div>
 
   const nextOptions = NEXT_STATUSES[order.status] ?? []
 
@@ -328,7 +328,7 @@ export default function AdminOrderDetailPage() {
         <div className="flex items-center justify-between">
           <div>
             <a href="/admin/orders" className="text-sm text-blue-600 hover:underline mb-2 inline-block">
-              ← Back to Orders
+              ← 주문 목록으로
             </a>
             <h1 className="text-2xl font-bold">{order.order_number}</h1>
           </div>
@@ -340,7 +340,7 @@ export default function AdminOrderDetailPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Customer info */}
           <div className="bg-white rounded-lg shadow p-5 space-y-2">
-            <h2 className="font-semibold text-gray-700 mb-3">Customer</h2>
+            <h2 className="font-semibold text-gray-700 mb-3">고객</h2>
             <p className="font-medium">{order.customer_name}</p>
             <p className="text-sm text-gray-500">{order.customer_email}</p>
             {order.customer_phone && <p className="text-sm text-gray-500">{order.customer_phone}</p>}
@@ -348,7 +348,7 @@ export default function AdminOrderDetailPage() {
 
           {/* Shipping info */}
           <div className="bg-white rounded-lg shadow p-5 space-y-2">
-            <h2 className="font-semibold text-gray-700 mb-3">Shipping Address</h2>
+            <h2 className="font-semibold text-gray-700 mb-3">배송 주소</h2>
             <p className="font-medium">{order.shipping_name}</p>
             <p className="text-sm text-gray-500">{order.shipping_address_line1}</p>
             {order.shipping_address_line2 && <p className="text-sm text-gray-500">{order.shipping_address_line2}</p>}
@@ -361,7 +361,7 @@ export default function AdminOrderDetailPage() {
 
         {/* Order items */}
         <div className="bg-white rounded-lg shadow p-5">
-          <h2 className="font-semibold text-gray-700 mb-4">Order Items</h2>
+          <h2 className="font-semibold text-gray-700 mb-4">주문 상품</h2>
           <div className="space-y-4">
             {order.print_order_items.map((item) => (
               <div key={item.id} className="border rounded p-4">
@@ -371,13 +371,13 @@ export default function AdminOrderDetailPage() {
                     <p className="text-sm text-gray-500 mt-1">
                       {Object.entries(item.selected_options).map(([k, v]) => `${k}: ${v}`).join(' · ')}
                     </p>
-                    <p className="text-sm text-gray-500">Qty: {item.quantity}</p>
+                    <p className="text-sm text-gray-500">수량: {item.quantity}</p>
                   </div>
                   <p className="font-medium">${item.subtotal_usd.toFixed(2)}</p>
                 </div>
                 {item.print_files && item.print_files.length > 0 && (
                   <div className="mt-3 pt-3 border-t">
-                    <p className="text-xs font-medium text-gray-500 mb-1">Files:</p>
+                    <p className="text-xs font-medium text-gray-500 mb-1">파일:</p>
                     {item.print_files.map((f) => (
                       <p key={f.id} className="text-xs text-blue-600">{f.original_filename}</p>
                     ))}
@@ -388,15 +388,15 @@ export default function AdminOrderDetailPage() {
           </div>
           <div className="border-t mt-4 pt-4 space-y-1 text-sm">
             <div className="flex justify-between text-gray-500">
-              <span>Subtotal</span>
+              <span>소계</span>
               <span>${order.subtotal_usd.toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-gray-500">
-              <span>Shipping</span>
+              <span>배송비</span>
               <span>${order.shipping_usd.toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-semibold">
-              <span>Total</span>
+              <span>합계</span>
               <span>${order.total_usd.toFixed(2)}</span>
             </div>
           </div>
@@ -405,7 +405,7 @@ export default function AdminOrderDetailPage() {
         {/* Status update */}
         {nextOptions.length > 0 && (
           <div className="bg-white rounded-lg shadow p-5 space-y-4">
-            <h2 className="font-semibold text-gray-700">Update Status</h2>
+            <h2 className="font-semibold text-gray-700">상태 변경</h2>
             <div className="flex gap-2 flex-wrap">
               {nextOptions.map((s) => (
                 <button
@@ -422,14 +422,14 @@ export default function AdminOrderDetailPage() {
             {newStatus === 'shipped' && (
               <input
                 type="text"
-                placeholder="Tracking number (optional)"
+                placeholder="송장번호 (선택)"
                 value={trackingNumber}
                 onChange={(e) => setTrackingNumber(e.target.value)}
                 className="w-full border rounded px-3 py-2 text-sm"
               />
             )}
             <textarea
-              placeholder="Internal notes (optional)"
+              placeholder="내부 메모 (선택)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
@@ -441,10 +441,10 @@ export default function AdminOrderDetailPage() {
                 disabled={updating || (!newStatus && notes === (order.notes ?? ''))}
                 className="px-4 py-2 bg-black text-white rounded text-sm font-medium disabled:opacity-40 hover:bg-gray-800"
               >
-                {updating ? 'Updating...' : 'Update'}
+                {updating ? '변경 중...' : '변경'}
               </button>
               {updateMsg && (
-                <span className={`text-sm ${updateMsg.startsWith('Error') ? 'text-red-500' : 'text-green-600'}`}>
+                <span className={`text-sm ${updateMsg.startsWith('오류') ? 'text-red-500' : 'text-green-600'}`}>
                   {updateMsg}
                 </span>
               )}

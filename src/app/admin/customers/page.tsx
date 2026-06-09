@@ -1,5 +1,8 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Search, RefreshCw, Users, Mail, Phone, ShoppingBag, DollarSign } from 'lucide-react'
@@ -68,12 +71,12 @@ export default function AdminCustomersPage() {
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Customer Management</h1>
-              <p className="text-sm text-gray-500">Total {total} orders (by customer)</p>
+              <h1 className="text-2xl font-bold text-gray-900">고객 관리</h1>
+              <p className="text-sm text-gray-500">총 {total}건 주문 (고객별)</p>
             </div>
           </div>
           <button onClick={fetchCustomers} className="flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900">
-            <RefreshCw className="w-4 h-4" /> Refresh
+            <RefreshCw className="w-4 h-4" /> 새로고침
           </button>
         </div>
 
@@ -85,12 +88,12 @@ export default function AdminCustomersPage() {
               type="text"
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
-              placeholder="Search by name or email"
+              placeholder="이름 또는 이메일로 검색"
               className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-400"
             />
           </div>
           <button type="submit" className="px-4 py-2.5 bg-gray-900 text-white text-sm font-medium rounded-xl">
-            Search
+            검색
           </button>
           {q && (
             <button
@@ -98,17 +101,17 @@ export default function AdminCustomersPage() {
               onClick={() => { setQ(''); setSearchInput(''); setPage(1) }}
               className="px-4 py-2.5 border border-gray-200 text-sm font-medium rounded-xl hover:bg-gray-50"
             >
-              Reset
+              초기화
             </button>
           )}
         </form>
 
         {loading ? (
-          <div className="flex justify-center py-20 text-gray-400 text-sm">Loading...</div>
+          <div className="flex justify-center py-20 text-gray-400 text-sm">불러오는 중...</div>
         ) : customers.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-gray-400 gap-3">
             <Users className="w-10 h-10" />
-            <p className="text-sm">{q ? 'No results' : 'No customer data'}</p>
+            <p className="text-sm">{q ? '결과 없음' : '고객 데이터 없음'}</p>
           </div>
         ) : (
           <>
@@ -142,14 +145,14 @@ export default function AdminCustomersPage() {
                     <div className="bg-blue-50 rounded-lg p-2.5">
                       <div className="flex items-center gap-1.5 text-blue-600 mb-1">
                         <ShoppingBag className="w-3 h-3" />
-                        <span className="text-xs font-medium">Orders</span>
+                        <span className="text-xs font-medium">주문</span>
                       </div>
                       <p className="text-lg font-bold text-blue-800">{customer.orderCount}</p>
                     </div>
                     <div className="bg-green-50 rounded-lg p-2.5">
                       <div className="flex items-center gap-1.5 text-green-600 mb-1">
                         <DollarSign className="w-3 h-3" />
-                        <span className="text-xs font-medium">Total spent</span>
+                        <span className="text-xs font-medium">총 결제액</span>
                       </div>
                       <p className="text-lg font-bold text-green-800">${customer.totalSpent.toFixed(0)}</p>
                     </div>
@@ -157,8 +160,8 @@ export default function AdminCustomersPage() {
 
                   {/* Order dates */}
                   <div className="flex justify-between text-xs text-gray-400">
-                    <span>First order: {formatDate(customer.firstOrder)}</span>
-                    <span>Last order: {formatDate(customer.lastOrder)}</span>
+                    <span>첫 주문: {formatDate(customer.firstOrder)}</span>
+                    <span>마지막 주문: {formatDate(customer.lastOrder)}</span>
                   </div>
 
                   {/* Email link */}
@@ -166,7 +169,7 @@ export default function AdminCustomersPage() {
                     href={`mailto:${customer.email}`}
                     className="flex items-center justify-center gap-1.5 w-full rounded-lg border border-gray-200 py-2 text-xs text-gray-600 hover:bg-gray-50 transition-colors"
                   >
-                    <Mail className="w-3.5 h-3.5" /> Send email
+                    <Mail className="w-3.5 h-3.5" /> 이메일 보내기
                   </a>
                 </div>
               ))}
@@ -180,7 +183,7 @@ export default function AdminCustomersPage() {
                   disabled={page === 1}
                   className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
                 >
-                  Previous
+                  이전
                 </button>
                 <span className="px-3 py-1.5 text-sm text-gray-500">
                   {page} / {totalPages}
@@ -190,7 +193,7 @@ export default function AdminCustomersPage() {
                   disabled={page >= totalPages}
                   className="px-3 py-1.5 text-sm border border-gray-200 rounded-lg disabled:opacity-40 hover:bg-gray-50"
                 >
-                  Next
+                  다음
                 </button>
               </div>
             )}

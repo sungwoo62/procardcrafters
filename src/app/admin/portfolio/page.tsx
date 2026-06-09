@@ -1,16 +1,19 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useEffect, useState, useCallback } from 'react'
 import Image from 'next/image'
 import { Plus, Pencil, Trash2, Eye, EyeOff, Star, StarOff, AlertCircle, Loader2 } from 'lucide-react'
 
 const CATEGORIES = [
-  { value: 'business_cards', label: 'Business Cards' },
-  { value: 'stickers', label: 'Stickers' },
-  { value: 'flyers', label: 'Flyers' },
-  { value: 'postcards', label: 'Postcards' },
-  { value: 'posters', label: 'Posters' },
-  { value: 'other', label: 'Other' },
+  { value: 'business_cards', label: '명함' },
+  { value: 'stickers', label: '스티커' },
+  { value: 'flyers', label: '전단지' },
+  { value: 'postcards', label: '엽서' },
+  { value: 'posters', label: '포스터' },
+  { value: 'other', label: '기타' },
 ]
 
 interface PortfolioItem {
@@ -65,11 +68,11 @@ export default function AdminPortfolioPage() {
     setError('')
     try {
       const res = await fetch('/api/admin/portfolio')
-      if (!res.ok) throw new Error('Authentication failed')
+      if (!res.ok) throw new Error('인증에 실패했습니다')
       const data = await res.json()
       setItems(data.items)
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error occurred')
+      setError(e instanceof Error ? e.message : '오류가 발생했습니다')
     } finally {
       setLoading(false)
     }
@@ -117,26 +120,26 @@ export default function AdminPortfolioPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       })
-      if (!res.ok) throw new Error('Save failed')
+      if (!res.ok) throw new Error('저장에 실패했습니다')
       setShowForm(false)
       await fetchItems()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Save error')
+      setError(e instanceof Error ? e.message : '저장 오류')
     } finally {
       setSaving(false)
     }
   }
 
   async function handleDelete(id: string) {
-    if (!confirm('Delete this item?')) return
+    if (!confirm('이 항목을 삭제하시겠습니까?')) return
     try {
       const res = await fetch(`/api/admin/portfolio/${id}`, {
         method: 'DELETE',
       })
-      if (!res.ok) throw new Error('Delete failed')
+      if (!res.ok) throw new Error('삭제에 실패했습니다')
       await fetchItems()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Delete error')
+      setError(e instanceof Error ? e.message : '삭제 오류')
     }
   }
 
@@ -147,10 +150,10 @@ export default function AdminPortfolioPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: !current }),
       })
-      if (!res.ok) throw new Error('Update failed')
+      if (!res.ok) throw new Error('업데이트에 실패했습니다')
       await fetchItems()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Error')
+      setError(e instanceof Error ? e.message : '오류')
     }
   }
 
@@ -159,12 +162,12 @@ export default function AdminPortfolioPage() {
     <div className="min-h-screen bg-gray-50 px-4 py-10">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Portfolio Management</h1>
+          <h1 className="text-2xl font-bold text-gray-900">포트폴리오 관리</h1>
           <button
             onClick={openNew}
             className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-xl font-medium hover:bg-blue-700 transition-colors text-sm"
           >
-            <Plus className="w-4 h-4" /> Add New Item
+            <Plus className="w-4 h-4" /> 새 항목 추가
           </button>
         </div>
 
@@ -193,7 +196,7 @@ export default function AdminPortfolioPage() {
                   />
                   {!item.is_published && (
                     <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <span className="text-white text-sm font-semibold">Hidden</span>
+                      <span className="text-white text-sm font-semibold">숨김</span>
                     </div>
                   )}
                 </div>
@@ -204,21 +207,21 @@ export default function AdminPortfolioPage() {
                   </div>
                   <p className="text-xs text-gray-400 mb-3">
                     {CATEGORIES.find((c) => c.value === item.category)?.label ?? item.category}
-                    {' · '}Order {item.sort_order}
+                    {' · '}순서 {item.sort_order}
                   </p>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => openEdit(item)}
                       className="flex items-center gap-1 text-xs text-gray-600 hover:text-blue-600 transition-colors px-2 py-1 rounded-lg hover:bg-blue-50"
                     >
-                      <Pencil className="w-3.5 h-3.5" /> Edit
+                      <Pencil className="w-3.5 h-3.5" /> 수정
                     </button>
                     <button
                       onClick={() => toggleField(item.id, 'is_published', item.is_published)}
                       className="flex items-center gap-1 text-xs text-gray-600 hover:text-gray-900 transition-colors px-2 py-1 rounded-lg hover:bg-gray-100"
                     >
                       {item.is_published ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                      {item.is_published ? 'Hide' : 'Show'}
+                      {item.is_published ? '숨기기' : '표시'}
                     </button>
                     <button
                       onClick={() => toggleField(item.id, 'is_featured', item.is_featured)}
@@ -247,12 +250,12 @@ export default function AdminPortfolioPage() {
               className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6"
             >
               <h2 className="text-lg font-bold text-gray-900 mb-6">
-                {editId ? 'Edit Portfolio' : 'New Portfolio Item'}
+                {editId ? '포트폴리오 수정' : '새 포트폴리오 항목'}
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Title *</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">제목 *</label>
                   <input
                     required
                     value={form.title}
@@ -261,7 +264,7 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Description</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">설명</label>
                   <textarea
                     rows={2}
                     value={form.description}
@@ -270,7 +273,7 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Category *</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">카테고리 *</label>
                   <select
                     required
                     value={form.category}
@@ -283,7 +286,7 @@ export default function AdminPortfolioPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Image URL *</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">이미지 URL *</label>
                   <input
                     required
                     type="url"
@@ -294,7 +297,7 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Thumbnail URL (optional)</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">썸네일 URL (선택)</label>
                   <input
                     type="url"
                     value={form.thumbnail_url}
@@ -304,7 +307,7 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Tags (comma separated)</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">태그 (쉼표로 구분)</label>
                   <input
                     value={form.tags}
                     onChange={(e) => setForm({ ...form, tags: e.target.value })}
@@ -313,7 +316,7 @@ export default function AdminPortfolioPage() {
                   />
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 block mb-1">Sort Order</label>
+                  <label className="text-sm font-medium text-gray-700 block mb-1">정렬 순서</label>
                   <input
                     type="number"
                     value={form.sort_order}
@@ -329,7 +332,7 @@ export default function AdminPortfolioPage() {
                       onChange={(e) => setForm({ ...form, is_published: e.target.checked })}
                       className="w-4 h-4 rounded accent-blue-600"
                     />
-                    Published
+                    게시됨
                   </label>
                   <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
                     <input
@@ -338,7 +341,7 @@ export default function AdminPortfolioPage() {
                       onChange={(e) => setForm({ ...form, is_featured: e.target.checked })}
                       className="w-4 h-4 rounded accent-yellow-400"
                     />
-                    Featured
+                    추천
                   </label>
                 </div>
               </div>
@@ -349,7 +352,7 @@ export default function AdminPortfolioPage() {
                   onClick={() => setShowForm(false)}
                   className="flex-1 border border-gray-200 text-gray-700 rounded-xl py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
                 >
-                  Cancel
+                  취소
                 </button>
                 <button
                   type="submit"
@@ -357,7 +360,7 @@ export default function AdminPortfolioPage() {
                   className="flex-1 bg-blue-600 text-white rounded-xl py-2.5 text-sm font-medium hover:bg-blue-700 transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
                 >
                   {saving && <Loader2 className="w-4 h-4 animate-spin" />}
-                  {editId ? 'Save' : 'Add'}
+                  {editId ? '저장' : '추가'}
                 </button>
               </div>
             </form>
