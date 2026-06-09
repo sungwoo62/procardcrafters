@@ -65,5 +65,36 @@ export async function queueFactoryOrdersForPrintOrder(
     quantity: item.quantity,
   }))
 
-  await supabase.from('print_factory_orders').insert(inserts)
+  const { error: insertError } = await supabase.from('print_factory_orders').insert(inserts)
+  if (insertError) {
+    // 큐 적재 실패는 결제 웹훅을 깨지 않는다(주문 자체는 유효). 알림으로 surfacing.
+    console.error('[factory-queue] print_factory_orders insert 실패:', insertError.message)
+    return
+  }
+
+  // OMO-2716: 무인 결선 — 발주 작업을 P0 공용 큐(ops_automation_jobs)로 enqueue.
+  // 맥스튜디오 워커가 드레인 → factory-runner(:18790) → placeSwadpiaOrder() 무인 실행.
+  await enqueueFactoryAutomationJob(supabase, printOrderId)
+}
+
+/**
+ * ops_automation_jobs 에 공장 발주 작업을 enqueue (OMO-2716).
+ *
+ * action=`factory.swadpia.send` → 워커가 POST :18790/agent/swadpia-runner/message.
+ * 큐 적재 실패는 치명적이지 않다(크론 폴백이 pending 발주를 재포착). 로그만 남긴다.
+ */
+async function enqueueFactoryAutomationJob(
+  supabase: ReturnType<typeof createServerClient>,
+  printOrderId: string,
+): Promise<void> {
+  const { error } = await supabase.from('ops_automation_jobs').insert({
+    service: 'factory',
+    action: 'factory.swadpia.send',
+    payload: { printOrderId },
+    max_attempts: 3,
+    created_by_agent_id: 'print-factory-queue',
+  })
+  if (error) {
+    console.error('[factory-queue] ops_automation_jobs enqueue 실패(크론 폴백 사용):', error.message)
+  }
 }

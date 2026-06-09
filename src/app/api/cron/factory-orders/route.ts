@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       pending: pendingCount,
       failed: failedCount,
       action: pendingCount > 0
-        ? 'Railway worker가 5분 이내 자동 처리 예정'
+        ? '맥스튜디오 factory-runner가 큐 드레인으로 자동 처리 (OMO-2716). 이 크론은 적체 알림 폴백.'
         : '처리할 발주 없음',
     },
     orders: pending ?? [],
@@ -65,7 +65,7 @@ async function sendFactoryOrderAlert(pending: number, failed: number) {
     <h2>공장 발주 상태 알림</h2>
     <p><strong>대기 중:</strong> ${pending}건</p>
     <p><strong>실패:</strong> ${failed}건</p>
-    ${pending > 0 ? '<p>Railway worker가 5분 이내 자동 처리합니다.</p>' : ''}
+    ${pending > 0 ? '<p>맥스튜디오 factory-runner가 큐 드레인으로 자동 처리합니다 (무인). 본 메일은 적체 가시성 폴백입니다.</p>' : ''}
     ${failed > 0 ? `<p>실패 건은 <a href="${siteUrl}/admin/orders">관리자 페이지</a>에서 확인하세요.</p>` : ''}
   `
 

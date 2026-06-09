@@ -78,6 +78,10 @@ export interface SwadpiaOrderResult {
   swadpiaOrderNumber?: string
   checkoutUrl?: string
   errorMessage?: string
+  /** SWADPIA_DRY_RUN=1 일 때, 결제(paySubmit) 직전까지만 도달하고 미결제로 반환. */
+  dryRun?: boolean
+  /** DRY RUN 시 결제서 페이지 스크린샷 경로(무인 검증 증빙). */
+  screenshotPath?: string
 }
 
 export interface FactoryOrderRecord {
@@ -239,6 +243,15 @@ export async function placeSwadpiaOrder(
 
     if (!page.url().includes('/order/order_pay')) {
       return { success: false, errorMessage: `결제서 페이지 도달 실패 — URL: ${page.url()}` }
+    }
+
+    // DRY RUN: 결제서(order_pay)까지 무인 도달 확인. paySubmit 미실행 = 미결제·실주문 없음.
+    // 무인 결선 파이프(큐→워커→게이트웨이→Playwright) E2E 검증용(OMO-2716).
+    if (process.env.SWADPIA_DRY_RUN === '1' || process.env.SWADPIA_DRY_RUN === 'true') {
+      const shotDir = process.env.SWADPIA_SHOT_DIR || os.tmpdir()
+      const screenshotPath = path.join(shotDir, `swadpia-dryrun-${Date.now()}.png`)
+      await page.screenshot({ path: screenshotPath, fullPage: true }).catch(() => {})
+      return { success: true, dryRun: true, checkoutUrl: page.url(), screenshotPath }
     }
 
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
