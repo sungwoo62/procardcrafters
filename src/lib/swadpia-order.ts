@@ -140,6 +140,14 @@ export async function placeSwadpiaOrder(
     })
     const page = await context.newPage()
 
+    // esbuild/swc 의 keepNames 가 page.evaluate 콜백(예: `const setField = ...`)에
+    // 주입하는 `__name(fn, "..")` 헬퍼를 브라우저 컨텍스트에 shim 한다.
+    // (tsx 등 esbuild 런타임에서 `ReferenceError: __name is not defined` 방지 — 런타임 무관 무해)
+    await context.addInitScript(() => {
+      const g = globalThis as unknown as { __name?: (fn: unknown) => unknown }
+      if (!g.__name) g.__name = (fn) => fn
+    })
+
     page.on('dialog', async (dialog) => { await dialog.accept() })
 
     // 1. 로그인
