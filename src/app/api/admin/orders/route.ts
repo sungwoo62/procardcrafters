@@ -16,9 +16,15 @@ export async function GET(request: NextRequest) {
 
   const supabase = createServerClient()
 
+  // OMO-2733: 목록 뷰는 print_order_items / print_files를 렌더하지 않는다.
+  // 이전엔 `*, print_order_items(*, print_files(*))`로 페이지당 20건 × 모든 품목/파일을
+  // 끌어와 응답이 비대했다. 목록이 실제 사용하는 스칼라 컬럼만 select 한다.
   let query = supabase
     .from('print_orders')
-    .select('*, print_order_items(*, print_files(*))', { count: 'exact' })
+    .select(
+      'id, order_number, customer_name, customer_email, total_usd, status, created_at',
+      { count: 'exact' }
+    )
     .order('created_at', { ascending: false })
     .range(offset, offset + limit - 1)
 
@@ -32,5 +38,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
 
-  return NextResponse.json({ orders: data, total: count, page, limit })
+  return NextResponse.json(
+    { orders: data, total: count, page, limit },
+    { headers: { 'Cache-Control': 'private, max-age=15' } }
+  )
 }
