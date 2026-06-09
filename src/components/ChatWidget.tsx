@@ -18,6 +18,30 @@ interface Estimate {
   priceUsd: number
 }
 
+// OMO-2703: 챗 견적의 제품명(LLM 표시명, 예: "Business Cards")을 /order 가 기대하는
+// print_products.slug(예: "business-cards")로 변환. 매핑 누락 시 slugify fallback.
+// 이 변환이 없으면 Place Order CTA가 slug 불일치로 404 → 챗→주문 핸드오프 단절.
+const PRODUCT_NAME_TO_SLUG: Record<string, string> = {
+  'business cards': 'business-cards',
+  'business card': 'business-cards',
+  stickers: 'stickers',
+  sticker: 'stickers',
+  flyers: 'flyers',
+  flyer: 'flyers',
+  postcards: 'postcards',
+  postcard: 'postcards',
+  posters: 'posters',
+  poster: 'posters',
+}
+
+function resolveProductSlug(productName: string): string {
+  const normalized = productName.trim().toLowerCase()
+  return (
+    PRODUCT_NAME_TO_SLUG[normalized] ??
+    normalized.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  )
+}
+
 // Get or create a session ID from browser storage
 function getSessionId(): string {
   if (typeof window === 'undefined') return ''
@@ -187,7 +211,7 @@ export default function ChatWidget() {
                 ${estimate.priceUsd.toFixed(2)}
               </p>
               <Link
-                href={`/order?product=${encodeURIComponent(estimate.product)}&quantity=${estimate.quantity}`}
+                href={`/order?product=${encodeURIComponent(resolveProductSlug(estimate.product))}&quantity=${estimate.quantity}`}
                 className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg bg-gray-900 py-2 text-xs font-semibold text-white hover:bg-gray-700 transition-colors"
               >
                 Place Order <ExternalLink className="h-3 w-3" />
