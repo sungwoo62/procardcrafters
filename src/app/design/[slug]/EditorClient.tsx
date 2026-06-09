@@ -17,7 +17,7 @@ import {
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { FINISHING_BY_VALUE, ELEMENT_FINISH_KINDS, DEFAULT_FOIL_SPOT_COLOR, type FinishKind } from '@/config/finishing-catalog'
-import { M100_RGB_HEX } from '@/config/printSpecs'
+import { M100_RGB_HEX, FINISHING_SPOT_RULES } from '@/config/printSpecs'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 
@@ -4087,7 +4087,7 @@ export default function EditorClient({ product, options }: Props) {
     const designUrl = getExportDataUrl(300, true)
     if (!designUrl) throw new Error('Export failed')
     const finishUrl = getFinishPlateDataUrl(300, true) // 박 없으면 ''
-    const { PDFDocument, StandardFonts, rgb } = await import('pdf-lib')
+    const { PDFDocument, StandardFonts, rgb, PDFName, PDFArray, PDFHexString } = await import('pdf-lib')
     const pdfDoc = await PDFDocument.create()
     const MM_PER_PT = 2.8346
     const bleedPt = dims.bleedMm * MM_PER_PT
@@ -4134,7 +4134,29 @@ export default function EditorClient({ product, options }: Props) {
     }
 
     await addPlate(designUrl)
-    if (finishUrl) await addPlate(finishUrl, 'M100 SPOT PLATE / FINISH ONLY (C0 M100 Y0 K0)')
+    if (finishUrl) {
+      await addPlate(finishUrl, 'M100 SPOT PLATE / FINISH ONLY (C0 M100 Y0 K0)')
+      // OMO-2706: 별색판에 명명 OCG 레이어 등록 — OMO-2709 템플릿(spec-template.ts)과
+      // 동일 컨벤션(spotLayerName SSOT). 고객 템플릿 ↔ 생산 익스포트 별색 인코딩 1:1 정합.
+      // 박(foil_stamp) MVP: 레이어명 = 'M100_별색_박'. UTF-16 로 한글 레이어명 보존.
+      try {
+        const ctx = pdfDoc.context
+        const ocg = ctx.obj({
+          Type: PDFName.of('OCG'),
+          Name: PDFHexString.fromText(FINISHING_SPOT_RULES.foil_stamp.spotLayerName),
+        })
+        const ocgRef = ctx.register(ocg)
+        const order = PDFArray.withContext(ctx); order.push(ocgRef)
+        const on = PDFArray.withContext(ctx); on.push(ocgRef)
+        const list = PDFArray.withContext(ctx); list.push(ocgRef)
+        pdfDoc.catalog.set(PDFName.of('OCProperties'), ctx.obj({
+          OCGs: list,
+          D: ctx.obj({ Order: order, ON: on }),
+        }))
+      } catch {
+        // 레이어 메타 실패는 별색판 본질을 깨지 않으므로 무시.
+      }
+    }
 
     const pdfBytes = await pdfDoc.save()
     return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
