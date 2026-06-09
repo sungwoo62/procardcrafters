@@ -13,10 +13,11 @@ import {
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
   ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup, Loader2,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
-  Monitor, Upload, Sparkles,
+  Monitor, Upload, Sparkles, SlidersHorizontal, Shapes, MoreHorizontal,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { FINISHING_BY_VALUE, ELEMENT_FINISH_KINDS, DEFAULT_FOIL_SPOT_COLOR, type FinishKind } from '@/config/finishing-catalog'
+import { M100_RGB_HEX } from '@/config/printSpecs'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 
@@ -663,6 +664,8 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
   const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo' | 'finishes'>('yourinfo')
+  // OMO-2708: 좌측 아이콘 레일의 "More" 오버플로 팝오버
+  const [railMoreOpen, setRailMoreOpen] = useState(false)
   const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
   const allFormFields: (FieldDef & { required: boolean })[] =
     productFields.map(f => ({ ...f, required: f.required ?? true }))
@@ -4587,26 +4590,6 @@ export default function EditorClient({ product, options }: Props) {
         <span className="text-sm font-semibold text-gray-800">{product.name_en} Editor</span>
         <span className="text-xs text-gray-400 hidden sm:inline">{dims.widthMm}×{dims.heightMm}mm</span>
 
-        {/* Phase 5: Front/Back tabs */}
-        <div className="flex rounded-lg border border-gray-200 overflow-hidden">
-          {(['front', 'back'] as const).map(side => (
-            <button
-              key={side}
-              onClick={() => switchSide(side)}
-              className={`px-3 py-1 text-xs font-medium transition-colors ${activeSide === side ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-50'}`}
-            >
-              {side === 'front' ? 'Front' : 'Back'}
-            </button>
-          ))}
-        </div>
-        <button
-          onClick={copyFrontToBack}
-          title="Copy front design to back"
-          className="w-7 h-7 flex items-center justify-center rounded border border-gray-200 text-gray-500 hover:text-indigo-600 hover:border-indigo-300"
-        >
-          <CopyPlus className="w-3.5 h-3.5" />
-        </button>
-
         <div className="flex-1" />
 
         {/* Tools */}
@@ -4647,14 +4630,6 @@ export default function EditorClient({ product, options }: Props) {
         </div>
 
         <div className="flex gap-1.5">
-          {/* 인쇄 가이드 토글 (재단선/안전영역) */}
-          <button
-            onClick={toggleBleedGuides}
-            title={showBleed ? 'Hide print guides (bleed, safe area)' : 'Show print guides (bleed, safe area)'}
-            className={`w-8 h-8 flex items-center justify-center rounded-md border transition-colors ${showBleed ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-400'}`}
-          >
-            <FlipHorizontal2 className="w-4 h-4" />
-          </button>
           {/* Print Check */}
           <button
             onClick={() => { setPreflightResults(runPreflight()); setShowPreflight(true) }}
@@ -4701,8 +4676,96 @@ export default function EditorClient({ product, options }: Props) {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
+        {/* OMO-2708: 좌측 아이콘 레일 (Vistaprint식) — Product options / Text / Uploads / Graphics / Finishes / More */}
+        <div className="relative w-16 bg-white border-r border-gray-200 flex flex-col items-center py-2 shrink-0 z-20">
+          {([
+            { id: 'yourinfo',  icon: SlidersHorizontal, label: '제품옵션', type: 'panel' as const },
+            { id: 'text',      icon: Type,              label: '텍스트',  type: 'action' as const },
+            { id: 'uploads',   icon: Upload,            label: '업로드',  type: 'action' as const },
+            { id: 'shapes',    icon: Shapes,            label: '그래픽',  type: 'panel' as const },
+            { id: 'finishes',  icon: Sparkles,          label: 'Finishes', type: 'panel' as const },
+            { id: 'more',      icon: MoreHorizontal,    label: '더보기',  type: 'more' as const },
+          ]).map(({ id, icon: Icon, label, type }) => {
+            const active =
+              type === 'panel' ? activePanel === id && !railMoreOpen
+              : type === 'more' ? railMoreOpen || activePanel === 'templates' || activePanel === 'layers' || activePanel === 'properties'
+              : type === 'action' && id === 'text' ? tool === 'text'
+              : false
+            return (
+              <button
+                key={id}
+                title={label}
+                onClick={() => {
+                  if (type === 'panel') { setActivePanel(id as 'yourinfo' | 'shapes' | 'finishes'); setRailMoreOpen(false) }
+                  else if (type === 'more') { setRailMoreOpen(v => !v) }
+                  else if (id === 'text') { setTool('text'); setRailMoreOpen(false) }
+                  else if (id === 'uploads') { imageInputRef.current?.click(); setRailMoreOpen(false) }
+                }}
+                className={`w-full flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${active ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-800'}`}
+              >
+                <span className={`flex items-center justify-center w-9 h-9 rounded-xl transition-colors ${active ? 'bg-indigo-50' : 'hover:bg-gray-100'}`}>
+                  <Icon className="w-[18px] h-[18px]" />
+                </span>
+                {label}
+              </button>
+            )
+          })}
+
+          {/* More 오버플로 팝오버 — Templates / Layers / Properties */}
+          {railMoreOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setRailMoreOpen(false)} />
+              <div className="absolute left-[60px] bottom-2 z-20 w-40 rounded-xl border border-gray-200 bg-white py-1.5 shadow-xl">
+                {([
+                  { id: 'templates',  icon: LayoutTemplate, label: '템플릿' },
+                  { id: 'layers',     icon: Layers,         label: '레이어' },
+                  { id: 'properties', icon: SlidersHorizontal, label: '속성' },
+                ] as const).map(({ id, icon: Icon, label }) => (
+                  <button
+                    key={id}
+                    onClick={() => { setActivePanel(id); setRailMoreOpen(false) }}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium transition-colors ${activePanel === id ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:bg-gray-50'}`}
+                  >
+                    <Icon className="w-4 h-4" /> {label}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
         {/* Canvas area */}
         <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+          {/* OMO-2708: 캔버스 크롬 — 앞/뒤 스와치 + 인쇄 가이드 토글 (상단 좌측) */}
+          <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
+            <div className="flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 p-0.5">
+              {(['front', 'back'] as const).map(side => (
+                <button
+                  key={side}
+                  onClick={() => switchSide(side)}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeSide === side ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
+                >
+                  {side === 'front' ? '앞면' : '뒷면'}
+                </button>
+              ))}
+              <span className="w-px h-4 bg-gray-200 mx-0.5" />
+              <button
+                onClick={copyFrontToBack}
+                title="앞면 디자인을 뒷면으로 복사"
+                className="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-indigo-600"
+              >
+                <CopyPlus className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <button
+              onClick={toggleBleedGuides}
+              title={showBleed ? '재단선·안전영역 숨기기' : '재단선·안전영역 표시'}
+              className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-md transition-colors ${showBleed ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-500 bg-white hover:text-gray-800'}`}
+            >
+              <FlipHorizontal2 className="w-3.5 h-3.5" /> 재단·안전선
+            </button>
+          </div>
+
           {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
@@ -4728,8 +4791,8 @@ export default function EditorClient({ product, options }: Props) {
             <canvas ref={canvasElRef} />
           </div>
 
-          {/* 줌 컨트롤 (하단 좌측) */}
-          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
+          {/* OMO-2708: 하단 줌바 (중앙 정렬) */}
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-200 px-1.5 py-1">
             <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
             <button onClick={resetView} title="100% / 맞춤 (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
             <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
@@ -4746,26 +4809,25 @@ export default function EditorClient({ product, options }: Props) {
 
         {/* Right panel */}
         <div className="w-64 bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
-          {/* Panel tabs */}
-          <div className="flex border-b border-gray-200 shrink-0">
-            {([
-              { key: 'yourinfo',   icon: FileText,       label: 'Your Info' },
-              { key: 'templates',  icon: LayoutTemplate, label: 'Tmpl' },
-              { key: 'shapes',     icon: Star,           label: 'Shapes' },
-              { key: 'finishes',   icon: Sparkles,       label: 'Finishes' },
-              { key: 'layers',     icon: Layers,         label: 'Layers' },
-              { key: 'properties', icon: null,           label: 'Props' },
-            ] as const).map(({ key, icon: Icon, label }) => (
-              <button
-                key={key}
-                onClick={() => setActivePanel(key)}
-                className={`flex-1 py-2.5 text-[10px] font-medium flex items-center justify-center gap-0.5 transition-colors ${activePanel === key ? 'border-b-2 border-indigo-600 text-indigo-600' : 'text-gray-500 hover:text-gray-700'}`}
-              >
-                {Icon && <Icon className="w-3 h-3" />}
-                {label}
-              </button>
-            ))}
-          </div>
+          {/* OMO-2708: 패널 헤더 — 선택은 좌측 아이콘 레일이 담당, 여기선 현재 패널명만 표시 */}
+          {(() => {
+            const PANEL_META: Record<string, { icon: typeof FileText; label: string }> = {
+              yourinfo:   { icon: SlidersHorizontal, label: '제품 옵션' },
+              templates:  { icon: LayoutTemplate,    label: '템플릿' },
+              shapes:     { icon: Shapes,            label: '그래픽' },
+              finishes:   { icon: Sparkles,          label: 'Finishes' },
+              layers:     { icon: Layers,            label: '레이어' },
+              properties: { icon: SlidersHorizontal, label: '속성' },
+            }
+            const meta = PANEL_META[activePanel]
+            const Icon = meta.icon
+            return (
+              <div className="flex items-center gap-2 border-b border-gray-200 px-3 py-2.5 shrink-0">
+                <Icon className="w-4 h-4 text-indigo-600" />
+                <span className="text-xs font-semibold text-gray-800">{meta.label}</span>
+              </div>
+            )
+          })()}
 
           {/* Your Info 통합 패널 (OMO-2326: Required gate) */}
           {activePanel === 'yourinfo' && (() => {
