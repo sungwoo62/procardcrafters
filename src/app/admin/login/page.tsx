@@ -1,9 +1,12 @@
 'use client'
 
+
+// OMO-2629: 인증/관리자 페이지는 인증 게이트·비SEO → 정적 프리렌더 제외(빌드 안정성).
+export const dynamic = 'force-dynamic'
 import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
-import { createBrowserClient } from '@/lib/supabase'
+import { createAuthBrowserClient } from '@/lib/supabase'
 import { Suspense } from 'react'
 
 function AdminLoginForm() {
@@ -28,7 +31,7 @@ function AdminLoginForm() {
     setLoading(true)
     setError('')
 
-    const supabase = createBrowserClient()
+    const supabase = createAuthBrowserClient()
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
