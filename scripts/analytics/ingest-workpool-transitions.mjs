@@ -143,13 +143,16 @@ async function main() {
 
   // PostgREST 배치 한도 회피용 청크 적재.
   const CHUNK = 500;
-  let written = 0;
+  let upserted = 0;
   for (let i = 0; i < unique.length; i += CHUNK) {
     const chunk = unique.slice(i, i + CHUNK);
     const inserted = await upsert(chunk);
-    written += Array.isArray(inserted) ? inserted.length : 0;
+    upserted += Array.isArray(inserted) ? inserted.length : 0;
   }
-  console.log(`[ingest] 완료 — 신규 적재(중복 제외) ${written}건`);
+  // 주의: return=representation 은 신규 insert + 기존 merge 행을 모두 돌려준다.
+  // 따라서 upserted는 "이번 배치에서 처리한 전이 수"이지 "순증(net-new) 행 수"가 아니다.
+  // 실제 중복 제거는 DB의 activity_id UNIQUE 제약이 보장한다(겹치는 윈도우 재적재해도 행 수 불변).
+  console.log(`[ingest] 완료 — 전이 ${upserted}건 upsert (activity_id 유니크로 중복은 DB에서 자동 dedup, 순증 아님)`);
 }
 
 main().catch((err) => {
