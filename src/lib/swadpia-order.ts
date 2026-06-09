@@ -71,6 +71,33 @@ export interface SwadpiaOrderInput {
   quantity: number
   fileUrl: string
   orderTitle?: string
+  /**
+   * OMO-2707 dry-run: 로그인 → 옵션/후가공 활성화 → 주문모달 → 파일 업로드(plupload)
+   * → hidden 필드 세팅까지 실제 프로덕션 경로 그대로 수행하되, **최종 제출/결제 직전에
+   * 멈추고** 폼 스냅샷(박 옵션값 + 업로드 파일명)을 반환한다. 실주문 미발생.
+   * Done 기준("박 옵션 + 디자인/별색판이 정확히 들어가는지 dry-run 확인")용.
+   */
+  dryRun?: boolean
+}
+
+/**
+ * OMO-2707: 후가공 발주의 파일/옵션 정합성 스냅샷.
+ * dryRun 시엔 제출 직전 폼에서 읽은 실제 값, 실주문 시엔 업로드 직후 산출 값.
+ */
+export interface SwadpiaFinishingSnapshot {
+  /** selectedOptions 에 후가공(bak_/ap_/...) 필드가 존재하는가 */
+  present: boolean
+  /** 업로드 파일이 PDF일 때 페이지 수 (그 외 null) */
+  uploadedPageCount: number | null
+  /**
+   * 후가공 존재 + 합본 파일이 2페이지 이상(=OMO-2706 p2 M100 별색판 포함)이면 true.
+   * 후가공인데 false 면 별색판 누락 위험(디자인판만 발주됨).
+   */
+  spotPlatePresent: boolean
+  /** dryRun 에서 폼으로부터 읽어낸 박/후가공 활성 상태 + 핵심 옵션값 */
+  formState?: Record<string, string | boolean>
+  /** 업로드된 성원측 파일명(order_file_name2 = chgFileName) */
+  uploadedFileName?: string
 }
 
 export interface SwadpiaOrderResult {
@@ -78,6 +105,10 @@ export interface SwadpiaOrderResult {
   swadpiaOrderNumber?: string
   checkoutUrl?: string
   errorMessage?: string
+  /** OMO-2707: 후가공 주문일 때 채워짐. dryRun 결과도 여기로 반환. */
+  finishing?: SwadpiaFinishingSnapshot
+  /** dryRun 모드로 실행됐는지(실주문 미발생) */
+  dryRun?: boolean
 }
 
 export interface FactoryOrderRecord {
@@ -124,6 +155,28 @@ export async function placeSwadpiaOrder(
     const fileName = path.basename(filePath)
     const fileExt = path.extname(filePath)
     const fileSize = fs.statSync(filePath).size
+
+    // ── OMO-2707: 후가공 파일 정합성 가드 ──────────────────────────
+    // 후가공(박 등) 주문이면 업로드 파일은 OMO-2706 합본 PDF여야 한다:
+    //   p1 = 디자인판(CMYK), p2 = M100 별색 후가공판(스팟 1도).
+    // OMO-2704 결정에 따라 단일 파일·1슬롯이므로, 별색판은 같은 PDF의 2페이지로 들어간다.
+    // 후가공인데 1페이지면 별색판 누락(디자인판만 발주) → 명확히 경고한다.
+    const hasFinishing = Object.keys(input.selectedOptions).some(isFinishingKey)
+    let uploadedPageCount: number | null = null
+    if (fileExt === '.pdf') {
+      uploadedPageCount = await countPdfPages(filePath)
+    }
+    const spotPlatePresent = hasFinishing && (uploadedPageCount ?? 0) >= 2
+    if (hasFinishing) {
+      if (spotPlatePresent) {
+        console.log(`[swadpia-order] 후가공 주문 — 합본 ${uploadedPageCount}페이지 업로드 ` +
+          `(p1 디자인 + p2 M100 별색판). OMO-2706/2704 준수.`)
+      } else {
+        console.warn(`[swadpia-order] ⚠️ 후가공 주문인데 업로드 파일이 ` +
+          `${uploadedPageCount === null ? `비-PDF(${fileExt})` : uploadedPageCount + '페이지'} — ` +
+          `M100 별색판 누락 가능성(디자인판만 발주됨). 에디터 합본 export 확인 필요.`)
+      }
+    }
 
     const chromium = await getChromium()
     browser = await chromium.launch({ headless: true })
@@ -213,6 +266,42 @@ export async function placeSwadpiaOrder(
       setField('order_title', params.orderTitle)
     }, { chgFileName, fileName, fileExt, fileSize, orderTitle })
 
+    // 5-b. OMO-2707 dry-run: 제출 직전 멈추고 폼 스냅샷 반환(실주문 미발생).
+    //      프로덕션 경로(옵션/후가공 활성화 + 업로드 + hidden 필드)를 그대로 거쳤으므로
+    //      "박 옵션 + 디자인/별색판이 정확히 들어가는지" 를 고충실도로 확인할 수 있다.
+    if (input.dryRun) {
+      const formState = await page.evaluate(() => {
+        const read = (sel: string): string | boolean | undefined => {
+          const el = document.querySelector(sel) as HTMLInputElement | HTMLSelectElement | null
+          if (!el) return undefined
+          if (el instanceof HTMLInputElement && el.type === 'checkbox') return el.checked
+          return el.value
+        }
+        const out: Record<string, string | boolean> = {}
+        // 박(bak) 활성/핵심 옵션 — 후가공의 대표 케이스
+        for (const k of [
+          'chk_is_bak', 'bak_section_1', 'bak_side_1', 'bak_type_1',
+          'bak_compare_1', 'bak_x_size_1', 'bak_y_size_1',
+          'order_file_name2', 'order_file', 'order_title',
+        ]) {
+          const v = read(`#${k}`) ?? read(`[name="${k}"]`)
+          if (v !== undefined) out[k] = v
+        }
+        return out
+      })
+      return {
+        success: true,
+        dryRun: true,
+        finishing: {
+          present: hasFinishing,
+          uploadedPageCount,
+          spotPlatePresent,
+          formState,
+          uploadedFileName: chgFileName,
+        },
+      }
+    }
+
     // 6. uploadSuccessOrderSubmit() → /order/order_info/direct_order (주문서)
     await Promise.all([
       page.waitForNavigation({ waitUntil: 'domcontentloaded', timeout: 15000 }).catch(() => null),
@@ -269,17 +358,22 @@ export async function placeSwadpiaOrder(
     const finalUrl = page.url()
 
     // /order/order_result/SUCCESS/OSA260513344332
+    const finishingSnapshot: SwadpiaFinishingSnapshot | undefined = hasFinishing
+      ? { present: true, uploadedPageCount, spotPlatePresent, uploadedFileName: chgFileName }
+      : undefined
+
     const orderMatch = finalUrl.match(/order_result\/SUCCESS\/([A-Z0-9]+)/)
     if (orderMatch) {
       return {
         success: true,
         swadpiaOrderNumber: orderMatch[1],
         checkoutUrl: finalUrl,
+        finishing: finishingSnapshot,
       }
     }
 
     if (finalUrl.includes('order_result')) {
-      return { success: true, checkoutUrl: finalUrl }
+      return { success: true, checkoutUrl: finalUrl, finishing: finishingSnapshot }
     }
 
     return {
@@ -675,6 +769,29 @@ async function uploadViaPlupload(page: Page, filePath: string): Promise<string |
 
   } finally {
     page.off('response', responseHandler)
+  }
+}
+
+// ─── PDF 페이지 수 (OMO-2707 후가공 정합성 가드) ──────────────────
+//
+// OMO-2706 합본 PDF 는 p1=디자인, p2=M100 별색판(박 있을 때만). 후가공 주문의
+// 업로드 파일이 2페이지 이상인지로 별색판 포함 여부를 판정한다. pdf-lib 로 정확히
+// 세고, 로드 실패 시 PDF 객체의 `/Type /Page`(Pages 아님) 출현 수로 폴백한다.
+async function countPdfPages(filePath: string): Promise<number | null> {
+  try {
+    const bytes = fs.readFileSync(filePath)
+    try {
+      const { PDFDocument } = await import('pdf-lib')
+      const doc = await PDFDocument.load(bytes, { updateMetadata: false })
+      return doc.getPageCount()
+    } catch {
+      // 폴백: /Type /Page (뒤에 's' 없는) 토큰 카운트
+      const text = bytes.toString('latin1')
+      const matches = text.match(/\/Type\s*\/Page(?![\w])/g)
+      return matches ? matches.length : null
+    }
+  } catch {
+    return null
   }
 }
 
