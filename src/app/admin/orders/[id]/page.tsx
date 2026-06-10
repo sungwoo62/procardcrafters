@@ -704,9 +704,12 @@ export default function AdminOrderDetailPage() {
                   {fo.last_error && (
                     <p className="text-xs text-red-500 break-all">오류: {fo.last_error}</p>
                   )}
-                  {/* OMO-2830: 실원가(성원 실 결제액) 입력 — 교차검증 마진 정확도 */}
+                  {/* OMO-2830: 실원가 — 발주 시 결제서에서 자동 캡처. 아래는 수동 보정용. */}
                   <div className="flex items-center gap-2 flex-wrap pt-1">
-                    <span className="text-xs text-gray-400">실원가(₩):</span>
+                    <span className="text-xs text-gray-400">
+                      실원가(₩)
+                      <span className="text-gray-300"> · 발주 시 자동, 수동 보정</span>:
+                    </span>
                     <input
                       type="number"
                       min={0}
@@ -725,6 +728,7 @@ export default function AdminOrderDetailPage() {
                     {fo.actual_cost_usd != null && (
                       <span className="text-xs text-green-700">
                         저장됨: ₩{fo.actual_cost_krw?.toLocaleString('ko-KR')} ≈ ${fo.actual_cost_usd.toFixed(2)}
+                        <span className="text-gray-400"> ({fo.cost_recorded_by === 'swadpia-auto' ? '자동' : '수동'})</span>
                       </span>
                     )}
                   </div>

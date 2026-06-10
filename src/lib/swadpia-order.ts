@@ -109,6 +109,8 @@ export interface SwadpiaOrderResult {
   finishing?: SwadpiaFinishingSnapshot
   /** dryRun 모드로 실행됐는지(실주문 미발생) */
   dryRun?: boolean
+  /** OMO-2830: 결제서(order_pay)에서 캡처한 성원 실 결제금액(KRW). 못 읽으면 undefined. */
+  actualCostKrw?: number
 }
 
 export interface FactoryOrderRecord {
@@ -335,6 +337,10 @@ export async function placeSwadpiaOrder(
       return { success: false, errorMessage: `결제서 페이지 도달 실패 — URL: ${page.url()}` }
     }
 
+    // OMO-2830: 결제서에서 실 결제금액(KRW) 캡처 → 발주 실원가 자동 저장(교차검증 마진).
+    // 못 읽어도 발주는 진행(undefined → 호출측에서 추정 폴백/수동 입력).
+    const actualCostKrw = (await readOrderPayAmount(page)) ?? undefined
+
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
     await page.evaluate(() => {
       const radios = document.getElementsByName('pay_method')
@@ -374,11 +380,12 @@ export async function placeSwadpiaOrder(
         swadpiaOrderNumber: orderMatch[1],
         checkoutUrl: finalUrl,
         finishing: finishingSnapshot,
+        actualCostKrw,
       }
     }
 
     if (finalUrl.includes('order_result')) {
-      return { success: true, checkoutUrl: finalUrl, finishing: finishingSnapshot }
+      return { success: true, checkoutUrl: finalUrl, finishing: finishingSnapshot, actualCostKrw }
     }
 
     return {
@@ -451,6 +458,40 @@ const PRICE_SELECTORS = [
   '.total_price',
   '[id*="total_price"]',
 ] as const
+
+// OMO-2830: 결제서(order_pay) 실 결제금액(KRW) 캡처용 셀렉터.
+// 견적페이지(PRICE_SELECTORS)와 DOM 이 다를 수 있어 결제 합계 후보를 폭넓게 시도.
+const ORDER_PAY_PRICE_SELECTORS = [
+  '#total_price',
+  '#total_amount',
+  '#pay_price',
+  '#payPrice',
+  '#order_total_price',
+  '#order_price',
+  '[id*="total_price"]',
+  '[id*="pay_price"]',
+  '[id*="total_amount"]',
+  '.total_price',
+  '.pay_price',
+] as const
+
+async function readOrderPayAmount(page: Page): Promise<number | null> {
+  for (const sel of ORDER_PAY_PRICE_SELECTORS) {
+    const text = await page.evaluate((s: string) => {
+      const el = document.querySelector(s) as HTMLElement | null
+      if (!el) return null
+      return (el.innerText || el.textContent || '').trim()
+    }, sel)
+    if (!text) continue
+    const digits = text.replace(/[^0-9]/g, '')
+    if (digits.length > 0) {
+      const n = parseInt(digits, 10)
+      // 결제금액은 보통 1,000원 이상. 0/1자리 노이즈 배제.
+      if (Number.isFinite(n) && n >= 100) return n
+    }
+  }
+  return null
+}
 
 async function readDisplayedPrice(page: Page): Promise<number | null> {
   for (const sel of PRICE_SELECTORS) {

@@ -101,15 +101,38 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
   })
 
   if (result.success) {
+    // OMO-2830: 결제서에서 캡처한 실 결제금액(KRW)을 발주 시점 환율로 USD 환산해 실원가 저장.
+    // 못 읽었으면(undefined) 컬럼은 그대로 두고 패널이 추정/수동입력으로 폴백.
+    let actualCostKrw: number | null = null
+    let actualCostUsd: number | null = null
+    if (typeof result.actualCostKrw === 'number' && result.actualCostKrw > 0) {
+      const { data: orderRate } = await supabase
+        .from('print_orders')
+        .select('exchange_rate_krw_usd')
+        .eq('id', record.print_order_id)
+        .maybeSingle()
+      const rate = Number(orderRate?.exchange_rate_krw_usd ?? 1300) // KRW per USD
+      actualCostKrw = result.actualCostKrw
+      actualCostUsd = Math.round((actualCostKrw / rate) * 100) / 100
+    }
+
+    const placedUpdate: Record<string, unknown> = {
+      status: 'placed',
+      swadpia_order_number: result.swadpiaOrderNumber ?? null,
+      checkout_url: result.checkoutUrl ?? null,
+      placed_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    }
+    if (actualCostKrw != null) {
+      placedUpdate.actual_cost_krw = actualCostKrw
+      placedUpdate.actual_cost_usd = actualCostUsd
+      placedUpdate.cost_recorded_at = new Date().toISOString()
+      placedUpdate.cost_recorded_by = 'swadpia-auto'
+    }
+
     const { error: updateError } = await supabase
       .from('print_factory_orders')
-      .update({
-        status: 'placed',
-        swadpia_order_number: result.swadpiaOrderNumber ?? null,
-        checkout_url: result.checkoutUrl ?? null,
-        placed_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })
+      .update(placedUpdate)
       .eq('id', record.id)
 
     if (updateError) {
