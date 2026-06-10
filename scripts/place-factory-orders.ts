@@ -116,6 +116,7 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
       const rate = Number(orderRate?.exchange_rate_krw_usd ?? 1300) // KRW per USD
       actualCostKrw = result.actualCostKrw
       actualCostUsd = Math.round((actualCostKrw / rate) * 100) / 100
+      process.stdout.write(`  실원가 자동캡처: ₩${actualCostKrw.toLocaleString('ko-KR')} ≈ $${actualCostUsd} (출처: ${result.actualCostSource ?? '?'})\n`)
 
       // 항목 판매가/예상원가 대비 마진 차이 평가
       if (record.print_order_item_id) {
@@ -154,6 +155,11 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
           }
         }
       }
+    }
+
+    // OMO-2834: 캡처 실패 시 진단 로깅(결제서 후보 셀렉터/텍스트) → 첫 라이브에서 셀렉터 확정
+    if (actualCostKrw == null) {
+      process.stderr.write(`  ⚠ 실원가 자동캡처 실패 — 추정/수동 폴백. 결제서 진단: ${result.actualCostSource ?? 'n/a'}\n`)
     }
 
     const placedUpdate: Record<string, unknown> = {

@@ -111,6 +111,8 @@ export interface SwadpiaOrderResult {
   dryRun?: boolean
   /** OMO-2830: 결제서(order_pay)에서 캡처한 성원 실 결제금액(KRW). 못 읽으면 undefined. */
   actualCostKrw?: number
+  /** OMO-2830/2834: 실원가 캡처 출처(global / selector / label / none[진단]). 미스 시 진단 로깅용. */
+  actualCostSource?: string
 }
 
 export interface FactoryOrderRecord {
@@ -339,7 +341,9 @@ export async function placeSwadpiaOrder(
 
     // OMO-2830: 결제서에서 실 결제금액(KRW) 캡처 → 발주 실원가 자동 저장(교차검증 마진).
     // 못 읽어도 발주는 진행(undefined → 호출측에서 추정 폴백/수동 입력).
-    const actualCostKrw = (await readOrderPayAmount(page)) ?? undefined
+    const payAmount = await readOrderPayAmount(page)
+    const actualCostKrw = payAmount.krw ?? undefined
+    const actualCostSource = payAmount.source
 
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
     await page.evaluate(() => {
@@ -381,11 +385,12 @@ export async function placeSwadpiaOrder(
         checkoutUrl: finalUrl,
         finishing: finishingSnapshot,
         actualCostKrw,
+        actualCostSource,
       }
     }
 
     if (finalUrl.includes('order_result')) {
-      return { success: true, checkoutUrl: finalUrl, finishing: finishingSnapshot, actualCostKrw }
+      return { success: true, checkoutUrl: finalUrl, finishing: finishingSnapshot, actualCostKrw, actualCostSource }
     }
 
     return {
@@ -461,6 +466,8 @@ const PRICE_SELECTORS = [
 
 // OMO-2830: 결제서(order_pay) 실 결제금액(KRW) 캡처용 셀렉터.
 // 견적페이지(PRICE_SELECTORS)와 DOM 이 다를 수 있어 결제 합계 후보를 폭넓게 시도.
+// 실제 성원 DOM 조사(OMO-2647 probe): .estimate_pay_price / [class*=pay_price] /
+// 전역 order_price_detail 객체 존재 확인됨 → 셀렉터+전역+라벨텍스트 3중 시도.
 const ORDER_PAY_PRICE_SELECTORS = [
   '#total_price',
   '#total_amount',
@@ -468,29 +475,104 @@ const ORDER_PAY_PRICE_SELECTORS = [
   '#payPrice',
   '#order_total_price',
   '#order_price',
-  '[id*="total_price"]',
-  '[id*="pay_price"]',
-  '[id*="total_amount"]',
-  '.total_price',
+  '#last_price',
+  '.estimate_pay_price',
   '.pay_price',
+  '.total_price',
+  '[id*="pay_price"]',
+  '[id*="total_price"]',
+  '[id*="total_amount"]',
+  '[class*="pay_price"]',
 ] as const
 
-async function readOrderPayAmount(page: Page): Promise<number | null> {
+// 결제금액 라벨 후보(라벨 옆/근처 숫자 추출용)
+const PAY_LABEL_KEYWORDS = ['결제금액', '총 결제', '총결제', '최종 결제', '최종결제', '결제 금액', '입금금액', '입금 금액'] as const
+
+// 전역 변수/객체 후보(성원은 order_price_detail 등 JS 전역에 가격 보관)
+const PRICE_GLOBAL_KEYS = ['pay_price', 'total_price', 'order_total_price', 'last_price', 'order_price'] as const
+
+interface OrderPayAmount {
+  krw: number | null
+  source: string
+}
+
+function parseKrw(text: string | null | undefined): number | null {
+  if (!text) return null
+  const digits = String(text).replace(/[^0-9]/g, '')
+  if (digits.length === 0) return null
+  const n = parseInt(digits, 10)
+  return Number.isFinite(n) && n >= 100 ? n : null
+}
+
+async function readOrderPayAmount(page: Page): Promise<OrderPayAmount> {
+  // 1) JS 전역(order_price_detail.* / window.<key>) — 가장 신뢰도 높음
+  const fromGlobal = await page.evaluate((keys: readonly string[]) => {
+    const w = window as unknown as Record<string, unknown>
+    const tryNum = (v: unknown): number | null => {
+      if (typeof v === 'number' && isFinite(v) && v >= 100) return Math.round(v)
+      if (typeof v === 'string') {
+        const d = v.replace(/[^0-9]/g, '')
+        if (d.length) { const n = parseInt(d, 10); if (n >= 100) return n }
+      }
+      return null
+    }
+    const opd = w['order_price_detail']
+    if (opd && typeof opd === 'object') {
+      for (const k of keys) {
+        const hit = tryNum((opd as Record<string, unknown>)[k])
+        if (hit != null) return { k: `order_price_detail.${k}`, v: hit }
+      }
+    }
+    for (const k of keys) {
+      const hit = tryNum(w[k])
+      if (hit != null) return { k: `window.${k}`, v: hit }
+    }
+    return null
+  }, PRICE_GLOBAL_KEYS).catch(() => null)
+  if (fromGlobal && fromGlobal.v) return { krw: fromGlobal.v, source: `global:${fromGlobal.k}` }
+
+  // 2) 셀렉터
   for (const sel of ORDER_PAY_PRICE_SELECTORS) {
     const text = await page.evaluate((s: string) => {
       const el = document.querySelector(s) as HTMLElement | null
       if (!el) return null
       return (el.innerText || el.textContent || '').trim()
-    }, sel)
-    if (!text) continue
-    const digits = text.replace(/[^0-9]/g, '')
-    if (digits.length > 0) {
-      const n = parseInt(digits, 10)
-      // 결제금액은 보통 1,000원 이상. 0/1자리 노이즈 배제.
-      if (Number.isFinite(n) && n >= 100) return n
-    }
+    }, sel).catch(() => null)
+    const n = parseKrw(text)
+    if (n != null) return { krw: n, source: `selector:${sel}` }
   }
-  return null
+
+  // 3) 라벨 텍스트 근처 금액(결제금액/총 결제 등) — 라벨을 포함한 행에서 원 단위 추출
+  const fromLabel = await page.evaluate((kws: readonly string[]) => {
+    const els = Array.from(document.querySelectorAll('tr, li, div, p, td, span'))
+    for (const el of els) {
+      const t = (el as HTMLElement).innerText || el.textContent || ''
+      if (t.length > 200) continue
+      if (kws.some((kw) => t.includes(kw)) && /[0-9],?[0-9]/.test(t) && t.includes('원')) {
+        // "원" 앞쪽 숫자 덩어리 추출
+        const m = t.match(/([0-9][0-9,]{2,})\s*원/)
+        if (m) return m[1]
+      }
+    }
+    return null
+  }, PAY_LABEL_KEYWORDS).catch(() => null)
+  const nLabel = parseKrw(fromLabel)
+  if (nLabel != null) return { krw: nLabel, source: 'label:결제금액' }
+
+  // 4) 실패 — 진단용 후보 수집(첫 라이브 발주에서 정확한 셀렉터 파악)
+  const diag = await page.evaluate(() => {
+    const cands = Array.from(document.querySelectorAll('[id*="price" i],[class*="price" i],[id*="pay" i],[class*="pay" i],[id*="amount" i]'))
+      .slice(0, 12)
+      .map((e) => {
+        const el = e as HTMLElement
+        const id = el.id ? `#${el.id}` : ''
+        const cls = el.className && typeof el.className === 'string' ? `.${el.className.split(/\s+/)[0]}` : ''
+        const txt = ((el.innerText || el.textContent || '').replace(/\s+/g, ' ').trim()).slice(0, 24)
+        return `${id || cls}=${txt}`
+      })
+    return cands.join(' | ')
+  }).catch(() => '')
+  return { krw: null, source: `none[${diag}]` }
 }
 
 async function readDisplayedPrice(page: Page): Promise<number | null> {
