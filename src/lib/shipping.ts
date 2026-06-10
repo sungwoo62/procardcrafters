@@ -16,6 +16,15 @@ import { fetchFedexRates, fedexServiceToInternalCode, isFedexApiConfigured } fro
 const DEFAULT_VAT_MARKUP_PCT = 10
 const DEFAULT_FALLBACK_USD = 35
 
+// FedEx API 응답 금액을 USD 로 환산.
+// 계약 계정(KR)은 preferredCurrency:USD 요청에도 KRW 로 응답하므로,
+// currency 가 USD 가 아니면 환율(usdPerKrw)로 환산한다.
+function toUsd(amount: number, currency: string | undefined, usdPerKrw: number): number {
+  if (!currency || currency.toUpperCase() === 'USD') return amount
+  // 현재 계약 통화는 KRW 한 종류. 그 외 통화는 KRW 와 동일 처리(안전한 환산).
+  return krwToUsd(amount, usdPerKrw)
+}
+
 const FALLBACK_ZONES: { code: string; nameEn: string; countries: string[]; baseUsd: number }[] = [
   { code: 'A', nameEn: 'Japan',                  countries: ['JP'],                                                           baseUsd: 18 },
   { code: 'D', nameEn: 'US & Canada',            countries: ['US', 'CA'],                                                      baseUsd: 15 },
@@ -120,8 +129,10 @@ export async function quoteShipping(
       return cached.quote
     }
     try {
-      const { data: cfg } = await supabase.from('print_shipping_config').select('vat_markup_percent').eq('id', 1).maybeSingle()
+      const { data: cfg } = await supabase.from('print_shipping_config').select('vat_markup_percent, krw_per_usd_override').eq('id', 1).maybeSingle()
       const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
+      const override = Number(cfg?.krw_per_usd_override ?? 0)
+      const usdPerKrw = override > 0 ? 1 / override : await getKrwToUsdRate()
       const apiResult = await fetchFedexRates({
         recipientCountryCode: upperCountry,
         recipientPostalCode: recipientPostal ?? '00000',
@@ -130,7 +141,9 @@ export async function quoteShipping(
         preferredService: mapPreferredService(serviceCode),
       })
       if (apiResult.cheapest) {
-        const baseUsd = apiResult.cheapest.totalNetCharge
+        // FedEx 계약 계정(KR)은 preferredCurrency:USD 요청에도 KRW 로 응답한다.
+        // USD 가 아니면 환율로 환산해야 한다 (미환산 시 1500배 과다 청구).
+        const baseUsd = toUsd(apiResult.cheapest.totalNetCharge, apiResult.cheapest.currency, usdPerKrw)
         const quote: ShippingQuote = {
           costUsd: Math.round(baseUsd * (1 + markupPct / 100) * 100) / 100,
           baseCostUsd: Math.round(baseUsd * 100) / 100,
@@ -364,10 +377,12 @@ export async function quoteShippingOptions(
     try {
       const { data: cfg } = await supabase
         .from('print_shipping_config')
-        .select('vat_markup_percent')
+        .select('vat_markup_percent, krw_per_usd_override')
         .eq('id', 1)
         .maybeSingle()
       const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
+      const override = Number(cfg?.krw_per_usd_override ?? 0)
+      const usdPerKrw = override > 0 ? 1 / override : await getKrwToUsdRate()
       const apiResult = await fetchFedexRates({
         recipientCountryCode: upperCountry,
         recipientPostalCode: recipientPostal ?? '00000',
@@ -383,7 +398,8 @@ export async function quoteShippingOptions(
         const svcMap = new Map(services?.map((s) => [s.code, s]) ?? [])
 
         const options: ShippingQuote[] = apiResult.options.map((opt) => {
-          const baseUsd = opt.totalNetCharge
+          // KRW 응답 → USD 환산 (quoteShipping 과 동일)
+          const baseUsd = toUsd(opt.totalNetCharge, opt.currency, usdPerKrw)
           const code = fedexServiceToInternalCode(opt.serviceType)
           const svc = svcMap.get(code)
           return {

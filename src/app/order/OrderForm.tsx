@@ -855,6 +855,9 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
               clientId,
               currency: 'USD',
               intent: 'capture',
+              // 영문 스토어이므로 PayPal 버튼 문구를 영어로 고정.
+              // 미설정 시 SDK가 브라우저/지역(예: 한국)을 감지해 한글로 렌더됨.
+              locale: 'en_US',
             }}
           >
             <PayPalButtons
