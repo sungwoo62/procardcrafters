@@ -123,23 +123,79 @@ function buildEmailHtml(status: OrderStatus, data: OrderEmailData): string {
   return ''
 }
 
+// OMO-2840: 실제 고객 회신메일과 테스트 발송이 100% 동일하도록 제목/본문 생성을 단일화.
+// sendOrderStatusEmail / sendTestQuoteEmail 모두 이 빌더를 통과한다 → 본문/제목 drift 방지.
+export function buildOrderStatusEmail(
+  status: OrderStatus,
+  data: OrderEmailData
+): { subject: string; html: string } | null {
+  const subject = STATUS_SUBJECTS[status]
+  if (!subject) return null
+  const html = buildEmailHtml(status, data)
+  if (!html) return null
+  return { subject: `[Procardcrafters] ${subject} — #${data.orderNumber}`, html }
+}
+
 export async function sendOrderStatusEmail(
   status: OrderStatus,
   data: OrderEmailData
 ): Promise<void> {
   if (!resend) return
-  const subject = STATUS_SUBJECTS[status]
-  if (!subject) return
-
-  const html = buildEmailHtml(status, data)
-  if (!html) return
+  const built = buildOrderStatusEmail(status, data)
+  if (!built) return
 
   await resend.emails.send({
     from: FROM,
     to: data.customerEmail,
-    subject: `[Procardcrafters] ${subject} — #${data.orderNumber}`,
-    html,
+    subject: built.subject,
+    html: built.html,
   })
+}
+
+// OMO-2840: 어드민이 입력한 임의 주소로, 고객에게 나갈 것과 동일한 회신메일을 테스트 발송.
+// - `to`는 입력 toEmail 로만 강제 (실고객/CC/BCC 금지)
+// - 본문/제목은 buildOrderStatusEmail 재사용 → 실제 메일과 100% 동일, 제목에 [테스트] 프리픽스만 추가
+// - RESEND_API_KEY 미설정 시 발송 없이 미리보기(html)만 반환 (sent=false)
+export interface TestQuoteEmailParams {
+  status: OrderStatus
+  data: OrderEmailData
+  toEmail: string
+}
+
+export async function sendTestQuoteEmail(
+  params: TestQuoteEmailParams
+): Promise<{ sent: boolean; subject: string; html: string }> {
+  const { status, data, toEmail } = params
+  const built = buildOrderStatusEmail(status, data)
+  if (!built) {
+    throw new Error(`지원하지 않는 샘플 유형입니다: ${status}`)
+  }
+  const subject = `[테스트] ${built.subject}`
+
+  if (!resend) {
+    // 키 미설정 환경(미배포/로컬): 발송 대신 미리보기만 제공
+    return { sent: false, subject, html: built.html }
+  }
+
+  await resend.emails.send({
+    from: FROM,
+    to: toEmail, // 입력값으로만 강제 — 실고객/CC/BCC 없음
+    subject,
+    html: built.html,
+  })
+  return { sent: true, subject, html: built.html }
+}
+
+// OMO-2840: orderId 없이 호출할 때 사용하는 대표 샘플 데이터(실데이터 미참조).
+export const SAMPLE_ORDER_EMAIL_DATA: OrderEmailData = {
+  orderNumber: 'SAMPLE-0001',
+  customerEmail: 'sample@procardcrafters.com',
+  customerName: '홍길동',
+  totalUsd: 128.0,
+  items: [
+    { name: '프리미엄 명함 · 양면 컬러 · 300매', quantity: 3, priceUsd: 32.0 },
+    { name: '무광 코팅 옵션', quantity: 1, priceUsd: 32.0 },
+  ],
 }
 
 export async function sendAdminNewOrderEmail(
