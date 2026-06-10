@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  공장 발주 러너 게이트웨이 — launchd 자동 기동/재시작 (OMO-2716)
+
+  맥스튜디오 자동화 워커(:18790 으로 디스패치)가 호출하는 HTTP 게이트웨이.
+  KeepAlive=죽으면 재기동, RunAtLoad=부팅 시 기동.
+
+  설치: scripts/automation-hub/setup-factory-runner.sh
+  WorkingDirectory / .env.local 경로는 실제 procardcrafters 체크아웃에 맞게 조정.
+-->
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.procardcrafters.factory-runner</string>
+
+  <key>ProgramArguments</key>
+  <array>
+    <string>/opt/homebrew/bin/node</string>
+    <string>--env-file=.env.local</string>
+    <string>--import</string>
+    <string>tsx</string>
+    <string>scripts/automation-hub/factory-runner.ts</string>
+  </array>
+
+  <key>WorkingDirectory</key>
+  <string>/Users/william/procardcrafters</string>
+
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>FACTORY_RUNNER_PORT</key>
+    <string>18790</string>
+    <key>PATH</key>
+    <string>/usr/local/bin:/usr/bin:/bin:/opt/homebrew/bin</string>
+  </dict>
+
+  <key>KeepAlive</key>
+  <true/>
+
+  <key>RunAtLoad</key>
+  <true/>
+
+  <key>StandardOutPath</key>
+  <string>/tmp/factory-runner.log</string>
+
+  <key>StandardErrorPath</key>
+  <string>/tmp/factory-runner.error.log</string>
+
+  <key>ThrottleInterval</key>
+  <integer>5</integer>
+</dict>
+</plist>
