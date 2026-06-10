@@ -241,8 +241,10 @@ async function resolveFileUrl(supabase: SupabaseClient, record: FactoryOrderReco
       .limit(1)
 
     if (files && files.length > 0) {
+      // 버킷은 'print-assets' (업로드: api/files/upload/route.ts).
+      // storage_path 는 'print-files/<...>' 형태로 print-assets 내부 폴더 키를 그대로 담는다(이중 prefix 아님).
       const { data: signed } = await supabase.storage
-        .from('print-files')
+        .from('print-assets')
         .createSignedUrl(files[0].storage_path, 3600)
       return signed?.signedUrl ?? null
     }
@@ -256,8 +258,9 @@ async function resolveFileUrl(supabase: SupabaseClient, record: FactoryOrderReco
     .limit(1)
 
   if (files && files.length > 0) {
+    // 버킷은 'print-assets' (위 print_order_item_id 경로와 동일 계약).
     const { data: signed } = await supabase.storage
-      .from('print-files')
+      .from('print-assets')
       .createSignedUrl(files[0].storage_path, 3600)
     return signed?.signedUrl ?? null
   }
