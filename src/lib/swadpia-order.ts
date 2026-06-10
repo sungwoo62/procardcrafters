@@ -128,6 +128,11 @@ export interface FactoryOrderRecord {
   failed_at: string | null
   created_at: string
   updated_at: string
+  // OMO-2830: 발주시점 실원가(성원 실 결제액). 마이그레이션 20260610000020 이후 존재.
+  actual_cost_krw?: number | null
+  actual_cost_usd?: number | null
+  cost_recorded_at?: string | null
+  cost_recorded_by?: string | null
 }
 
 // ─── Core Playwright automation ───────────────────────────────

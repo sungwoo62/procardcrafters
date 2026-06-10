@@ -112,6 +112,58 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
   })
 }
 
+// PATCH: 발주 실원가 기록 (OMO-2830 교차검증)
+// body: { factoryOrderId: string, actualCostKrw: number | null }
+// 성원 실 결제금액(KRW)을 받아 주문 시점 환율(exchange_rate_krw_usd, KRW per USD)로
+// USD 환산 스냅샷을 저장한다. actualCostKrw=null 이면 기록 해제.
+export async function PATCH(req: NextRequest, { params }: RouteContext) {
+  const user = await requireAdmin()
+  if (!user) return NextResponse.json({ error: '인증 필요' }, { status: 401 })
+
+  const { id } = await params
+  const body = await req.json().catch(() => null)
+  if (!body?.factoryOrderId) {
+    return NextResponse.json({ error: 'factoryOrderId 필수' }, { status: 400 })
+  }
+
+  const supabase = createServerClient()
+
+  const krwRaw = body.actualCostKrw
+  const clearing = krwRaw === null || krwRaw === undefined || krwRaw === ''
+  const krw = clearing ? null : Number(krwRaw)
+  if (!clearing && (!Number.isFinite(krw) || (krw as number) < 0)) {
+    return NextResponse.json({ error: '실원가(KRW)는 0 이상의 숫자여야 합니다.' }, { status: 400 })
+  }
+
+  // 환율: 주문 시점 캡처값(KRW per USD). 없으면 1300 폴백(promotion-engine 동일 규칙).
+  const { data: order } = await supabase
+    .from('print_orders')
+    .select('exchange_rate_krw_usd')
+    .eq('id', id)
+    .maybeSingle()
+  const rate = Number(order?.exchange_rate_krw_usd ?? 1300)
+  const usd = clearing ? null : Math.round(((krw as number) / rate) * 100) / 100
+
+  const update = {
+    actual_cost_krw: krw,
+    actual_cost_usd: usd,
+    cost_recorded_at: clearing ? null : new Date().toISOString(),
+    cost_recorded_by: clearing ? null : (user.email ?? 'admin'),
+    updated_at: new Date().toISOString(),
+  }
+
+  const { data, error } = await supabase
+    .from('print_factory_orders')
+    .update(update)
+    .eq('id', body.factoryOrderId)
+    .eq('print_order_id', id)
+    .select()
+    .single()
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+  return NextResponse.json({ factoryOrder: data })
+}
+
 // DELETE: 발주 취소 (pending 상태만)
 export async function DELETE(_req: NextRequest, { params }: RouteContext) {
   const user = await requireAdmin()

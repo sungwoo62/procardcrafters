@@ -105,6 +105,7 @@ interface Order {
   subtotal_usd: number
   shipping_usd: number
   total_usd: number
+  exchange_rate_krw_usd: number | null
   stripe_payment_intent_id: string | null
   status: OrderStatus
   notes: string | null
@@ -223,6 +224,8 @@ export default function AdminOrderDetailPage() {
   const [factoryLoading, setFactoryLoading] = useState(false)
   const [factoryMsg, setFactoryMsg] = useState('')
   const [shipmentSummaries, setShipmentSummaries] = useState<ShipmentSummary[]>([])
+  // OMO-2830: 발주별 실원가(KRW) 입력값
+  const [costInputs, setCostInputs] = useState<Record<string, string>>({})
 
   const [designProofs, setDesignProofs] = useState<DesignProofRecord[]>([])
   const [proofUploading, setProofUploading] = useState(false)
@@ -343,6 +346,32 @@ export default function AdminOrderDetailPage() {
       setFactoryMsg(`오류: ${data.error}`)
     } else {
       setFactoryMsg(data.message)
+      await fetchFactoryOrders()
+    }
+    setFactoryLoading(false)
+  }
+
+  // OMO-2830: 발주 실원가 기록 (성원 실 결제액 KRW → USD 환산 저장)
+  async function handleRecordFactoryCost(factoryOrderId: string) {
+    const raw = costInputs[factoryOrderId]
+    setFactoryLoading(true)
+    setFactoryMsg('')
+    const res = await fetch(`/api/admin/orders/${id}/factory-order`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        factoryOrderId,
+        actualCostKrw: raw === undefined || raw === '' ? null : Number(raw),
+      }),
+    })
+    const data = await res.json()
+    setFactoryMsg(res.ok ? '실원가 기록 완료' : `오류: ${data.error}`)
+    if (res.ok) {
+      setCostInputs((prev) => {
+        const next = { ...prev }
+        delete next[factoryOrderId]
+        return next
+      })
       await fetchFactoryOrders()
     }
     setFactoryLoading(false)
@@ -675,6 +704,30 @@ export default function AdminOrderDetailPage() {
                   {fo.last_error && (
                     <p className="text-xs text-red-500 break-all">오류: {fo.last_error}</p>
                   )}
+                  {/* OMO-2830: 실원가(성원 실 결제액) 입력 — 교차검증 마진 정확도 */}
+                  <div className="flex items-center gap-2 flex-wrap pt-1">
+                    <span className="text-xs text-gray-400">실원가(₩):</span>
+                    <input
+                      type="number"
+                      min={0}
+                      placeholder={fo.actual_cost_krw != null ? String(fo.actual_cost_krw) : '성원 결제액'}
+                      value={costInputs[fo.id] ?? ''}
+                      onChange={(e) => setCostInputs((prev) => ({ ...prev, [fo.id]: e.target.value }))}
+                      className="w-32 border rounded px-2 py-1 text-xs"
+                    />
+                    <button
+                      onClick={() => handleRecordFactoryCost(fo.id)}
+                      disabled={factoryLoading}
+                      className="px-2 py-1 text-xs bg-gray-800 text-white rounded hover:bg-black disabled:opacity-40"
+                    >
+                      기록
+                    </button>
+                    {fo.actual_cost_usd != null && (
+                      <span className="text-xs text-green-700">
+                        저장됨: ₩{fo.actual_cost_krw?.toLocaleString('ko-KR')} ≈ ${fo.actual_cost_usd.toFixed(2)}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-400">
                     {fo.placed_at
                       ? `발주 완료: ${new Date(fo.placed_at).toLocaleString('ko-KR')}`

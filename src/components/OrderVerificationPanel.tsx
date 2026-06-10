@@ -6,13 +6,17 @@
 //
 // 데이터 출처:
 //  - 고객 주문: print_order_items (selected_options / quantity / subtotal_usd)
-//  - 우리 발주: print_factory_orders (options_snapshot / quantity) — item별 링크
-//  - 원가 추정: 상품 margin_multiplier (sell ÷ 배수 = 추정 원가, 프로모션 로직과 동일)
+//  - 우리 발주: print_factory_orders (options_snapshot / quantity / actual_cost_*) — item별 링크
+//  - 원가: ① 발주 실원가(actual_cost_usd) 우선 ② base_price_krw×수량÷환율 추정
+//          ③ 판매가÷margin_multiplier 폴백
 //  - 배송: print_shipments cost_usd(실 FedEx 원가) vs 고객 청구 shipping_usd
 //
-// 스펙 일치는 자동 판정하지 않는다(성원 카테고리 옵션 키와 내부 옵션 키가 달라 오탐 위험).
-// 자동 점검은 직접 비교 가능한 항목(발주 연결 / 수량 / 마진 양수 / 배송 원가)만 판정하고,
-// 스펙은 좌우 병치로 보여주고 육안 확인을 권고한다.
+// 스펙 점검(OMO-2830 보드 결정): 좌우 병치 육안확인 + 자동 프리셋 일치 메시지 둘 다 제공.
+// 발주 options_snapshot 은 큐 등록 시 expandFinishingToSwadpiaFields(고객 selected_options)로
+// 생성되므로, 같은 변환을 고객 선택에 적용해 발주 스냅샷과 대조하면 사후 드리프트
+// (주문 수정 등)를 자동 감지할 수 있다.
+
+import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
 
 interface VItem {
   id: string
@@ -30,6 +34,8 @@ interface VFactoryOrder {
   category_code: string
   options_snapshot: Record<string, string>
   quantity: number
+  actual_cost_krw?: number | null
+  actual_cost_usd?: number | null
 }
 
 interface VShipment {
@@ -43,10 +49,12 @@ interface VOrder {
   subtotal_usd: number
   shipping_usd: number
   total_usd: number
+  exchange_rate_krw_usd: number | null
   print_order_items: VItem[]
 }
 
 const DEFAULT_MULTIPLIER = 3.3
+const DEFAULT_RATE = 1300 // KRW per USD (promotion-engine 폴백과 동일)
 
 function usd(n: number): string {
   return `$${n.toFixed(2)}`
@@ -74,6 +82,36 @@ function Check({ tone, label }: { tone: CheckTone; label: string }) {
   )
 }
 
+type CostBasis = 'actual' | 'estimate_master' | 'estimate_multiplier'
+
+const COST_BASIS_LABEL: Record<CostBasis, string> = {
+  actual: '실원가',
+  estimate_master: '추정(원가표)',
+  estimate_multiplier: '추정(배수)',
+}
+
+// 고객 선택을 발주 변환과 동일하게 펼친 뒤 발주 스냅샷과 대조 → 자동 프리셋 일치 점검
+function comparePreset(
+  selected: Record<string, string>,
+  snapshot: Record<string, string>,
+): { ok: boolean; diffs: string[] } {
+  const expected = expandFinishingToSwadpiaFields(selected ?? {})
+  const diffs: string[] = []
+  const keys = new Set([...Object.keys(expected), ...Object.keys(snapshot ?? {})])
+  for (const k of keys) {
+    const e = expected[k]
+    const a = (snapshot ?? {})[k]
+    if (e !== undefined && a !== undefined) {
+      if (String(e) !== String(a)) diffs.push(`${k}: 고객 '${e}' ≠ 발주 '${a}'`)
+    } else if (e !== undefined && a === undefined) {
+      diffs.push(`${k}: 발주에 미반영(고객 '${e}')`)
+    } else if (e === undefined && a !== undefined) {
+      diffs.push(`${k}: 발주에만 존재('${a}')`)
+    }
+  }
+  return { ok: diffs.length === 0, diffs }
+}
+
 export function OrderVerificationPanel({
   order,
   factoryOrders,
@@ -84,6 +122,7 @@ export function OrderVerificationPanel({
   shipments: VShipment[]
 }) {
   const items = order.print_order_items ?? []
+  const rate = Number(order.exchange_rate_krw_usd) || DEFAULT_RATE
 
   // item → 연결된 발주 목록
   const factoryByItem = new Map<string, VFactoryOrder[]>()
@@ -99,22 +138,42 @@ export function OrderVerificationPanel({
     }
   }
 
-  // 상품 원가/마진 추정
-  let estProductCost = 0
+  let totalCost = 0
   const rows = items.map((item) => {
-    const mult = item.print_products?.margin_multiplier || DEFAULT_MULTIPLIER
-    const estCost = item.subtotal_usd / mult
-    estProductCost += estCost
-    const margin = item.subtotal_usd - estCost
     const linked = factoryByItem.get(item.id) ?? []
-    const factoryQty = linked.reduce((s, f) => s + (f.quantity ?? 0), 0)
     const hasFactory = linked.length > 0
+    const factoryQty = linked.reduce((s, f) => s + (f.quantity ?? 0), 0)
     const qtyMatch = hasFactory && factoryQty === item.quantity
-    return { item, mult, estCost, margin, linked, factoryQty, hasFactory, qtyMatch }
+
+    // 원가 결정: 실원가 우선 → 원가표(base_price_krw) → 배수 폴백
+    const actualVals = linked.map((f) => f.actual_cost_usd).filter((v) => v != null) as number[]
+    const allActual = hasFactory && actualVals.length === linked.length && linked.length > 0
+    const mult = item.print_products?.margin_multiplier || DEFAULT_MULTIPLIER
+    const baseKrw = item.print_products?.base_price_krw
+    let cost: number
+    let basis: CostBasis
+    if (allActual) {
+      cost = actualVals.reduce((s, v) => s + v, 0)
+      basis = 'actual'
+    } else if (baseKrw != null && baseKrw > 0) {
+      cost = (baseKrw * item.quantity) / rate
+      basis = 'estimate_master'
+    } else {
+      cost = item.subtotal_usd / mult
+      basis = 'estimate_multiplier'
+    }
+    totalCost += cost
+    const margin = item.subtotal_usd - cost
+
+    // 자동 프리셋 일치 점검(발주 연결된 경우만)
+    const preset = hasFactory ? comparePreset(item.selected_options, linked[0].options_snapshot) : null
+
+    return { item, mult, baseKrw, cost, basis, margin, linked, factoryQty, hasFactory, qtyMatch, preset }
   })
 
   const productSell = order.subtotal_usd
-  const productMargin = productSell - estProductCost
+  const productMargin = productSell - totalCost
+  const anyEstimated = rows.some((r) => r.basis !== 'actual')
 
   // 배송: 실 원가 vs 고객 청구
   const activeShipments = shipments.filter((s) => s.status !== 'cancelled')
@@ -130,8 +189,9 @@ export function OrderVerificationPanel({
   // 자동 점검 종합
   const allLinked = rows.length > 0 && rows.every((r) => r.hasFactory)
   const allQtyMatch = rows.every((r) => r.qtyMatch)
+  const allPresetOk = rows.every((r) => r.preset?.ok)
   const marginPositive = productMargin > 0 && (!hasShipment || shipMargin >= 0)
-  const autoPass = allLinked && allQtyMatch && marginPositive
+  const autoPass = allLinked && allQtyMatch && allPresetOk && marginPositive
 
   return (
     <div className="bg-white rounded-lg shadow p-5 space-y-5 border-l-4 border-indigo-400">
@@ -149,7 +209,7 @@ export function OrderVerificationPanel({
 
       {/* 항목별 대조 */}
       <div className="space-y-3">
-        {rows.map(({ item, mult, estCost, margin, linked, factoryQty, hasFactory, qtyMatch }) => (
+        {rows.map(({ item, mult, baseKrw, cost, basis, margin, linked, factoryQty, hasFactory, qtyMatch, preset }) => (
           <div key={item.id} className="border rounded-lg p-4 space-y-3">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <p className="font-medium text-sm">{item.product_name_en}</p>
@@ -163,6 +223,22 @@ export function OrderVerificationPanel({
                 )}
               </div>
             </div>
+
+            {/* 자동 프리셋 일치 메시지 */}
+            {hasFactory && preset && (
+              preset.ok ? (
+                <div className="text-xs">
+                  <Check tone="ok" label="사전 프리셋 자동 일치 — 발주 스펙 = 고객 선택" />
+                </div>
+              ) : (
+                <div className="text-xs bg-red-50 border border-red-100 rounded p-2 space-y-1">
+                  <Check tone="warn" label="사전 프리셋 불일치 자동 감지" />
+                  <ul className="list-disc list-inside text-red-700">
+                    {preset.diffs.map((d, i) => <li key={i}>{d}</li>)}
+                  </ul>
+                </div>
+              )
+            )}
 
             {/* 스펙 좌우 병치 (육안 확인) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
@@ -198,12 +274,17 @@ export function OrderVerificationPanel({
             {/* 금액/마진 */}
             <div className="flex flex-wrap gap-x-6 gap-y-1 text-xs border-t pt-2.5">
               <span><span className="text-gray-400">판매가:</span> {usd(item.subtotal_usd)}</span>
-              <span><span className="text-gray-400">추정 원가(÷{mult}):</span> {usd(estCost)}</span>
+              <span>
+                <span className="text-gray-400">원가:</span> {usd(cost)}
+                <span className={`ml-1 px-1 rounded ${basis === 'actual' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                  {COST_BASIS_LABEL[basis]}
+                </span>
+              </span>
               <span className={margin > 0 ? 'text-green-700' : 'text-red-600'}>
                 <span className="text-gray-400">마진:</span> {usd(margin)} ({pct(item.subtotal_usd > 0 ? margin / item.subtotal_usd : 0)})
               </span>
-              {item.print_products?.base_price_krw != null && (
-                <span className="text-gray-400">원가표 ₩{item.print_products.base_price_krw.toLocaleString('ko-KR')}/단위</span>
+              {basis !== 'actual' && baseKrw != null && (
+                <span className="text-gray-400">원가표 ₩{baseKrw.toLocaleString('ko-KR')}/단위</span>
               )}
             </div>
           </div>
@@ -221,7 +302,10 @@ export function OrderVerificationPanel({
         <div className="space-y-1">
           <p className="text-xs font-medium text-gray-400 uppercase">상품</p>
           <div className="flex justify-between"><span className="text-gray-500">판매 합계</span><span>{usd(productSell)}</span></div>
-          <div className="flex justify-between"><span className="text-gray-500">추정 원가</span><span>{usd(estProductCost)}</span></div>
+          <div className="flex justify-between">
+            <span className="text-gray-500">원가 {anyEstimated ? '(일부 추정)' : '(실원가)'}</span>
+            <span>{usd(totalCost)}</span>
+          </div>
           <div className={`flex justify-between font-medium ${productMargin > 0 ? 'text-green-700' : 'text-red-600'}`}>
             <span>상품 마진</span><span>{usd(productMargin)}</span>
           </div>
@@ -250,8 +334,9 @@ export function OrderVerificationPanel({
       </div>
 
       <p className="text-[11px] text-gray-400 leading-relaxed">
-        ※ 원가는 상품 마진배수 기준 추정값(옵션별 실 원가 미반영). 스펙 일치는 자동 판정하지 않으니
-        위 좌우 스펙을 육안 대조 후 발주하세요. 배송 마진은 송장 생성(FedEx 원가 확정) 후 표시됩니다.
+        ※ 원가는 <b>실원가</b>(발주 실 결제액 입력 시) → <b>원가표</b>(base_price_krw×수량÷환율) → <b>배수</b>(판매가÷마진배수) 순으로 결정.
+        실원가 입력 전에는 추정값입니다. 스펙은 자동 프리셋 일치 점검(발주↔고객) + 좌우 육안 대조 둘 다 제공하니
+        발주 전 확인하세요. 배송 마진은 송장 생성(FedEx 원가 확정) 후 표시됩니다.
       </p>
     </div>
   )
