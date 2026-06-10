@@ -9,6 +9,7 @@ import { OrderStatus, DesignProofStatus } from '@/types/database'
 import type { PrintOrderEvent, OrderEventType } from '@/lib/order-events'
 import type { FactoryOrderRecord as BaseFactoryOrderRecord } from '@/lib/swadpia-order'
 import { OrderShipments } from '@/components/OrderShipments'
+import { OrderVerificationPanel } from '@/components/OrderVerificationPanel'
 
 type FactoryOrderRecord = BaseFactoryOrderRecord & { checkout_url?: string | null }
 
@@ -76,6 +77,16 @@ interface OrderItem {
   unit_price_usd: number
   subtotal_usd: number
   print_files?: { id: string; original_filename: string; storage_path: string }[]
+  // OMO-2830: 교차검증 패널 원가 추정용
+  print_products?: { margin_multiplier: number | null; base_price_krw: number | null } | null
+}
+
+// OMO-2830: 교차검증 패널 — 배송 원가 대조용 송장 요약
+interface ShipmentSummary {
+  id: string
+  cost_usd: number | null
+  charged_usd: number | null
+  status: string
 }
 
 interface Order {
@@ -211,6 +222,7 @@ export default function AdminOrderDetailPage() {
   const [factoryOrders, setFactoryOrders] = useState<FactoryOrderRecord[]>([])
   const [factoryLoading, setFactoryLoading] = useState(false)
   const [factoryMsg, setFactoryMsg] = useState('')
+  const [shipmentSummaries, setShipmentSummaries] = useState<ShipmentSummary[]>([])
 
   const [designProofs, setDesignProofs] = useState<DesignProofRecord[]>([])
   const [proofUploading, setProofUploading] = useState(false)
@@ -234,6 +246,15 @@ export default function AdminOrderDetailPage() {
     }
   }, [id])
 
+  // OMO-2830: 교차검증 패널 배송 원가 대조용
+  const fetchShipmentSummaries = useCallback(async () => {
+    const res = await fetch(`/api/admin/orders/${id}/shipments`)
+    if (res.ok) {
+      const data = await res.json()
+      setShipmentSummaries(data.shipments ?? [])
+    }
+  }, [id])
+
   useEffect(() => {
     async function fetchOrder() {
       const res = await fetch(`/api/admin/orders/${id}`)
@@ -250,7 +271,8 @@ export default function AdminOrderDetailPage() {
     fetchOrder()
     fetchFactoryOrders()
     fetchDesignProofs()
-  }, [id, fetchFactoryOrders, fetchDesignProofs])
+    fetchShipmentSummaries()
+  }, [id, fetchFactoryOrders, fetchDesignProofs, fetchShipmentSummaries])
 
   async function handleUploadProof() {
     const file = proofFileRef.current?.files?.[0]
@@ -433,6 +455,13 @@ export default function AdminOrderDetailPage() {
             </div>
           </div>
         </div>
+
+        {/* OMO-2830: 주문 교차검증 (고객 주문 ↔ 우리 발주 · 금액/마진/배송) */}
+        <OrderVerificationPanel
+          order={order}
+          factoryOrders={factoryOrders}
+          shipments={shipmentSummaries}
+        />
 
         {/* Status update */}
         {nextOptions.length > 0 && (

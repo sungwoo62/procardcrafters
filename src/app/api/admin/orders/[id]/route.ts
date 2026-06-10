@@ -25,9 +25,10 @@ export async function GET(
   const { id } = await params
   const supabase = createServerClient()
 
+  // OMO-2830: 교차검증 패널용으로 상품 원가(base_price_krw)·마진배수(margin_multiplier) 조인
   const { data, error } = await supabase
     .from('print_orders')
-    .select('*, print_order_items(*, print_files(*)), print_order_events(*)')
+    .select('*, print_order_items(*, print_files(*), print_products(margin_multiplier, base_price_krw)), print_order_events(*)')
     .eq('id', id)
     .single()
 
