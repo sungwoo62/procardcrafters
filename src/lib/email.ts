@@ -127,24 +127,27 @@ function buildEmailHtml(status: OrderStatus, data: OrderEmailData): string {
   return ''
 }
 
+// OMO-2807: 발송된 Resend 메시지 id 를 반환한다(비동기 하드바운스 상관용 키).
+// 비활성/미발송/실패 시 null.
 export async function sendOrderStatusEmail(
   status: OrderStatus,
   data: OrderEmailData
-): Promise<void> {
-  if (!resend) return
+): Promise<string | null> {
+  if (!resend) return null
   const subject = STATUS_SUBJECTS[status]
-  if (!subject) return
+  if (!subject) return null
 
   const html = buildEmailHtml(status, data)
-  if (!html) return
+  if (!html) return null
 
-  await resend.emails.send({
+  const { data: sent } = await resend.emails.send({
     from: FROM,
     replyTo: REPLY_TO,
     to: data.customerEmail,
     subject: `[Procardcrafters] ${subject} — #${data.orderNumber}`,
     html,
   })
+  return sent?.id ?? null
 }
 
 export async function sendAdminNewOrderEmail(

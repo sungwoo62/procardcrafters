@@ -14,6 +14,9 @@ export type OrderEventType =
   | 'shipped'
   | 'delivered'
   | 'reorder'
+  | 'email_bounced'
+  | 'email_complained'
+  | 'email_delivered'
 
 export interface PrintOrderEvent {
   id: string

@@ -98,8 +98,18 @@ interface Order {
   status: OrderStatus
   notes: string | null
   created_at: string
+  email_status: string | null
+  email_bounce_reason: string | null
   print_order_items: OrderItem[]
   print_order_events: PrintOrderEvent[]
+}
+
+// OMO-2807: 자동응답 이메일 상태 배지
+const EMAIL_STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  sent: { label: '발송됨', cls: 'bg-gray-100 text-gray-600' },
+  delivered: { label: '전달됨', cls: 'bg-green-100 text-green-700' },
+  bounced: { label: '이메일 반송', cls: 'bg-red-100 text-red-700' },
+  complained: { label: '스팸 신고', cls: 'bg-red-100 text-red-700' },
 }
 
 const EVENT_TYPE_LABELS: Record<OrderEventType, string> = {
@@ -116,6 +126,9 @@ const EVENT_TYPE_LABELS: Record<OrderEventType, string> = {
   shipped: '발송',
   delivered: '배송 완료',
   reorder: '재주문',
+  email_bounced: '이메일 반송',
+  email_complained: '스팸 신고',
+  email_delivered: '이메일 전달',
 }
 
 const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
@@ -132,6 +145,9 @@ const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
   shipped: 'bg-purple-100 text-purple-700',
   delivered: 'bg-green-100 text-green-700',
   reorder: 'bg-blue-100 text-blue-700',
+  email_bounced: 'bg-red-100 text-red-700',
+  email_complained: 'bg-red-100 text-red-700',
+  email_delivered: 'bg-green-100 text-green-700',
 }
 
 const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
@@ -148,6 +164,9 @@ const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
   shipped: 'bg-purple-500',
   delivered: 'bg-green-500',
   reorder: 'bg-blue-500',
+  email_bounced: 'bg-red-500',
+  email_complained: 'bg-red-600',
+  email_delivered: 'bg-green-500',
 }
 
 function formatEventTime(ts: string) {
@@ -342,7 +361,20 @@ export default function AdminOrderDetailPage() {
           <div className="bg-white rounded-lg shadow p-5 space-y-2">
             <h2 className="font-semibold text-gray-700 mb-3">고객</h2>
             <p className="font-medium">{order.customer_name}</p>
-            <p className="text-sm text-gray-500">{order.customer_email}</p>
+            <div className="flex items-center gap-2 flex-wrap">
+              <p className="text-sm text-gray-500">{order.customer_email}</p>
+              {order.email_status && EMAIL_STATUS_BADGE[order.email_status] && (
+                <span
+                  className={`px-2 py-0.5 rounded text-xs font-medium ${EMAIL_STATUS_BADGE[order.email_status].cls}`}
+                  title={order.email_bounce_reason ?? undefined}
+                >
+                  {EMAIL_STATUS_BADGE[order.email_status].label}
+                </span>
+              )}
+            </div>
+            {order.email_status === 'bounced' && order.email_bounce_reason && (
+              <p className="text-xs text-red-600">반송 사유: {order.email_bounce_reason}</p>
+            )}
             {order.customer_phone && <p className="text-sm text-gray-500">{order.customer_phone}</p>}
           </div>
 

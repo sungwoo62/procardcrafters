@@ -5,6 +5,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { sendOrderStatusEmail, sendAdminNewOrderEmail } from '@/lib/email'
+import { logOrderEvent } from '@/lib/order-events'
 import { validateCode, applyCode } from '@/lib/promotion-engine'
 import { createAuthRouteClient } from '@/lib/supabase-server'
 
@@ -313,7 +314,7 @@ export async function POST(request: NextRequest) {
     priceUsd: i.subtotal_usd,
   }))
 
-  await Promise.allSettled([
+  const [pendingEmail] = await Promise.allSettled([
     sendOrderStatusEmail('pending', {
       orderNumber: order.order_number,
       customerEmail: customer.email,
@@ -330,6 +331,21 @@ export async function POST(request: NextRequest) {
       paymentMethod: 'Stripe (pending)',
     }),
   ])
+
+  // OMO-2807: 자동응답 이메일 id 저장 + 발송 이벤트 로깅(비동기 하드바운스 상관용 키).
+  if (pendingEmail.status === 'fulfilled' && pendingEmail.value) {
+    const emailId = pendingEmail.value
+    await supabase
+      .from('print_orders')
+      .update({ auto_response_email_id: emailId, email_status: 'sent' })
+      .eq('id', order.id)
+    await logOrderEvent({
+      orderId: order.id,
+      eventType: 'email_sent',
+      newValue: 'pending',
+      metadata: { resend_email_id: emailId, kind: 'order_pending' },
+    })
+  }
 
   return NextResponse.json({ checkoutUrl: session.url, orderNumber: order.order_number })
 }
