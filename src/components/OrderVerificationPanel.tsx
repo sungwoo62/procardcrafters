@@ -56,6 +56,10 @@ interface VOrder {
 const DEFAULT_MULTIPLIER = 3.3
 const DEFAULT_RATE = 1300 // KRW per USD (promotion-engine 폴백과 동일)
 
+// OMO-2830: 실원가 확정 후 차이 대처 임계값
+const COST_OVERRUN_ALERT = 0.2 // 실원가가 예상 대비 +20% 초과 → 경보
+const MARGIN_FLOOR_PCT = 0.15 // 항목 마진율 15% 미만 → 경보
+
 function usd(n: number): string {
   return `$${n.toFixed(2)}`
 }
@@ -150,26 +154,44 @@ export function OrderVerificationPanel({
     const allActual = hasFactory && actualVals.length === linked.length && linked.length > 0
     const mult = item.print_products?.margin_multiplier || DEFAULT_MULTIPLIER
     const baseKrw = item.print_products?.base_price_krw
-    let cost: number
-    let basis: CostBasis
-    if (allActual) {
-      cost = actualVals.reduce((s, v) => s + v, 0)
-      basis = 'actual'
-    } else if (baseKrw != null && baseKrw > 0) {
-      cost = (baseKrw * item.quantity) / rate
-      basis = 'estimate_master'
-    } else {
-      cost = item.subtotal_usd / mult
-      basis = 'estimate_multiplier'
-    }
+    // 예상 원가(실원가와 무관한 추정 기준값) — 차이 비교용
+    const expectedCost = baseKrw != null && baseKrw > 0
+      ? (baseKrw * item.quantity) / rate
+      : item.subtotal_usd / mult
+    const actualCost = allActual ? actualVals.reduce((s, v) => s + v, 0) : null
+
+    const cost = actualCost != null ? actualCost : expectedCost
+    const basis: CostBasis = actualCost != null
+      ? 'actual'
+      : baseKrw != null && baseKrw > 0
+        ? 'estimate_master'
+        : 'estimate_multiplier'
     totalCost += cost
     const margin = item.subtotal_usd - cost
+    const marginPct = item.subtotal_usd > 0 ? margin / item.subtotal_usd : 0
+
+    // OMO-2830: 실원가 확정 시 차이 감지(원가초과/마진음수/저마진)
+    let alert: { severity: 'critical' | 'warn'; overrunPct: number | null; reasons: string[] } | null = null
+    if (actualCost != null) {
+      const overrunPct = expectedCost > 0 ? (actualCost - expectedCost) / expectedCost : null
+      const reasons: string[] = []
+      if (margin < 0) reasons.push('마진 음수(손해)')
+      else if (marginPct < MARGIN_FLOOR_PCT) reasons.push(`저마진(${pct(marginPct)})`)
+      if (overrunPct != null && overrunPct > COST_OVERRUN_ALERT) reasons.push(`실원가 예상 대비 +${pct(overrunPct)}`)
+      if (reasons.length > 0) {
+        alert = { severity: margin < 0 ? 'critical' : 'warn', overrunPct, reasons }
+      }
+    }
 
     // 자동 프리셋 일치 점검(발주 연결된 경우만)
     const preset = hasFactory ? comparePreset(item.selected_options, linked[0].options_snapshot) : null
 
-    return { item, mult, baseKrw, cost, basis, margin, linked, factoryQty, hasFactory, qtyMatch, preset }
+    return { item, mult, baseKrw, cost, expectedCost, basis, margin, marginPct, alert, linked, factoryQty, hasFactory, qtyMatch, preset }
   })
+
+  // 차이 감지된 항목 모음(대처 배너용)
+  const costAlerts = rows.filter((r) => r.alert)
+  const hasCostAlert = costAlerts.length > 0
 
   const productSell = order.subtotal_usd
   const productMargin = productSell - totalCost
@@ -191,7 +213,7 @@ export function OrderVerificationPanel({
   const allQtyMatch = rows.every((r) => r.qtyMatch)
   const allPresetOk = rows.every((r) => r.preset?.ok)
   const marginPositive = productMargin > 0 && (!hasShipment || shipMargin >= 0)
-  const autoPass = allLinked && allQtyMatch && allPresetOk && marginPositive
+  const autoPass = allLinked && allQtyMatch && allPresetOk && marginPositive && !hasCostAlert
 
   return (
     <div className="bg-white rounded-lg shadow p-5 space-y-5 border-l-4 border-indigo-400">
@@ -207,13 +229,42 @@ export function OrderVerificationPanel({
         )}
       </div>
 
+      {/* OMO-2830: 실원가 차이 대처 배너 */}
+      {hasCostAlert && (
+        <div className="rounded-lg border-2 border-red-300 bg-red-50 p-4 space-y-2">
+          <div className="flex items-center gap-2">
+            <span className="text-red-700 font-semibold text-sm">⚠ 실원가 차이 감지 — 대처 필요</span>
+            {costAlerts.some((r) => r.alert?.severity === 'critical') && (
+              <span className="px-2 py-0.5 rounded text-xs font-bold bg-red-600 text-white">손해 주문</span>
+            )}
+          </div>
+          <ul className="text-xs text-red-700 list-disc list-inside space-y-0.5">
+            {costAlerts.map((r) => (
+              <li key={r.item.id}>
+                <b>{r.item.product_name_en}</b>: 실원가 {usd(r.cost)} (예상 {usd(r.expectedCost)}) · 마진 {usd(r.margin)} ({pct(r.marginPct)})
+                {' — '}{r.alert!.reasons.join(', ')}
+              </li>
+            ))}
+          </ul>
+          <div className="text-xs text-gray-600 bg-white/60 rounded p-2 leading-relaxed">
+            <p className="font-medium text-gray-700 mb-1">대처 가이드</p>
+            <p>① 성원 결제내역에서 실원가가 맞는지 재확인(자동 캡처 오독 가능 → 발주 카드에서 수동 보정).</p>
+            <p>② 원인 점검: 옵션 추가단가 미반영 / 성원 가격 인상 / 상품가 책정 오류 / 수량·스펙 변경.</p>
+            <p>③ <b>마진 음수면 발송 보류</b> 후 상품가 조정·고객 추가청구·사양 협의 중 택일. 단순 단가표 오류면 상품 base_price_krw / margin_multiplier 수정.</p>
+          </div>
+        </div>
+      )}
+
       {/* 항목별 대조 */}
       <div className="space-y-3">
-        {rows.map(({ item, mult, baseKrw, cost, basis, margin, linked, factoryQty, hasFactory, qtyMatch, preset }) => (
-          <div key={item.id} className="border rounded-lg p-4 space-y-3">
+        {rows.map(({ item, mult, baseKrw, cost, basis, margin, alert, linked, factoryQty, hasFactory, qtyMatch, preset }) => (
+          <div key={item.id} className={`border rounded-lg p-4 space-y-3 ${alert ? 'border-red-300' : ''}`}>
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <p className="font-medium text-sm">{item.product_name_en}</p>
               <div className="flex items-center gap-1.5 flex-wrap">
+                {alert && (
+                  <Check tone="warn" label={alert.severity === 'critical' ? '손해' : '마진 경보'} />
+                )}
                 {!hasFactory ? (
                   <Check tone="warn" label="발주 미연결" />
                 ) : qtyMatch ? (

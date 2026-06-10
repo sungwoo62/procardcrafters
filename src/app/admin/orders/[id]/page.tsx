@@ -141,6 +141,7 @@ const EVENT_TYPE_LABELS: Record<OrderEventType, string> = {
   email_bounced: '이메일 반송',
   email_complained: '스팸 신고',
   email_delivered: '이메일 전달',
+  margin_alert: '마진 경보',
 }
 
 const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
@@ -160,6 +161,7 @@ const EVENT_TYPE_COLORS: Record<OrderEventType, string> = {
   email_bounced: 'bg-red-100 text-red-700',
   email_complained: 'bg-red-100 text-red-700',
   email_delivered: 'bg-green-100 text-green-700',
+  margin_alert: 'bg-red-100 text-red-700',
 }
 
 const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
@@ -179,6 +181,7 @@ const EVENT_TYPE_DOTS: Record<OrderEventType, string> = {
   email_bounced: 'bg-red-500',
   email_complained: 'bg-red-600',
   email_delivered: 'bg-green-500',
+  margin_alert: 'bg-red-600',
 }
 
 function formatEventTime(ts: string) {

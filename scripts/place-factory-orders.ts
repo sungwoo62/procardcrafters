@@ -105,6 +105,8 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
     // 못 읽었으면(undefined) 컬럼은 그대로 두고 패널이 추정/수동입력으로 폴백.
     let actualCostKrw: number | null = null
     let actualCostUsd: number | null = null
+    // OMO-2830: 실원가 확정 후 차이(원가초과/마진음수/저마진) 감지 → margin_alert 이벤트
+    let marginAlert: { newValue: string; metadata: Record<string, unknown> } | null = null
     if (typeof result.actualCostKrw === 'number' && result.actualCostKrw > 0) {
       const { data: orderRate } = await supabase
         .from('print_orders')
@@ -114,6 +116,44 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
       const rate = Number(orderRate?.exchange_rate_krw_usd ?? 1300) // KRW per USD
       actualCostKrw = result.actualCostKrw
       actualCostUsd = Math.round((actualCostKrw / rate) * 100) / 100
+
+      // 항목 판매가/예상원가 대비 마진 차이 평가
+      if (record.print_order_item_id) {
+        const { data: item } = await supabase
+          .from('print_order_items')
+          .select('subtotal_usd, product_name_en, print_products(base_price_krw, margin_multiplier)')
+          .eq('id', record.print_order_item_id)
+          .maybeSingle()
+        if (item) {
+          const prod = (item.print_products ?? {}) as { base_price_krw?: number | null; margin_multiplier?: number | null }
+          const sell = Number(item.subtotal_usd)
+          const mult = Number(prod.margin_multiplier) || 3.3
+          const baseKrw = prod.base_price_krw
+          const expected = baseKrw != null && baseKrw > 0 ? (baseKrw * record.quantity) / rate : sell / mult
+          const margin = sell - actualCostUsd
+          const marginPct = sell > 0 ? margin / sell : 0
+          const overrunPct = expected > 0 ? (actualCostUsd - expected) / expected : 0
+          const reasons: string[] = []
+          if (margin < 0) reasons.push('마진 음수(손해)')
+          else if (marginPct < 0.15) reasons.push('저마진')
+          if (overrunPct > 0.2) reasons.push('실원가 예상 초과')
+          if (reasons.length > 0) {
+            marginAlert = {
+              newValue: `마진 ${(marginPct * 100).toFixed(1)}% · ${reasons.join(', ')}`,
+              metadata: {
+                factory_order_id: record.id,
+                item: item.product_name_en,
+                sell_usd: sell,
+                actual_cost_usd: actualCostUsd,
+                expected_cost_usd: Math.round(expected * 100) / 100,
+                margin_usd: Math.round(margin * 100) / 100,
+                overrun_pct: Math.round(overrunPct * 1000) / 10,
+                reasons,
+              },
+            }
+          }
+        }
+      }
     }
 
     const placedUpdate: Record<string, unknown> = {
@@ -141,6 +181,18 @@ async function processFactoryOrder(record: FactoryOrderRecord) {
       process.stdout.write(
         `  발주 완료: ${result.checkoutUrl ? `결제 대기 URL: ${result.checkoutUrl}` : `주문번호: ${result.swadpiaOrderNumber ?? '(파싱 불가)'}`}\n`
       )
+    }
+
+    // OMO-2830: 마진 차이 감지 시 경보 이벤트(타임라인/감사) — 운영자 대처 트리거
+    if (marginAlert) {
+      process.stderr.write(`  ⚠ 마진 경보: ${marginAlert.newValue}\n`)
+      await supabase.from('print_order_events').insert({
+        order_id: record.print_order_id,
+        event_type: 'margin_alert',
+        new_value: marginAlert.newValue,
+        metadata: marginAlert.metadata,
+        actor: 'system',
+      })
     }
 
     // 주문 상태를 'processing'으로 전환 + 고객 이메일 + 이벤트 로그

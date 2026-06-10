@@ -17,6 +17,7 @@ export type OrderEventType =
   | 'email_bounced'
   | 'email_complained'
   | 'email_delivered'
+  | 'margin_alert' // OMO-2830: 발주 실원가 확정 후 원가초과/마진음수 감지
 
 export interface PrintOrderEvent {
   id: string
