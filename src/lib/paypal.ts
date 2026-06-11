@@ -28,6 +28,29 @@ async function getAccessToken(): Promise<string> {
 export async function createPaypalOrder(amountUsd: number, description: string): Promise<string> {
   const token = await getAccessToken()
 
+  // 카드 명세서에 표기되는 가맹점명(soft descriptor).
+  // PayPal 은 자동으로 "PAYPAL *" 접두사를 붙이며 최대 22자, 영문/숫자/공백만 허용.
+  // 미설정 시 PayPal 계정 기본 사업자명이 사용된다.
+  const rawDescriptor = process.env.PAYPAL_SOFT_DESCRIPTOR?.trim()
+  const softDescriptor = rawDescriptor
+    ? rawDescriptor.replace(/[^a-zA-Z0-9 ]/g, '').slice(0, 22)
+    : undefined
+
+  const purchaseUnit: {
+    amount: { currency_code: string; value: string }
+    description: string
+    soft_descriptor?: string
+  } = {
+    amount: {
+      currency_code: 'USD',
+      value: amountUsd.toFixed(2),
+    },
+    description,
+  }
+  if (softDescriptor) {
+    purchaseUnit.soft_descriptor = softDescriptor
+  }
+
   const res = await fetch(`${BASE_URL}/v2/checkout/orders`, {
     method: 'POST',
     headers: {
@@ -36,15 +59,7 @@ export async function createPaypalOrder(amountUsd: number, description: string):
     },
     body: JSON.stringify({
       intent: 'CAPTURE',
-      purchase_units: [
-        {
-          amount: {
-            currency_code: 'USD',
-            value: amountUsd.toFixed(2),
-          },
-          description,
-        },
-      ],
+      purchase_units: [purchaseUnit],
     }),
   })
 
