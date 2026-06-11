@@ -1,4 +1,7 @@
-const BASE_URL = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
+// OMO-2908: PAYPAL_API_URL 이 빈 문자열("")로 설정된 경우 `??` 는 빈 값을 그대로
+// 통과시켜 BASE_URL 이 ""가 되고 모든 PayPal 호출이 깨진다. 공백/빈값은 미설정으로
+// 보고 샌드박스 기본값으로 폴백한다(Live 는 명시적으로 api-m.paypal.com 주입).
+const BASE_URL = process.env.PAYPAL_API_URL?.trim() || 'https://api-m.sandbox.paypal.com'
 
 export async function getAccessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID ?? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
