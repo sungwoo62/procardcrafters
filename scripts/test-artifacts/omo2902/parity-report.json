@@ -1,0 +1,649 @@
+{
+  "issue": "OMO-2902",
+  "generatedAt": "2026-06-11T06:16:55.682Z",
+  "summary": {
+    "totalProductSlugs": 38,
+    "uniqueCategoryCodes": 23,
+    "productsLiveOK": 22,
+    "productsNoPriceMatrix": 13,
+    "productsDead": 3,
+    "finishingsTotal": 16,
+    "finishingsMapped": 5,
+    "finishingsRuntime": 4,
+    "finishingsNeedsAudit": 7
+  },
+  "products": [
+    {
+      "slug": "business-cards",
+      "categoryCode": "CNC1000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 2,
+      "sizes": 4,
+      "printRows": 174,
+      "error": null
+    },
+    {
+      "slug": "premium-business-cards",
+      "categoryCode": "CNC2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 23,
+      "sizes": 3,
+      "printRows": 180,
+      "error": null
+    },
+    {
+      "slug": "premium-foil-cards",
+      "categoryCode": "CNC3000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 3,
+      "sizes": 4,
+      "printRows": 80,
+      "error": null
+    },
+    {
+      "slug": "metallic-business-cards",
+      "categoryCode": "CNC3000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 3,
+      "sizes": 4,
+      "printRows": 80,
+      "error": null
+    },
+    {
+      "slug": "letterpress-business-cards",
+      "categoryCode": "CNC4000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 1,
+      "sizes": 3,
+      "printRows": 57,
+      "error": null
+    },
+    {
+      "slug": "transparent-business-cards",
+      "categoryCode": "CNC5000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 1,
+      "sizes": 3,
+      "printRows": 24,
+      "error": null
+    },
+    {
+      "slug": "uv-business-cards",
+      "categoryCode": "CNC6000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 11,
+      "sizes": 3,
+      "printRows": 112,
+      "error": null
+    },
+    {
+      "slug": "pearl-business-cards",
+      "categoryCode": "CNC8000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 9,
+      "sizes": 3,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "stickers",
+      "categoryCode": "CST1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "die-cut-stickers",
+      "categoryCode": "CST2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "holographic-stickers",
+      "categoryCode": "CST5000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 9,
+      "sizes": 4,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "roll-stickers",
+      "categoryCode": "CST7000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 1,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "price-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "barcode-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "food-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "flyers",
+      "categoryCode": "CLF1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 9,
+      "sizes": 8,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "brochures",
+      "categoryCode": "CLF2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 269,
+      "sizes": 10,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "leaflets",
+      "categoryCode": "CPR3000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 126,
+      "sizes": 10,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "menus",
+      "categoryCode": "CLF2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 269,
+      "sizes": 10,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "saddle-stitch-booklet",
+      "categoryCode": "CPR4000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 144,
+      "sizes": 4,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "perfect-bound-booklet",
+      "categoryCode": "CPR4000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 144,
+      "sizes": 4,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "catalogs",
+      "categoryCode": "CPR4000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 144,
+      "sizes": 4,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "postcards",
+      "categoryCode": "CDP3000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 74,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "posters",
+      "categoryCode": "CPR2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 67,
+      "sizes": 6,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "banners",
+      "categoryCode": "CPR5000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 10,
+      "sizes": 24,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "x-banners",
+      "categoryCode": "CPR5000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 10,
+      "sizes": 24,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "rollup-banners",
+      "categoryCode": "CPR5000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 10,
+      "sizes": 24,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "mini-banners",
+      "categoryCode": "CPR5000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 10,
+      "sizes": 24,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "standard-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "admin-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "gusset-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "receipts",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "quotation-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "invoice-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "ncr-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "wall-calendars",
+      "categoryCode": "CCD1000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 17,
+      "sizes": 22,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "desk-calendars",
+      "categoryCode": "CCD2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 9,
+      "sizes": 4,
+      "printRows": 100,
+      "error": null
+    },
+    {
+      "slug": "mini-calendars",
+      "categoryCode": "CCD2000",
+      "verdict": "OK",
+      "ok": true,
+      "papers": 9,
+      "sizes": 4,
+      "printRows": 100,
+      "error": null
+    }
+  ],
+  "deadProducts": [
+    {
+      "slug": "standard-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "admin-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "gusset-envelopes",
+      "categoryCode": "CEV1000",
+      "verdict": "DEAD",
+      "ok": false,
+      "papers": 0,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    }
+  ],
+  "noMatrixProducts": [
+    {
+      "slug": "stickers",
+      "categoryCode": "CST1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "die-cut-stickers",
+      "categoryCode": "CST2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 0,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "holographic-stickers",
+      "categoryCode": "CST5000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 9,
+      "sizes": 4,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "roll-stickers",
+      "categoryCode": "CST7000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 1,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "price-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "barcode-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "food-labels",
+      "categoryCode": "CLP1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 11,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "flyers",
+      "categoryCode": "CLF1000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 9,
+      "sizes": 8,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "postcards",
+      "categoryCode": "CDP3000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 74,
+      "sizes": 1,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "receipts",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "quotation-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "invoice-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    },
+    {
+      "slug": "ncr-forms",
+      "categoryCode": "CNR2000",
+      "verdict": "NO_PRICE_MATRIX",
+      "ok": false,
+      "papers": 12,
+      "sizes": 11,
+      "printRows": 0,
+      "error": null
+    }
+  ],
+  "finishings": {
+    "mapped": [
+      {
+        "value": "foil_stamp",
+        "label": "박",
+        "status": "mapped"
+      },
+      {
+        "value": "deboss_emboss",
+        "label": "형압",
+        "status": "mapped"
+      },
+      {
+        "value": "die_cut",
+        "label": "도무송",
+        "status": "mapped"
+      },
+      {
+        "value": "drilled_hole",
+        "label": "타공",
+        "status": "mapped"
+      },
+      {
+        "value": "numbering",
+        "label": "넘버링",
+        "status": "mapped"
+      }
+    ],
+    "runtime": [
+      {
+        "value": "round_corner",
+        "label": "귀도리",
+        "status": "runtime"
+      },
+      {
+        "value": "epoxy",
+        "label": "에폭시",
+        "status": "runtime"
+      },
+      {
+        "value": "score_crease",
+        "label": "오시",
+        "status": "runtime"
+      },
+      {
+        "value": "perforation",
+        "label": "미싱",
+        "status": "runtime"
+      }
+    ],
+    "needs_audit": [
+      {
+        "value": "coating",
+        "label": "코팅",
+        "status": "needs_audit"
+      },
+      {
+        "value": "spot_color",
+        "label": "별색",
+        "status": "needs_audit"
+      },
+      {
+        "value": "gluing",
+        "label": "접착",
+        "status": "needs_audit"
+      },
+      {
+        "value": "multi_die",
+        "label": "문어발",
+        "status": "needs_audit"
+      },
+      {
+        "value": "binding",
+        "label": "제본",
+        "status": "needs_audit"
+      },
+      {
+        "value": "scratch_off",
+        "label": "복권",
+        "status": "needs_audit"
+      },
+      {
+        "value": "window_patch",
+        "label": "창문",
+        "status": "needs_audit"
+      }
+    ]
+  }
+}
