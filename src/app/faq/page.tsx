@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'FAQ - Procardcrafters',
+  title: 'FAQ',
   description: 'Frequently asked questions about ordering, shipping, and printing.',
 }
 

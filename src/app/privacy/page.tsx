@@ -1,7 +1,7 @@
 import { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Privacy Policy — Procardcrafters',
+  title: 'Privacy Policy',
   description: 'How Procardcrafters collects, uses, and protects your personal information.',
 }
 

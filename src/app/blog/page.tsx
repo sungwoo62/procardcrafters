@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
 export const metadata: Metadata = {
-  title: 'Printing Blog — Guides, Tips & Inspiration | Procardcrafters',
+  title: 'Printing Blog — Guides, Tips & Inspiration',
   description:
     'Expert guides on custom printing — business cards, stickers, flyers, paper stocks, finishes, and design tips to make your print projects stand out.',
   alternates: { canonical: `${SITE_URL}/blog` },

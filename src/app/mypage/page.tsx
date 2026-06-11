@@ -8,7 +8,7 @@ import LogoutButton from './LogoutButton'
 import ReviewButton from '@/components/ReviewButton'
 
 export const metadata = {
-  title: 'My Page — Procardcrafters',
+  title: 'My Page',
 }
 
 export const dynamic = 'force-dynamic'

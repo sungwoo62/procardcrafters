@@ -3,7 +3,7 @@ import { Clock } from 'lucide-react'
 import ContactForm from './ContactForm'
 
 export const metadata: Metadata = {
-  title: 'Contact Us - Procardcrafters',
+  title: 'Contact Us',
   description: 'Get in touch with Procardcrafters for questions about orders, printing, or partnerships.',
 }
 

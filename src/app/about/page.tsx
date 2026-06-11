@@ -3,7 +3,7 @@ import { Package, Globe, Zap, Shield } from 'lucide-react'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'About — Procardcrafters',
+  title: 'About',
   description: 'Learn about Procardcrafters — premium printing produced at certified global facilities and delivered worldwide.',
 }
 
