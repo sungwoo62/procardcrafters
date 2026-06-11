@@ -1,6 +1,6 @@
 const BASE_URL = process.env.PAYPAL_API_URL ?? 'https://api-m.sandbox.paypal.com'
 
-async function getAccessToken(): Promise<string> {
+export async function getAccessToken(): Promise<string> {
   const clientId = process.env.PAYPAL_CLIENT_ID ?? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
   const secret = process.env.PAYPAL_SECRET
   if (!clientId || !secret) {
@@ -100,4 +100,58 @@ export async function capturePaypalOrder(paypalOrderId: string): Promise<{
     payerId: data.payer?.payer_id ?? null,
     amount: capture?.amount?.value ?? null,
   }
+}
+
+// OMO-2909: PayPal 서버 웹훅 서명검증.
+// PayPal Developer Dashboard 에서 웹훅 등록 후 발급되는 webhook id 를
+// PAYPAL_WEBHOOK_ID 로 주입해야 한다. 미설정 시 위조 이벤트를 차단하기 위해 throw.
+export async function verifyPaypalWebhookSignature(
+  headers: {
+    authAlgo: string | null
+    certUrl: string | null
+    transmissionId: string | null
+    transmissionSig: string | null
+    transmissionTime: string | null
+  },
+  rawBody: string,
+): Promise<boolean> {
+  const webhookId = process.env.PAYPAL_WEBHOOK_ID
+  if (!webhookId) {
+    throw new Error('PAYPAL_WEBHOOK_ID is not configured')
+  }
+  if (
+    !headers.authAlgo ||
+    !headers.certUrl ||
+    !headers.transmissionId ||
+    !headers.transmissionSig ||
+    !headers.transmissionTime
+  ) {
+    return false
+  }
+
+  const token = await getAccessToken()
+
+  const res = await fetch(`${BASE_URL}/v1/notifications/verify-webhook-signature`, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      auth_algo: headers.authAlgo,
+      cert_url: headers.certUrl,
+      transmission_id: headers.transmissionId,
+      transmission_sig: headers.transmissionSig,
+      transmission_time: headers.transmissionTime,
+      webhook_id: webhookId,
+      webhook_event: JSON.parse(rawBody),
+    }),
+  })
+
+  if (!res.ok) {
+    return false
+  }
+
+  const data = await res.json()
+  return data.verification_status === 'SUCCESS'
 }
