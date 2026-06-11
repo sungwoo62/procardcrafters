@@ -1,0 +1,258 @@
+{
+  "generatedAt": "2026-06-11T06:27:41.438Z",
+  "priceModel": "(base_price_krw + Σ print_product_options.extra_price_krw) × margin × 환율 (calculateItemPriceUsd)",
+  "note": "/api/swadpia-price(calculateSwadpiaPriceKrw)는 UI 미사용 — sync-prices/cron 의 base_price 갱신 전용",
+  "pass": 6,
+  "warn": 0,
+  "fail": 0,
+  "results": [
+    {
+      "slug": "business-cards",
+      "label": "명함",
+      "found": true,
+      "basePriceKrw": 4000,
+      "margin": 3.3,
+      "optionTypes": {
+        "finishing": {
+          "count": 4,
+          "pricedCount": 4,
+          "extraRange": [
+            3800,
+            22300
+          ]
+        },
+        "paper_code": {
+          "count": 2,
+          "pricedCount": 1,
+          "extraRange": [
+            0,
+            3000
+          ]
+        },
+        "paper_qty": {
+          "count": 5,
+          "pricedCount": 4,
+          "extraRange": [
+            0,
+            95000
+          ]
+        },
+        "paper_size": {
+          "count": 4,
+          "pricedCount": 0,
+          "extraRange": [
+            0,
+            0
+          ]
+        },
+        "print_color_type": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            -5000,
+            0
+          ]
+        }
+      },
+      "pricedOptionTotal": 11,
+      "verdict": "✅",
+      "note": "가격이동 옵션 11개 — paper=true size=true qty=true"
+    },
+    {
+      "slug": "brochures",
+      "label": "브로슈어",
+      "found": true,
+      "basePriceKrw": 64000,
+      "margin": 3.3,
+      "optionTypes": {
+        "paper_code": {
+          "count": 4,
+          "pricedCount": 3,
+          "extraRange": [
+            0,
+            8000
+          ]
+        },
+        "paper_qty": {
+          "count": 4,
+          "pricedCount": 3,
+          "extraRange": [
+            0,
+            50000
+          ]
+        },
+        "paper_size": {
+          "count": 4,
+          "pricedCount": 3,
+          "extraRange": [
+            0,
+            40000
+          ]
+        }
+      },
+      "pricedOptionTotal": 9,
+      "verdict": "✅",
+      "note": "가격이동 옵션 9개 — paper=true size=true qty=true"
+    },
+    {
+      "slug": "saddle-stitch-booklet",
+      "label": "책자",
+      "found": true,
+      "basePriceKrw": 64000,
+      "margin": 3.3,
+      "optionTypes": {
+        "paper_code": {
+          "count": 2,
+          "pricedCount": 1,
+          "extraRange": [
+            0,
+            5000
+          ]
+        },
+        "paper_qty": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            0,
+            70000
+          ]
+        },
+        "paper_size": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            -5000,
+            0
+          ]
+        },
+        "print_color_type": {
+          "count": 2,
+          "pricedCount": 1,
+          "extraRange": [
+            0,
+            5000
+          ]
+        }
+      },
+      "pricedOptionTotal": 6,
+      "verdict": "✅",
+      "note": "가격이동 옵션 6개 — paper=true size=true qty=true"
+    },
+    {
+      "slug": "posters",
+      "label": "포스터",
+      "found": true,
+      "basePriceKrw": 64000,
+      "margin": 3.3,
+      "optionTypes": {
+        "paper_code": {
+          "count": 5,
+          "pricedCount": 4,
+          "extraRange": [
+            0,
+            12000
+          ]
+        },
+        "paper_qty": {
+          "count": 5,
+          "pricedCount": 4,
+          "extraRange": [
+            0,
+            45000
+          ]
+        },
+        "paper_size": {
+          "count": 6,
+          "pricedCount": 5,
+          "extraRange": [
+            0,
+            30000
+          ]
+        }
+      },
+      "pricedOptionTotal": 13,
+      "verdict": "✅",
+      "note": "가격이동 옵션 13개 — paper=true size=true qty=true"
+    },
+    {
+      "slug": "banners",
+      "label": "배너",
+      "found": true,
+      "basePriceKrw": 64000,
+      "margin": 3.3,
+      "optionTypes": {
+        "paper_code": {
+          "count": 2,
+          "pricedCount": 1,
+          "extraRange": [
+            -5000,
+            0
+          ]
+        },
+        "paper_qty": {
+          "count": 5,
+          "pricedCount": 4,
+          "extraRange": [
+            0,
+            20000
+          ]
+        },
+        "paper_size": {
+          "count": 1,
+          "pricedCount": 0,
+          "extraRange": [
+            0,
+            0
+          ]
+        }
+      },
+      "pricedOptionTotal": 5,
+      "verdict": "✅",
+      "note": "가격이동 옵션 5개 — paper=true size=true qty=true"
+    },
+    {
+      "slug": "wall-calendars",
+      "label": "캘린더",
+      "found": true,
+      "basePriceKrw": 8000,
+      "margin": 3.3,
+      "optionTypes": {
+        "paper_code": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            0,
+            8000
+          ]
+        },
+        "paper_qty": {
+          "count": 4,
+          "pricedCount": 3,
+          "extraRange": [
+            0,
+            130000
+          ]
+        },
+        "paper_size": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            0,
+            6000
+          ]
+        },
+        "print_color_type": {
+          "count": 3,
+          "pricedCount": 2,
+          "extraRange": [
+            0,
+            15000
+          ]
+        }
+      },
+      "pricedOptionTotal": 9,
+      "verdict": "✅",
+      "note": "가격이동 옵션 9개 — paper=true size=true qty=true"
+    }
+  ]
+}

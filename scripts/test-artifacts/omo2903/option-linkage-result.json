@@ -1,0 +1,219 @@
+{
+  "generatedAt": "2026-06-11T06:24:59.107Z",
+  "source": "swadpia live (fetchSwadpiaCategoryData) — /api/swadpia-price 동일 경로",
+  "pass": 1,
+  "warn": 5,
+  "fail": 0,
+  "results": [
+    {
+      "slug": "business-cards",
+      "cat": "CNC1000",
+      "label": "명함",
+      "fetchSuccess": true,
+      "paperCount": 2,
+      "sizeCount": 4,
+      "printEntryCount": 174,
+      "papersTested": [
+        "SNW250W00",
+        "SNW300W00"
+      ],
+      "priceMatrix": {
+        "SNW250W00": {
+          "100": 3000,
+          "500": 3000,
+          "1000": 6000
+        },
+        "SNW300W00": {
+          "100": 4000,
+          "500": 12000,
+          "1000": 20000
+        }
+      },
+      "priceSource": "print_matrix",
+      "qtyVaries": true,
+      "paperVaries": true,
+      "verdict": "✅",
+      "note": "용지·수량 가격 실시간 갱신 정상 (print_matrix)"
+    },
+    {
+      "slug": "brochures",
+      "cat": "CLF2000",
+      "label": "브로슈어",
+      "fetchSuccess": true,
+      "paperCount": 269,
+      "sizeCount": 10,
+      "printEntryCount": 100,
+      "papersTested": [
+        "ESE090W00",
+        "ESE100W00",
+        "ESE130W00"
+      ],
+      "priceMatrix": {
+        "ESE090W00": {
+          "100": 113744,
+          "500": 113744,
+          "1000": 113744
+        },
+        "ESE100W00": {
+          "100": 126384,
+          "500": 126384,
+          "1000": 126384
+        },
+        "ESE130W00": {
+          "100": 164288,
+          "500": 164288,
+          "1000": 164288
+        }
+      },
+      "priceSource": "paper_fallback",
+      "qtyVaries": false,
+      "paperVaries": true,
+      "verdict": "🟡",
+      "note": "용지별 갱신O·수량별 갱신X — paper_fallback: 수량 티어 미반영(런칭 확인필요)"
+    },
+    {
+      "slug": "saddle-stitch-booklet",
+      "cat": "CPR4000",
+      "label": "책자",
+      "fetchSuccess": true,
+      "paperCount": 144,
+      "sizeCount": 4,
+      "printEntryCount": 100,
+      "papersTested": [
+        "ESE090W00",
+        "ESE100W00",
+        "ESE130W00"
+      ],
+      "priceMatrix": {
+        "ESE090W00": {
+          "100": 113744,
+          "500": 113744,
+          "1000": 113744
+        },
+        "ESE100W00": {
+          "100": 126384,
+          "500": 126384,
+          "1000": 126384
+        },
+        "ESE130W00": {
+          "100": 164288,
+          "500": 164288,
+          "1000": 164288
+        }
+      },
+      "priceSource": "paper_fallback",
+      "qtyVaries": false,
+      "paperVaries": true,
+      "verdict": "🟡",
+      "note": "용지별 갱신O·수량별 갱신X — paper_fallback: 수량 티어 미반영(런칭 확인필요)"
+    },
+    {
+      "slug": "posters",
+      "cat": "CPR2000",
+      "label": "포스터",
+      "fetchSuccess": true,
+      "paperCount": 67,
+      "sizeCount": 6,
+      "printEntryCount": 100,
+      "papersTested": [
+        "MGC120CG0",
+        "MGC120MK0",
+        "MGC120OR0"
+      ],
+      "priceMatrix": {
+        "MGC120CG0": {
+          "100": 219700,
+          "500": 219700,
+          "1000": 219700
+        },
+        "MGC120MK0": {
+          "100": 219700,
+          "500": 219700,
+          "1000": 219700
+        },
+        "MGC120OR0": {
+          "100": 219700,
+          "500": 219700,
+          "1000": 219700
+        }
+      },
+      "priceSource": "paper_fallback",
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false, paper_fallback)"
+    },
+    {
+      "slug": "banners",
+      "cat": "CPR5000",
+      "label": "배너",
+      "fetchSuccess": true,
+      "paperCount": 10,
+      "sizeCount": 24,
+      "printEntryCount": 100,
+      "papersTested": [
+        "VLD26001E",
+        "BWD300000",
+        "ATG320W02"
+      ],
+      "priceMatrix": {
+        "VLD26001E": {
+          "100": 168245,
+          "500": 168245,
+          "1000": 168245
+        },
+        "BWD300000": {
+          "100": 294374.25,
+          "500": 294374.25,
+          "1000": 294374.25
+        },
+        "ATG320W02": {
+          "100": 404408,
+          "500": 404408,
+          "1000": 404408
+        }
+      },
+      "priceSource": "paper_fallback",
+      "qtyVaries": false,
+      "paperVaries": true,
+      "verdict": "🟡",
+      "note": "용지별 갱신O·수량별 갱신X — paper_fallback: 수량 티어 미반영(런칭 확인필요)"
+    },
+    {
+      "slug": "wall-calendars",
+      "cat": "CCD1000",
+      "label": "캘린더",
+      "fetchSuccess": true,
+      "paperCount": 17,
+      "sizeCount": 22,
+      "printEntryCount": 100,
+      "papersTested": [
+        "ART180W00",
+        "ART200W00",
+        "ART250W00"
+      ],
+      "priceMatrix": {
+        "ART180W00": {
+          "100": 4834800,
+          "500": 4834800,
+          "1000": 4834800
+        },
+        "ART200W00": {
+          "100": 5372100,
+          "500": 5372100,
+          "1000": 5372100
+        },
+        "ART250W00": {
+          "100": 6714900,
+          "500": 6714900,
+          "1000": 6714900
+        }
+      },
+      "priceSource": "paper_fallback",
+      "qtyVaries": false,
+      "paperVaries": true,
+      "verdict": "🟡",
+      "note": "용지별 갱신O·수량별 갱신X — paper_fallback: 수량 티어 미반영(런칭 확인필요)"
+    }
+  ]
+}

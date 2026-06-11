@@ -1,0 +1,154 @@
+{
+  "generatedAt": "2026-06-11T06:24:59.238Z",
+  "mappedTotal": 5,
+  "runtimeTotal": 4,
+  "needsAuditTotal": 7,
+  "pass": 9,
+  "warn": 0,
+  "fail": 0,
+  "rows": [
+    {
+      "finishing": "foil_stamp",
+      "label_ko": "박",
+      "status": "mapped",
+      "expandedFields": [
+        "bak_section_1",
+        "bak_side_1",
+        "bak_type_1",
+        "bak_compare_1",
+        "bak_x_size_1",
+        "bak_y_size_1"
+      ],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": true,
+      "verdict": "✅",
+      "note": "변환 정상 — 기본값이 성원 필드로 확장"
+    },
+    {
+      "finishing": "deboss_emboss",
+      "label_ko": "형압",
+      "status": "mapped",
+      "expandedFields": [
+        "ap_section_1",
+        "ap_type_1",
+        "ap_compare_1",
+        "ap_x_size_1",
+        "ap_y_size_1"
+      ],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": true,
+      "verdict": "✅",
+      "note": "변환 정상 — 기본값이 성원 필드로 확장"
+    },
+    {
+      "finishing": "die_cut",
+      "label_ko": "도무송",
+      "status": "mapped",
+      "expandedFields": [
+        "domusong_section",
+        "domusong_type",
+        "domusong_num"
+      ],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "변환 정상 — 기본값이 성원 필드로 확장"
+    },
+    {
+      "finishing": "drilled_hole",
+      "label_ko": "타공",
+      "status": "mapped",
+      "expandedFields": [
+        "tagong_num",
+        "tagong_size"
+      ],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "변환 정상 — 기본값이 성원 필드로 확장"
+    },
+    {
+      "finishing": "numbering",
+      "label_ko": "넘버링",
+      "status": "mapped",
+      "expandedFields": [
+        "numbering_type",
+        "numbering_kind"
+      ],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "변환 정상 — 기본값이 성원 필드로 확장"
+    },
+    {
+      "finishing": "round_corner",
+      "label_ko": "귀도리",
+      "status": "runtime",
+      "expandedFields": [],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "런타임 추출 필요 — 자동발주에서 올바르게 스킵(폼 사이즈선택 후 JS 채움)"
+    },
+    {
+      "finishing": "epoxy",
+      "label_ko": "에폭시",
+      "status": "runtime",
+      "expandedFields": [],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "런타임 추출 필요 — 자동발주에서 올바르게 스킵(폼 사이즈선택 후 JS 채움)"
+    },
+    {
+      "finishing": "score_crease",
+      "label_ko": "오시",
+      "status": "runtime",
+      "expandedFields": [],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "런타임 추출 필요 — 자동발주에서 올바르게 스킵(폼 사이즈선택 후 JS 채움)"
+    },
+    {
+      "finishing": "perforation",
+      "label_ko": "미싱",
+      "status": "runtime",
+      "expandedFields": [],
+      "allFieldsKnown": true,
+      "unknownFields": [],
+      "sizeDefaultsOk": null,
+      "verdict": "✅",
+      "note": "런타임 추출 필요 — 자동발주에서 올바르게 스킵(폼 사이즈선택 후 JS 채움)"
+    }
+  ],
+  "comboRow": {
+    "case": "복합(박+타공)",
+    "expandedFields": [
+      "bak_section_1",
+      "bak_side_1",
+      "bak_type_1",
+      "bak_compare_1",
+      "bak_x_size_1",
+      "bak_y_size_1",
+      "tagong_num",
+      "tagong_size"
+    ],
+    "verdict": "✅",
+    "note": "두 후가공 필드 모두 병합됨"
+  },
+  "overrideRow": {
+    "case": "명시 override(bak_type_1=BKT11)",
+    "verdict": "✅",
+    "note": "명시값이 기본값보다 우선",
+    "value": "BKT11"
+  }
+}

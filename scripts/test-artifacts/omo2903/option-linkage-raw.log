@@ -1,0 +1,178 @@
+(node:14741) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///Users/william/.paperclip/instances/default/projects/65d8f163-a23c-4512-9b7b-3cd5114e1519/925c72c4-60c3-470f-b5a3-527ba5143e94/_default/scripts/omo2903-option-linkage-e2e.ts is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to /Users/william/.paperclip/instances/default/projects/65d8f163-a23c-4512-9b7b-3cd5114e1519/925c72c4-60c3-470f-b5a3-527ba5143e94/_default/package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[명함/CNC1000] ✅ papers=2 sizes=4 entries=174 qtyVaries=true paperVaries=true
+    SNW250CT0: 100매=₩4000  500매=₩4000  1000매=₩8000
+    SNW250W00: 100매=₩3000  500매=₩3000  1000매=₩6000
+    SNW300W00: 100매=₩4000  500매=₩12000  1000매=₩20000
+[브로슈어/CLF2000] 🟡 papers=269 sizes=10 entries=100 qtyVaries=false paperVaries=false
+    : 100매=₩2221000  500매=₩2221000  1000매=₩2221000
+[책자/CPR4000] 🟡 papers=144 sizes=4 entries=100 qtyVaries=false paperVaries=false
+    : 100매=₩2800  500매=₩2800  1000매=₩2800
+[포스터/CPR2000] 🟡 papers=67 sizes=6 entries=100 qtyVaries=false paperVaries=false
+    : 100매=₩2221000  500매=₩2221000  1000매=₩2221000
+[배너/CPR5000] 🟡 papers=10 sizes=24 entries=100 qtyVaries=false paperVaries=false
+    : 100매=₩2221000  500매=₩2221000  1000매=₩2221000
+[캘린더/CCD1000] 🟡 papers=17 sizes=22 entries=100 qtyVaries=false paperVaries=false
+    : 100매=₩2221000  500매=₩2221000  1000매=₩2221000
+
+{
+  "generatedAt": "2026-06-11T06:20:51.755Z",
+  "source": "swadpia live (fetchSwadpiaCategoryData) — /api/swadpia-price 동일 경로",
+  "pass": 1,
+  "warn": 5,
+  "fail": 0,
+  "results": [
+    {
+      "slug": "business-cards",
+      "cat": "CNC1000",
+      "label": "명함",
+      "fetchSuccess": true,
+      "paperCount": 2,
+      "sizeCount": 4,
+      "printEntryCount": 174,
+      "papersTested": [
+        "SNW250CT0",
+        "SNW250W00",
+        "SNW300W00"
+      ],
+      "priceMatrix": {
+        "SNW250CT0": {
+          "100": 4000,
+          "500": 4000,
+          "1000": 8000
+        },
+        "SNW250W00": {
+          "100": 3000,
+          "500": 3000,
+          "1000": 6000
+        },
+        "SNW300W00": {
+          "100": 4000,
+          "500": 12000,
+          "1000": 20000
+        }
+      },
+      "qtyVaries": true,
+      "paperVaries": true,
+      "verdict": "✅",
+      "note": "용지·수량 가격 실시간 갱신 정상"
+    },
+    {
+      "slug": "brochures",
+      "cat": "CLF2000",
+      "label": "브로슈어",
+      "fetchSuccess": true,
+      "paperCount": 269,
+      "sizeCount": 10,
+      "printEntryCount": 100,
+      "papersTested": [
+        ""
+      ],
+      "priceMatrix": {
+        "": {
+          "100": 2221000,
+          "500": 2221000,
+          "1000": 2221000
+        }
+      },
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false)"
+    },
+    {
+      "slug": "saddle-stitch-booklet",
+      "cat": "CPR4000",
+      "label": "책자",
+      "fetchSuccess": true,
+      "paperCount": 144,
+      "sizeCount": 4,
+      "printEntryCount": 100,
+      "papersTested": [
+        ""
+      ],
+      "priceMatrix": {
+        "": {
+          "100": 2800,
+          "500": 2800,
+          "1000": 2800
+        }
+      },
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false)"
+    },
+    {
+      "slug": "posters",
+      "cat": "CPR2000",
+      "label": "포스터",
+      "fetchSuccess": true,
+      "paperCount": 67,
+      "sizeCount": 6,
+      "printEntryCount": 100,
+      "papersTested": [
+        ""
+      ],
+      "priceMatrix": {
+        "": {
+          "100": 2221000,
+          "500": 2221000,
+          "1000": 2221000
+        }
+      },
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false)"
+    },
+    {
+      "slug": "banners",
+      "cat": "CPR5000",
+      "label": "배너",
+      "fetchSuccess": true,
+      "paperCount": 10,
+      "sizeCount": 24,
+      "printEntryCount": 100,
+      "papersTested": [
+        ""
+      ],
+      "priceMatrix": {
+        "": {
+          "100": 2221000,
+          "500": 2221000,
+          "1000": 2221000
+        }
+      },
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false)"
+    },
+    {
+      "slug": "wall-calendars",
+      "cat": "CCD1000",
+      "label": "캘린더",
+      "fetchSuccess": true,
+      "paperCount": 17,
+      "sizeCount": 22,
+      "printEntryCount": 100,
+      "papersTested": [
+        ""
+      ],
+      "priceMatrix": {
+        "": {
+          "100": 2221000,
+          "500": 2221000,
+          "1000": 2221000
+        }
+      },
+      "qtyVaries": false,
+      "paperVaries": false,
+      "verdict": "🟡",
+      "note": "가격 산출되나 갱신 약함 (qtyVaries=false, paperVaries=false)"
+    }
+  ]
+}
