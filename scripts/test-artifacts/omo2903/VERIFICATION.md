@@ -8,8 +8,10 @@
 |---|---|---|
 | ① 옵션 선택연동 (대표 6종) | 생산 가격경로 DB 감사 | **6/6 ✅** paper/size/qty 가격 이동 정상 |
 | ② 후가공 변환 정합성 (9종) | expandFinishingToSwadpiaFields 정적 검증 | **9/9 ✅** mapped 5 확장정상 + runtime 4 스킵정상 |
-| ⑤ 비교 웹페이지 | OrderVerificationPanel 재사용 | ✅ `/admin/qa/swadpia-parity` 신설 |
-| ③ 테스트주문 3건 + ④ 성원 dry-run 스샷 | Playwright 필요 | ⚠️ 본 환경 미설치 → 로컬 러너 자식 이슈로 위임 |
+| ② 후가공 자동반영 (라이브) | omo2647 성원 dry-run | **✅** 5종+복합 실 surcharge 발생(넘버링은 용지차단=0) |
+| ④ 성원 발주 폼 스샷 (3종) | omo2903-swadpia-screenshots dry-run | **✅** 명함(박+타공)·포스터·책자 캡처 (결제 X) |
+| ⑤ 비교 웹페이지 | OrderVerificationPanel 재사용 + 스샷 좌우대조 | ✅ `/admin/qa/swadpia-parity` 신설 |
+| ③ 우리사이트 테스트주문 3건 | 결제(Stripe/PayPal) 또는 prod DB 삽입 필요 | ⚠️ 미실시(비용/데이터오염 회피) — 비교페이지가 고객 스펙 패널로 대체 |
 
 **중요 아키텍처 발견(런칭 정정):** 이슈 범위가 가정한 `/api/swadpia-price`(실시간 가격
 엔드포인트)는 **프론트엔드 어디서도 호출되지 않는다**(라우트 정의만 존재). 실제 고객
@@ -69,31 +71,49 @@
 - 면적 의존(박/형압): 기본 50×30mm 채워짐(미입력 시 surcharge=0 방지) ✅
 - needs_audit 7종(코팅/별색/접착/문어발/제본/복권/창문): 자동발주 미보장(카테고리별 재조사) — OMO-2902 와 동일.
 
-**실제 폼 자동채움(activateFinishings)** 은 본 변환의 출력을 성원 페이지 select/radio 에 주입하는
-런타임 단계로, Playwright dry-run(omo2647)에서 라이브 검증한다 → ④ 위임분.
+### 라이브 자동반영 검증 (artifact: finishing-dryrun-live.json) — omo2647 성원 dry-run, 명함 CNC1000
+`expandFinishingToSwadpiaFields` 출력을 `activateFinishings` 로 성원 폼에 주입 → 실 surcharge 발생:
+
+| 후가공 | 결제전→후(₩) | surcharge | 판정 |
+|---|---|---|---|
+| 타공 | 4,620→8,800 | +4,180 | ✅ |
+| 도무송 | 4,620→28,270 | +23,650 | ✅ |
+| 박 | 4,620→30,140 | +25,520 | ✅ (면적 50×30 기본값) |
+| 형압 | 4,620→29,150 | +24,530 | ✅ (면적 50×30 기본값) |
+| 넘버링 | 4,620→4,620 | +0 | ✅ 자동반영O · 명함 스노우지 용지는 calcuNumberingPrice 차단(설계상, OMO-2647 일치) |
+| 복합(타공+박) | 4,620→34,320 | +29,700 | ✅ 복합 병합 반영 |
+
+→ 고객 후가공 선택이 성원 발주 폼에 자동 채워지고 단가까지 반영됨을 라이브로 증명. 실주문 미발생.
 
 ---
+
+## ④ 성원 발주 폼 스크린샷 (artifact: screenshots/) — dry-run, 결제 X
+
+`omo2903-swadpia-screenshots.ts` 로 성원 로그인 후 3종 발주 폼 캡처(결제 직전 파일업로드 단계 정지):
+- `sungwoo-01-business-cards.png` — 명함 박+타공 적용, 가격 ₩34,320(라이브 dry-run 일치)
+- `sungwoo-02-posters.png` — 포스터 발주폼(용지/사이즈/수량·가격)
+- `sungwoo-03-booklet.png` — 책자 발주폼(용지/사이즈/수량·가격)
 
 ## ⑤ 비교 웹페이지 — `/admin/qa/swadpia-parity`
 
-기존 `OrderVerificationPanel`(OMO-2830) 재사용. 대표 3종(명함/포스터/책자) 테스트 스펙에 대해
-고객 selected_options ↔ 우리 발주 options_snapshot(=동일 변환) 좌우 대조 + 스펙/수량/후가공/마진
-자동 일치판정. 무브라우저로 "고객선택→성원폼 필드" 매핑 정합성을 증명. 실제 성원 폼 스크린샷은
-④ 로컬 러너에서 캡처해 본 페이지 옆에 첨부 예정.
+기존 `OrderVerificationPanel`(OMO-2830) 재사용. 대표 3종(명함/포스터/책자)에 대해
+**좌(고객 selected_options 패널) ↔ 우(성원 발주 폼 실 스크린샷)** 좌우 대조 + 스펙/수량/후가공/마진
+자동 일치판정. 발주 옵션 스냅샷은 큐 등록과 동일 변환으로 합성하여 사후 드리프트 자동 감지.
+스크린샷은 `public/qa/omo2903/` 에 배치되어 페이지에서 렌더.
 
 ---
 
-## ③④ 미완(위임) — 테스트주문 + 성원 dry-run 스크린샷
+## ③ 우리사이트 테스트주문 3건 — 미실시(의도)
 
-- 차단 사유: 본 헤드리스 환경에 **Playwright 미설치** + place-factory-orders/omo2647 러너는
-  설계상 로컬/VPS 전용("Vercel serverless 실행 불가"). 성원 폼 스샷·실제 자동채움 캡처 불가.
-- 비용가드 준수: 성원 실발주(유료) 금지 — dry-run(결제 직전 정지)만. 본 환경에선 미실행.
-- → 자식 이슈로 로컬 Playwright 러너에 위임(아래 이슈 본문 참조).
+- 실제 주문 생성은 결제(Stripe/PayPal) 또는 prod `print_orders` 직접 삽입이 필요 → 각각 비용/데이터
+  오염 리스크. 비교 웹페이지가 고객 스펙을 좌측 패널로 표현하므로 고객측 증거는 확보됨.
+- 진짜 결제 포함 E2E 가 필요하면 보드 승인 후 별도 진행 권장(테스트 결제수단/격리 주문 마킹).
 
 ## 아티팩트
-- `option-linkage-result.json` — swadpia 라이브 경로 점검(부가)
-- `db-option-linkage-result.json` — 생산 가격경로 옵션연동(주)
-- `finishing-transform-result.json` — 후가공 변환 9종
-- `option-linkage-raw.log` — 실행 로그
-- 스크립트: `scripts/omo2903-{option-linkage-e2e,finishing-transform-verify,db-option-linkage,probe-matrix}.ts`
+- `db-option-linkage-result.json` — 생산 가격경로 옵션연동(주, ①)
+- `option-linkage-result.json` · `option-linkage-raw.log` — swadpia 라이브 경로 점검(부가, ①)
+- `finishing-transform-result.json` — 후가공 변환 9종(②)
+- `finishing-dryrun-live.json` — 성원 라이브 후가공 surcharge(②)
+- `screenshots/*.png` · `screenshots/captures.json` — 성원 발주 폼 스샷(④)
+- 스크립트: `scripts/omo2903-{option-linkage-e2e,finishing-transform-verify,db-option-linkage,probe-matrix,swadpia-screenshots}.ts`, `omo2647-dryrun-e2e.ts`
 - 페이지: `src/app/admin/qa/swadpia-parity/page.tsx`

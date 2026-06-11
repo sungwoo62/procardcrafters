@@ -1,0 +1,14 @@
+{
+  "source": "omo2647-dryrun-e2e.ts (성원 라이브, CNC1000 명함, 결제 X 모달까지만)",
+  "capturedAt": "2026-06-11T06:35Z",
+  "loggedIn": true,
+  "results": [
+    { "case": "타공", "finishing": "drilled_hole", "payBefore": 4620, "payAfter": 8800, "surchargeWithTax": 4180, "verdict": "✅ 자동반영" },
+    { "case": "도무송", "finishing": "die_cut", "payBefore": 4620, "payAfter": 28270, "surchargeWithTax": 23650, "verdict": "✅ 자동반영" },
+    { "case": "박", "finishing": "foil_stamp", "payBefore": 4620, "payAfter": 30140, "surchargeWithTax": 25520, "verdict": "✅ 자동반영(면적 50x30 기본값)" },
+    { "case": "형압", "finishing": "deboss_emboss", "payBefore": 4620, "payAfter": 29150, "surchargeWithTax": 24530, "verdict": "✅ 자동반영(면적 50x30 기본값)" },
+    { "case": "넘버링", "finishing": "numbering", "payBefore": 4620, "payAfter": 4620, "surchargeWithTax": 0, "verdict": "✅ 자동반영O·명함 스노우지 용지는 calcuNumberingPrice 차단(surcharge 0, OMO-2647 기록 일치)" },
+    { "case": "복합(타공+박)", "finishing": "drilled_hole,foil_stamp", "payBefore": 4620, "payAfter": 34320, "surchargeWithTax": 29700, "verdict": "✅ 복합 자동반영" }
+  ],
+  "note": "expandFinishingToSwadpiaFields 출력이 activateFinishings 로 성원 폼에 주입되어 실 surcharge 발생 확인. 실주문 미발생."
+}

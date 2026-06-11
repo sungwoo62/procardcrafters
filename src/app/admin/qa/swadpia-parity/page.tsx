@@ -30,6 +30,9 @@ type TestSpec = {
   // 가격이동 옵션 extra_price_krw 합(브로슈어/포스터 등 db 감사 기준 대표값)
   extraKrw: number
   quantity: number
+  // 성원 발주 폼 dry-run 스크린샷(omo2903-swadpia-screenshots.ts, 결제 직전 정지)
+  swadpiaShot: string
+  swadpiaShotNote: string
 }
 
 const SPECS: TestSpec[] = [
@@ -47,6 +50,8 @@ const SPECS: TestSpec[] = [
       print_color_type: 'PCT10',
       finishing: 'foil_stamp,drilled_hole', // 자동발주(mapped) 2종
     },
+    swadpiaShot: '/qa/omo2903/sungwoo-01-business-cards.png',
+    swadpiaShotNote: '박+타공 적용 발주폼 · 결제 직전(파일업로드) 정지 · ₩34,320(라이브 dry-run 일치)',
   },
   {
     key: 'poster',
@@ -61,6 +66,8 @@ const SPECS: TestSpec[] = [
       paper_qty: '100',
       finishing: '', // 자동 후가공 없음(포스터)
     },
+    swadpiaShot: '/qa/omo2903/sungwoo-02-posters.png',
+    swadpiaShotNote: '포스터 발주폼(용지/사이즈/수량 옵션·가격) · 실주문 없음',
   },
   {
     key: 'booklet',
@@ -76,6 +83,8 @@ const SPECS: TestSpec[] = [
       print_color_type: 'PCT10',
       finishing: 'numbering', // 자동발주(mapped)
     },
+    swadpiaShot: '/qa/omo2903/sungwoo-03-booklet.png',
+    swadpiaShotNote: '책자 발주폼(용지/사이즈/수량 옵션·가격) · 실주문 없음',
   },
 ]
 
@@ -137,8 +146,8 @@ export default function SwadpiaParityQaPage() {
           합성되어 스펙·수량·후가공 일치 여부를 자동 판정한다.
         </p>
         <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 leading-relaxed">
-          <strong>비용가드:</strong> 성원 실발주 없음(무료). 본 페이지는 코드 변환 정합성을 무브라우저로 증명한다.
-          실제 성원 발주 폼 스크린샷 캡처는 로컬 Playwright dry-run 러너(결제 직전 정지)에서 수행한다(자식 이슈).
+          <strong>비용가드:</strong> 성원 실발주 없음(무료). 각 섹션 하단의 성원 발주 폼 스크린샷은
+          Playwright dry-run(omo2903-swadpia-screenshots.ts)으로 결제 직전(파일업로드 단계)까지만 진행해 캡처했다 — 결제 버튼 미클릭.
           <br />
           <strong>가격 경로(검증됨):</strong> 고객가 = (base_price_krw + Σ print_product_options.extra_price_krw) × margin × 환율.
           (<code className="px-1 bg-gray-100 rounded">/api/swadpia-price</code> 는 UI 미사용 — base_price 동기화 전용)
@@ -166,6 +175,19 @@ export default function SwadpiaParityQaPage() {
               factoryOrders={data.factoryOrders}
               shipments={data.shipments}
             />
+            <div className="border rounded-lg overflow-hidden">
+              <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 border-b">
+                성원 발주 폼 (dry-run 스크린샷 · 결제 X)
+                <span className="ml-2 font-normal text-gray-400">{spec.swadpiaShotNote}</span>
+              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={spec.swadpiaShot}
+                alt={`${spec.label} 성원 발주 폼 스크린샷`}
+                className="w-full"
+                loading="lazy"
+              />
+            </div>
           </section>
         )
       })}

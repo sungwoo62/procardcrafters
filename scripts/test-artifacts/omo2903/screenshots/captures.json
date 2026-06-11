@@ -1,0 +1,10 @@
+{
+  "source": "omo2903-swadpia-screenshots.ts (성원 라이브 dry-run, 결제 직전 정지)",
+  "capturedAt": "2026-06-11T06:36:19Z",
+  "loggedIn": true,
+  "captures": [
+    { "name": "명함", "file": "sungwoo-01-business-cards.png", "ok": true, "note": "박+타공 적용 발주폼 · 결제직전(파일업로드) 정지 · 가격 ₩34,320(dry-run 일치)" },
+    { "name": "포스터", "file": "sungwoo-02-posters.png", "ok": true, "note": "포스터 발주폼(옵션/가격)" },
+    { "name": "책자", "file": "sungwoo-03-booklet.png", "ok": true, "note": "책자 발주폼(옵션/가격)" }
+  ]
+}
