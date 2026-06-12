@@ -1,5 +1,5 @@
 import QuoteForm from "./QuoteForm";
-import { Clock, Shield, Star } from "lucide-react";
+import { Clock, Shield, Factory } from "lucide-react";
 
 export const metadata = {
   title: "Get a Quote — ProCardCrafters",
@@ -10,7 +10,7 @@ export const metadata = {
 const TRUST_POINTS = [
   { icon: Clock, text: "Response within 24 hours" },
   { icon: Shield, text: "No commitment required" },
-  { icon: Star, text: "4.9★ customer satisfaction" },
+  { icon: Factory, text: "Powered by Sungwon Adpia" },
 ];
 
 export default async function QuotePage({

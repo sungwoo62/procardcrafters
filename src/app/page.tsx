@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryCard from "@/components/ui/CategoryCard";
-import { Award, DollarSign, Zap, Star, Globe, Shield, Quote } from "lucide-react";
+import { Award, DollarSign, Zap, Globe, Factory } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -10,7 +10,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.co
 export const metadata: Metadata = {
   title: "ProCardCrafters — Professional Business Card Printing & More",
   description:
-    "Order premium business cards, flyers, banners, stickers, and packaging online. Transparent pricing, fast 3–5 day turnaround, ships worldwide. Trusted by 50,000+ businesses.",
+    "Order premium business cards, flyers, banners, stickers, and packaging online. Transparent pricing, fast 3–5 day turnaround, ships worldwide. Powered by Sungwon Adpia, a leading online print manufacturer.",
   alternates: { canonical: SITE_URL },
   openGraph: {
     title: "ProCardCrafters — Professional Business Card Printing & More",
@@ -47,40 +47,88 @@ const WHY_US = [
   },
 ];
 
+// Honest, verifiable operational facts only — no fabricated customer counts or
+// ratings (OMO-2975). Manufacturing scale is attributed to the parent brand.
 const TRUST_STATS = [
-  { icon: Star, value: "4.9★", label: "Customer Rating" },
+  { icon: Factory, value: "Sungwon Adpia", label: "Print Manufacturer" },
   { icon: Globe, value: "Ships Worldwide", label: "Global Delivery" },
-  { icon: Shield, value: "50,000+", label: "Happy Customers" },
-  { icon: Award, value: "500+", label: "Products" },
+  { icon: Zap, value: "3–5 Days", label: "Standard Turnaround" },
+  { icon: DollarSign, value: "Upfront Pricing", label: "No Hidden Fees" },
 ];
 
-const TESTIMONIALS = [
+// Provenance points — real facts about the manufacturer backing the brand.
+const HERITAGE = [
   {
-    quote:
-      "Ordered 1,000 business cards for our real estate team. The quality exceeded expectations — crisp, professional, and delivered in 4 days. Will definitely reorder.",
-    name: "Sarah M.",
-    title: "Managing Broker, Premier Realty",
-    stars: 5,
+    icon: Factory,
+    title: "Manufacturer-Direct",
+    desc: "Production runs on the print infrastructure of Sungwon Adpia, one of Korea's largest online printing companies — not outsourced to a middleman.",
   },
   {
-    quote:
-      "We needed custom stickers for our restaurant's packaging on short notice. ProCardCrafters came through with fast turnaround and beautiful results. Our customers love them.",
-    name: "James K.",
-    title: "Owner, Harvest Kitchen",
-    stars: 5,
+    icon: Award,
+    title: "Commercial Print Quality",
+    desc: "Offset and digital presses with carefully selected stocks and finishes, the same equipment trusted for high-volume commercial work.",
   },
   {
-    quote:
-      "The pricing is transparent and the quality is top-tier. I've used other print services before but ProCardCrafters is now my go-to for all our marketing materials.",
-    name: "Lisa T.",
-    title: "Marketing Director, Apex Tech",
-    stars: 5,
+    icon: Globe,
+    title: "Worldwide Shipping",
+    desc: "Order online from anywhere. Shipping costs and delivery estimates are calculated transparently at checkout.",
   },
 ];
+
+const faqSchema = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: [
+    {
+      "@type": "Question",
+      name: "What is the standard business card size?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "The standard business card size in the United States is 3.5 × 2 inches (88.9 × 50.8 mm). ProCardCrafters also offers square (2.5 × 2.5 in) and mini (3.5 × 1.75 in) formats.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "How long does printing take?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Standard orders ship within 3–5 business days after artwork approval. Rush options are available for faster turnaround.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What file formats do you accept?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "We accept print-ready PDF, AI, and EPS files. Files should be at 300 DPI in CMYK color mode with 0.125 inch bleed on all sides. Fonts must be embedded or outlined.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "What is the minimum order quantity?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Minimum order quantities vary by product — typically 50 business cards, 100 flyers, or 25 stickers. View each product page for specific minimums.",
+      },
+    },
+    {
+      "@type": "Question",
+      name: "Do you ship internationally?",
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: "Yes, ProCardCrafters ships worldwide. Shipping costs and delivery times vary by destination and are calculated at checkout.",
+      },
+    },
+  ],
+};
 
 export default function Home() {
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
+      />
       {/* Hero */}
       <section className="relative overflow-hidden bg-bg-dark">
         {/* Subtle background pattern */}
@@ -96,7 +144,7 @@ export default function Home() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm mb-8">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-              Trusted by 50,000+ businesses worldwide
+              Powered by Sungwon Adpia — a leading online print manufacturer
             </div>
 
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
@@ -204,38 +252,34 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials */}
+      {/* Manufacturing heritage — honest provenance in place of fabricated
+          reviews. We're a new brand with no real reviews yet (OMO-2975). */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent mb-4">
-            ★★★★★ Rated 4.9 / 5 by 50,000+ customers
+            Powered by Sungwon Adpia
           </div>
           <h2 className="text-2xl font-bold text-text sm:text-3xl lg:text-4xl">
-            What Our Customers Say
+            A New Brand, Backed by a Print Manufacturer
           </h2>
+          <p className="mt-3 text-secondary text-sm sm:text-base max-w-2xl mx-auto">
+            ProCardCrafters is a newly launched brand built on the production
+            infrastructure of Sungwon Adpia. You get manufacturer-direct quality
+            and pricing from day one — and we&apos;re earning our first customer
+            reviews now.
+          </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
+          {HERITAGE.map((item) => (
             <div
-              key={t.name}
+              key={item.title}
               className="relative flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm hover:shadow-md transition-shadow duration-200"
             >
-              <Quote size={22} className="text-accent/40" />
-              <p className="text-sm leading-7 text-secondary flex-1">{t.quote}</p>
-              <div className="flex items-center gap-3 pt-2 border-t border-border">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white text-sm font-bold flex-shrink-0">
-                  {t.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="text-xs font-bold text-text">{t.name}</p>
-                  <p className="text-[10px] text-secondary">{t.title}</p>
-                  <div className="flex gap-0.5 mt-0.5">
-                    {Array.from({ length: t.stars }).map((_, i) => (
-                      <Star key={i} size={10} className="fill-accent text-accent" />
-                    ))}
-                  </div>
-                </div>
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 text-primary">
+                <item.icon size={24} strokeWidth={1.75} />
               </div>
+              <h3 className="text-base font-bold text-text">{item.title}</h3>
+              <p className="text-sm leading-7 text-secondary flex-1">{item.desc}</p>
             </div>
           ))}
         </div>

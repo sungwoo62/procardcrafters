@@ -5,7 +5,7 @@ import Link from "next/link";
 import OptionSelector from "@/components/print/OptionSelector";
 import PriceCalculator from "@/components/print/PriceCalculator";
 import WishlistButton from "@/components/ui/WishlistButton";
-import { ImageOff, ChevronRight, ArrowRight, Zap, Shield, RotateCcw, Star } from "lucide-react";
+import { ImageOff, ChevronRight, ArrowRight, Zap, Shield, RotateCcw } from "lucide-react";
 import type { Product, OptionGroup, OptionValue, PriceRule } from "@/lib/types";
 import { trackViewItem, trackSelectItem } from "@/lib/analytics";
 
@@ -124,15 +124,11 @@ export default function ProductDetail({
             selected={selected}
           />
 
-          {/* Social proof mini bar */}
+          {/* Manufacturer provenance — honest, no fabricated ratings (OMO-2975) */}
           <div className="flex items-center gap-2 rounded-xl bg-accent/8 border border-accent/20 px-4 py-2.5">
-            <div className="flex gap-0.5">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} size={12} className="fill-accent text-accent" />
-              ))}
-            </div>
+            <Shield size={14} className="text-accent flex-shrink-0" />
             <p className="text-xs text-text font-medium">
-              <span className="font-bold">4.9/5</span> · Ordered by 50,000+ businesses
+              Printed by <span className="font-bold">Sungwon Adpia</span> — manufacturer-direct quality
             </p>
           </div>
 

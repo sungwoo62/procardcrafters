@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
-import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2, Lock, Star, Zap } from "lucide-react";
+import { CheckCircle, Mail, User, Package, Hash, MessageSquare, Loader2, Lock, Factory, Zap } from "lucide-react";
 import { submitQuote } from "./actions";
 import {
   trackGenerateLead,
@@ -215,8 +215,8 @@ export default function QuoteForm({
         </div>
         <div className="h-3 w-px bg-border" />
         <div className="flex items-center gap-1.5 text-[11px] text-secondary">
-          <Star size={11} className="fill-accent text-accent" />
-          <span>4.9★ Rated</span>
+          <Factory size={11} className="text-accent" />
+          <span>By Sungwon Adpia</span>
         </div>
       </div>
 
