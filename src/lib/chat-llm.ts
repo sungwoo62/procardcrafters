@@ -31,8 +31,11 @@ export interface ChatMessage {
 }
 
 const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001'
-const GEMINI_MODEL = process.env.GEMINI_CHAT_MODEL ?? 'gemini-2.0-flash'
 const MAX_OUTPUT_TOKENS = 512
+const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta'
+
+// 콜드스타트당 1회 해석한 Gemini 모델명을 캐시(모델명 하드코딩 회피).
+let resolvedGeminiModel: string | null = null
 
 /** 현재 사용 가능한 공급자 식별자(진단/로깅용). 없으면 null. */
 export function activeChatProvider(): 'anthropic' | 'gemini' | null {
@@ -70,12 +73,50 @@ export async function generateChatReply(
   throw new ChatLlmUnavailableError()
 }
 
+/**
+ * 사용할 Gemini 모델명을 해석한다.
+ * 1) GEMINI_CHAT_MODEL env 가 있으면 그것을 신뢰.
+ * 2) 없으면 ListModels 로 generateContent 지원 모델 중 flash 우선 선택.
+ * 결과는 콜드스타트 동안 캐시한다.
+ */
+async function resolveGeminiModel(apiKey: string): Promise<string> {
+  if (resolvedGeminiModel) return resolvedGeminiModel
+
+  const envModel = process.env.GEMINI_CHAT_MODEL
+  if (envModel) {
+    resolvedGeminiModel = envModel.replace(/^models\//, '')
+    return resolvedGeminiModel
+  }
+
+  const res = await fetch(`${GEMINI_BASE}/models?key=${apiKey}`)
+  if (!res.ok) {
+    throw new ChatLlmProviderError('gemini', res.status, `Gemini ListModels ${res.status}`)
+  }
+  const data = (await res.json()) as {
+    models?: { name: string; supportedGenerationMethods?: string[] }[]
+  }
+  const usable = (data.models ?? []).filter((m) =>
+    (m.supportedGenerationMethods ?? []).includes('generateContent')
+  )
+  // flash(저지연/저비용) 우선, 없으면 첫 사용 가능 모델.
+  const pick =
+    usable.find((m) => /flash/i.test(m.name) && !/thinking|exp/i.test(m.name)) ??
+    usable.find((m) => /flash/i.test(m.name)) ??
+    usable[0]
+  if (!pick) {
+    throw new ChatLlmProviderError('gemini', 404, 'No generateContent-capable Gemini model')
+  }
+  resolvedGeminiModel = pick.name.replace(/^models\//, '')
+  return resolvedGeminiModel
+}
+
 async function generateWithGemini(
   system: string,
   messages: ChatMessage[]
 ): Promise<string> {
   const apiKey = process.env.GOOGLE_GEMINI_API_KEY as string
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${apiKey}`
+  const model = await resolveGeminiModel(apiKey)
+  const url = `${GEMINI_BASE}/models/${model}:generateContent?key=${apiKey}`
 
   const res = await fetch(url, {
     method: 'POST',

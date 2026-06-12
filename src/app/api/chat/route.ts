@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
     // 모델 호출 실패(인증·레이트리밋·일시장애)는 클라이언트가 처리 가능한 503으로.
     const diag =
       err instanceof ChatLlmProviderError
-        ? { reason: 'provider_error', provider: err.provider, upstreamStatus: err.upstreamStatus }
+        ? {
+            reason: 'provider_error',
+            provider: err.provider,
+            upstreamStatus: err.upstreamStatus,
+            detail: err.message,
+          }
         : { reason: 'provider_error' }
     return NextResponse.json(
       { error: 'Chat service is temporarily unavailable.', ...diag },
