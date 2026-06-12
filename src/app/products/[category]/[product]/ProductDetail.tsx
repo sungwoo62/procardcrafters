@@ -124,11 +124,11 @@ export default function ProductDetail({
             selected={selected}
           />
 
-          {/* Manufacturer provenance — honest, no fabricated ratings (OMO-2975) */}
+          {/* Honest trust note — no fabricated ratings or brand claims (OMO-2975) */}
           <div className="flex items-center gap-2 rounded-xl bg-accent/8 border border-accent/20 px-4 py-2.5">
             <Shield size={14} className="text-accent flex-shrink-0" />
             <p className="text-xs text-text font-medium">
-              Printed by <span className="font-bold">Sungwon Adpia</span> — manufacturer-direct quality
+              Commercial-grade print quality · secure checkout · ships worldwide
             </p>
           </div>
 

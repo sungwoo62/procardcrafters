@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import CategoryCard from "@/components/ui/CategoryCard";
-import { Award, DollarSign, Zap, Globe, Factory } from "lucide-react";
+import { Award, DollarSign, Zap, Globe, Factory, Shield } from "lucide-react";
 
 export const revalidate = 3600;
 
@@ -10,7 +10,7 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://procardcrafters.co
 export const metadata: Metadata = {
   title: "ProCardCrafters — Professional Business Card Printing & More",
   description:
-    "Order premium business cards, flyers, banners, stickers, and packaging online. Transparent pricing, fast 3–5 day turnaround, ships worldwide. Powered by Sungwon Adpia, a leading online print manufacturer.",
+    "Order premium business cards, flyers, banners, stickers, and packaging online. Transparent pricing, fast 3–5 day turnaround, ships worldwide.",
   alternates: { canonical: SITE_URL },
   openGraph: {
     title: "ProCardCrafters — Professional Business Card Printing & More",
@@ -47,26 +47,26 @@ const WHY_US = [
   },
 ];
 
-// Honest, verifiable operational facts only — no fabricated customer counts or
-// ratings (OMO-2975). Manufacturing scale is attributed to the parent brand.
+// Honest, verifiable operational facts only — no fabricated customer counts,
+// ratings, or third-party brand claims (OMO-2975).
 const TRUST_STATS = [
-  { icon: Factory, value: "Sungwon Adpia", label: "Print Manufacturer" },
+  { icon: Shield, value: "Secure Checkout", label: "PayPal Protected" },
   { icon: Globe, value: "Ships Worldwide", label: "Global Delivery" },
   { icon: Zap, value: "3–5 Days", label: "Standard Turnaround" },
   { icon: DollarSign, value: "Upfront Pricing", label: "No Hidden Fees" },
 ];
 
-// Provenance points — real facts about the manufacturer backing the brand.
-const HERITAGE = [
+// Honest quality commitments for a new brand — no fabricated reviews (OMO-2975).
+const COMMITMENTS = [
   {
     icon: Factory,
-    title: "Manufacturer-Direct",
-    desc: "Production runs on the print infrastructure of Sungwon Adpia, one of Korea's largest online printing companies — not outsourced to a middleman.",
+    title: "Commercial-Grade Printing",
+    desc: "Offset and digital presses with carefully selected stocks and finishes for crisp, professional results on every order.",
   },
   {
-    icon: Award,
-    title: "Commercial Print Quality",
-    desc: "Offset and digital presses with carefully selected stocks and finishes, the same equipment trusted for high-volume commercial work.",
+    icon: DollarSign,
+    title: "Honest, Upfront Pricing",
+    desc: "See exactly what you'll pay before you order. No hidden fees and no inflated “discounts.”",
   },
   {
     icon: Globe,
@@ -144,7 +144,7 @@ export default function Home() {
             {/* Badge */}
             <div className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-medium text-white/80 backdrop-blur-sm mb-8">
               <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
-              Powered by Sungwon Adpia — a leading online print manufacturer
+              Premium print · Fast 3–5 day turnaround · Ships worldwide
             </div>
 
             <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl lg:text-6xl xl:text-7xl leading-tight">
@@ -252,25 +252,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Manufacturing heritage — honest provenance in place of fabricated
-          reviews. We're a new brand with no real reviews yet (OMO-2975). */}
+      {/* Honest quality commitments in place of fabricated reviews. We're a
+          new brand with no real reviews yet (OMO-2975). */}
       <section className="mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8">
         <div className="text-center">
           <div className="inline-flex items-center gap-2 rounded-full bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent mb-4">
-            Powered by Sungwon Adpia
+            Newly launched
           </div>
           <h2 className="text-2xl font-bold text-text sm:text-3xl lg:text-4xl">
-            A New Brand, Backed by a Print Manufacturer
+            A New Brand, Serious About Print
           </h2>
           <p className="mt-3 text-secondary text-sm sm:text-base max-w-2xl mx-auto">
-            ProCardCrafters is a newly launched brand built on the production
-            infrastructure of Sungwon Adpia. You get manufacturer-direct quality
-            and pricing from day one — and we&apos;re earning our first customer
-            reviews now.
+            ProCardCrafters is just getting started, so we won&apos;t pretend we
+            have thousands of reviews. What we offer is commercial-grade
+            printing, transparent pricing, and fast turnaround on every order —
+            be among our first customers.
           </p>
         </div>
         <div className="mt-12 grid gap-6 sm:grid-cols-3">
-          {HERITAGE.map((item) => (
+          {COMMITMENTS.map((item) => (
             <div
               key={item.title}
               className="relative flex flex-col gap-4 rounded-2xl border border-border bg-white p-7 shadow-sm hover:shadow-md transition-shadow duration-200"
