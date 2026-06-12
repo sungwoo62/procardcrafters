@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   // absolute: 루트 layout 템플릿 우회(브랜드 중복 방지).
   title: { absolute: 'Premium Business Cards by Profession | ProCardCrafters' },
   description:
-    'Foil, letterpress, painted-edge and NFC business cards designed for your line of work. Find the premium card built for your profession.',
+    'Metallic foil, embossing, raised-gloss and QR smart business cards designed for your line of work. Find the premium card built for your profession.',
   alternates: { canonical: url, languages: { 'en-US': url } },
   openGraph: { title: 'Premium Business Cards by Profession', url, type: 'website', locale: 'en_US' },
 }
