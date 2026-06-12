@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next'
+import { getAllProfessions } from '@/lib/niche/professions'
 
 // `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 상대경로/교차도메인 sitemap 유발).
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
@@ -67,5 +68,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  return [...staticPages, ...productPages, ...templatePages]
+  // 직업별 니치 랜딩(OMO-2971) — SEED + print_niche_pages DB row 자동 포함(drift 0).
+  const professions = await getAllProfessions()
+  const nichePages: MetadataRoute.Sitemap = [
+    { url: `${SITE_URL}/business-cards/for`, changeFrequency: 'weekly', priority: 0.7, lastModified: now },
+    ...professions.map((p) => ({
+      url: `${SITE_URL}/business-cards/for/${p.slug}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+  ]
+
+  return [...staticPages, ...productPages, ...templatePages, ...nichePages]
 }
