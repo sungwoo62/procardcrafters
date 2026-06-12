@@ -16,7 +16,7 @@ const VALUES = [
   {
     icon: Globe,
     title: 'Global Reach',
-    desc: 'Customers in 40+ countries trust us for fast, reliable international delivery via FedEx and premium courier partners.',
+    desc: 'We ship worldwide via FedEx Express and premium courier partners — fast, reliable, door-to-door international delivery.',
   },
   {
     icon: Zap,
