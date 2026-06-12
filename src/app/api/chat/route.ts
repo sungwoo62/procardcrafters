@@ -1,11 +1,10 @@
-import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { recordCsThread } from '@/lib/cs-threads'
-
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+import {
+  activeChatProvider,
+  generateChatReply,
+} from '@/lib/chat-llm'
 
 const SYSTEM_PROMPT = `You are a friendly print specialist at Procardcrafters, helping customers get instant quotes for professional printing services.
 
@@ -55,9 +54,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'sessionId is required.' }, { status: 400 })
   }
 
-  // OMO-2703: 운영 환경에 ANTHROPIC_API_KEY 미설정 시 무가드 호출이 raw 500 →
-  // 챗봇 전체 무응답. 키 누락을 명시적 503으로 변환해 진단 가능하게.
-  if (!process.env.ANTHROPIC_API_KEY) {
+  // OMO-2703: 챗봇 LLM 공급자는 Anthropic(선호) → Gemini 폴백 순.
+  // 두 키 모두 없으면 챗봇 무응답 → 명시적 503으로 진단 가능하게.
+  if (!activeChatProvider()) {
     return NextResponse.json(
       { error: 'Chat service is temporarily unavailable.' },
       { status: 503 }
@@ -66,13 +65,7 @@ export async function POST(req: NextRequest) {
 
   let assistantText = ''
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-haiku-4-5-20251001',
-      max_tokens: 512,
-      system: SYSTEM_PROMPT,
-      messages: messages.map((m) => ({ role: m.role, content: m.content })),
-    })
-    assistantText = response.content[0].type === 'text' ? response.content[0].text : ''
+    assistantText = await generateChatReply(SYSTEM_PROMPT, messages)
   } catch {
     // 모델 호출 실패(인증·레이트리밋·일시장애)는 클라이언트가 처리 가능한 503으로.
     return NextResponse.json(
