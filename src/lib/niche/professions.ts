@@ -40,9 +40,9 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
     profession: 'Realtors',
     professionSingular: 'Realtor',
     h1: 'Premium Business Cards for Realtors',
-    metaTitle: 'Business Cards for Realtors — Foil, Painted Edge & NFC | ProCardCrafters',
+    metaTitle: 'Business Cards for Realtors — Foil, Raised Gloss & QR | ProCardCrafters',
     metaDescription:
-      'Stand out at every showing and open house. Premium real estate business cards with metallic foil, painted edges and tap-to-share NFC. Designed for realtors. From $39.',
+      'Stand out at every showing and open house. Premium real estate business cards with metallic foil, raised-gloss accents, heavyweight stock and a QR that opens your listings. From $39.',
     heroSubhead:
       'The card you hand a buyer at an open house decides whether they remember you. Make it unforgettable.',
     intro:
@@ -51,9 +51,9 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
       'Open houses and showings — leave a card that outlasts the listing',
       'Just-listed and just-sold door hangers paired with a matching card',
       'Closing gifts and client folders that feel high-end',
-      'NFC tap-to-share that opens your active listings or booking link instantly',
+      'A printed QR that opens your active listings or booking page the second a buyer scans it',
     ],
-    recommendedFinishes: ['foil-stamping', 'painted-edges', 'nfc-smart', 'spot-uv'],
+    recommendedFinishes: ['foil-stamping', 'raised-gloss', 'textured-stock', 'qr-smart'],
     faqs: [
       {
         question: 'Can you add my brokerage logo and required license number?',
@@ -61,9 +61,9 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
           'Yes. We place your brokerage branding, license/DRE number and any required disclosures exactly where compliance needs them, and proof every card before it prints.',
       },
       {
-        question: 'What is an NFC business card and is it worth it for realtors?',
+        question: 'Can I put a QR code on my realtor business card?',
         answer:
-          'An NFC card has a tiny chip — a buyer taps it to their phone and your contact details, active listings or booking page open instantly, with no app. For agents it means a lead is saved before the buyer leaves the showing.',
+          'Yes. We print a QR that opens your active listings, booking page or contact details in one scan — no app needed. For agents it means a buyer can save you before they leave the showing.',
       },
       {
         question: 'How fast can I get them for an upcoming open house?',
@@ -72,6 +72,7 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
       },
     ],
     internalLinks: [
+      { label: 'Business cards for lawyers', href: '/business-cards/for/lawyers' },
       { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
       { label: 'Explore all premium finishes', href: '/business-cards/for' },
     ],
@@ -82,39 +83,169 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
     profession: 'Photographers',
     professionSingular: 'Photographer',
     h1: 'Premium Business Cards for Photographers',
-    metaTitle: 'Business Cards for Photographers — Letterpress, Foil & NFC | ProCardCrafters',
+    metaTitle: 'Business Cards for Photographers — Textured Stock, Foil & QR | ProCardCrafters',
     metaDescription:
-      'Your business card is a sample of your craft. Premium photography business cards on textured stock with letterpress, foil and QR-to-portfolio. From $39.',
+      'Your business card is a sample of your craft. Premium photography business cards on textured cotton stock with embossing, foil and a QR straight to your portfolio. From $39.',
     heroSubhead:
       'Clients judge your eye before they see your gallery. Hand them a card that already proves it.',
     intro:
-      "For a photographer, a business card is a tiny print — and people judge your work by the prints you choose. A thin, glossy card undersells a portfolio shot on medium format. ProCardCrafters prints on heavy textured and cotton stocks with letterpress and foil so the card in a client's hand feels like the quality they're paying for, and a QR or NFC tap takes them straight to your portfolio.",
+      "For a photographer, a business card is a tiny print — and people judge your work by the prints you choose. A thin, glossy card undersells a portfolio shot on medium format. ProCardCrafters prints on heavy textured and cotton stocks with embossing and foil so the card in a client's hand feels like the quality they're paying for, and a QR scan takes them straight to your portfolio.",
     useCases: [
       'Weddings and events — hand guests a card that leads to their gallery',
       'Studio sessions and client welcome kits that feel premium',
       'Gallery shows, markets and print fairs',
-      'QR / NFC tap straight to your portfolio or booking calendar',
+      'A QR scan straight to your portfolio or booking calendar',
     ],
-    recommendedFinishes: ['letterpress', 'textured-stock', 'foil-stamping', 'nfc-smart'],
+    recommendedFinishes: ['textured-stock', 'emboss-deboss', 'foil-stamping', 'qr-smart'],
     faqs: [
       {
         question: 'Can I print a photo edge-to-edge on the card?',
         answer:
-          'Yes — full-bleed photographic printing is available on our coated stocks. If you want a tactile finish, pair a photo front with a letterpress or foil logo on the back.',
+          'Yes — full-bleed photographic printing is available on our coated stocks. If you want a tactile finish, pair a photo front with an embossed or foil logo on the back.',
       },
       {
         question: 'Which finish best shows off my photography?',
         answer:
-          'Textured cotton stock with a foil or letterpress logo reads as "fine print" and pairs well with image-forward fronts. For event work, an NFC or QR card that opens the client gallery converts best.',
+          'Textured cotton stock with a foil or embossed logo reads as "fine print" and pairs well with image-forward fronts. For event work, a QR card that opens the client gallery converts best.',
       },
       {
-        question: 'Do you offer samples before I order a full run?',
+        question: 'Do you proof the card before printing the full run?',
         answer:
-          'Premium finishes are best judged by touch. Sample/swatch packs help you compare stocks and finishes before committing to a full order.',
+          'Yes. Every order is proofed for color and layout before it goes to print, so the textured stock, foil and QR all land exactly where you placed them — no surprises on the full run.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for tattoo artists', href: '/business-cards/for/tattoo-artists' },
+      { label: 'Business cards for realtors', href: '/business-cards/for/realtors' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'lawyers',
+    profession: 'Lawyers',
+    professionSingular: 'Lawyer',
+    h1: 'Premium Business Cards for Lawyers & Attorneys',
+    metaTitle: 'Business Cards for Lawyers — Foil, Embossing & Premium Stock | ProCardCrafters',
+    metaDescription:
+      'Premium business cards for lawyers and attorneys. Heavyweight stock, restrained metallic foil and clean embossing that signal the credibility your practice trades on. Proofed before printing. From $39.',
+    heroSubhead:
+      'In law, credibility is the product. Your card should carry the same weight as your advice.',
+    intro:
+      "A lawyer's business card is a trust document. Handed across a conference table or passed along in a referral, it telegraphs how seriously a client should take you before you say a word. A flimsy, mass-printed card undercuts a $400-an-hour conversation. ProCardCrafters prints attorneys on heavyweight stock with restrained foil and embossing — the visual language of a practice that bills with confidence.",
+    useCases: [
+      'Client consultations and conference-room introductions',
+      'Referrals between firms, where the card is your first impression by proxy',
+      'Bar association functions, CLE conferences and networking events',
+      'A printed QR that opens your booking page, vCard or practice profile in one scan',
+    ],
+    recommendedFinishes: ['foil-stamping', 'emboss-deboss', 'textured-stock', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can you match my firm’s brand colors and add my bar number?',
+        answer:
+          'Yes. We match your firm’s palette, place your bar number and any required attorney-advertising disclosures where compliance needs them, and send a proof for your approval before anything prints.',
+      },
+      {
+        question: 'Which finish looks most credible for a law practice?',
+        answer:
+          'Restraint reads as credibility. Heavyweight uncoated or cotton stock with a single foil or embossed element — your name or firm mark — looks more authoritative than a busy, glossy card. Less ornament, more weight.',
+      },
+      {
+        question: 'Is a QR code appropriate on a professional legal card?',
+        answer:
+          'Used sparingly, yes. A small QR on the back that opens your booking page or vCard saves a contact instantly without crowding the front. It stays optional — your name and firm remain the focus.',
       },
     ],
     internalLinks: [
       { label: 'Business cards for realtors', href: '/business-cards/for/realtors' },
+      { label: 'Business cards for contractors', href: '/business-cards/for/contractors' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'contractors',
+    profession: 'Contractors',
+    professionSingular: 'Contractor',
+    h1: 'Premium Business Cards for Contractors',
+    metaTitle: 'Business Cards for Contractors — Heavyweight, Foil & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards built for contractors and trades. Thick, durable stock, metallic foil and a QR that sends homeowners straight to your quote form or reviews. Proofed before printing. From $39.',
+    heroSubhead:
+      'A homeowner keeps one contractor’s card on the fridge. Make sure it’s yours.',
+    intro:
+      "On a job site or at a homeowner's door, your card competes with three others stuck under a magnet. Thin, smudged cardstock says you cut corners — exactly what a homeowner is afraid of. ProCardCrafters prints contractors on thick, rigid stock with bold foil and a scannable QR, so the card that survives the kitchen drawer is the one that calls you back for the next job.",
+    useCases: [
+      'Estimates and walkthroughs — leave a card a homeowner trusts enough to keep',
+      'Job-site signage and door hangers paired with a matching card',
+      'Supplier counters, trade desks and referral networks',
+      'A printed QR that opens your quote form, Google reviews or project gallery',
+    ],
+    recommendedFinishes: ['textured-stock', 'foil-stamping', 'die-cut', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can you print my license number, trades and service area?',
+        answer:
+          'Yes. We lay out your license number, trade certifications and service area clearly, and proof the card before printing so the details a homeowner checks are correct and easy to read.',
+      },
+      {
+        question: 'Will the cards hold up in a truck or tool bag?',
+        answer:
+          'That’s what the heavyweight stock is for. Thick, rigid cards with an optional protective coating resist bending, moisture and the wear of a glovebox far better than standard thin cardstock.',
+      },
+      {
+        question: 'What should the QR code on a contractor card link to?',
+        answer:
+          'The highest-converting target is your quote or estimate request form, so a homeowner can start a job in one scan. Google reviews or a gallery of finished work are strong second choices.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for lawyers', href: '/business-cards/for/lawyers' },
+      { label: 'Business cards for tattoo artists', href: '/business-cards/for/tattoo-artists' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'tattoo-artists',
+    profession: 'Tattoo Artists',
+    professionSingular: 'Tattoo Artist',
+    h1: 'Premium Business Cards for Tattoo Artists',
+    metaTitle: 'Business Cards for Tattoo Artists — Foil, Die-Cut & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards as bold as your work. Premium tattoo artist cards with metallic foil, raised gloss, custom die-cut shapes and a QR straight to your portfolio and booking. From $39.',
+    heroSubhead:
+      'Your card is a flash sheet in someone’s pocket. Make it worth keeping.',
+    intro:
+      "A tattoo client chooses an artist by their portfolio, and your business card is the smallest piece of it they get to keep. A generic card from a chain printer undersells the same hands they're trusting with permanent ink. ProCardCrafters prints tattoo artists with heavy foil, raised gloss and custom die-cut shapes, and a QR that drops a client straight into your Instagram or booking page before the consultation ends.",
+    useCases: [
+      'Shop counters and guest spots — a card clients actually keep',
+      'Conventions and flash days where every artist hands one out',
+      'Aftercare cards and client kits that match your brand',
+      'A printed QR straight to your portfolio, Instagram or booking calendar',
+    ],
+    recommendedFinishes: ['foil-stamping', 'raised-gloss', 'die-cut', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can you die-cut the card into a custom shape?',
+        answer:
+          'Yes. We cut cards to custom outlines — rounded, angled or shaped to your logo — so your card stands out in a stack of plain rectangles. Send your mark and we’ll proof the cut before printing.',
+      },
+      {
+        question: 'Can the QR code link to my Instagram or booking page?',
+        answer:
+          'Absolutely. A printed QR can open your Instagram, portfolio site or booking calendar in one scan. For artists, sending clients straight to your latest work is usually what books the next appointment.',
+      },
+      {
+        question: 'Which finish makes dark, illustrative designs pop?',
+        answer:
+          'Metallic foil and raised gloss on a matte black stock give dark, line-heavy artwork depth and shine without washing it out. It’s the closest a card gets to the contrast of fresh ink on skin.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
+      { label: 'Business cards for contractors', href: '/business-cards/for/contractors' },
       { label: 'Explore all premium finishes', href: '/business-cards/for' },
     ],
     priceFrom: 39,
