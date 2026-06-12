@@ -1,0 +1,922 @@
+{
+  "fields": [
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR1000/GPR1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR2000/GPR2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR3000/GPR3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR4000/GPR4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR5000/GPR5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�띾낫臾�",
+      "value": "CPR5100/GPR5101",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CPR5200/GPR5201",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CPR5400/GPR5401",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CPR5300/GPR5301",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CHI1000/GHI1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CHI2000/GHI2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CHI3000/GHI3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CHI4000/GHI4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CPS2000/GPS2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "怨좉툒�몄뇙",
+      "value": "CNC7000/GNC7001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC1000/GNC1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC2000/GNC2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC3000/GNC3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC4000/GNC4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC5000/GNC5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "紐낇븿",
+      "value": "CNC6000/GNC6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CNC8000/GNC8001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�꾨떒",
+      "value": "CLF1000/GLF1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�꾨떒",
+      "value": "CLF2000/GLF2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�꾨떒",
+      "value": "CLF5000/GLF5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CST1000/GST1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CST2000/GST2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CST3000/GST3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CST4000/GST4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CLP1000/GLP1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�ㅽ떚而�",
+      "value": "CST5000/GST5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CST6000/GST6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CST7000/GST7001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV1000/GEV1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV2000/GEV2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV3000/GEV3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV4000/GEV4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV5000/GEV5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "遊됲닾",
+      "value": "CEV6000/GEV6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CVS1000/GVS1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CVS2000/GVS2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CVS3000/GVS3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CVS6000/GVS6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CCM4000/GCM4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�덈궡��",
+      "value": "CCM2000/GCM2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "寃쎌씤��",
+      "value": "CNR1000/GNR1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "寃쎌씤��",
+      "value": "CNR2000/GNR2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "寃쎌씤��",
+      "value": "CNR3000/GNR3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "寃쎌씤��",
+      "value": "CNR5000/GNR5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "湲고��몄뇙",
+      "value": "CET1000/GET1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "湲고��몄뇙",
+      "value": "CET2000/GET2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "湲고��몄뇙",
+      "value": "CET3000/GET3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP1000/GDP1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP3000/GDP3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP2000/GDP2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP4000/GDP4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP5000/GDP5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �몃뵒怨�",
+      "value": "CDP6000/GDP6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP7000/GDP7001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP8000/GDP8001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP9000/GDP9001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP8100/GDP8101",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP1200/GDP1201",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP1300/GDP1301",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP1600/GDP1601",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP5100/GDP5101",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "CDP1900/GDP1901",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD1000/GOD1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD3000/GOD3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD4000/GOD4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD5000/GOD5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD6000/GOD6001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�붿��� �좊꼫",
+      "value": "COD7000/GOD7001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "COD8000/GOD8001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "",
+      "value": "COD1100/GOD1101",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CHI3000/GHI3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CPS2000/GPS2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CPK2000/GPK2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CPK3000/GPK3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CPK4000/GPK4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�⑦궎吏�",
+      "value": "CPK5000/GPK5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS1100/GPS1101",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS1000/GPS1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS3000/GPS3001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS4000/GPS4001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS4200/GPS4201",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "�먯큺臾�",
+      "value": "CPS5000/GPS5001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "蹂꾨룄寃ъ쟻",
+      "value": "COR1000/GOR1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "蹂꾨룄寃ъ쟻",
+      "value": "COR2000/GOR2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "罹섎┛��",
+      "value": "CCD1000/GCD1001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "罹섎┛��",
+      "value": "CCD2000/GCD2001",
+      "checked": false,
+      "hidden": true
+    },
+    {
+      "kind": "checkbox",
+      "name": "my_goods[]",
+      "label": "罹섎┛��",
+      "value": "CCD3000/GCD3001",
+      "checked": false,
+      "hidden": true
+    }
+  ],
+  "designCountCandidates": [
+    {
+      "name": "design_price",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": "0"
+    },
+    {
+      "name": "design_type",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_amt",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_type",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_f_design_type",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_f_design_edit",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_b_design_type",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_b_design_edit",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add1",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add2",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add3",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add4",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add5",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "save_design_price_add_open",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": "1"
+    },
+    {
+      "name": "save_order_count",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": "1"
+    },
+    {
+      "name": "order_count",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": "1"
+    },
+    {
+      "name": "design_re_order_item_key",
+      "tag": "INPUT",
+      "type": "text",
+      "value": ""
+    },
+    {
+      "name": "design_re_order_item_key_hidden",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "f_design_type",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "f_design_edit",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "b_design_type",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "b_design_edit",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price_add1",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price_add2",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price_add3",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price_add4",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price_add5",
+      "tag": "SELECT",
+      "type": "select-one",
+      "value": ""
+    },
+    {
+      "name": "design_price1",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "design_price2",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    },
+    {
+      "name": "design_price3",
+      "tag": "INPUT",
+      "type": "hidden",
+      "value": ""
+    }
+  ]
+}
