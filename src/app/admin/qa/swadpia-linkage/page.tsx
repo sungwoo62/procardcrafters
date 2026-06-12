@@ -244,14 +244,43 @@ export default function SwadpiaLinkageDashboard() {
 
       {/* 핵심 옵션 패스스루 경로 */}
       <section className="space-y-3">
-        <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">핵심 주문옵션 연동 경로 (용지/사이즈/수량/색상)</h2>
+        <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+          핵심 주문옵션 연동 (종이종류·매수·디자인건수·기타) — OMO-2961 라이브 검증 2026-06-12
+        </h2>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50 text-left text-gray-600 border-b">
+                <th className="p-2 font-medium">우리 옵션</th>
+                <th className="p-2 font-medium">성원 폼 필드</th>
+                <th className="p-2 font-medium">연동</th>
+                <th className="p-2 font-medium">비고 (성원 명함폼 실측)</th>
+              </tr>
+            </thead>
+            <tbody>
+              {[
+                ['종이종류', 'paper_code', '✅ 1:1', '스노우지 250/300g 등 — 선택값 그대로 전달'],
+                ['사이즈', 'paper_size', '✅ 1:1', '90×50 등 — 1:1 패스스루'],
+                ['매수(수량)', 'paper_qty', '✅ 사다리 스냅', '종이별 수량옵션(최대 57종) 자동 리로드 → 가장 가까운 유효수량 스냅(OMO-2485)'],
+                ['인쇄색', 'print_color_type', '✅ 1:1', '양면칼라/단면칼라/인쇄없음 (카테고리별 alias 변환)'],
+                ['디자인건수', 'order_count', '✅ 기본 1', '우리는 1주문=1디자인 모델 → 1 고정(성원 기본값과 동일, 1~120 지원)'],
+                ['디자인방식', 'f/b_design_type', '✅ 해당없음', '우리는 고객 파일 직접 업로드(order_path=ODP10) → 성원이 업로드 파일을 디자인으로 인식. design_type 은 "디자인 의뢰" 주문에서만 쓰는 필드라 파일업로드 경로에선 숨김/미사용(정상)'],
+              ].map(([ours, field, status, note]) => (
+                <tr key={field} className="border-b align-top hover:bg-gray-50">
+                  <td className="p-2 font-medium text-gray-800">{ours}</td>
+                  <td className="p-2"><code className="text-xs text-gray-700">{field}</code></td>
+                  <td className="p-2 whitespace-nowrap text-green-700">{status}</td>
+                  <td className="p-2 text-xs text-gray-500">{note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <div className="text-sm text-gray-600 leading-relaxed bg-gray-50 border rounded p-4 space-y-2">
           <p>
-            용지(<code>paper_code</code>)·사이즈(<code>paper_size</code>)·수량(<code>paper_qty</code>)·인쇄색
-            (<code>print_color_type</code>) 등 핵심 옵션은 후가공과 달리 <strong>이름 1:1 패스스루</strong>다.
-            고객 <code>selected_options</code> 의 key 가 성원 goods_view 폼의 <code>select[name]</code>/
-            <code>radio[name]</code> 와 동일해, <code>selectOrderOptions</code>(swadpia-order.ts)가 별도 변환 없이
-            그대로 채운다.
+            핵심 옵션은 후가공과 달리 <strong>이름 1:1 패스스루</strong>다. 고객 <code>selected_options</code> 의 key 가
+            성원 goods_view 폼의 <code>select[name]</code> 와 동일해 <code>selectOrderOptions</code>(swadpia-order.ts)가
+            별도 변환 없이 채운다(카테고리별 차이는 <code>SWADPIA_FIELD_ALIAS</code> 로 흡수).
           </p>
           <p>
             라이브 파리티 감사: 표준 카테고리 22종 옵션 일치(OMO-2902), 대표 3종 E2E + 성원 발주폼 dry-run
