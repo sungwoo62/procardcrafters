@@ -69,9 +69,13 @@ const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
 // 갈아끼워진다(재populate). 대표 케이스가 책자 `binding_type` —
 // 정적 HTML 엔 [BDT2,BDT6,BDT4] 가 다 있으나, 표지 용지(cover_paper_*)나
 // 내지 페이지수(in_page_qty) 를 고르는 순간 binding_type 이 재populate 되며
-// BDT6(PUR무선제본)는 **특수지(cover_paper_kind=PKD30) 표지에서만** 살아남는다
-// (일반지 PKD10/고급지 PKD20/펄지 PKD40 → BDT2,BDT4 만 남고 BDT6 탈락).
-// 라이브 확정: scripts/test-artifacts/omo3030/{bdt6,probe2}.json.
+// BDT6(PUR무선제본)의 진짜 노출 게이트는 **내지 페이지수 in_page_qty ≥ 32**
+// (PUR무선 최소 내지 32p). 이 조건이 충족되면 표지는 고급지 PKD20(현행 시드
+// ARE160W00 포함)·특수지 PKD30 등에서 BDT6 가 살아남는다 — PKD30 전용이 아니다.
+// 반대로 일반지 PKD10·펄지 PKD40 은 표지 용지 자체가 BDT6 원천 미노출.
+// (OMO-3037 정정: 종전 "PKD30 표지 전용" 단정은 오류 — OMO-3034 라이브 probe 로 반증.)
+// 라이브 확정: scripts/test-artifacts/omo3034/phase{1,5,6,7}-*.json
+//             (구 omo3030/{bdt6,probe2}.json 은 부분 관측이라 오해 소지).
 //
 // 따라서 이런 종속 필드는 (1) 선행 옵션을 모두 적용한 "뒤에" 설정하고,
 // (2) 설정 직전 live select 에 값이 실제 존재하는지 검증해야 한다. 검증 없이
@@ -1006,14 +1010,27 @@ export async function selectOrderOptions(
     const liveValues: string[] = await selectEl.evaluate((el: Element) =>
       Array.from((el as HTMLSelectElement).options).map((o) => o.value),
     )
+    // OMO-3037: BDT6 부재의 1순위 원인이 내지 페이지수 부족이라, 검증 throw 전에
+    // in_page_qty<32 면 진단을 좁혀 주는 안내 로그를 남긴다(흐름은 그대로).
+    if (value === 'BDT6' && !liveValues.includes(value)) {
+      const inPageQty = Number(options['in_page_qty'])
+      if (Number.isFinite(inPageQty) && inPageQty < 32) {
+        console.warn(
+          `[swadpia-order] ⚠️ BDT6 미노출 — in_page_qty=${inPageQty} < 32(PUR무선 최소 내지). ` +
+            `표지 용지가 아닌 페이지수가 게이트일 가능성 높음(OMO-3037).`,
+        )
+      }
+    }
     if (!liveValues.includes(value)) {
       throw new Error(
         `[swadpia-order] ${key}=${value} 가 현재 옵션 조합에서 선택 불가 ` +
           `(live 옵션: [${liveValues.filter(Boolean).join(',')}]). ` +
           (value === 'BDT6'
-            ? `BDT6(PUR무선제본)는 특수지(cover_paper_kind=PKD30) 표지에서만 노출된다 — ` +
-              `현재 표지 용지(${options['paper_code'] ?? '미상'})가 BDT6 비호환. ` +
-              `BDT6 호환 표지로 시드 교정 필요(OMO-3033). `
+            ? `BDT6(PUR무선제본) 노출 게이트는 내지 페이지수 in_page_qty≥32 이며 ` +
+              `표지는 고급지(PKD20)·특수지(PKD30) 등에서 살아남는다 — 일반지(PKD10)·펄지(PKD40) 표지는 원천 미노출. ` +
+              `부재 원인은 보통 (1) in_page_qty<32(현재 ${options['in_page_qty'] ?? '미상'}) 또는 ` +
+              `(2) 표지 용지(${options['paper_code'] ?? '미상'})가 PKD10/PKD40 계열. ` +
+              `해당 조합을 32p 이상·BDT6 호환 표지로 교정 필요(OMO-3037). `
             : '') +
           `오발주 방지를 위해 발주 중단.`,
       )
