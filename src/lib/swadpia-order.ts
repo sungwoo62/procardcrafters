@@ -119,7 +119,7 @@ export interface FactoryOrderRecord {
   id: string
   print_order_id: string
   print_order_item_id: string | null
-  status: 'pending' | 'placing' | 'placed' | 'failed' | 'cancelled'
+  status: 'pending' | 'placing' | 'placed' | 'paid' | 'failed' | 'cancelled'
   swadpia_order_number: string | null
   category_code: string
   options_snapshot: Record<string, string>
@@ -137,6 +137,9 @@ export interface FactoryOrderRecord {
   actual_cost_usd?: number | null
   cost_recorded_at?: string | null
   cost_recorded_by?: string | null
+  // OMO-3018: 성원 발주 결제완료 추적. 마이그레이션 20260613000010 이후 존재.
+  swadpia_paid_at?: string | null
+  swadpia_paid_by?: string | null
 }
 
 // ─── Core Playwright automation ───────────────────────────────
@@ -700,16 +703,67 @@ async function tryEnableSameDay(page: Page, maxDeltaPct: number): Promise<SameDa
 //   5) product1.calcuEstimate() → pay_amt 합산
 // 박/형압은 면적(bak_x_size_1/bak_y_size_1)이 >0 이어야 단가가 잡힌다
 // (DEFAULT_FINISHING_FIELD_VALUES 에서 기본 면적 주입).
-const FINISHING_GROUPS: { ppType: string; prefix: string }[] = [
-  { ppType: 'bak', prefix: 'bak_' },
-  { ppType: 'ap', prefix: 'ap_' },
-  { ppType: 'domusong', prefix: 'domusong_' },
-  { ppType: 'tagong', prefix: 'tagong_' },
-  { ppType: 'numbering', prefix: 'numbering_' },
+// FinishingSpec: 후가공별 chk_is_{ppType} 활성화 + 옵션키 라우팅 규약.
+//   - prefixes: options 의 어떤 키가 이 후가공으로 라우팅되는지(startsWith).
+//   - marker: `__fin_<type>` 가상 활성화 키(폼 미전송). coating/laminex 처럼 모든
+//     핵심필드가 런타임 자동선택이라 seed 할 구체필드가 없는 후가공도 활성화 트리거.
+//   - autoPick: chk 클릭 후 JS populate 되는 select. 명시값 없으면 첫 유효옵션 선택
+//     (numbering_kind/epoxy_kind 패턴을 일반화). 카테고리별 옵션 상이 필드 처리.
+//   - needsClick: chk 에 click 이벤트 디스패치 필요(사이즈/용지별 옵션 런타임 populate).
+//   - positions: 귀도리 위치 체크박스(guidori_position1~4).
+interface FinishingSpec {
+  ppType: string
+  prefixes: string[]
+  marker?: string
+  autoPick?: string[]
+  needsClick?: boolean
+  positions?: boolean
+}
+
+const FINISHING_GROUPS: FinishingSpec[] = [
+  { ppType: 'bak', prefixes: ['bak_'] },
+  { ppType: 'ap', prefixes: ['ap_'] },
+  { ppType: 'domusong', prefixes: ['domusong_'] },
+  { ppType: 'tagong', prefixes: ['tagong_'] },
+  { ppType: 'numbering', prefixes: ['numbering_'], autoPick: ['numbering_kind'] },
+  // OMO-2961: 런타임 추출 4종(라이브 검증 완료). chk 클릭으로 옵션 populate 후 적용.
+  { ppType: 'guidori', prefixes: ['guidori_'], needsClick: true, positions: true },
+  { ppType: 'epoxy', prefixes: ['epoxy_'], autoPick: ['epoxy_kind'], needsClick: true },
+  { ppType: 'osi', prefixes: ['osi_'], needsClick: true },
+  { ppType: 'missing', prefixes: ['missing_'], needsClick: true },
+  // OMO-3022: 추가 후가공 10종(라이브 추출 2026-06-13, scripts/omo3022-probe.mts).
+  //   add_cutting 은 cutting 과 필드 중첩(add_cut_*) 이라 단독 라우팅 보류(needs_audit).
+  { ppType: 'coating', prefixes: ['coating_'], marker: '__fin_coating', autoPick: ['coating_type'], needsClick: true },
+  { ppType: 'cutting', prefixes: ['cutting_', 'add_cut_', 'add_parts_num'], marker: '__fin_cutting', autoPick: ['cutting_type'], needsClick: true },
+  { ppType: 'binding', prefixes: ['binding_', 'binding_add_set', 'bundle_type'], marker: '__fin_binding', autoPick: ['bundle_type'], needsClick: true },
+  { ppType: 'folding', prefixes: ['folding_', 'select_folding_'], marker: '__fin_folding', autoPick: ['folding_type', 'folding_direction'], needsClick: true },
+  { ppType: 'bonding', prefixes: ['bonding_'], marker: '__fin_bonding', needsClick: true },
+  { ppType: 'laminex', prefixes: ['laminex_'], marker: '__fin_laminex', autoPick: ['laminex_num'], needsClick: true },
+  { ppType: 'stitching', prefixes: ['stitching_'], marker: '__fin_stitching', autoPick: ['stitching_type'], needsClick: true },
+  { ppType: 'window', prefixes: ['window_'], marker: '__fin_window', autoPick: ['window_size'], needsClick: true },
+  { ppType: 'tape', prefixes: ['tape_'], marker: '__fin_tape', autoPick: ['tape_type'], needsClick: true },
+  { ppType: 'partial_coating', prefixes: ['partial_coating_'], marker: '__fin_partial_coating', needsClick: true },
 ]
 
+// partial_coating_* 키가 coating 그룹(prefix 'coating_')에 오인 라우팅되지 않도록,
+// 가장 구체적인(긴) prefix 를 가진 스펙이 키를 소유한다(아래 specForKey 에서 사용).
+function specForKey(key: string): FinishingSpec | undefined {
+  let best: FinishingSpec | undefined
+  let bestLen = -1
+  for (const g of FINISHING_GROUPS) {
+    if (g.marker && key === g.marker) return g
+    for (const p of g.prefixes) {
+      if (key.startsWith(p) && p.length > bestLen) {
+        best = g
+        bestLen = p.length
+      }
+    }
+  }
+  return best
+}
+
 function isFinishingKey(key: string): boolean {
-  return FINISHING_GROUPS.some((g) => key.startsWith(g.prefix))
+  return specForKey(key) !== undefined
 }
 
 async function activateFinishings(
@@ -718,14 +772,19 @@ async function activateFinishings(
 ): Promise<void> {
   const keys = Object.keys(finishingOpts)
   for (const g of FINISHING_GROUPS) {
-    const groupKeys = keys.filter((k) => k.startsWith(g.prefix))
+    // 각 키는 가장 구체적인(긴 prefix) 스펙에 귀속(partial_coating_* 가 coating 으로
+    // 새지 않도록). marker(`__fin_<type>`)만 있고 구체필드가 없어도 활성화한다.
+    const groupKeys = keys.filter((k) => specForKey(k) === g)
     if (groupKeys.length === 0) continue
     const fieldMap: Record<string, string> = {}
-    for (const k of groupKeys) fieldMap[k] = finishingOpts[k]
+    for (const k of groupKeys) {
+      if (k === g.marker) continue // 마커는 폼에 전송하지 않음
+      fieldMap[k] = finishingOpts[k]
+    }
 
     await page.evaluate(
-      (params: { ppType: string; fieldMap: Record<string, string> }) => {
-        const { ppType, fieldMap } = params
+      (params: { ppType: string; fieldMap: Record<string, string>; autoPick: string[]; needsClick: boolean; positions: boolean }) => {
+        const { ppType, fieldMap, autoPick, needsClick, positions } = params
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const w = window as any
         const setField = (name: string, value: string) => {
@@ -741,36 +800,59 @@ async function activateFinishings(
           el.value = value
           el.dispatchEvent(new Event('change', { bubbles: true }))
         }
+        // chk 클릭 후 JS 가 동적 populate 하는 select → 명시값(있고 유효)이면 그 값,
+        // 아니면 첫 유효옵션 선택. (numbering_kind/epoxy_kind 일반화)
+        const pickRuntime = (name: string) => {
+          const ke = document.querySelector(`select[name="${name}"]`) as HTMLSelectElement | null
+          if (!ke) return
+          const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
+          if (opts.length === 0) return
+          const want = fieldMap[name]
+          const chosen = want && opts.indexOf(want) !== -1 ? want : opts[0]
+          ke.value = chosen
+          ke.dispatchEvent(new Event('change', { bubbles: true }))
+        }
         // 1. 활성화 (체크박스 + 패널 노출)
         const chk = document.getElementById(`chk_is_${ppType}`) as HTMLInputElement | null
         if (chk) chk.checked = true
         const chk2 = document.getElementById(`chk_is_${ppType}2`) as HTMLInputElement | null
         if (chk2) chk2.checked = true
+        // 런타임 populate 후가공은 chk 클릭 이벤트가 있어야 사이즈/용지별 옵션이 채워진다.
+        if (chk && needsClick) {
+          chk.dispatchEvent(new Event('click', { bubbles: true }))
+          chk.dispatchEvent(new Event('change', { bubbles: true }))
+        }
         try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
-        // 2. section/type/size 설정 (kind 는 populate 후 별도)
+        // 2. 정적 필드 설정 (런타임 자동선택 대상은 제외 — populate 후 별도)
         for (const [n, v] of Object.entries(fieldMap)) {
-          if (n.endsWith('_kind')) continue
+          if (n.endsWith('_kind') || autoPick.indexOf(n) !== -1) continue
           setField(n, v)
         }
-        // 3. 넘버링: type 변경 후 kind 동적 populate → 지정값(없으면 첫 옵션) 선택
+        // 3. 넘버링: type 변경이 kind populate 를 유발
         if (ppType === 'numbering') {
           try { w.chgNumberingType && w.chgNumberingType() } catch { /* */ }
-          const ke = document.querySelector('select[name="numbering_kind"]') as HTMLSelectElement | null
-          if (ke) {
-            const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
-            const want = fieldMap['numbering_kind']
-            const chosen = want && opts.includes(want) ? want : opts[0] || ''
-            if (chosen) {
-              ke.value = chosen
-              ke.dispatchEvent(new Event('change', { bubbles: true }))
+          pickRuntime('numbering_kind')
+        }
+        // 3-b. 귀도리 위치 체크박스(기본 네귀도리=4모서리 전체).
+        if (positions) {
+          for (const i of [1, 2, 3, 4]) {
+            const p = document.querySelector(`[name="guidori_position${i}"]`) as HTMLInputElement | null
+            if (p && !p.checked) {
+              p.checked = true
+              p.dispatchEvent(new Event('click', { bubbles: true }))
+              p.dispatchEvent(new Event('change', { bubbles: true }))
             }
           }
         }
-        // 4. canonical 재계산 (올바른 seq 로 pp 메서드 호출 → {type}_amt)
+        // 3-c. setIsPostpress 가 일부 후가공의 종속옵션을 populate 하므로 autoPick 전에 호출.
         try { w.setIsPostpress && w.setIsPostpress(ppType) } catch { /* */ }
+        // 3-d. 런타임 동적 select 자동선택(epoxy_kind/coating_type/folding_type/
+        //      laminex_num/window_size/tape_type/cutting_type/bundle_type 등).
+        for (const name of autoPick) pickRuntime(name)
+        // 4. canonical 재계산 → {type}_amt 산출
         try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
       },
-      { ppType: g.ppType, fieldMap },
+      { ppType: g.ppType, fieldMap, autoPick: g.autoPick ?? [], needsClick: !!g.needsClick, positions: !!g.positions },
     )
     await page.waitForTimeout(900)
     // 런타임/AJAX populate 반영 후 합산 한 번 더 보장

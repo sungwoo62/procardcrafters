@@ -1,0 +1,190 @@
+{
+  "before": {
+    "paper_code": {
+      "type": "SELECT",
+      "current": "SNW250W00",
+      "optionCount": 2,
+      "sample": [
+        "SNW250W00=스노우지 백색 250g",
+        "SNW300W00=스노우지 백색 300g"
+      ]
+    },
+    "paper_size": {
+      "type": "SELECT",
+      "current": "N0100",
+      "optionCount": 4,
+      "sample": [
+        "N0100=90mm*50mm",
+        "N0200=86mm*52mm",
+        "N0500=91mm*55mm",
+        "N0600=85mm*55mm"
+      ]
+    },
+    "paper_qty": {
+      "type": "SELECT",
+      "current": "500",
+      "optionCount": 57,
+      "sample": [
+        "500=500 留�",
+        "1000=1000 留�",
+        "1500=1500 留�",
+        "2000=2000 留�",
+        "3000=3000 留�"
+      ]
+    },
+    "print_color_type": {
+      "type": "SELECT",
+      "current": "CTN40",
+      "optionCount": 3,
+      "sample": [
+        "CTN40=�묐㈃移쇰씪",
+        "CTN10=�⑤㈃移쇰씪",
+        "CTN99=�몄뇙�놁쓬"
+      ]
+    },
+    "order_count": {
+      "type": "SELECT",
+      "current": "1",
+      "optionCount": 120,
+      "sample": [
+        "1=1",
+        "2=2",
+        "3=3",
+        "4=4",
+        "5=5"
+      ]
+    },
+    "f_design_type": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 3,
+      "sample": [
+        "DST11=媛꾨떒�쒖닔��",
+        "DST12=�ы뵆�붿옄��",
+        "DST13=怨좉툒�붿옄��"
+      ]
+    },
+    "b_design_type": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 3,
+      "sample": [
+        "DST11=媛꾨떒�쒖닔��",
+        "DST12=�ы뵆�붿옄��",
+        "DST13=怨좉툒�붿옄��"
+      ]
+    },
+    "f_design_edit": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 2,
+      "sample": [
+        "DST21=媛꾨떒�쒖닔��",
+        "DST22=而⑥뀎蹂�寃�"
+      ]
+    },
+    "b_design_edit": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 2,
+      "sample": [
+        "DST21=媛꾨떒�쒖닔��",
+        "DST22=而⑥뀎蹂�寃�"
+      ]
+    }
+  },
+  "after": {
+    "paper_code": {
+      "type": "SELECT",
+      "current": "SNW250W00",
+      "optionCount": 2,
+      "sample": [
+        "SNW250W00=스노우지 백색 250g",
+        "SNW300W00=스노우지 백색 300g"
+      ]
+    },
+    "paper_size": {
+      "type": "SELECT",
+      "current": "N0100",
+      "optionCount": 4,
+      "sample": [
+        "N0100=90mm*50mm",
+        "N0200=86mm*52mm",
+        "N0500=91mm*55mm",
+        "N0600=85mm*55mm"
+      ]
+    },
+    "paper_qty": {
+      "type": "SELECT",
+      "current": "500",
+      "optionCount": 57,
+      "sample": [
+        "500=500 留�",
+        "1000=1000 留�",
+        "1500=1500 留�",
+        "2000=2000 留�",
+        "3000=3000 留�"
+      ]
+    },
+    "print_color_type": {
+      "type": "SELECT",
+      "current": "CTN40",
+      "optionCount": 3,
+      "sample": [
+        "CTN40=�묐㈃移쇰씪",
+        "CTN10=�⑤㈃移쇰씪",
+        "CTN99=�몄뇙�놁쓬"
+      ]
+    },
+    "order_count": {
+      "type": "SELECT",
+      "current": "1",
+      "optionCount": 120,
+      "sample": [
+        "1=1",
+        "2=2",
+        "3=3",
+        "4=4",
+        "5=5"
+      ]
+    },
+    "f_design_type": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 3,
+      "sample": [
+        "DST11=媛꾨떒�쒖닔��",
+        "DST12=�ы뵆�붿옄��",
+        "DST13=怨좉툒�붿옄��"
+      ]
+    },
+    "b_design_type": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 3,
+      "sample": [
+        "DST11=媛꾨떒�쒖닔��",
+        "DST12=�ы뵆�붿옄��",
+        "DST13=怨좉툒�붿옄��"
+      ]
+    },
+    "f_design_edit": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 2,
+      "sample": [
+        "DST21=媛꾨떒�쒖닔��",
+        "DST22=而⑥뀎蹂�寃�"
+      ]
+    },
+    "b_design_edit": {
+      "type": "SELECT",
+      "current": "",
+      "optionCount": 2,
+      "sample": [
+        "DST21=媛꾨떒�쒖닔��",
+        "DST22=而⑥뀎蹂�寃�"
+      ]
+    }
+  }
+}

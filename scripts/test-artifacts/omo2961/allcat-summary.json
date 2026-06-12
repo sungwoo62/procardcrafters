@@ -1,0 +1,468 @@
+{
+  "auditedAt": "2026-06-12",
+  "rows": [
+    {
+      "code": "CNC1000",
+      "label": "명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC2000",
+      "label": "고급명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC3000",
+      "label": "메탈/포일명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC4000",
+      "label": "레터프레스명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC5000",
+      "label": "투명명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC6000",
+      "label": "UV명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CNC8000",
+      "label": "펄명함",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": []
+    },
+    {
+      "code": "CST1000",
+      "label": "스티커",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "bak"
+      ],
+      "extraFin": [
+        "coating",
+        "cutting"
+      ]
+    },
+    {
+      "code": "CST2000",
+      "label": "도무송스티커",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "bak",
+        "domusong"
+      ],
+      "extraFin": [
+        "add_cutting",
+        "coating",
+        "cutting"
+      ]
+    },
+    {
+      "code": "CST5000",
+      "label": "홀로그램스티커",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CST7000",
+      "label": "롤스티커",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CLP1000",
+      "label": "라벨",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CLF1000",
+      "label": "전단",
+      "coreOk": false,
+      "coreMiss": [
+        "print_color_type"
+      ],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CLF2000",
+      "label": "브로슈어/메뉴",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CPR3000",
+      "label": "리플렛",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CPR4000",
+      "label": "책자",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "guidori",
+        "osi"
+      ],
+      "extraFin": [
+        "binding",
+        "coating",
+        "partial_coating"
+      ]
+    },
+    {
+      "code": "CDP3000",
+      "label": "엽서",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "guidori",
+        "missing",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "bonding",
+        "coating",
+        "folding"
+      ]
+    },
+    {
+      "code": "CPR2000",
+      "label": "포스터",
+      "coreOk": false,
+      "coreMiss": [
+        "print_color_type"
+      ],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CPR5000",
+      "label": "배너",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "epoxy"
+      ],
+      "extraFin": [
+        "bonding",
+        "coating",
+        "partial_coating",
+        "tape"
+      ]
+    },
+    {
+      "code": "CEV1000",
+      "label": "봉투",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "bak",
+        "domusong",
+        "tagong"
+      ],
+      "extraFin": [
+        "tape",
+        "window"
+      ]
+    },
+    {
+      "code": "CNR2000",
+      "label": "양식/명세서",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "missing",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding"
+      ]
+    },
+    {
+      "code": "CCD1000",
+      "label": "벽걸이캘린더",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    },
+    {
+      "code": "CCD2000",
+      "label": "탁상캘린더",
+      "coreOk": true,
+      "coreMiss": [],
+      "mappedFin": [
+        "ap",
+        "bak",
+        "domusong",
+        "missing",
+        "numbering",
+        "osi",
+        "tagong"
+      ],
+      "extraFin": [
+        "binding",
+        "bonding",
+        "coating",
+        "cutting",
+        "folding",
+        "laminex",
+        "stitching"
+      ]
+    }
+  ]
+}

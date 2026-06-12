@@ -120,60 +120,205 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
       },
     ],
   },
+  // ── OMO-2961: 런타임 추출 4종 라이브 추출 완료(2026-06-12) → 자동발주 검증 ──
+  //   성원 CNC1000 폼을 Playwright READ-ONLY 로 활성화해 옵션값·필수필드·surcharge 확인.
+  //   증거: scripts/test-artifacts/omo2961/{runtime-probe,verify-defaults,verify-amt}.json
   {
     finishingValue: 'round_corner',
     label_ko: '귀도리',
-    status: 'runtime',
-    note: 'guidori_type 옵션은 사이즈 선택 후 JS 동적 채움. 런타임 추출 필요.',
-    fields: [{ name: 'guidori_type', runtimeOnly: true }],
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): guidori_type + guidori_position1~4(체크박스). 기본=네귀도리 4mm(GDR40, 4모서리 전체). surcharge ₩3,000 확인.',
+    fields: [
+      {
+        name: 'guidori_type',
+        options: {
+          GDR40: '네귀도리(4mm)', GDR30: '세귀도리(4mm)', GDR20: '두귀도리(4mm)', GDR10: '한귀도리(4mm)',
+          GDR80: '네귀도리(6mm)', GDR70: '세귀도리(6mm)', GDR60: '두귀도리(6mm)', GDR50: '한귀도리(6mm)',
+        },
+      },
+      { name: 'guidori_position1' }, { name: 'guidori_position2' },
+      { name: 'guidori_position3' }, { name: 'guidori_position4' },
+    ],
   },
   {
     finishingValue: 'epoxy',
     label_ko: '에폭시',
-    status: 'runtime',
-    note: 'epoxy_type 옵션은 JS 동적 채움. 런타임 추출 필요.',
-    fields: [{ name: 'epoxy_type', runtimeOnly: true }],
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): epoxy_type + epoxy_kind(타입선택 후 JS 동적 채움 → 발주시 첫 유효옵션 자동선택). 기본=전면(EPT10)+EPK10. surcharge ₩22,500 확인.',
+    fields: [
+      { name: 'epoxy_type', options: { EPT10: '전면', EPT20: '후면', EPT30: '양면' } },
+      { name: 'epoxy_kind', runtimeOnly: true },
+    ],
   },
   {
     finishingValue: 'score_crease',
     label_ko: '오시',
-    status: 'runtime',
-    note: 'osi_num/osi_direction 은 사이즈에 따라 JS 동적 채움. 런타임 추출 필요.',
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): osi_num + osi_direction. 기본=1줄 중앙(OSN01)+가로방향(OMD10). surcharge ₩7,000 확인. ※옵션은 사이즈별 차이 가능 — 미존재 시 자동 제외.',
     fields: [
-      { name: 'osi_num', runtimeOnly: true },
-      { name: 'osi_direction', runtimeOnly: true },
+      {
+        name: 'osi_num',
+        options: {
+          OSN01: '1줄(중앙)', OSN11: '1줄(중앙아님)', OSN02: '2줄', OSN03: '3줄',
+          OSN04: '2줄(십자)', OSN05: '오시2줄(양끝10mm미만)', OSN06: '오시2줄(오시간격30mm미만)',
+        },
+      },
+      { name: 'osi_direction', options: { OMD10: '가로방향(길게)', OMD20: '세로방향(짧게)' } },
     ],
   },
   {
     finishingValue: 'perforation',
     label_ko: '미싱',
-    status: 'runtime',
-    note: 'missing_num/missing_direction 은 사이즈에 따라 JS 동적 채움. 런타임 추출 필요.',
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): missing_num + missing_direction. 기본=1줄 중앙(MSN01)+가로방향(OMD10). surcharge ₩7,000 확인. ※옵션은 사이즈별 차이 가능 — 미존재 시 자동 제외.',
     fields: [
-      { name: 'missing_num', runtimeOnly: true },
-      { name: 'missing_direction', runtimeOnly: true },
+      {
+        name: 'missing_num',
+        options: {
+          MSN01: '1줄(중앙)', MSN11: '1줄(중앙아님)', MSN02: '2줄', MSN03: '3줄',
+          MSN04: '2줄(십자)', MSN05: '미싱2줄(양끝10mm미만)', MSN06: '미싱2줄(미싱간격30mm미만)',
+        },
+      },
+      { name: 'missing_direction', options: { OMD10: '가로방향(길게)', OMD20: '세로방향(짧게)' } },
     ],
   },
-  // ── 명함(CNC1000) 폼에 단일 select 없음 / 카테고리별 재조사 필요 ──
+  // ── OMO-3022: 추가 후가공 11종 라이브 추출(2026-06-13) ────────────────────────
+  //   scripts/omo3022-probe.mts 로 전 카테고리 goods_view 폼을 READ-ONLY 활성화해
+  //   chk_is_{type} 패널의 select/input 필드명·옵션값을 추출. 증거: scripts/test-artifacts/omo3022/probe.json
+  //   옵션값이 카테고리별로 다른 필드(coating_type/folding_type/laminex_num 등)는
+  //   activateFinishings 가 chk 클릭 후 첫 유효옵션을 자동선택한다(numbering_kind 패턴).
   {
     finishingValue: 'coating',
     label_ko: '코팅',
-    status: 'needs_audit',
-    note: '명함은 코팅이 용지/인쇄 옵션(print_color_type) 혹은 라디오로 통합됨. 카테고리별 재조사 필요.',
+    status: 'runtime',
+    note: '필드추출 완료(chk_is_coating, coating_type/coating_amt). ⚠️자동발주 미확정: chk 토글이 카테고리별 상이 — 캘린더(CCD)에선 토글 가능, 엽서(CDP3000)·스티커(CST1000)에선 단순 .click()으로 안 켜짐(JS 검증/라디오 추정), 배너(CPR5000)는 기본 ON. 카테고리별 활성화 핸들러 확인 후 mapped 승격. 라이브검증: scripts/test-artifacts/omo3022/verify.json',
+    fields: [{ name: 'coating_type', runtimeOnly: true }],
+  },
+  {
+    finishingValue: 'cutting',
+    label_ko: '가공재단',
+    status: 'runtime',
+    note: '필드추출 완료(chk_is_cutting, cutting_type{CTT10~CTT50}+add_cut_x/y_size+add_parts_num). ⚠️자동발주 미확정: 면적비례(박/형압류)인데 CTT10 기본+50×30mm 로 cutting_amt=0. 과금 cutting_type 식별 + chgCuttingSize() 재계산 시퀀스 필요(OMO-2647 박 패턴).',
+    fields: [
+      { name: 'cutting_type', options: { CTT10: '재단1', CTT20: '재단2', CTT30: '재단3', CTT40: '재단4', CTT50: '재단5' } },
+      { name: 'add_cut_margin_1', options: { '0': '0mm', '1': '1mm', '2': '2mm' } },
+      { name: 'add_parts_num_1', runtimeOnly: true },
+    ],
+  },
+  {
+    finishingValue: 'binding',
+    label_ko: '제본',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3022): CNR2000에서 binding_amt=₩8,000 확인. binding_type{BDT10}+binding_add_set{BDS10~BDS40}+bundle_type(런타임). ※책자(CPR4000)는 제본이 상품구성 자체 → 별도(self).',
+    fields: [
+      { name: 'binding_type', options: { BDT10: '제본' } },
+      { name: 'binding_add_set', options: { BDS10: '세트1', BDS20: '세트2', BDS30: '세트3', BDS40: '세트4' } },
+      { name: 'bundle_type', runtimeOnly: true },
+    ],
+  },
+  {
+    finishingValue: 'folding',
+    label_ko: '접지',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3022): CPR3000에서 folding_amt=₩20,000 확인. folding_type{FDT01~}(런타임)+folding_direction(WL/HS)+select_folding_stair{FDO01,FDO02}.',
+    fields: [
+      { name: 'folding_type', runtimeOnly: true },
+      { name: 'folding_direction', runtimeOnly: true },
+      { name: 'select_folding_stair', options: { FDO01: '단1', FDO02: '단2' } },
+    ],
+  },
+  {
+    finishingValue: 'bonding',
+    label_ko: '접착',
+    status: 'runtime',
+    note: '필드추출 완료(chk_is_bonding, bonding_type{BOT10~BOT60}+bonding_num+bonding_x/y_size). ⚠️자동발주 미확정: 면적비례인데 BOT10+50×30mm 로 bonding_amt=0. 과금 BOT 식별 + chgBondingType() 시퀀스 필요.',
+    fields: [
+      {
+        name: 'bonding_type',
+        options: { BOT10: '접착1', BOT20: '접착2', BOT30: '접착3', BOT40: '접착4', BOT50: '접착5', BOT60: '접착6' },
+      },
+    ],
+  },
+  {
+    finishingValue: 'gluing',
+    label_ko: '접착',
+    status: 'runtime',
+    note: '카탈로그 gluing(접착) → 성원 bonding 동일. bonding 자동발주 미확정 동일 적용. [[bonding]] 참조.',
+    fields: [
+      {
+        name: 'bonding_type',
+        options: { BOT10: '접착1', BOT20: '접착2', BOT30: '접착3', BOT40: '접착4', BOT50: '접착5', BOT60: '접착6' },
+      },
+    ],
+  },
+  {
+    finishingValue: 'laminex',
+    label_ko: '라미넥스',
+    status: 'runtime',
+    note: '필드추출 완료(chk_is_laminex, laminex_num). ⚠️자동발주 미확정: CST5000에서 laminex_num 옵션이 populate 안 됨(용지 의존 추정) → surcharge=0. 라미넥스 제공 용지에서 재검증 필요.',
+    fields: [{ name: 'laminex_num', runtimeOnly: true }],
+  },
+  {
+    finishingValue: 'stitching',
+    label_ko: '중철/스티치',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3022): CPR2000에서 stitching_amt=₩40,000 확인. stitching_type(런타임,예 SHT40)+stitching_direction{SHD10,SHD20}.',
+    fields: [
+      { name: 'stitching_type', runtimeOnly: true },
+      { name: 'stitching_direction', options: { SHD10: '가로', SHD20: '세로' } },
+    ],
+  },
+  {
+    finishingValue: 'window',
+    label_ko: '창문',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3022): CEV1000(봉투)에서 window_amt=₩77,000 확인. window_size(85*40 등 규격, 런타임 자동선택)+window_num.',
+    fields: [{ name: 'window_size', runtimeOnly: true }],
+  },
+  {
+    finishingValue: 'window_patch',
+    label_ko: '창문',
+    status: 'mapped',
+    note: '카탈로그 window_patch(창문) → 성원 window 와 동일 매핑(라이브 검증됨). [[window]] 참조.',
+    fields: [{ name: 'window_size', runtimeOnly: true }],
+  },
+  {
+    finishingValue: 'tape',
+    label_ko: '양면테이프',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3022): CEV1000(봉투)에서 tape_amt=₩23,000 확인. tape_type{TAP10~TAP40}(런타임 자동선택)+tape_num+tape_size.',
+    fields: [{ name: 'tape_type', runtimeOnly: true }],
+  },
+  {
+    finishingValue: 'partial_coating',
+    label_ko: '부분코팅',
+    status: 'runtime',
+    note: '필드추출 완료(chk_is_partial_coating, partial_coating_x/y_size+partial_coating_amt). ⚠️자동발주 미확정: CPR5000에서 면적 입력+calcuEstimate 후에도 amt=0(전용 recalc 부재). 책자(CPR4000)/배너 전용 과금식 확인 필요.',
     fields: [],
   },
+  // ── 여전히 재조사 필요(자동발주 미지원, 명확한 chk_is 없음/구조 모호) ──
   {
     finishingValue: 'spot_color',
     label_ko: '별색',
     status: 'needs_audit',
-    note: '별색은 인쇄방식(print_color_type) 변형일 가능성. 카테고리별 재조사 필요.',
+    note: '별색은 chk_is 토글이 아니라 인쇄색 선택(fside_spot_color SPC60~ / cover_color_info)에 내포됨. 후가공 토글로 분리 불가 → 인쇄색 옵션으로 다뤄야 함.',
     fields: [],
   },
-  { finishingValue: 'gluing', label_ko: '접착', status: 'needs_audit', note: '메모지/양식 전용. 해당 카테고리 폼 조사 필요.', fields: [] },
-  { finishingValue: 'multi_die', label_ko: '문어발', status: 'needs_audit', note: '스티커 전용. 스티커 카테고리 폼 조사 필요.', fields: [] },
-  { finishingValue: 'binding', label_ko: '제본', status: 'needs_audit', note: '책자 전용. 책자 카테고리 폼 조사 필요.', fields: [] },
-  { finishingValue: 'scratch_off', label_ko: '복권', status: 'needs_audit', fields: [] },
-  { finishingValue: 'window_patch', label_ko: '창문', status: 'needs_audit', note: '봉투/지함 전용.', fields: [] },
+  {
+    finishingValue: 'multi_die',
+    label_ko: '문어발',
+    status: 'needs_audit',
+    note: '문어발(다중조각 도무송)은 도무송(domusong) + add_parts_num 조합으로 추정되나 단독 chk_is 없음. die_cut/cutting 과 구조 중첩 → 별도 검증 필요.',
+    fields: [],
+  },
+  {
+    finishingValue: 'add_cutting',
+    label_ko: '추가재단',
+    status: 'needs_audit',
+    note: 'CST2000(도무송스티커) 전용 chk_is_add_cutting. add_cut_x/y_size + add_cutting_amt + add_parts_num. cutting 과 필드 중첩(add_cut_*)이라 자동 라우팅 모호 → cutting 으로 통합 운용, 단독 매핑 보류.',
+    fields: [],
+  },
+  { finishingValue: 'scratch_off', label_ko: '복권', status: 'needs_audit', note: '전 카테고리 probe 에서 chk_is 미발견(성원 미제공 추정).', fields: [] },
 ]
 
 export const SWADPIA_FINISHING_BY_VALUE: Record<string, SwadpiaFinishingMapping> =
@@ -230,6 +375,40 @@ export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, strin
     // (스노우지 250/300g 등)는 calcuNumberingPrice 가 넘버링을 차단한다 — 그 상품/용지
     // 에선 surcharge=0 이며 자동발주에서 자동 제외된다(OMO-2647 라이브 검증).
   },
+  // ── OMO-2961: 런타임 4종 (라이브 추출 기본값) ──────────────────────────────
+  //   guidori_position1~4(체크박스) 와 epoxy_kind(동적 populate)는 activateFinishings
+  //   가 코드로 처리한다(네귀도리=4모서리 전체 체크, epoxy_kind=첫 유효옵션). 여기엔
+  //   select 기본값만 둔다.
+  round_corner: {
+    guidori_type: 'GDR40', // 네귀도리(4mm) = 4모서리 전체
+  },
+  epoxy: {
+    epoxy_type: 'EPT10', // 전면
+  },
+  score_crease: {
+    osi_num: 'OSN01',      // 1줄(중앙)
+    osi_direction: 'OMD10', // 가로방향(길게)
+  },
+  perforation: {
+    missing_num: 'MSN01',      // 1줄(중앙)
+    missing_direction: 'OMD10', // 가로방향(길게)
+  },
+  // ── OMO-3022: 추가 후가공 11종 기본값(라이브 추출 2026-06-13) ──────────────────
+  //   `__fin_<type>` 는 가상 활성화 마커다. coating/laminex 처럼 모든 핵심필드가
+  //   런타임 자동선택이라 seed 할 구체 필드코드가 없는 후가공도, 이 마커로 chk_is_<type>
+  //   활성화를 트리거한다(마커는 폼에 전송되지 않음 — isFinishingKey/activateFinishings 만 인식).
+  //   면적 비례 후가공(cutting/bonding/partial_coating)은 박/형압과 동일하게 보수적 기본
+  //   면적(50×30mm placeholder)을 채워 surcharge=0(무료발주)를 방지한다. 고객이
+  //   selected_options 에 명시 필드코드/면적을 넣으면 그 값이 우선(expandFinishing override).
+  // 라이브 surcharge 확인된 5종만 자동발주 기본값 등록(binding/folding/stitching/window/tape).
+  // coating/cutting/bonding/gluing/laminex/partial_coating 은 status='runtime'(자동발주 미확정)
+  // — DEFAULT 미등록 → expandFinishingToSwadpiaFields 가 안전하게 스킵(0원 무료발주 방지).
+  binding: { __fin_binding: '1', binding_type: 'BDT10', binding_add_set: 'BDS10' },
+  folding: { __fin_folding: '1', select_folding_stair: 'FDO01' },    // folding_type/direction 런타임 자동
+  stitching: { __fin_stitching: '1', stitching_direction: 'SHD10' }, // stitching_type 런타임 자동
+  window: { __fin_window: '1', window_num: '1' },                   // window_size 런타임 자동
+  window_patch: { __fin_window: '1', window_num: '1' },             // 창문 = window
+  tape: { __fin_tape: '1', tape_num: '1' },                         // tape_type 런타임 자동
 }
 
 /**

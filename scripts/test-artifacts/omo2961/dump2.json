@@ -1,0 +1,1373 @@
+{
+  "CLF1000": {
+    "selects": [
+      {
+        "k": "select",
+        "name": "paper_kind",
+        "opts": [
+          "PKD10=PKD10"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_type",
+        "opts": [
+          "ART=아트지",
+          "SNW=스노우지",
+          "VLD=모조지",
+          "RDV=랑데뷰"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_code",
+        "opts": [
+          "ART090W00=백색 90g",
+          "ART120W00=백색 120g",
+          "ART150W00=백색 150g",
+          "ART180W00=백색 180g"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_full_bg",
+        "opts": [
+          "0=ì¼ë°˜"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_spot_color",
+        "opts": [
+          "SPC10=ì€ìƒ‰",
+          "SPC20=ê¸ˆìƒ‰",
+          "SPC40=ì€ìƒ‰ë² ë‹¤",
+          "SPC50=ê¸ˆìƒ‰ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_full_bg",
+        "opts": [
+          "0=ì¼ë°˜"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_spot_color",
+        "opts": [
+          "SPC10=ì€ìƒ‰",
+          "SPC20=ê¸ˆìƒ‰",
+          "SPC40=ì€ìƒ‰ë² ë‹¤",
+          "SPC50=ê¸ˆìƒ‰ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_color_amount",
+        "opts": [
+          "4=ì¹¼ë¼4ë„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_color_amount",
+        "opts": [
+          "0=ì—†ìŒ",
+          "4=ì¹¼ë¼4ë„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "print_method",
+        "opts": [
+          "PTM10=ì¼ë°˜ì¸ì‡„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "size_type",
+        "opts": [
+          "SZT10=ê·œê²©ì‚¬ì´ì¦ˆ",
+          "SZT20=ì‚¬ì´ì¦ˆì§ì ‘ìž…ë ¥"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_size",
+        "opts": [
+          "A0200=A2",
+          "A0300=A3",
+          "A0400=A4",
+          "A0500=A5"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_size_basis",
+        "opts": [
+          "norm=ê·œê²©",
+          "max=ìµœëŒ€ì‚¬ì´ì¦ˆ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_qty",
+        "opts": [
+          "2000=2000 ë§¤",
+          "4000=4000 ë§¤",
+          "8000=8000 ë§¤",
+          "12000=12000 ë§¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "order_count",
+        "opts": [
+          "1=1",
+          "2=2",
+          "3=3",
+          "4=4"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "is_box_packing",
+        "opts": [
+          "IBP10=í¬ìž¥ì§€ë¡œ í¬ìž¥(ë¬´ë£Œ)",
+          "IBP20=ë°•ìŠ¤ë¡œ í¬ìž¥(ìœ ë£Œ)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_design_type",
+        "opts": [
+          "DST11=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST12=ì‹¬í”Œë””ìžì¸",
+          "DST13=ê³ ê¸‰ë””ìžì¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_cnt_type",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_design_edit",
+        "opts": [
+          "DST21=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST22=ì»¨ì…‰ë³€ê²½"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_cnt_edit",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_design_type",
+        "opts": [
+          "DST11=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST12=ì‹¬í”Œë””ìžì¸",
+          "DST13=ê³ ê¸‰ë””ìžì¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_cnt_type",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_design_edit",
+        "opts": [
+          "DST21=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST22=ì»¨ì…‰ë³€ê²½"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_cnt_edit",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add1",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add1",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add2",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add2",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add3",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add3",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add4",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add4",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add5",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add5",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "folding_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "folding_direction",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "select_folding_stair",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "select_folding_stair2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "osi_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "osi_type",
+        "opts": [
+          "0=í…œí”Œë¦¿ ì‚¬ìš©ì•ˆí•¨",
+          "1=208*210*210*208 í…œí”Œë¦¿ê·œê²©ì—ë§žì¶¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "missing_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "coating_type",
+        "opts": [
+          "COT10=ë‹¨ë©´ìœ ê´‘ì¨ë©€ì½”íŒ…",
+          "COT20=ë‹¨ë©´ë¬´ê´‘ì¨ë©€ì½”íŒ…",
+          "COT30=ë‹¨ë©´UVì½”íŒ…",
+          "COT31=ë‹¨ë©´ëŸ¬ë²„ì½”íŒ…"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "domusong_section",
+        "opts": [
+          "DMS20=ì‹ ê·œì œìž‘"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "domusong_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_finishing",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_exist_mok",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_1",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_1",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_1",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_1",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_2",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_2",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_2",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_3",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_3",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_3",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_3",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_1",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_1",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_1",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_2",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_2",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_3",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_3",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_3",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "numbering_type",
+        "opts": [
+          "NBT10=ì¼ë°˜ë„˜ë²„ë§"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "numbering_num",
+        "opts": [
+          "1=í•œìž¥ì— 1ê°œ",
+          "2=í•œìž¥ì— 2ê°œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "tagong_num",
+        "opts": [
+          "1=1ê°œ",
+          "2=2ê°œ",
+          "3=3ê°œ",
+          "4=4ê°œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "tagong_size",
+        "opts": [
+          "3=3mm",
+          "4=4mm",
+          "5=5mm",
+          "6=6mm"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "cutting_type",
+        "opts": [
+          "CTT10=ê°™ì€ê·œê²© ë‚´ìš©ê°™ìŒ",
+          "CTT20=ê°™ì€ê·œê²© ë‚´ìš©í‹€ë¦¼",
+          "CTT30=2ê±´-ê·œê²©ë‹¤ë¦„",
+          "CTT40=3ê±´-ê·œê²©ë‹¤ë¦„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "add_cut_margin_1",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "binding_type",
+        "opts": [
+          "BDT10=ë–¡ì œë³¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "binding_add_set",
+        "opts": [
+          "BDS30=ì„¸ë¡œìƒì²",
+          "BDS40=ì„¸ë¡œì¢Œì²",
+          "BDS10=ê°€ë¡œìƒì²",
+          "BDS20=ê°€ë¡œì¢Œì²"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bundle_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bonding_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "laminex_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "epoxy_type",
+        "opts": [
+          "EPT10=ì „ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "epoxy_kind",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "stitching_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "stitching_direction",
+        "opts": [
+          "SHD10=ì¢Œì²",
+          "SHD20=ìƒì²"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "gq_kind",
+        "opts": [
+          "MTM10=ì¸ì‡„ì œìž‘",
+          "MTM30=ì¶œê³ ë°°ì†¡",
+          "MTM40=íŒŒì¼ê´€ë ¨",
+          "MTM60=ê¸°íƒ€ê´€ë ¨"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "gq_email3",
+        "opts": [
+          "naver.com=naver.com",
+          "hanmail.com=hanmail.net",
+          "daum.net=daum.net",
+          "nate.com=nate.com"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "is_proof_hp1",
+        "opts": [
+          "010=010",
+          "011=011",
+          "016=016",
+          "017=017"
+        ]
+      }
+    ],
+    "radioNames": [],
+    "status": "ì„±ì›ì• ë“œí”¼ì•„ í™ˆíŽ˜ì´ì§€"
+  },
+  "CPR2000": {
+    "selects": [
+      {
+        "k": "select",
+        "name": "paper_kind",
+        "opts": [
+          "PKD10=PKD10"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_type",
+        "opts": [
+          "ARE=아르떼",
+          "VLO=미색모조지",
+          "RDV=랑데뷰",
+          "CFT=크라프트"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_code",
+        "opts": [
+          "ART100W00=백색 100g",
+          "ART120W00=백색 120g",
+          "ART150W00=백색 150g",
+          "ART180W00=백색 180g"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_color_amount",
+        "opts": [
+          "4=ì¹¼ë¼4ë„",
+          "1=ë¨¹1ë„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_full_bg",
+        "opts": [
+          "0=ì¼ë°˜",
+          "1=ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "fside_spot_color",
+        "opts": [
+          "SPC10=ì€ìƒ‰",
+          "SPC20=ê¸ˆìƒ‰",
+          "SPC40=ì€ìƒ‰ë² ë‹¤",
+          "SPC50=ê¸ˆìƒ‰ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_color_amount",
+        "opts": [
+          "0=ì—†ìŒ",
+          "4=ì¹¼ë¼4ë„",
+          "1=ë¨¹1ë„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_full_bg",
+        "opts": [
+          "0=ì¼ë°˜",
+          "1=ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bside_spot_color",
+        "opts": [
+          "SPC10=ì€ìƒ‰",
+          "SPC20=ê¸ˆìƒ‰",
+          "SPC40=ì€ìƒ‰ë² ë‹¤",
+          "SPC50=ê¸ˆìƒ‰ë² ë‹¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "print_method",
+        "opts": [
+          "PTM10=ì¼ë°˜ì¸ì‡„",
+          "PTM20=UVì¸ì‡„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "size_type",
+        "opts": [
+          "SZT10=ê·œê²©ì‚¬ì´ì¦ˆ",
+          "SZT20=ì‚¬ì´ì¦ˆì§ì ‘ìž…ë ¥"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_size",
+        "opts": [
+          "A0100=A1",
+          "A0200=A2",
+          "A0300=A3",
+          "B0200=B2(2절)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_size_basis",
+        "opts": [
+          "norm=ê·œê²©",
+          "max=ìµœëŒ€ì‚¬ì´ì¦ˆ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "paper_qty",
+        "opts": [
+          "250=250 ë§¤",
+          "500=500 ë§¤",
+          "1000=1000 ë§¤",
+          "1500=1500 ë§¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "order_count",
+        "opts": [
+          "1=1",
+          "2=2",
+          "3=3",
+          "4=4"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "is_box_packing",
+        "opts": [
+          "IBP10=í¬ìž¥ì§€ë¡œ í¬ìž¥(ë¬´ë£Œ)",
+          "IBP20=ë°•ìŠ¤ë¡œ í¬ìž¥(ìœ ë£Œ)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_design_type",
+        "opts": [
+          "DST11=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST12=ì‹¬í”Œë””ìžì¸",
+          "DST13=ê³ ê¸‰ë””ìžì¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_cnt_type",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_design_edit",
+        "opts": [
+          "DST21=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST22=ì»¨ì…‰ë³€ê²½"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "f_cnt_edit",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_design_type",
+        "opts": [
+          "DST11=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST12=ì‹¬í”Œë””ìžì¸",
+          "DST13=ê³ ê¸‰ë””ìžì¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_cnt_type",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_design_edit",
+        "opts": [
+          "DST21=ê°„ë‹¨í•œìˆ˜ì •",
+          "DST22=ì»¨ì…‰ë³€ê²½"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "b_cnt_edit",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add1",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add1",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add2",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add2",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add3",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add3",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add4",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add4",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "design_price_add5",
+        "opts": [
+          "DST31=ë§ˆí¬/ë¡œê³ ë””ìžì¸",
+          "DST32=ë§ˆí¬/ë¡œê³  ë”°ê¸°",
+          "DST34=ì•½ë„ ì¶”ê°€",
+          "DST35=ì ‘ì§€ë¡œ ë””ìžì¸ íŽ˜ì´ì§€ ì¶”ê°€"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "d_cnt_add5",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2",
+          "3=3"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "folding_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "folding_direction",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "select_folding_stair",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "select_folding_stair2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "osi_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "osi_type",
+        "opts": [
+          "0=í…œí”Œë¦¿ ì‚¬ìš©ì•ˆí•¨",
+          "1=208*210*210*208 í…œí”Œë¦¿ê·œê²©ì—ë§žì¶¤"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "missing_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "coating_type",
+        "opts": [
+          "COT10=ë‹¨ë©´ìœ ê´‘ì¨ë©€ì½”íŒ…",
+          "COT20=ë‹¨ë©´ë¬´ê´‘ì¨ë©€ì½”íŒ…",
+          "COT30=ë‹¨ë©´UVì½”íŒ…",
+          "COT31=ë‹¨ë©´ëŸ¬ë²„ì½”íŒ…"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "domusong_section",
+        "opts": [
+          "DMS20=ì‹ ê·œì œìž‘"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "domusong_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_finishing",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "domusong_exist_mok",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_1",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_1",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_1",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_1",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_2",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_2",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_2",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bak_section_3",
+        "opts": [
+          "BKS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_side_3",
+        "opts": [
+          "BKD10=ì „ë©´",
+          "BKD20=í›„ë©´",
+          "BKD30=ì–‘ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_type_3",
+        "opts": [
+          "BKT02=ê¸ˆë°•(ìœ ê´‘)",
+          "BKT09=ê¸ˆë°•(ë¬´ê´‘)",
+          "BKT01=ì€ë°•(ìœ ê´‘)",
+          "BKT10=ì€ë°•(ë¬´ê´‘)"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bak_exist_dongpan_3",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_1",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_1",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_1",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_2",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_2",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_2",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "ap_section_3",
+        "opts": [
+          "APS10=ì‹ ê·œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_type_3",
+        "opts": [
+          "APT10=ì•žìœ¼ë¡œ ëŒì¶œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "ap_exist_dongpan_3",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "numbering_type",
+        "opts": [
+          "NBT10=ì¼ë°˜ë„˜ë²„ë§"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "numbering_num",
+        "opts": [
+          "1=í•œìž¥ì— 1ê°œ",
+          "2=í•œìž¥ì— 2ê°œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "tagong_num",
+        "opts": [
+          "1=1ê°œ",
+          "2=2ê°œ",
+          "3=3ê°œ",
+          "4=4ê°œ"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "tagong_size",
+        "opts": [
+          "3=3mm",
+          "4=4mm",
+          "5=5mm",
+          "6=6mm"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "cutting_type",
+        "opts": [
+          "CTT10=ê°™ì€ê·œê²© ë‚´ìš©ê°™ìŒ",
+          "CTT20=ê°™ì€ê·œê²© ë‚´ìš©í‹€ë¦¼",
+          "CTT30=2ê±´-ê·œê²©ë‹¤ë¦„",
+          "CTT40=3ê±´-ê·œê²©ë‹¤ë¦„"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "add_cut_margin_1",
+        "opts": [
+          "0=0",
+          "1=1",
+          "2=2"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "binding_type",
+        "opts": [
+          "BDT10=ë–¡ì œë³¸"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "binding_add_set",
+        "opts": [
+          "BDS30=ì„¸ë¡œìƒì²",
+          "BDS40=ì„¸ë¡œì¢Œì²",
+          "BDS10=ê°€ë¡œìƒì²",
+          "BDS20=ê°€ë¡œì¢Œì²"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "bundle_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "bonding_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "laminex_num",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "epoxy_type",
+        "opts": [
+          "EPT10=ì „ë©´"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "epoxy_kind",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "stitching_type",
+        "opts": []
+      },
+      {
+        "k": "select",
+        "name": "stitching_direction",
+        "opts": [
+          "SHD10=ì¢Œì²",
+          "SHD20=ìƒì²"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "gq_kind",
+        "opts": [
+          "MTM10=ì¸ì‡„ì œìž‘",
+          "MTM30=ì¶œê³ ë°°ì†¡",
+          "MTM40=íŒŒì¼ê´€ë ¨",
+          "MTM60=ê¸°íƒ€ê´€ë ¨"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "gq_email3",
+        "opts": [
+          "naver.com=naver.com",
+          "hanmail.com=hanmail.net",
+          "daum.net=daum.net",
+          "nate.com=nate.com"
+        ]
+      },
+      {
+        "k": "select",
+        "name": "is_proof_hp1",
+        "opts": [
+          "010=010",
+          "011=011",
+          "016=016",
+          "017=017"
+        ]
+      }
+    ],
+    "radioNames": [],
+    "status": "ì„±ì›ì• ë“œí”¼ì•„ í™ˆíŽ˜ì´ì§€"
+  }
+}

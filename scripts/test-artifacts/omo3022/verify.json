@@ -1,0 +1,101 @@
+{
+  "verifiedAt": "2026-06-13",
+  "results": [
+    {
+      "value": "coating",
+      "cat": "CDP3000",
+      "expandedKeys": [],
+      "chkOn": false,
+      "amt": "0",
+      "surchargeCaptured": false
+    },
+    {
+      "value": "cutting",
+      "cat": "CST5000",
+      "expandedKeys": [],
+      "chkOn": true,
+      "amt": "0",
+      "surchargeCaptured": false
+    },
+    {
+      "value": "binding",
+      "cat": "CNR2000",
+      "expandedKeys": [
+        "__fin_binding",
+        "binding_type",
+        "binding_add_set"
+      ],
+      "chkOn": true,
+      "amt": "8000",
+      "surchargeCaptured": true
+    },
+    {
+      "value": "folding",
+      "cat": "CPR3000",
+      "expandedKeys": [
+        "__fin_folding",
+        "select_folding_stair"
+      ],
+      "chkOn": true,
+      "amt": "20000",
+      "surchargeCaptured": true
+    },
+    {
+      "value": "bonding",
+      "cat": "CST5000",
+      "expandedKeys": [],
+      "chkOn": true,
+      "amt": "0",
+      "surchargeCaptured": false
+    },
+    {
+      "value": "laminex",
+      "cat": "CST5000",
+      "expandedKeys": [],
+      "chkOn": true,
+      "amt": "0",
+      "surchargeCaptured": false
+    },
+    {
+      "value": "stitching",
+      "cat": "CPR2000",
+      "expandedKeys": [
+        "__fin_stitching",
+        "stitching_direction"
+      ],
+      "chkOn": true,
+      "amt": "40000",
+      "surchargeCaptured": true
+    },
+    {
+      "value": "window",
+      "cat": "CEV1000",
+      "expandedKeys": [
+        "__fin_window",
+        "window_num"
+      ],
+      "chkOn": true,
+      "amt": "77000",
+      "surchargeCaptured": true
+    },
+    {
+      "value": "tape",
+      "cat": "CEV1000",
+      "expandedKeys": [
+        "__fin_tape",
+        "tape_num"
+      ],
+      "chkOn": true,
+      "amt": "23000",
+      "surchargeCaptured": true
+    },
+    {
+      "value": "partial_coating",
+      "cat": "CPR5000",
+      "expandedKeys": [],
+      "chkOn": false,
+      "amt": "0",
+      "surchargeCaptured": false
+    }
+  ]
+}
