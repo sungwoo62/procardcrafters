@@ -8,6 +8,9 @@ export interface FileValidationResult {
     pageCount?: number
     widthMm?: number
     heightMm?: number
+    /** 래스터 이미지의 픽셀 치수 (DPI 프리플라이트 산출용). */
+    widthPx?: number
+    heightPx?: number
     colorSpace?: 'CMYK' | 'RGB' | 'Grayscale' | 'unknown'
     hasBleed?: boolean
     estimatedDpi?: number
@@ -114,6 +117,8 @@ export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileVa
       // Read dimensions from PNG IHDR chunk
       const w = (bytes[16] << 24) | (bytes[17] << 16) | (bytes[18] << 8) | bytes[19]
       const h = (bytes[20] << 24) | (bytes[21] << 16) | (bytes[22] << 8) | bytes[23]
+      details.widthPx = w
+      details.heightPx = h
       if (w < 300 || h < 300) {
         warnings.push(`Image resolution is ${w}×${h}px, which may be too low for print`)
       }
@@ -131,6 +136,11 @@ export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileVa
     } else {
       details.colorSpace = 'RGB'
       warnings.push('JPEG files are in RGB color space. They will be converted to CMYK for printing')
+      const dims = readJpegDimensions(bytes)
+      if (dims) {
+        details.widthPx = dims.width
+        details.heightPx = dims.height
+      }
     }
   } else if (mimeType === 'image/tiff') {
     const tiffMagic = (bytes[0] === 0x49 && bytes[1] === 0x49) || (bytes[0] === 0x4D && bytes[1] === 0x4D)
@@ -146,6 +156,37 @@ export function validateImageFile(buffer: ArrayBuffer, mimeType: string): FileVa
     errors,
     details,
   }
+}
+
+/**
+ * JPEG 픽셀 치수 추출 (SOF0~SOF15 마커 스캔). 실패 시 null.
+ * DPI 프리플라이트(OMO-3028) 산출용.
+ */
+function readJpegDimensions(bytes: Uint8Array): { width: number; height: number } | null {
+  let offset = 2 // SOI(0xFFD8) 이후부터
+  while (offset + 9 < bytes.length) {
+    if (bytes[offset] !== 0xFF) {
+      offset++
+      continue
+    }
+    const marker = bytes[offset + 1]
+    // SOF0(C0)~SOF15(CF) 중 DHT(C4)/DNL(C8)/DAC(CC) 제외가 프레임 헤더
+    if (marker >= 0xC0 && marker <= 0xCF && marker !== 0xC4 && marker !== 0xC8 && marker !== 0xCC) {
+      const height = (bytes[offset + 5] << 8) | bytes[offset + 6]
+      const width = (bytes[offset + 7] << 8) | bytes[offset + 8]
+      if (width > 0 && height > 0) return { width, height }
+      return null
+    }
+    // 마커 세그먼트 길이만큼 스킵 (RSTn/SOI/EOI 등 길이 없는 마커 제외)
+    if (marker === 0xD8 || marker === 0xD9 || (marker >= 0xD0 && marker <= 0xD7)) {
+      offset += 2
+    } else {
+      const segLength = (bytes[offset + 2] << 8) | bytes[offset + 3]
+      if (segLength < 2) return null
+      offset += 2 + segLength
+    }
+  }
+  return null
 }
 
 /**

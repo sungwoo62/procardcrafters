@@ -122,6 +122,20 @@ export interface PrintFile {
   uploaded_at: string
 }
 
+// OMO-3028: 결제후 업로드 시안 동의/책임 고지 기록
+export interface PrintDesignConsent {
+  id: string
+  order_id: string
+  order_item_id: string | null
+  file_id: string | null
+  consent_text: string
+  consent_version: string
+  preflight_snapshot: unknown | null
+  ip_hash: string | null
+  user_agent: string | null
+  agreed_at: string
+}
+
 export interface PrintDesignProof {
   id: string
   order_id: string

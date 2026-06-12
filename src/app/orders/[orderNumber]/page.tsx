@@ -5,6 +5,7 @@ import { createServerClient } from '@/lib/supabase'
 import { Package, Printer, Truck, CheckCircle, XCircle, Clock, RotateCcw, ExternalLink, Bell } from 'lucide-react'
 import type { PrintOrder, PrintOrderItem, PrintFile, OrderStatus } from '@/types/database'
 import RejectedFileUpload from '@/components/RejectedFileUpload'
+import PostPaymentUpload from '@/components/PostPaymentUpload'
 import DesignProofReview from '@/components/DesignProofReview'
 import ReorderButton from '@/components/ReorderButton'
 import ReviewButton from '@/components/ReviewButton'
@@ -210,6 +211,11 @@ export default async function OrderTrackingPage({ params }: Props) {
             })}
           </div>
         </div>
+      )}
+
+      {/* 결제후 파일 업로드 + 프리플라이트 + 책임 고지 동의 (재업로드 대상이 없을 때만) */}
+      {currentStatus === 'paid' && rejectedFiles.length === 0 && (
+        <PostPaymentUpload orderNumber={order.order_number} />
       )}
 
       {/* Rejected file re-upload */}
