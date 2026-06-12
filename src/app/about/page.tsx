@@ -30,11 +30,12 @@ const VALUES = [
   },
 ]
 
+// ⚠️ 정직화(OMO-2975): 출처불명 합산/평점 stat 금지. 검증가능한 운영 사실만 노출.
 const STATS = [
-  { value: '40+', label: 'Countries served' },
-  { value: '10k+', label: 'Orders fulfilled' },
+  { value: 'Offset', label: 'Print quality' },
+  { value: 'FedEx', label: 'Worldwide shipping' },
   { value: '3–5', label: 'Day production' },
-  { value: '4.9★', label: 'Average rating' },
+  { value: 'Secure', label: 'PayPal checkout' },
 ]
 
 export default function AboutPage() {

@@ -40,11 +40,12 @@ const PRODUCTS = [
   { slug: 'banners', category: 'banners', name: 'Banners', desc: 'Mini banners and signage for events and retail.', tag: null, tagColor: '', gradient: 'from-red-50 to-orange-100', accent: 'border-red-200', hot: false },
 ]
 
+// ⚠️ 정직화(OMO-2975): 출처불명 합산/평점 stat 금지. 검증가능한 운영 사실만 노출.
 const STATS = [
-  { value: '10,000+', label: 'Orders Placed', icon: '📦' },
-  { value: '40+', label: 'Countries Shipped', icon: '🌏' },
-  { value: '4.9★', label: 'Avg. Rating', icon: '⭐' },
+  { value: 'Offset', label: 'Print Quality', icon: '🖨️' },
+  { value: 'FedEx', label: 'Worldwide Shipping', icon: '🌏' },
   { value: '7–10 days', label: 'Production Lead Time', icon: '⚡' },
+  { value: 'Secure', label: 'PayPal Checkout', icon: '🔒' },
 ]
 
 const FEATURES = [
@@ -78,35 +79,7 @@ const HOW_IT_WORKS = [
   { icon: CheckCircle, step: '04', title: 'Receive Your Order', desc: '7–10 day production + FedEx shipping. Door-to-door anywhere in the world.' },
 ]
 
-const STATIC_TESTIMONIALS = [
-  {
-    name: 'Sarah M.',
-    role: 'Freelance Designer',
-    initials: 'SM',
-    color: 'bg-blue-600',
-    rating: 5,
-    product: 'Premium Business Cards',
-    body: 'The quality blew me away. My clients always ask where I print — it\'s my secret weapon.',
-  },
-  {
-    name: 'James K.',
-    role: 'Small Business Owner',
-    initials: 'JK',
-    color: 'bg-green-600',
-    rating: 5,
-    product: 'Stickers 500pcs',
-    body: 'Ordered 500 stickers and they arrived in under two weeks. Vibrant colors, perfect cuts. Will definitely reorder.',
-  },
-  {
-    name: 'Priya S.',
-    role: 'Event Planner',
-    initials: 'PS',
-    color: 'bg-purple-600',
-    rating: 5,
-    product: 'Flyers',
-    body: 'I love the pricing transparency. I can give clients an exact quote right away.',
-  },
-]
+// ⚠️ 정직화(OMO-2975): 조작 후기 금지(회사정책 가짜후기 절대 금지). 실 print_reviews만 노출.
 
 const TRUST_ITEMS = [
   { icon: Shield, text: 'Quality Guarantee', sub: 'Free reprint if defective' },
@@ -227,7 +200,7 @@ export default async function HomePage() {
             {/* 신뢰 pill */}
             <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 text-blue-200 text-xs font-medium px-4 py-1.5 rounded-full mb-6 backdrop-blur-sm">
               <Sparkles className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-              Trusted by 10,000+ customers worldwide
+              Offset print quality · FedEx worldwide delivery
             </div>
 
             {/* 긴급성 pill */}
@@ -471,57 +444,48 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* Reviews Section */}
-      <section className="py-20 px-4 bg-gray-900">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-14">
-            <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-3">Customer Reviews</p>
-            <h2 className="text-4xl font-bold text-white mb-4">What Our Customers Say</h2>
-            <div className="flex items-center justify-center gap-1 mb-2">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="w-5 h-5 fill-yellow-400 text-yellow-400" />
-              ))}
+      {/* Reviews Section — 정직화(OMO-2975): 승인된 실 print_reviews ≥2건일 때만 노출. 가짜 평점/후기 금지. */}
+      {displayReviews && (
+        <section className="py-20 px-4 bg-gray-900">
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-14">
+              <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-3">Customer Reviews</p>
+              <h2 className="text-4xl font-bold text-white mb-4">What Our Customers Say</h2>
             </div>
-            <p className="text-gray-400">4.9 / 5.0 from 800+ verified reviews</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {(displayReviews ?? STATIC_TESTIMONIALS).map((review, i) => {
-              const isDb = displayReviews !== null
-              const name = isDb ? (review as { reviewer_name: string }).reviewer_name : (review as typeof STATIC_TESTIMONIALS[0]).name
-              const rating = isDb ? (review as { rating: number }).rating : (review as typeof STATIC_TESTIMONIALS[0]).rating
-              const body = isDb
-                ? ((review as { featured_quote?: string; body: string }).featured_quote ?? (review as { body: string }).body)
-                : (review as typeof STATIC_TESTIMONIALS[0]).body
-              const initials = name.slice(0, 2).toUpperCase()
-              const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600']
-              return (
-                <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
-                  <div className="flex gap-0.5 mb-4">
-                    {[...Array(rating)].map((_, j) => (
-                      <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    ))}
-                  </div>
-                  <p className="text-gray-300 text-sm leading-relaxed mb-5 line-clamp-4">"{body}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className={`w-9 h-9 ${colors[i % colors.length]} rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0`}>
-                      {initials}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {displayReviews.map((review, i) => {
+                const name = (review as { reviewer_name: string }).reviewer_name
+                const rating = (review as { rating: number }).rating
+                const body = (review as { featured_quote?: string; body: string }).featured_quote
+                  ?? (review as { body: string }).body
+                const initials = name.slice(0, 2).toUpperCase()
+                const colors = ['bg-blue-600', 'bg-green-600', 'bg-purple-600']
+                return (
+                  <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors">
+                    <div className="flex gap-0.5 mb-4">
+                      {[...Array(rating)].map((_, j) => (
+                        <Star key={j} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                      ))}
                     </div>
-                    <div>
-                      <div className="font-semibold text-white text-sm">{name}</div>
-                      {!isDb && (
-                        <div className="text-gray-400 text-xs">{(review as typeof STATIC_TESTIMONIALS[0]).role}</div>
-                      )}
-                    </div>
-                    <div className="ml-auto">
-                      <BadgeCheck className="w-4 h-4 text-blue-400" />
+                    <p className="text-gray-300 text-sm leading-relaxed mb-5 line-clamp-4">"{body}"</p>
+                    <div className="flex items-center gap-3">
+                      <div className={`w-9 h-9 ${colors[i % colors.length]} rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0`}>
+                        {initials}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-white text-sm">{name}</div>
+                      </div>
+                      <div className="ml-auto">
+                        <BadgeCheck className="w-4 h-4 text-blue-400" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              )
-            })}
+                )
+              })}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Final CTA Section */}
       <section className="relative py-28 px-4 text-center overflow-hidden bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800">
