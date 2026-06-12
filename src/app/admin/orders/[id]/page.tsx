@@ -198,7 +198,8 @@ function formatEventTime(ts: string) {
 const FACTORY_STATUS_LABELS: Record<string, string> = {
   pending:   '발주 대기',
   placing:   '발주 중',
-  placed:    '발주 완료',
+  placed:    '발주완료·결제대기',
+  paid:      '성원 결제완료',
   failed:    '발주 실패',
   cancelled: '취소',
 }
@@ -206,7 +207,8 @@ const FACTORY_STATUS_LABELS: Record<string, string> = {
 const FACTORY_STATUS_COLORS: Record<string, string> = {
   pending:   'bg-gray-100 text-gray-600',
   placing:   'bg-yellow-100 text-yellow-700',
-  placed:    'bg-green-100 text-green-700',
+  placed:    'bg-amber-100 text-amber-700',
+  paid:      'bg-green-100 text-green-700',
   failed:    'bg-red-100 text-red-700',
   cancelled: 'bg-gray-100 text-gray-400',
 }
@@ -377,6 +379,26 @@ export default function AdminOrderDetailPage() {
       })
       await fetchFactoryOrders()
     }
+    setFactoryLoading(false)
+  }
+
+  // OMO-3018: 성원 발주 결제완료 표시/해제 (placed ↔ paid)
+  async function handleToggleSwadpiaPaid(factoryOrderId: string, markPaid: boolean) {
+    if (markPaid && !confirm('성원에서 이 발주의 결제를 완료하셨습니까? 결제완료로 표시합니다.')) return
+    if (!markPaid && !confirm('성원 결제완료 표시를 해제하시겠습니까?')) return
+    setFactoryLoading(true)
+    setFactoryMsg('')
+    const res = await fetch(`/api/admin/orders/${id}/factory-order`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        factoryOrderId,
+        action: markPaid ? 'markSwadpiaPaid' : 'unmarkSwadpiaPaid',
+      }),
+    })
+    const data = await res.json()
+    setFactoryMsg(res.ok ? (markPaid ? '성원 결제완료 표시됨' : '결제완료 표시 해제됨') : `오류: ${data.error}`)
+    if (res.ok) await fetchFactoryOrders()
     setFactoryLoading(false)
   }
 
@@ -656,7 +678,7 @@ export default function AdminOrderDetailPage() {
                 )}
                 <button
                   onClick={handleQueueFactoryOrder}
-                  disabled={factoryLoading || factoryOrders.some((f) => ['placing', 'placed'].includes(f.status))}
+                  disabled={factoryLoading || factoryOrders.some((f) => ['placing', 'placed', 'paid'].includes(f.status))}
                   className="px-3 py-1.5 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-40"
                 >
                   {factoryLoading ? '처리 중...' : '발주 큐 등록'}
@@ -740,6 +762,32 @@ export default function AdminOrderDetailPage() {
                       ? `발주 완료: ${new Date(fo.placed_at).toLocaleString('ko-KR')}`
                       : `등록: ${new Date(fo.queued_at).toLocaleString('ko-KR')}`}
                   </p>
+                  {/* OMO-3018: 성원 결제완료 표시 — 사장님이 성원에서 결제까지 마친 발주를 표시 */}
+                  {fo.status === 'placed' && (
+                    <button
+                      onClick={() => handleToggleSwadpiaPaid(fo.id, true)}
+                      disabled={factoryLoading}
+                      className="mt-1 px-3 py-1.5 text-xs bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-40"
+                    >
+                      성원 결제완료로 표시
+                    </button>
+                  )}
+                  {fo.status === 'paid' && (
+                    <div className="flex items-center gap-2 flex-wrap pt-1">
+                      <span className="text-xs text-green-700">
+                        ✓ 성원 결제완료
+                        {fo.swadpia_paid_at && ` · ${new Date(fo.swadpia_paid_at).toLocaleString('ko-KR')}`}
+                        {fo.swadpia_paid_by && ` · ${fo.swadpia_paid_by}`}
+                      </span>
+                      <button
+                        onClick={() => handleToggleSwadpiaPaid(fo.id, false)}
+                        disabled={factoryLoading}
+                        className="text-xs text-gray-400 underline hover:text-gray-600 disabled:opacity-40"
+                      >
+                        해제
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

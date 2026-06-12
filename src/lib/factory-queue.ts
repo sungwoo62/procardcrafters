@@ -50,7 +50,7 @@ export async function queueFactoryOrdersForPrintOrder(
     .from('print_factory_orders')
     .select('id')
     .eq('print_order_id', printOrderId)
-    .in('status', ['pending', 'placing', 'placed'])
+    .in('status', ['pending', 'placing', 'placed', 'paid'])
     .limit(1)
 
   if (existing && existing.length > 0) return

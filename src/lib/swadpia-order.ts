@@ -119,7 +119,7 @@ export interface FactoryOrderRecord {
   id: string
   print_order_id: string
   print_order_item_id: string | null
-  status: 'pending' | 'placing' | 'placed' | 'failed' | 'cancelled'
+  status: 'pending' | 'placing' | 'placed' | 'paid' | 'failed' | 'cancelled'
   swadpia_order_number: string | null
   category_code: string
   options_snapshot: Record<string, string>
@@ -137,6 +137,9 @@ export interface FactoryOrderRecord {
   actual_cost_usd?: number | null
   cost_recorded_at?: string | null
   cost_recorded_by?: string | null
+  // OMO-3018: 성원 발주 결제완료 추적. 마이그레이션 20260613000010 이후 존재.
+  swadpia_paid_at?: string | null
+  swadpia_paid_by?: string | null
 }
 
 // ─── Core Playwright automation ───────────────────────────────

@@ -9,6 +9,10 @@
       "schedule": "0 0 * * 1-5"
     },
     {
+      "path": "/api/cron/swadpia-payment-reconcile",
+      "schedule": "0 1,13 * * *"
+    },
+    {
       "path": "/api/cron/cleanup-orphan-files",
       "schedule": "0 3 * * *"
     },

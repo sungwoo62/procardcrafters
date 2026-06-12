@@ -56,7 +56,7 @@ export async function POST(_req: NextRequest, { params }: RouteContext) {
     .from('print_factory_orders')
     .select('id, status')
     .eq('print_order_id', id)
-    .in('status', ['placing', 'placed'])
+    .in('status', ['placing', 'placed', 'paid'])
     .limit(1)
 
   if (existing && existing.length > 0) {
@@ -127,6 +127,67 @@ export async function PATCH(req: NextRequest, { params }: RouteContext) {
   }
 
   const supabase = createServerClient()
+
+  // OMO-3018: 성원 발주 결제완료 표시/해제.
+  // 사장님이 성원에서 결제까지 마친 발주를 placed → paid 로 전환한다.
+  if (body.action === 'markSwadpiaPaid' || body.action === 'unmarkSwadpiaPaid') {
+    const marking = body.action === 'markSwadpiaPaid'
+
+    // 현재 상태 확인 (placed ↔ paid 전이만 허용)
+    const { data: current } = await supabase
+      .from('print_factory_orders')
+      .select('id, status')
+      .eq('id', body.factoryOrderId)
+      .eq('print_order_id', id)
+      .maybeSingle()
+
+    if (!current) {
+      return NextResponse.json({ error: '발주를 찾을 수 없습니다.' }, { status: 404 })
+    }
+    const allowedFrom = marking ? 'placed' : 'paid'
+    if (current.status !== allowedFrom) {
+      return NextResponse.json(
+        {
+          error: marking
+            ? '발주 완료(placed) 상태만 결제완료로 표시할 수 있습니다.'
+            : '결제완료(paid) 상태만 해제할 수 있습니다.',
+          status: current.status,
+        },
+        { status: 409 },
+      )
+    }
+
+    const nowIso = new Date().toISOString()
+    const { data, error } = await supabase
+      .from('print_factory_orders')
+      .update({
+        status: marking ? 'paid' : 'placed',
+        swadpia_paid_at: marking ? nowIso : null,
+        swadpia_paid_by: marking ? (user.email ?? 'admin') : null,
+        updated_at: nowIso,
+      })
+      .eq('id', body.factoryOrderId)
+      .eq('print_order_id', id)
+      .select()
+      .single()
+
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 })
+
+    // 감사 로그: 성원 결제완료 표시/해제 타임라인
+    await supabase.from('print_order_events').insert({
+      order_id: id,
+      event_type: 'status_change',
+      old_value: marking ? '성원 발주완료' : '성원 결제완료',
+      new_value: marking ? '성원 결제완료' : '성원 발주완료(결제 해제)',
+      metadata: {
+        factory_order_id: body.factoryOrderId,
+        swadpia_order_number: data.swadpia_order_number ?? null,
+      },
+      actor: user.email ?? 'admin',
+    })
+
+    return NextResponse.json({ factoryOrder: data })
+  }
 
   const krwRaw = body.actualCostKrw
   const clearing = krwRaw === null || krwRaw === undefined || krwRaw === ''
