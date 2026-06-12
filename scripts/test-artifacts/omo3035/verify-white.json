@@ -1,0 +1,104 @@
+[
+  {
+    "code": "MGM200W01",
+    "found": true,
+    "cascade": {
+      "cover_paper_kind": "PKD30",
+      "cover_paper_type": "MGM",
+      "typeLabel": "매직매칭",
+      "cover_paper_code": "MGM200W01",
+      "codeLabel": "백색 200g"
+    },
+    "inPaper": {
+      "kind": "PKD10",
+      "type": "NPL",
+      "code": "NPL080W00"
+    },
+    "nPageOpts": 161,
+    "bdt6PageCount": 153,
+    "bdt6PageMin": "32",
+    "bdt6PageMax": "640",
+    "bindingAtMinPage": [
+      [
+        "BDT2",
+        "以묒쿋"
+      ],
+      [
+        "BDT6",
+        "pur臾댁꽑"
+      ],
+      [
+        "BDT4",
+        "�ㅽ봽留�"
+      ]
+    ]
+  },
+  {
+    "code": "MGM250W01",
+    "found": true,
+    "cascade": {
+      "cover_paper_kind": "PKD30",
+      "cover_paper_type": "MGM",
+      "typeLabel": "매직매칭",
+      "cover_paper_code": "MGM250W01",
+      "codeLabel": "백색 250g"
+    },
+    "inPaper": {
+      "kind": "PKD10",
+      "type": "NPL",
+      "code": "NPL080W00"
+    },
+    "nPageOpts": 161,
+    "bdt6PageCount": 153,
+    "bdt6PageMin": "32",
+    "bdt6PageMax": "640",
+    "bindingAtMinPage": [
+      [
+        "BDT2",
+        "以묒쿋"
+      ],
+      [
+        "BDT6",
+        "pur臾댁꽑"
+      ],
+      [
+        "BDT4",
+        "�ㅽ봽留�"
+      ]
+    ]
+  },
+  {
+    "code": "MGM200OW0",
+    "found": true,
+    "cascade": {
+      "cover_paper_kind": "PKD30",
+      "cover_paper_type": "MGM",
+      "typeLabel": "매직매칭",
+      "cover_paper_code": "MGM200OW0",
+      "codeLabel": "연미색 200g"
+    },
+    "inPaper": {
+      "kind": "PKD10",
+      "type": "NPL",
+      "code": "NPL080W00"
+    },
+    "nPageOpts": 161,
+    "bdt6PageCount": 153,
+    "bdt6PageMin": "32",
+    "bdt6PageMax": "640",
+    "bindingAtMinPage": [
+      [
+        "BDT2",
+        "以묒쿋"
+      ],
+      [
+        "BDT6",
+        "pur臾댁꽑"
+      ],
+      [
+        "BDT4",
+        "�ㅽ봽留�"
+      ]
+    ]
+  }
+]

@@ -1,0 +1,3274 @@
+{
+  "matrix": {
+    "kind": "PKD30",
+    "nTypes": 6,
+    "rows": [
+      {
+        "type": "RZK",
+        "typeLabel": "레쟈크",
+        "code": "RZK120IV0",
+        "codeLabel": "#96 아이보리 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "CFT",
+        "typeLabel": "크라프트",
+        "code": "CFT30000N",
+        "codeLabel": "뉴크라프트보드 300g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "FLP",
+        "typeLabel": "화일지",
+        "code": "FLP120000",
+        "codeLabel": "120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "FLP",
+        "typeLabel": "화일지",
+        "code": "FLP195YL0",
+        "codeLabel": "195g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "FLP",
+        "typeLabel": "화일지",
+        "code": "FLP235YL0",
+        "codeLabel": "235g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120CG0",
+        "codeLabel": "벚꽃색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120MK0",
+        "codeLabel": "우유색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120OR0",
+        "codeLabel": "굴색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120OW1",
+        "codeLabel": "연미색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120SL0",
+        "codeLabel": "주홍색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120SL1",
+        "codeLabel": "뉴주홍색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120W01",
+        "codeLabel": "백색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120WB0",
+        "codeLabel": "백옥색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGC",
+        "typeLabel": "매직칼라",
+        "code": "MGC120Y00",
+        "codeLabel": "노랑색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM120W01",
+        "codeLabel": "백색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM120OW0",
+        "codeLabel": "연미색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM120OR0",
+        "codeLabel": "오렌지색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM120OP0",
+        "codeLabel": "연분홍색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM120OM0",
+        "codeLabel": "참외색 120g",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM200OW0",
+        "codeLabel": "연미색 200g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM200W01",
+        "codeLabel": "백색 200g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGM",
+        "typeLabel": "매직매칭",
+        "code": "MGM250W01",
+        "codeLabel": "백색 250g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGT",
+        "typeLabel": "매직터치",
+        "code": "MGT180OB1",
+        "codeLabel": "BC45 연옥색 180g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGT",
+        "typeLabel": "매직터치",
+        "code": "MGT180OG1",
+        "codeLabel": "BC75 회색 180g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGT",
+        "typeLabel": "매직터치",
+        "code": "MGT180OR1",
+        "codeLabel": "BC44 연연두색 180g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGT",
+        "typeLabel": "매직터치",
+        "code": "MGT200OW1",
+        "codeLabel": "연미색 200g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "type": "MGT",
+        "typeLabel": "매직터치",
+        "code": "MGT200W01",
+        "codeLabel": "BC01 백색 200g",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      }
+    ]
+  },
+  "bdt6Codes": [
+    {
+      "type": "CFT",
+      "typeLabel": "크라프트",
+      "code": "CFT30000N",
+      "codeLabel": "뉴크라프트보드 300g",
+      "binding": [
+        "BDT2",
+        "BDT6",
+        "BDT4"
+      ],
+      "hasBDT6": true
+    },
+    {
+      "type": "FLP",
+      "typeLabel": "화일지",
+      "code": "FLP195YL0",
+      "codeLabel": "195g",
+      "binding": [
+        "BDT2",
+        "BDT6",
+        "BDT4"
+      ],
+      "hasBDT6": true
+    }
+  ],
+  "pageSweeps": [
+    {
+      "type": "CFT",
+      "code": "CFT30000N",
+      "codeLabel": "뉴크라프트보드 300g",
+      "nOpts": 161,
+      "bdt6PageCount": 153,
+      "bdt6PageRange": [
+        "32",
+        "640"
+      ],
+      "bdt6Pages": [
+        "32",
+        "36",
+        "40",
+        "44",
+        "48",
+        "52",
+        "56",
+        "60",
+        "64",
+        "68",
+        "72",
+        "76",
+        "80",
+        "84",
+        "88",
+        "92",
+        "96",
+        "100",
+        "104",
+        "108",
+        "112",
+        "116",
+        "120",
+        "124",
+        "128",
+        "132",
+        "136",
+        "140",
+        "144",
+        "148",
+        "152",
+        "156",
+        "160",
+        "164",
+        "168",
+        "172",
+        "176",
+        "180",
+        "184",
+        "188",
+        "192",
+        "196",
+        "200",
+        "204",
+        "208",
+        "212",
+        "216",
+        "220",
+        "224",
+        "228",
+        "232",
+        "236",
+        "240",
+        "244",
+        "248",
+        "252",
+        "256",
+        "260",
+        "264",
+        "268",
+        "272",
+        "276",
+        "280",
+        "284",
+        "288",
+        "292",
+        "296",
+        "300",
+        "304",
+        "308",
+        "312",
+        "316",
+        "320",
+        "324",
+        "328",
+        "332",
+        "336",
+        "340",
+        "344",
+        "348",
+        "352",
+        "356",
+        "360",
+        "364",
+        "368",
+        "372",
+        "376",
+        "380",
+        "384",
+        "388",
+        "392",
+        "396",
+        "400",
+        "404",
+        "408",
+        "412",
+        "416",
+        "420",
+        "424",
+        "428",
+        "432",
+        "436",
+        "440",
+        "444",
+        "448",
+        "452",
+        "456",
+        "460",
+        "464",
+        "468",
+        "472",
+        "476",
+        "480",
+        "484",
+        "488",
+        "492",
+        "496",
+        "500",
+        "504",
+        "508",
+        "512",
+        "516",
+        "520",
+        "524",
+        "528",
+        "532",
+        "536",
+        "540",
+        "544",
+        "548",
+        "552",
+        "556",
+        "560",
+        "564",
+        "568",
+        "572",
+        "576",
+        "580",
+        "584",
+        "588",
+        "592",
+        "596",
+        "600",
+        "604",
+        "608",
+        "612",
+        "616",
+        "620",
+        "624",
+        "628",
+        "632",
+        "636",
+        "640"
+      ],
+      "allResults": [
+        {
+          "in_page_qty": "0",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "4",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "8",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "12",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "16",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "20",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "24",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "28",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "32",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "36",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "40",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "44",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "48",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "52",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "56",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "60",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "64",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "68",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "72",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "76",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "80",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "84",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "88",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "92",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "96",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "100",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "104",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "108",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "112",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "116",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "120",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "124",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "128",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "132",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "136",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "140",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "144",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "148",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "152",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "156",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "160",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "164",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "168",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "172",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "176",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "180",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "184",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "188",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "192",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "196",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "200",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "204",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "208",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "212",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "216",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "220",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "224",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "228",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "232",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "236",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "240",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "244",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "248",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "252",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "256",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "260",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "264",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "268",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "272",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "276",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "280",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "284",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "288",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "292",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "296",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "300",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "304",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "308",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "312",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "316",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "320",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "324",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "328",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "332",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "336",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "340",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "344",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "348",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "352",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "356",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "360",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "364",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "368",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "372",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "376",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "380",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "384",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "388",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "392",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "396",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "400",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "404",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "408",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "412",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "416",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "420",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "424",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "428",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "432",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "436",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "440",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "444",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "448",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "452",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "456",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "460",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "464",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "468",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "472",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "476",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "480",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "484",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "488",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "492",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "496",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "500",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "504",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "508",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "512",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "516",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "520",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "524",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "528",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "532",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "536",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "540",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "544",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "548",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "552",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "556",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "560",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "564",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "568",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "572",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "576",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "580",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "584",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "588",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "592",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "596",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "600",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "604",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "608",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "612",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "616",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "620",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "624",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "628",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "632",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "636",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "640",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        }
+      ]
+    },
+    {
+      "type": "FLP",
+      "code": "FLP195YL0",
+      "codeLabel": "195g",
+      "nOpts": 161,
+      "bdt6PageCount": 153,
+      "bdt6PageRange": [
+        "32",
+        "640"
+      ],
+      "bdt6Pages": [
+        "32",
+        "36",
+        "40",
+        "44",
+        "48",
+        "52",
+        "56",
+        "60",
+        "64",
+        "68",
+        "72",
+        "76",
+        "80",
+        "84",
+        "88",
+        "92",
+        "96",
+        "100",
+        "104",
+        "108",
+        "112",
+        "116",
+        "120",
+        "124",
+        "128",
+        "132",
+        "136",
+        "140",
+        "144",
+        "148",
+        "152",
+        "156",
+        "160",
+        "164",
+        "168",
+        "172",
+        "176",
+        "180",
+        "184",
+        "188",
+        "192",
+        "196",
+        "200",
+        "204",
+        "208",
+        "212",
+        "216",
+        "220",
+        "224",
+        "228",
+        "232",
+        "236",
+        "240",
+        "244",
+        "248",
+        "252",
+        "256",
+        "260",
+        "264",
+        "268",
+        "272",
+        "276",
+        "280",
+        "284",
+        "288",
+        "292",
+        "296",
+        "300",
+        "304",
+        "308",
+        "312",
+        "316",
+        "320",
+        "324",
+        "328",
+        "332",
+        "336",
+        "340",
+        "344",
+        "348",
+        "352",
+        "356",
+        "360",
+        "364",
+        "368",
+        "372",
+        "376",
+        "380",
+        "384",
+        "388",
+        "392",
+        "396",
+        "400",
+        "404",
+        "408",
+        "412",
+        "416",
+        "420",
+        "424",
+        "428",
+        "432",
+        "436",
+        "440",
+        "444",
+        "448",
+        "452",
+        "456",
+        "460",
+        "464",
+        "468",
+        "472",
+        "476",
+        "480",
+        "484",
+        "488",
+        "492",
+        "496",
+        "500",
+        "504",
+        "508",
+        "512",
+        "516",
+        "520",
+        "524",
+        "528",
+        "532",
+        "536",
+        "540",
+        "544",
+        "548",
+        "552",
+        "556",
+        "560",
+        "564",
+        "568",
+        "572",
+        "576",
+        "580",
+        "584",
+        "588",
+        "592",
+        "596",
+        "600",
+        "604",
+        "608",
+        "612",
+        "616",
+        "620",
+        "624",
+        "628",
+        "632",
+        "636",
+        "640"
+      ],
+      "allResults": [
+        {
+          "in_page_qty": "0",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "4",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "8",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "12",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "16",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "20",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "24",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "28",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "32",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "36",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "40",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "44",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "48",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "52",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "56",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "60",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "64",
+          "binding": [
+            "BDT2",
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "68",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "72",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "76",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "80",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "84",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "88",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "92",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "96",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "100",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "104",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "108",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "112",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "116",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "120",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "124",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "128",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "132",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "136",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "140",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "144",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "148",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "152",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "156",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "160",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "164",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "168",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "172",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "176",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "180",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "184",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "188",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "192",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "196",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "200",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "204",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "208",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "212",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "216",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "220",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "224",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "228",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "232",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "236",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "240",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "244",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "248",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "252",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "256",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "260",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "264",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "268",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "272",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "276",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "280",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "284",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "288",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "292",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "296",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "300",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "304",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "308",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "312",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "316",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "320",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "324",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "328",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "332",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "336",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "340",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "344",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "348",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "352",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "356",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "360",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "364",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "368",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "372",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "376",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "380",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "384",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "388",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "392",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "396",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "400",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "404",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "408",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "412",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "416",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "420",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "424",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "428",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "432",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "436",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "440",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "444",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "448",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "452",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "456",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "460",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "464",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "468",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "472",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "476",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "480",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "484",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "488",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "492",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "496",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "500",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "504",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "508",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "512",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "516",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "520",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "524",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "528",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "532",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "536",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "540",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "544",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "548",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "552",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "556",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "560",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "564",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "568",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "572",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "576",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "580",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "584",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "588",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "592",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "596",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "600",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "604",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "608",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "612",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "616",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "620",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "624",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "628",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "632",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "636",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        },
+        {
+          "in_page_qty": "640",
+          "binding": [
+            "BDT6",
+            "BDT4"
+          ],
+          "hasBDT6": true
+        }
+      ]
+    }
+  ]
+}
