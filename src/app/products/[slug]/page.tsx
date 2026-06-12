@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
-import { CheckCircle, Clock, Globe, Shield, CreditCard, LayoutTemplate, ArrowRight, Pencil } from 'lucide-react'
+import { CheckCircle, Clock, Globe, Shield, CreditCard, LayoutTemplate, ArrowRight, Pencil, FileDown, Ruler } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
@@ -335,6 +335,50 @@ export default async function ProductDetailPage({ params }: Props) {
                 </ul>
               </div>
             )}
+
+            {/* Print Template Download (OMO-3027) */}
+            <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
+              <div className="flex items-center gap-2 mb-3">
+                <Ruler className="w-4 h-4 text-indigo-600 shrink-0" />
+                <h3 className="font-semibold text-gray-900 text-sm uppercase tracking-wide">Print-Ready Template</h3>
+              </div>
+              {product.print_spec ? (
+                <>
+                  <p className="text-sm text-gray-600 leading-relaxed mb-3">
+                    Download a blank, print-ready PDF with crop marks, bleed, and safe-zone guides — set up for this product&apos;s exact specs.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                      <div className="text-gray-400">Trim size</div>
+                      <div className="font-semibold text-gray-800">{product.print_spec.width_mm} × {product.print_spec.height_mm} mm</div>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                      <div className="text-gray-400">Bleed / Safe</div>
+                      <div className="font-semibold text-gray-800">{product.print_spec.bleed_mm} mm / {product.print_spec.safe_mm} mm</div>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                      <div className="text-gray-400">Color mode</div>
+                      <div className="font-semibold text-gray-800">{product.print_spec.color_mode}</div>
+                    </div>
+                    <div className="bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                      <div className="text-gray-400">Min. resolution</div>
+                      <div className="font-semibold text-gray-800">{product.print_spec.min_dpi} dpi</div>
+                    </div>
+                  </div>
+                  <a
+                    href={`/api/products/${product.slug}/template`}
+                    className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-colors shadow-sm"
+                  >
+                    <FileDown className="w-4 h-4" />
+                    Download PDF template
+                  </a>
+                </>
+              ) : (
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  A print-ready template for this product is coming soon. In the meantime, design online with our editor or contact us for the exact specs.
+                </p>
+              )}
+            </div>
 
             {/* Partnership Highlight */}
             <div className="grid grid-cols-2 gap-3">
