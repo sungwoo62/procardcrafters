@@ -821,9 +821,9 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
           />
           <span className="text-sm text-amber-900 leading-relaxed">
             <strong className="block mb-1">File Responsibility Agreement (Required)</strong>
-            I confirm that I have reviewed my print file and it meets all technical requirements including correct resolution (300 DPI minimum), bleed area, safe zone, and color mode (CMYK). I understand that{' '}
-            <strong>Procardcrafters is not responsible for print quality issues arising from incorrect or low-quality files</strong>{' '}
-            — all file quality and content responsibility lies with the customer. By checking this box, I acknowledge this agreement and accept full responsibility for the uploaded file.
+            I confirm that I have reviewed my print file and it meets all technical requirements including correct resolution (300 DPI minimum), bleed area, safe zone, and color mode (CMYK). I have also proofread all text and content — including spelling, names, phone numbers and layout — and confirm there are no typos or errors. I understand that{' '}
+            <strong>Procardcrafters prints exactly the file I provide and is not responsible for print quality issues, typos, or content errors arising from my file</strong>{' '}
+            — all file quality and content responsibility lies with the customer, and any issue discovered after this approval is my responsibility. By checking this box, I acknowledge this agreement and accept full responsibility for the uploaded file.
           </span>
         </label>
       </section>

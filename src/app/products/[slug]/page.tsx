@@ -13,6 +13,7 @@ import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
 import TemplatePreview from '@/components/TemplatePreview'
+import ProductTemplateDownload from '@/components/ProductTemplateDownload'
 import ProductConfigurator from '@/components/ProductConfigurator'
 import ProductImage from '@/components/ProductImage'
 import ProductGallery from '@/components/ProductGallery'
@@ -454,6 +455,9 @@ export default async function ProductDetailPage({ params }: Props) {
           </div>
         </div>
       )}
+
+      {/* Print Template Download (OMO-3019) — 제품 규격 PDF/AI/SVG 템플릿 */}
+      <ProductTemplateDownload productCategory={product.category} productLabel={product.name_en} />
 
       {/* Trust Badges */}
       <div className="bg-gray-50 border-t border-gray-100 py-8 px-4">
