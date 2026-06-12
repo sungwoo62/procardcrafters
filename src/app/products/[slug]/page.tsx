@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import type { Metadata } from 'next'
 import { createServerClient } from '@/lib/supabase'
-import { CheckCircle, Clock, Globe, Shield, Star, LayoutTemplate, ArrowRight, Pencil } from 'lucide-react'
+import { CheckCircle, Clock, Globe, Shield, CreditCard, LayoutTemplate, ArrowRight, Pencil } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
@@ -118,11 +118,12 @@ const PRODUCT_FEATURES: Record<string, string[]> = {
   letterpress_cards: ['Crane Lettra 600gsm cotton stock', 'Deep-impression letterpress printing', '1 or 2-color designs', 'Artisan craftsmanship — 30–40+ day production'],
 }
 
+// ⚠️ 정직화(OMO-2975): 출처불명 평점 배지 금지. 검증가능한 운영 사실만.
 const TRUST_ITEMS = [
   { icon: Shield, text: 'Quality Guaranteed' },
   { icon: Clock, text: '3–5 Day Production' },
   { icon: Globe, text: 'FedEx Worldwide' },
-  { icon: Star, text: '4.9★ Rating' },
+  { icon: CreditCard, text: 'Secure Checkout' },
 ]
 
 export default async function ProductDetailPage({ params }: Props) {
