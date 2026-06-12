@@ -61,6 +61,11 @@ const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
   CNR2000: { print_color_type: 'fside_color_amount', paper_size: 'code_size_type' },       // 서식/양식
   CPR3000: { print_color_type: 'print_method' },                                          // 리플렛
   CLF2000: { print_color_type: 'print_method' },                                          // 메뉴/브로슈어
+  // OMO-2961 전 카테고리 감사(2026-06-12): 전단/포스터는 print_color_type 필드가 없고
+  // 앞/뒷면 색상도수(fside_color_amount)로 분리됨 → 봉투(CEV1000)·양식(CNR2000)과 동일 매핑.
+  // (값코드 CTN↔도수 매핑은 후속 OMO-2904 에서 카테고리별 정합화)
+  CLF1000: { print_color_type: 'fside_color_amount' },                                     // 전단
+  CPR2000: { print_color_type: 'fside_color_amount' },                                     // 포스터
 }
 
 // ─── Types ────────────────────────────────────────────────────

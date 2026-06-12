@@ -1,0 +1,837 @@
+{
+  "rows": [
+    {
+      "code": "CNC1000",
+      "label": "명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC2000",
+      "label": "고급명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC3000",
+      "label": "메탈/포일명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC4000",
+      "label": "레터프레스명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC5000",
+      "label": "투명명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC6000",
+      "label": "UV명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNC8000",
+      "label": "펄명함",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "domusong",
+        "tagong",
+        "guidori",
+        "epoxy",
+        "dbak"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CST1000",
+      "label": "스티커",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "coating",
+        "cutting",
+        "bak",
+        "today_sat"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CST2000",
+      "label": "도무송스티커",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "domusong",
+        "coating",
+        "cutting",
+        "bak",
+        "add_cutting"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CST5000",
+      "label": "홀로그램스티커",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "bak",
+        "coating",
+        "domusong",
+        "coating",
+        "osi",
+        "missing",
+        "ap",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "stitching",
+        "folding",
+        "osi",
+        "missing"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CST7000",
+      "label": "롤스티커",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "bak",
+        "coating",
+        "domusong",
+        "coating",
+        "osi",
+        "missing",
+        "ap",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "stitching",
+        "folding",
+        "osi",
+        "missing"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CLP1000",
+      "label": "라벨",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "small_size_type",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty_select",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "fside_color_amount1",
+          "present": true
+        }
+      },
+      "finishings": [
+        "bak",
+        "domusong",
+        "coating",
+        "osi",
+        "missing",
+        "ap",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "stitching",
+        "folding",
+        "osi",
+        "missing"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CLF1000",
+      "label": "전단",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": false
+        }
+      },
+      "finishings": [
+        "folding",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "domusong",
+        "coating",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "epoxy",
+        "stitching"
+      ],
+      "coreOk": false
+    },
+    {
+      "code": "CLF2000",
+      "label": "브로슈어/메뉴",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_method",
+          "present": true
+        }
+      },
+      "finishings": [
+        "folding",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "domusong",
+        "coating",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "epoxy",
+        "stitching"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CPR3000",
+      "label": "리플렛",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_method",
+          "present": true
+        }
+      },
+      "finishings": [
+        "folding",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "domusong",
+        "coating",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "epoxy",
+        "stitching"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CPR4000",
+      "label": "책자",
+      "core": {
+        "paper_code": {
+          "field": "cover_paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "bundle_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "binding_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "coating",
+        "bak",
+        "ap",
+        "partial_coating",
+        "epoxy",
+        "guidori",
+        "domusong",
+        "binding"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CDP3000",
+      "label": "엽서",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "osi",
+        "missing",
+        "coating",
+        "domusong",
+        "bak",
+        "ap",
+        "tagong",
+        "folding",
+        "bonding",
+        "guidori",
+        "dbak",
+        "depoxy"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CPR2000",
+      "label": "포스터",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": false
+        }
+      },
+      "finishings": [
+        "folding",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "domusong",
+        "coating",
+        "numbering",
+        "tagong",
+        "cutting",
+        "binding",
+        "bonding",
+        "laminex",
+        "epoxy",
+        "stitching"
+      ],
+      "coreOk": false
+    },
+    {
+      "code": "CPR5000",
+      "label": "배너",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_color_type",
+          "present": true
+        }
+      },
+      "finishings": [
+        "coating",
+        "bak",
+        "ap",
+        "partial_coating",
+        "epoxy",
+        "tape",
+        "bonding",
+        "domusong"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CEV1000",
+      "label": "봉투",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "bongto_type",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "fside_color_amount",
+          "present": true
+        }
+      },
+      "finishings": [
+        "bak",
+        "tape",
+        "tagong",
+        "window",
+        "domusong"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CNR2000",
+      "label": "양식/명세서",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "code_size_type",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "fside_color_amount",
+          "present": true
+        }
+      },
+      "finishings": [
+        "binding",
+        "tagong",
+        "missing"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CCD1000",
+      "label": "벽걸이캘린더",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty_select",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_method",
+          "present": true
+        }
+      },
+      "finishings": [
+        "coating",
+        "cutting",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "tagong",
+        "domusong",
+        "binding",
+        "bonding",
+        "laminex",
+        "stitching",
+        "folding",
+        "osi",
+        "missing"
+      ],
+      "coreOk": true
+    },
+    {
+      "code": "CCD2000",
+      "label": "탁상캘린더",
+      "core": {
+        "paper_code": {
+          "field": "paper_code",
+          "present": true
+        },
+        "paper_size": {
+          "field": "paper_size",
+          "present": true
+        },
+        "paper_qty": {
+          "field": "paper_qty_select",
+          "present": true
+        },
+        "print_color_type": {
+          "field": "print_method",
+          "present": true
+        }
+      },
+      "finishings": [
+        "coating",
+        "cutting",
+        "osi",
+        "missing",
+        "bak",
+        "ap",
+        "numbering",
+        "tagong",
+        "domusong",
+        "binding",
+        "bonding",
+        "laminex",
+        "stitching",
+        "folding",
+        "osi",
+        "missing"
+      ],
+      "coreOk": true
+    }
+  ]
+}
