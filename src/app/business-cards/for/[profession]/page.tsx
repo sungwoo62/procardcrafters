@@ -6,6 +6,7 @@ import { getAllProfessions, getProfessionBySlug } from '@/lib/niche/professions'
 import { buildNicheJsonLd } from '@/lib/niche/jsonld'
 import { absoluteUrl } from '@/lib/site'
 import NicheLanding from '@/components/niche/NicheLanding'
+import NicheProfessionLinks from '@/components/niche/NicheProfessionLinks'
 
 export const revalidate = 3600
 
@@ -63,6 +64,12 @@ export default async function ProfessionPage(
         />
       ))}
       <NicheLanding p={p} />
+      {/* 완전한 sibling 메시(OMO-2994): 현재 직업 제외한 나머지 직업 전부로 내부링크 */}
+      <NicheProfessionLinks
+        excludeSlug={p.slug}
+        heading="Business cards for other professions"
+        subhead="Same premium finishes, tuned for a different line of work."
+      />
     </>
   )
 }

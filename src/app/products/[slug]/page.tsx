@@ -21,6 +21,7 @@ import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 import ProductReviews from '@/components/ProductReviews'
 import FinishingSection from '@/components/FinishingSection'
+import NicheProfessionLinks from '@/components/niche/NicheProfessionLinks'
 import JsonLd from '@/components/JsonLd'
 import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
 
@@ -387,6 +388,11 @@ export default async function ProductDetailPage({ params }: Props) {
         productCategory={product.category}
         orderable={options.some((o) => o.option_type === 'finishing' || o.option_type === 'finish')}
       />
+
+      {/* 직업별 니치 랜딩 허브 진입점(OMO-2994) — 명함 제품 페이지에서만 노출, orphan 해소 */}
+      {(product.category === 'business_cards' || product.category === 'premium_business_cards') && (
+        <NicheProfessionLinks />
+      )}
 
       {/* Template Gallery Section */}
       {templates.length > 0 && (

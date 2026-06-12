@@ -40,6 +40,17 @@ export default function Footer() {
               <li><Link href="/products/posters" className="hover:text-white transition-colors">Posters</Link></li>
               <li><Link href="/products/banners" className="hover:text-white transition-colors">Banners</Link></li>
             </ul>
+
+            {/* 직업별 명함 — 니치 랜딩 sitewide 인바운드 링크(OMO-2994, orphan 해소) */}
+            <h3 className="text-sm font-semibold text-white mb-4 mt-8">Business Cards by Profession</h3>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li><Link href="/business-cards/for/realtors" className="hover:text-white transition-colors">For Realtors</Link></li>
+              <li><Link href="/business-cards/for/lawyers" className="hover:text-white transition-colors">For Lawyers</Link></li>
+              <li><Link href="/business-cards/for/photographers" className="hover:text-white transition-colors">For Photographers</Link></li>
+              <li><Link href="/business-cards/for/contractors" className="hover:text-white transition-colors">For Contractors</Link></li>
+              <li><Link href="/business-cards/for/tattoo-artists" className="hover:text-white transition-colors">For Tattoo Artists</Link></li>
+              <li><Link href="/business-cards/for" className="hover:text-white transition-colors font-medium text-gray-300">All professions →</Link></li>
+            </ul>
           </div>
 
           {/* Company */}
