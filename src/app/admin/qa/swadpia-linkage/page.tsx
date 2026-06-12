@@ -23,6 +23,12 @@ import {
   expandFinishingToSwadpiaFields,
   type SwadpiaFinishingMapping,
 } from '@/config/swadpia-finishing-fields'
+import {
+  SWADPIA_CATEGORY_AUDIT,
+  SWADPIA_CATEGORY_AUDIT_DATE,
+  SWADPIA_MAPPED_FINISHING_COUNT,
+  SWADPIA_UNMAPPED_FINISHINGS,
+} from '@/config/swadpia-category-audit'
 
 // ─── 교차검수 로직 (선언 config ↔ 실제 변환) ──────────────────────────────────
 
@@ -288,6 +294,59 @@ export default function SwadpiaLinkageDashboard() {
             (스티커·도무송·전단·엽서)은 generic 옵션 미매핑 → 보드 결정 대기(OMO-2904).
           </p>
         </div>
+      </section>
+
+      {/* OMO-2961: 전 카테고리 라이브 감사 */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+          전 카테고리 옵션 매핑 감사 ({SWADPIA_CATEGORY_AUDIT.length}종 · 라이브 스냅샷 {SWADPIA_CATEGORY_AUDIT_DATE})
+        </h2>
+        <p className="text-sm text-gray-600">
+          성원 goods_view 폼을 카테고리별로 전수 조사한 결과. <strong>핵심옵션(종이·사이즈·매수·인쇄색)은 {SWADPIA_CATEGORY_AUDIT.filter((c) => c.coreOk).length}/{SWADPIA_CATEGORY_AUDIT.length} 카테고리 매핑 완료.</strong>{' '}
+          자동발주 후가공 {SWADPIA_MAPPED_FINISHING_COUNT}종(박·형압·도무송·타공·넘버링·귀도리·에폭시·오시·미싱)은 전 카테고리 공통 필드명이라 제공 카테고리 어디서든 작동한다.
+          각 카테고리의 "추가 후가공"(코팅·재단·제본·접지·창·테이프 등)은 아직 미매핑 → 카테고리별 추출 진행(OMO-2904).
+        </p>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50 text-left text-gray-600 border-b">
+                <th className="p-2 font-medium">카테고리</th>
+                <th className="p-2 font-medium">핵심옵션</th>
+                <th className="p-2 font-medium">매핑 후가공</th>
+                <th className="p-2 font-medium">미매핑 추가 후가공</th>
+              </tr>
+            </thead>
+            <tbody>
+              {SWADPIA_CATEGORY_AUDIT.map((c) => (
+                <tr key={c.code} className="border-b align-top hover:bg-gray-50">
+                  <td className="p-2">
+                    <span className="font-medium text-gray-800">{c.label}</span>{' '}
+                    <code className="text-xs text-gray-400">{c.code}</code>
+                  </td>
+                  <td className="p-2 whitespace-nowrap">
+                    {c.coreOk ? (
+                      <span className="text-green-700">✅ 매핑</span>
+                    ) : (
+                      <span className="text-red-600">✗ {(c.coreMiss ?? []).join(',')}</span>
+                    )}
+                  </td>
+                  <td className="p-2 text-gray-600">
+                    {c.mappedFinishings}/{SWADPIA_MAPPED_FINISHING_COUNT}
+                  </td>
+                  <td className="p-2 text-xs text-gray-400">
+                    {c.extraFinishings.length ? c.extraFinishings.join(', ') : '—'}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3">
+          <strong>미매핑 추가 후가공 전체({SWADPIA_UNMAPPED_FINISHINGS.length}종):</strong>{' '}
+          {SWADPIA_UNMAPPED_FINISHINGS.join(', ')} — 카테고리별 런타임 추출 대상(OMO-2904).
+          비카드 카테고리(전단/포스터/브로슈어 등)의 인쇄색은 성원이 앞/뒷면 색상도수(fside_color_amount)로
+          분리해 받으므로 값코드(CTN↔도수) 정합화도 함께 진행한다.
+        </p>
       </section>
 
       <footer className="text-xs text-gray-400 border-t pt-4 space-y-1">
