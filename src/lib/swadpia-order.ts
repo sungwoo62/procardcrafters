@@ -482,6 +482,11 @@ const FINISHING_GROUPS: { ppType: string; prefix: string }[] = [
   { ppType: 'domusong', prefix: 'domusong_' },
   { ppType: 'tagong', prefix: 'tagong_' },
   { ppType: 'numbering', prefix: 'numbering_' },
+  // OMO-2961: 런타임 추출 4종(라이브 검증 완료). chk 클릭으로 옵션 populate 후 적용.
+  { ppType: 'guidori', prefix: 'guidori_' },
+  { ppType: 'epoxy', prefix: 'epoxy_' },
+  { ppType: 'osi', prefix: 'osi_' },
+  { ppType: 'missing', prefix: 'missing_' },
 ]
 
 function isFinishingKey(key: string): boolean {
@@ -522,6 +527,13 @@ async function activateFinishings(
         if (chk) chk.checked = true
         const chk2 = document.getElementById(`chk_is_${ppType}2`) as HTMLInputElement | null
         if (chk2) chk2.checked = true
+        // OMO-2961: 런타임 4종은 chk 클릭 이벤트가 있어야 사이즈별 옵션이 JS populate 된다
+        // (라이브 검증). 기존 5종(bak/ap/...)은 setIsPostpress 로 동작하므로 영향 없음.
+        const RUNTIME_PP = ['guidori', 'epoxy', 'osi', 'missing']
+        if (chk && RUNTIME_PP.indexOf(ppType) !== -1) {
+          chk.dispatchEvent(new Event('click', { bubbles: true }))
+          chk.dispatchEvent(new Event('change', { bubbles: true }))
+        }
         try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
         // 2. section/type/size 설정 (kind 는 populate 후 별도)
         for (const [n, v] of Object.entries(fieldMap)) {
@@ -536,6 +548,31 @@ async function activateFinishings(
             const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
             const want = fieldMap['numbering_kind']
             const chosen = want && opts.includes(want) ? want : opts[0] || ''
+            if (chosen) {
+              ke.value = chosen
+              ke.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+          }
+        }
+        // 3-b. OMO-2961 귀도리: 위치 체크박스. 기본 네귀도리(GDR40)=4모서리 전체 체크.
+        if (ppType === 'guidori') {
+          for (const i of [1, 2, 3, 4]) {
+            const p = document.querySelector(`[name="guidori_position${i}"]`) as HTMLInputElement | null
+            if (p && !p.checked) {
+              p.checked = true
+              p.dispatchEvent(new Event('click', { bubbles: true }))
+              p.dispatchEvent(new Event('change', { bubbles: true }))
+            }
+          }
+        }
+        // 3-c. OMO-2961 에폭시: epoxy_kind 는 type 선택 후 JS 동적 채움 →
+        //      지정값(없으면 첫 유효옵션) 선택. (넘버링 kind 패턴과 동일)
+        if (ppType === 'epoxy') {
+          const ke = document.querySelector('select[name="epoxy_kind"]') as HTMLSelectElement | null
+          if (ke) {
+            const opts = Array.from(ke.options).map((o) => o.value).filter(Boolean)
+            const want = fieldMap['epoxy_kind']
+            const chosen = want && opts.indexOf(want) !== -1 ? want : opts[0] || ''
             if (chosen) {
               ke.value = chosen
               ke.dispatchEvent(new Event('change', { bubbles: true }))

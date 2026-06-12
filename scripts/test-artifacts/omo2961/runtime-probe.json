@@ -1,0 +1,349 @@
+{
+  "loggedIn": true,
+  "discovery": {
+    "chks": [
+      "chk_is_osi",
+      "chk_is_missing",
+      "chk_is_bak",
+      "chk_is_ap",
+      "chk_is_numbering",
+      "chk_is_domusong",
+      "chk_is_tagong",
+      "chk_is_guidori",
+      "chk_is_epoxy",
+      "chk_is_dbak"
+    ],
+    "fnNames": [
+      "SVGTextPositioningElement",
+      "SVGFECompositeElement",
+      "GeolocationPositionError",
+      "GeolocationPosition",
+      "CompositionEvent",
+      "CaretPosition",
+      "CSSPositionValue",
+      "CSSPositionTryRule",
+      "CSSPositionTryDescriptors",
+      "AudioSinkInfo",
+      "XRCompositionLayer",
+      "swguide_postpress",
+      "swguide_postpress_preview",
+      "swguide_osi_folding",
+      "postpress_preview_position",
+      "postpress_preview_position_mouseover",
+      "chgPostpressPreview",
+      "estimatePostpressContent",
+      "postpress_preview_small_over",
+      "postpress_preview_small_out",
+      "getLastCalculateLoop_new",
+      "postpressName",
+      "Postpress",
+      "PostpressCheckInit",
+      "chkPostPress",
+      "setIsPostpress",
+      "chgOsiNum",
+      "chgOsiDirection",
+      "chgMissingNum",
+      "chgMissingDirection",
+      "chgNumberingType",
+      "chgNumberingKind",
+      "chgNumberingStart",
+      "chgGuidoriType",
+      "chgGuidoriPosition",
+      "chgEpoxyType",
+      "initCalcuEstimate",
+      "ppEpoxyPopup",
+      "ppEpoxySelectCheck",
+      "calcuIsToday",
+      "calcuIsSat"
+    ],
+    "selNames": [
+      "paper_code",
+      "print_color_type",
+      "size_type",
+      "paper_size",
+      "paper_qty",
+      "order_count",
+      "f_design_type",
+      "f_cnt_type",
+      "f_design_edit",
+      "f_cnt_edit",
+      "b_design_type",
+      "b_cnt_type",
+      "b_design_edit",
+      "b_cnt_edit",
+      "design_price_add1",
+      "d_cnt_add1",
+      "design_price_add2",
+      "d_cnt_add2",
+      "design_price_add3",
+      "d_cnt_add3",
+      "design_price_add4",
+      "d_cnt_add4",
+      "design_price_add5",
+      "d_cnt_add5",
+      "osi_num",
+      "osi_direction",
+      "missing_num",
+      "missing_direction",
+      "domusong_section",
+      "domusong_type",
+      "domusong_num",
+      "domusong_exist_mok",
+      "bak_section_1",
+      "bak_side_1",
+      "bak_type_1",
+      "bak_compare_1",
+      "bak_exist_dongpan_1",
+      "bak_section_2",
+      "bak_side_2",
+      "bak_type_2",
+      "bak_compare_2",
+      "bak_exist_dongpan_2",
+      "bak_section_3",
+      "bak_side_3",
+      "bak_type_3",
+      "bak_compare_3",
+      "bak_exist_dongpan_3",
+      "dbak_section_1",
+      "dbak_side_1",
+      "dbak_type_1",
+      "dbak_exist_dongpan_1",
+      "dbak_section_2",
+      "dbak_side_2",
+      "dbak_type_2",
+      "dbak_exist_dongpan_2",
+      "dbak_section_3",
+      "dbak_side_3",
+      "dbak_type_3",
+      "dbak_exist_dongpan_3",
+      "ap_section_1",
+      "ap_type_1",
+      "ap_compare_1",
+      "ap_exist_dongpan_1",
+      "ap_section_2",
+      "ap_type_2",
+      "ap_compare_2",
+      "ap_exist_dongpan_2",
+      "ap_section_3",
+      "ap_type_3",
+      "ap_compare_3",
+      "ap_exist_dongpan_3",
+      "numbering_type",
+      "numbering_kind",
+      "tagong_num",
+      "tagong_size",
+      "guidori_type",
+      "epoxy_type",
+      "epoxy_kind",
+      "gq_kind",
+      "gq_email3",
+      "is_proof_hp1"
+    ]
+  },
+  "selected_paper_code": "SNW250W00",
+  "selected_paper_size": "N0100",
+  "fields": {
+    "guidori": {
+      "before": {
+        "guidori_type": {
+          "present": true,
+          "options": []
+        }
+      },
+      "after": {
+        "guidori_type": {
+          "present": true,
+          "options": [
+            {
+              "value": "GDR40",
+              "label": "ë„¤ê·€ë„ë¦¬(4mm)"
+            },
+            {
+              "value": "GDR30",
+              "label": "ì„¸ê·€ë„ë¦¬(4mm)"
+            },
+            {
+              "value": "GDR20",
+              "label": "ë‘ê·€ë„ë¦¬(4mm)"
+            },
+            {
+              "value": "GDR10",
+              "label": "í•œê·€ë„ë¦¬(4mm)"
+            },
+            {
+              "value": "GDR80",
+              "label": "ë„¤ê·€ë„ë¦¬(6mm)"
+            },
+            {
+              "value": "GDR70",
+              "label": "ì„¸ê·€ë„ë¦¬(6mm)"
+            },
+            {
+              "value": "GDR60",
+              "label": "ë‘ê·€ë„ë¦¬(6mm)"
+            },
+            {
+              "value": "GDR50",
+              "label": "í•œê·€ë„ë¦¬(6mm)"
+            }
+          ]
+        }
+      }
+    },
+    "epoxy": {
+      "before": {
+        "epoxy_type": {
+          "present": true,
+          "options": []
+        }
+      },
+      "after": {
+        "epoxy_type": {
+          "present": true,
+          "options": [
+            {
+              "value": "EPT10",
+              "label": "ì „ë©´"
+            },
+            {
+              "value": "EPT20",
+              "label": "í›„ë©´"
+            },
+            {
+              "value": "EPT30",
+              "label": "ì–‘ë©´"
+            }
+          ]
+        }
+      }
+    },
+    "osi": {
+      "before": {
+        "osi_num": {
+          "present": true,
+          "options": []
+        },
+        "osi_direction": {
+          "present": true,
+          "options": []
+        }
+      },
+      "after": {
+        "osi_num": {
+          "present": true,
+          "options": [
+            {
+              "value": "OSN01",
+              "label": "1ì¤„(ì¤‘ì•™)"
+            },
+            {
+              "value": "OSN11",
+              "label": "1ì¤„(ì¤‘ì•™ì•„ë‹˜)"
+            },
+            {
+              "value": "OSN02",
+              "label": "2ì¤„"
+            },
+            {
+              "value": "OSN03",
+              "label": "3ì¤„"
+            },
+            {
+              "value": "OSN04",
+              "label": "2ì¤„(ì‹­ìž)"
+            },
+            {
+              "value": "OSN05",
+              "label": "ì˜¤ì‹œ2ì¤„(ì–‘ë 10mmë¯¸ë§Œ)"
+            },
+            {
+              "value": "OSN06",
+              "label": "ì˜¤ì‹œ2ì¤„(ì˜¤ì‹œê°„ê²© 30mmë¯¸ë§Œ)"
+            }
+          ]
+        },
+        "osi_direction": {
+          "present": true,
+          "options": [
+            {
+              "value": "",
+              "label": "ì˜¤ì‹œë°©í–¥ì„ íƒ"
+            },
+            {
+              "value": "OMD20",
+              "label": "ì„¸ë¡œë°©í–¥(ì§§ê²Œ)"
+            },
+            {
+              "value": "OMD10",
+              "label": "ê°€ë¡œë°©í–¥(ê¸¸ê²Œ)"
+            }
+          ]
+        }
+      }
+    },
+    "missing": {
+      "before": {
+        "missing_num": {
+          "present": true,
+          "options": []
+        },
+        "missing_direction": {
+          "present": true,
+          "options": []
+        }
+      },
+      "after": {
+        "missing_num": {
+          "present": true,
+          "options": [
+            {
+              "value": "MSN01",
+              "label": "1ì¤„(ì¤‘ì•™)"
+            },
+            {
+              "value": "MSN11",
+              "label": "1ì¤„(ì¤‘ì•™ì•„ë‹˜)"
+            },
+            {
+              "value": "MSN02",
+              "label": "2ì¤„"
+            },
+            {
+              "value": "MSN03",
+              "label": "3ì¤„"
+            },
+            {
+              "value": "MSN04",
+              "label": "2ì¤„(ì‹­ìž)"
+            },
+            {
+              "value": "MSN05",
+              "label": "ë¯¸ì‹±2ì¤„(ì–‘ë 10mmë¯¸ë§Œ)"
+            },
+            {
+              "value": "MSN06",
+              "label": "ë¯¸ì‹±2ì¤„(ë¯¸ì‹±ê°„ê²© 30mmë¯¸ë§Œ)"
+            }
+          ]
+        },
+        "missing_direction": {
+          "present": true,
+          "options": [
+            {
+              "value": "",
+              "label": "ë¯¸ì‹±ë°©í–¥ì„ íƒ"
+            },
+            {
+              "value": "OMD20",
+              "label": "ì„¸ë¡œë°©í–¥(ì§§ê²Œ)"
+            },
+            {
+              "value": "OMD10",
+              "label": "ê°€ë¡œë°©í–¥(ê¸¸ê²Œ)"
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -120,38 +120,66 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
       },
     ],
   },
+  // ── OMO-2961: 런타임 추출 4종 라이브 추출 완료(2026-06-12) → 자동발주 검증 ──
+  //   성원 CNC1000 폼을 Playwright READ-ONLY 로 활성화해 옵션값·필수필드·surcharge 확인.
+  //   증거: scripts/test-artifacts/omo2961/{runtime-probe,verify-defaults,verify-amt}.json
   {
     finishingValue: 'round_corner',
     label_ko: '귀도리',
-    status: 'runtime',
-    note: 'guidori_type 옵션은 사이즈 선택 후 JS 동적 채움. 런타임 추출 필요.',
-    fields: [{ name: 'guidori_type', runtimeOnly: true }],
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): guidori_type + guidori_position1~4(체크박스). 기본=네귀도리 4mm(GDR40, 4모서리 전체). surcharge ₩3,000 확인.',
+    fields: [
+      {
+        name: 'guidori_type',
+        options: {
+          GDR40: '네귀도리(4mm)', GDR30: '세귀도리(4mm)', GDR20: '두귀도리(4mm)', GDR10: '한귀도리(4mm)',
+          GDR80: '네귀도리(6mm)', GDR70: '세귀도리(6mm)', GDR60: '두귀도리(6mm)', GDR50: '한귀도리(6mm)',
+        },
+      },
+      { name: 'guidori_position1' }, { name: 'guidori_position2' },
+      { name: 'guidori_position3' }, { name: 'guidori_position4' },
+    ],
   },
   {
     finishingValue: 'epoxy',
     label_ko: '에폭시',
-    status: 'runtime',
-    note: 'epoxy_type 옵션은 JS 동적 채움. 런타임 추출 필요.',
-    fields: [{ name: 'epoxy_type', runtimeOnly: true }],
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): epoxy_type + epoxy_kind(타입선택 후 JS 동적 채움 → 발주시 첫 유효옵션 자동선택). 기본=전면(EPT10)+EPK10. surcharge ₩22,500 확인.',
+    fields: [
+      { name: 'epoxy_type', options: { EPT10: '전면', EPT20: '후면', EPT30: '양면' } },
+      { name: 'epoxy_kind', runtimeOnly: true },
+    ],
   },
   {
     finishingValue: 'score_crease',
     label_ko: '오시',
-    status: 'runtime',
-    note: 'osi_num/osi_direction 은 사이즈에 따라 JS 동적 채움. 런타임 추출 필요.',
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): osi_num + osi_direction. 기본=1줄 중앙(OSN01)+가로방향(OMD10). surcharge ₩7,000 확인. ※옵션은 사이즈별 차이 가능 — 미존재 시 자동 제외.',
     fields: [
-      { name: 'osi_num', runtimeOnly: true },
-      { name: 'osi_direction', runtimeOnly: true },
+      {
+        name: 'osi_num',
+        options: {
+          OSN01: '1줄(중앙)', OSN11: '1줄(중앙아님)', OSN02: '2줄', OSN03: '3줄',
+          OSN04: '2줄(십자)', OSN05: '오시2줄(양끝10mm미만)', OSN06: '오시2줄(오시간격30mm미만)',
+        },
+      },
+      { name: 'osi_direction', options: { OMD10: '가로방향(길게)', OMD20: '세로방향(짧게)' } },
     ],
   },
   {
     finishingValue: 'perforation',
     label_ko: '미싱',
-    status: 'runtime',
-    note: 'missing_num/missing_direction 은 사이즈에 따라 JS 동적 채움. 런타임 추출 필요.',
+    status: 'mapped',
+    note: '라이브 검증(OMO-2961): missing_num + missing_direction. 기본=1줄 중앙(MSN01)+가로방향(OMD10). surcharge ₩7,000 확인. ※옵션은 사이즈별 차이 가능 — 미존재 시 자동 제외.',
     fields: [
-      { name: 'missing_num', runtimeOnly: true },
-      { name: 'missing_direction', runtimeOnly: true },
+      {
+        name: 'missing_num',
+        options: {
+          MSN01: '1줄(중앙)', MSN11: '1줄(중앙아님)', MSN02: '2줄', MSN03: '3줄',
+          MSN04: '2줄(십자)', MSN05: '미싱2줄(양끝10mm미만)', MSN06: '미싱2줄(미싱간격30mm미만)',
+        },
+      },
+      { name: 'missing_direction', options: { OMD10: '가로방향(길게)', OMD20: '세로방향(짧게)' } },
     ],
   },
   // ── 명함(CNC1000) 폼에 단일 select 없음 / 카테고리별 재조사 필요 ──
@@ -229,6 +257,24 @@ export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, strin
     // 가 런타임에 채운다(activateFinishings 가 chk 체크 후 자동 호출). 단, 일부 용지
     // (스노우지 250/300g 등)는 calcuNumberingPrice 가 넘버링을 차단한다 — 그 상품/용지
     // 에선 surcharge=0 이며 자동발주에서 자동 제외된다(OMO-2647 라이브 검증).
+  },
+  // ── OMO-2961: 런타임 4종 (라이브 추출 기본값) ──────────────────────────────
+  //   guidori_position1~4(체크박스) 와 epoxy_kind(동적 populate)는 activateFinishings
+  //   가 코드로 처리한다(네귀도리=4모서리 전체 체크, epoxy_kind=첫 유효옵션). 여기엔
+  //   select 기본값만 둔다.
+  round_corner: {
+    guidori_type: 'GDR40', // 네귀도리(4mm) = 4모서리 전체
+  },
+  epoxy: {
+    epoxy_type: 'EPT10', // 전면
+  },
+  score_crease: {
+    osi_num: 'OSN01',      // 1줄(중앙)
+    osi_direction: 'OMD10', // 가로방향(길게)
+  },
+  perforation: {
+    missing_num: 'MSN01',      // 1줄(중앙)
+    missing_direction: 'OMD10', // 가로방향(길게)
   },
 }
 

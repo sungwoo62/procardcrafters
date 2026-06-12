@@ -1,0 +1,17 @@
+{
+  "snapshot": {
+    "guidori_type": "GDR40",
+    "epoxy_type": "EPT10",
+    "osi_num": "OSN01",
+    "osi_direction": "OMD10",
+    "missing_num": "MSN01",
+    "missing_direction": "OMD10"
+  },
+  "amts": {
+    "guidori_amt": "3000",
+    "epoxy_amt": "22500",
+    "osi_amt": "7000",
+    "missing_amt": "7000"
+  },
+  "allApplied": true
+}

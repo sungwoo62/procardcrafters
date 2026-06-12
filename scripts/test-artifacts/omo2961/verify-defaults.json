@@ -1,0 +1,207 @@
+{
+  "baseline": null,
+  "cases": {
+    "guidori": {
+      "applied": {
+        "fieldResults": {
+          "guidori_type": "ok"
+        },
+        "chkChecked": true,
+        "panelFields": [
+          {
+            "name": "guidori_type",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "GDR40"
+          },
+          {
+            "name": "guidori_position1",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "value": "1"
+          },
+          {
+            "name": "guidori_position2",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "value": "2"
+          },
+          {
+            "name": "guidori_position3",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "value": "3"
+          },
+          {
+            "name": "guidori_position4",
+            "tag": "INPUT",
+            "type": "checkbox",
+            "value": "4"
+          },
+          {
+            "name": "guidori_position_kind",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "4"
+          },
+          {
+            "name": "guidori_etc1",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": ""
+          },
+          {
+            "name": "guidori_amt",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "3000"
+          }
+        ]
+      },
+      "totalAfter": null,
+      "deltaFromBaseline": null,
+      "valuesStuck": {
+        "guidori_type": "GDR40"
+      }
+    },
+    "epoxy": {
+      "applied": {
+        "fieldResults": {
+          "epoxy_type": "ok"
+        },
+        "chkChecked": true,
+        "panelFields": [
+          {
+            "name": "epoxy_type",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "EPT10"
+          },
+          {
+            "name": "epoxy_kind",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "EPK10"
+          },
+          {
+            "name": "epoxy_amt",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "22500"
+          }
+        ]
+      },
+      "totalAfter": null,
+      "deltaFromBaseline": null,
+      "valuesStuck": {
+        "epoxy_type": "EPT10"
+      }
+    },
+    "osi": {
+      "applied": {
+        "fieldResults": {
+          "osi_num": "ok",
+          "osi_direction": "ok"
+        },
+        "chkChecked": true,
+        "panelFields": [
+          {
+            "name": "osi_num",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "OSN01"
+          },
+          {
+            "name": "osi_num2",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "1"
+          },
+          {
+            "name": "osi_kind",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "OSN01"
+          },
+          {
+            "name": "osi_direction",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "OMD10"
+          },
+          {
+            "name": "osi_amt",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "7000"
+          },
+          {
+            "name": "osi_mok_amt",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "0"
+          }
+        ]
+      },
+      "totalAfter": null,
+      "deltaFromBaseline": null,
+      "valuesStuck": {
+        "osi_num": "OSN01",
+        "osi_direction": "OMD10"
+      }
+    },
+    "missing": {
+      "applied": {
+        "fieldResults": {
+          "missing_num": "ok",
+          "missing_direction": "ok"
+        },
+        "chkChecked": true,
+        "panelFields": [
+          {
+            "name": "missing_num",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "MSN01"
+          },
+          {
+            "name": "missing_num2",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "1"
+          },
+          {
+            "name": "missing_kind",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "MSN01"
+          },
+          {
+            "name": "missing_direction",
+            "tag": "SELECT",
+            "type": "select-one",
+            "value": "OMD10"
+          },
+          {
+            "name": "missing_amt",
+            "tag": "INPUT",
+            "type": "text",
+            "value": "7000"
+          },
+          {
+            "name": "missing_mok_amt",
+            "tag": "INPUT",
+            "type": "hidden",
+            "value": "0"
+          }
+        ]
+      },
+      "totalAfter": null,
+      "deltaFromBaseline": null,
+      "valuesStuck": {
+        "missing_num": "MSN01",
+        "missing_direction": "OMD10"
+      }
+    }
+  }
+}
