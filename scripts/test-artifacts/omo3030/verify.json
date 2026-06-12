@@ -1,0 +1,94 @@
+{
+  "verifiedAt": "2026-06-13",
+  "note": "OMO-3030 corrected-category verify",
+  "results": [
+    {
+      "value": "coating",
+      "cat": "CPR5000",
+      "amtGeneric": "38000",
+      "amtRecalc": "38000",
+      "chkOn": true,
+      "genericOk": true,
+      "recalcOk": true
+    },
+    {
+      "value": "partial_coating",
+      "cat": "CPR4000",
+      "amtGeneric": "150000",
+      "amtRecalc": "150000",
+      "chkOn": true,
+      "genericOk": true,
+      "recalcOk": true
+    },
+    {
+      "value": "cutting",
+      "cat": "CDP3000",
+      "amtGeneric": "1500",
+      "amtRecalc": "1500",
+      "chkOn": false,
+      "genericOk": true,
+      "recalcOk": true
+    },
+    {
+      "value": "bonding",
+      "cat": "CST5000",
+      "amtGeneric": "0",
+      "amtRecalc": "0",
+      "chkOn": true,
+      "genericOk": false,
+      "recalcOk": false
+    },
+    {
+      "value": "laminex",
+      "cat": "CST5000",
+      "amtGeneric": "0",
+      "amtRecalc": "0",
+      "chkOn": true,
+      "genericOk": false,
+      "recalcOk": false
+    }
+  ],
+  "bdtSweep": {
+    "kinds": [
+      "PKD10",
+      "PKD20",
+      "PKD30",
+      "PKD40"
+    ],
+    "rows": [
+      {
+        "cover_paper_kind": "PKD10",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "cover_paper_kind": "PKD20",
+        "binding": [
+          "BDT2",
+          "BDT6",
+          "BDT4"
+        ],
+        "hasBDT6": true
+      },
+      {
+        "cover_paper_kind": "PKD30",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      },
+      {
+        "cover_paper_kind": "PKD40",
+        "binding": [
+          "BDT2",
+          "BDT4"
+        ],
+        "hasBDT6": false
+      }
+    ]
+  }
+}

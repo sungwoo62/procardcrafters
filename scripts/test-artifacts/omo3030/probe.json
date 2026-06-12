@@ -1,0 +1,662 @@
+{
+  "probedAt": "2026-06-13",
+  "fnScan": {
+    "CST5000": {
+      "coating": [
+        "chgCoatingType"
+      ],
+      "cutting": [
+        "PeriodicalExecuter",
+        "chgCuttingType",
+        "chgCuttingSize"
+      ],
+      "bonding": [
+        "chgBondingType"
+      ],
+      "partial": [],
+      "laminex": [
+        "chgLaminexNum"
+      ],
+      "postpress": [
+        "SVGClipPathElement",
+        "CSSSupportsRule",
+        "SuppressedError",
+        "GPUSupportedFeatures",
+        "GPUSupportedLimits",
+        "EyeDropper",
+        "SharedStorageAppendMethod",
+        "swguide_postpress",
+        "swguide_postpress_preview",
+        "postpress_preview_position",
+        "postpress_preview_position_mouseover",
+        "chgPostpressPreview",
+        "estimatePostpressContent",
+        "postpress_preview_small_over",
+        "postpress_preview_small_out",
+        "postpressName",
+        "Postpress",
+        "postpressRePrice",
+        "PostpressCheckInit",
+        "chkAllPostPress",
+        "chkPostPress",
+        "isTodayPPCheck",
+        "setIsPostpress"
+      ]
+    },
+    "CPR5000": {
+      "coating": [
+        "chkPartialCoatingPossible",
+        "chgPaperCoatingChk",
+        "chkCoatingable",
+        "chgCoatingType",
+        "chaPcoatingSize"
+      ],
+      "cutting": [
+        "PeriodicalExecuter"
+      ],
+      "bonding": [],
+      "partial": [
+        "chkPartialCoatingPossible"
+      ],
+      "laminex": [],
+      "postpress": [
+        "SVGClipPathElement",
+        "CSSSupportsRule",
+        "SuppressedError",
+        "GPUSupportedFeatures",
+        "GPUSupportedLimits",
+        "EyeDropper",
+        "SharedStorageAppendMethod",
+        "swguide_postpress",
+        "swguide_postpress_preview",
+        "postpress_preview_position",
+        "postpress_preview_position_mouseover",
+        "chgPostpressPreview",
+        "estimatePostpressContent",
+        "postpress_preview_small_over",
+        "postpress_preview_small_out",
+        "postpressName",
+        "Postpress",
+        "PostpressCheckInit",
+        "chkAllPostPress",
+        "chkPostPress",
+        "setIsPostpress"
+      ]
+    },
+    "CCD1000": {
+      "coating": [
+        "chgCoatingType"
+      ],
+      "cutting": [
+        "PeriodicalExecuter",
+        "chgCuttingType",
+        "chgCuttingSize"
+      ],
+      "bonding": [
+        "chgBondingType"
+      ],
+      "partial": [],
+      "laminex": [
+        "chgLaminexNum"
+      ],
+      "postpress": [
+        "SVGClipPathElement",
+        "CSSSupportsRule",
+        "SuppressedError",
+        "GPUSupportedFeatures",
+        "GPUSupportedLimits",
+        "EyeDropper",
+        "SharedStorageAppendMethod",
+        "swguide_postpress",
+        "swguide_postpress_preview",
+        "postpress_preview_position",
+        "postpress_preview_position_mouseover",
+        "chgPostpressPreview",
+        "estimatePostpressContent",
+        "postpress_preview_small_over",
+        "postpress_preview_small_out",
+        "postpressName",
+        "Postpress",
+        "PostpressCheckInit",
+        "chkAllPostPress",
+        "chkPostPress",
+        "setIsPostpress"
+      ]
+    },
+    "CPR4000": {
+      "coating": [
+        "chkPartialCoatingPossible",
+        "chgCoatingType",
+        "chgPartialCoatingSize"
+      ],
+      "cutting": [
+        "PeriodicalExecuter"
+      ],
+      "bonding": [],
+      "partial": [
+        "chkPartialCoatingPossible",
+        "chgPartialCoatingSize"
+      ],
+      "laminex": [],
+      "postpress": [
+        "SVGClipPathElement",
+        "CSSSupportsRule",
+        "SuppressedError",
+        "GPUSupportedFeatures",
+        "GPUSupportedLimits",
+        "EyeDropper",
+        "SharedStorageAppendMethod",
+        "swguide_postpress",
+        "swguide_postpress_preview",
+        "postpress_preview_position",
+        "postpress_preview_position_mouseover",
+        "chgPostpressPreview",
+        "estimatePostpressContent",
+        "postpress_preview_small_over",
+        "postpress_preview_small_out",
+        "postpressName",
+        "Postpress",
+        "PostpressCheckInit",
+        "chkAllPostPress",
+        "chkPostPress",
+        "setIsPostpress"
+      ]
+    }
+  },
+  "results": [
+    {
+      "type": "coating",
+      "cat": "CCD1000",
+      "amt": "0",
+      "chkOn": true,
+      "detail": {
+        "exists": true,
+        "checkedAfter": true,
+        "coatingTypeOptions": [
+          [
+            "COT21",
+            "ë‹¨ë©´ë¬´ê´‘ í•«ì½”íŒ…"
+          ],
+          [
+            "COT11",
+            "ë‹¨ë©´ìœ ê´‘ í•«ì½”íŒ…"
+          ],
+          [
+            "COT22",
+            "ë‹¨ë©´ë¬´ê´‘ ì½œë“œì½”íŒ…"
+          ],
+          [
+            "COT12",
+            "ë‹¨ë©´ìœ ê´‘ ì½œë“œì½”íŒ…"
+          ]
+        ],
+        "bestAmt": "0",
+        "bestCoatingType": "",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "coating",
+      "cat": "CPR5000",
+      "amt": "86000",
+      "chkOn": true,
+      "detail": {
+        "exists": true,
+        "checkedAfter": true,
+        "coatingTypeOptions": [
+          [
+            "COT10",
+            "�⑤㈃�좉킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT20",
+            "�⑤㈃臾닿킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT40",
+            "�묐㈃�좉킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT50",
+            "�묐㈃臾닿킅�⑤�肄뷀똿"
+          ]
+        ],
+        "bestAmt": "86000",
+        "bestCoatingType": "COT50",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "coating",
+      "cat": "CDP3000",
+      "amt": "0",
+      "chkOn": false,
+      "detail": {
+        "exists": true,
+        "checkedAfter": false,
+        "coatingTypeOptions": [
+          [
+            "COT10",
+            "�⑤㈃�좉킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT20",
+            "�⑤㈃臾닿킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT30",
+            "�⑤㈃UV肄뷀똿"
+          ],
+          [
+            "COT40",
+            "�묐㈃�좉킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT50",
+            "�묐㈃臾닿킅�⑤�肄뷀똿"
+          ],
+          [
+            "COT60",
+            "�숇㈃UV肄뷀똿"
+          ]
+        ],
+        "bestAmt": "0",
+        "bestCoatingType": "",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "coating",
+      "cat": "CST1000",
+      "amt": "0",
+      "chkOn": true,
+      "detail": {
+        "exists": true,
+        "checkedAfter": true,
+        "coatingTypeOptions": [
+          [
+            "COT70",
+            "�좉킅�⑤��쇰��ㅽ똿"
+          ],
+          [
+            "COT71",
+            "臾닿킅�⑤��쇰��ㅽ똿"
+          ],
+          [
+            "COT80",
+            "肄뷀똿�놁쓬"
+          ]
+        ],
+        "bestAmt": "0",
+        "bestCoatingType": "",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "cutting",
+      "cat": "CST5000",
+      "amt": "0",
+      "chkOn": true,
+      "detail": {
+        "cttOpts": [
+          "CTT10",
+          "CTT20",
+          "CTT30",
+          "CTT40",
+          "CTT50"
+        ],
+        "trials": [
+          {
+            "v": "CTT10",
+            "amt": 0
+          },
+          {
+            "v": "CTT20",
+            "amt": 0
+          },
+          {
+            "v": "CTT30",
+            "amt": 0
+          },
+          {
+            "v": "CTT40",
+            "amt": 0
+          },
+          {
+            "v": "CTT50",
+            "amt": 0
+          }
+        ],
+        "best": "0",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "cutting",
+      "cat": "CST2000",
+      "amt": "0",
+      "chkOn": true,
+      "detail": {
+        "cttOpts": [
+          "CTT60",
+          "CTT70"
+        ],
+        "trials": [
+          {
+            "v": "CTT60",
+            "amt": 0
+          },
+          {
+            "v": "CTT70",
+            "amt": 0
+          }
+        ],
+        "best": "0",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "cutting",
+      "cat": "CDP3000",
+      "amt": "1500",
+      "chkOn": false,
+      "detail": {
+        "cttOpts": [],
+        "trials": [
+          {
+            "v": "",
+            "amt": 1500
+          }
+        ],
+        "best": "1500",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "bonding",
+      "cat": "CST5000",
+      "amt": "0",
+      "chkOn": true,
+      "detail": {
+        "btOpts": [
+          "BOT10",
+          "BOT20",
+          "BOT30",
+          "BOT40",
+          "BOT50",
+          "BOT60"
+        ],
+        "trials": [
+          {
+            "v": "BOT10",
+            "amt": 0
+          },
+          {
+            "v": "BOT20",
+            "amt": 0
+          },
+          {
+            "v": "BOT30",
+            "amt": 0
+          },
+          {
+            "v": "BOT40",
+            "amt": 0
+          },
+          {
+            "v": "BOT50",
+            "amt": 0
+          },
+          {
+            "v": "BOT60",
+            "amt": 0
+          }
+        ],
+        "best": "0",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "bonding",
+      "cat": "CEV1000",
+      "amt": "0",
+      "chkOn": false,
+      "detail": {
+        "btOpts": [],
+        "trials": [
+          {
+            "v": "",
+            "amt": 0
+          }
+        ],
+        "best": "0",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "bonding",
+      "cat": "CNR2000",
+      "amt": "0",
+      "chkOn": false,
+      "detail": {
+        "btOpts": [],
+        "trials": [
+          {
+            "v": "",
+            "amt": 0
+          }
+        ],
+        "best": "0",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "partial_coating",
+      "cat": "CPR4000",
+      "amt": "150000",
+      "chkOn": true,
+      "detail": {
+        "fns": [
+          "chkPartialCoatingPossible",
+          "chgCoatingType",
+          "chgPartialCoatingSize"
+        ],
+        "amt": "150000",
+        "suji": "0",
+        "chkOn": true
+      }
+    },
+    {
+      "type": "partial_coating",
+      "cat": "CPR5000",
+      "amt": "0",
+      "chkOn": false,
+      "detail": {
+        "fns": [
+          "chkPartialCoatingPossible",
+          "chgPaperCoatingChk",
+          "chkCoatingable",
+          "chgCoatingType",
+          "chaPcoatingSize"
+        ],
+        "amt": "0",
+        "suji": "0",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "partial_coating",
+      "cat": "CLF2000",
+      "amt": "0",
+      "chkOn": false,
+      "detail": {
+        "fns": [
+          "chgCoatingType"
+        ],
+        "amt": "0",
+        "suji": "0",
+        "chkOn": false
+      }
+    },
+    {
+      "type": "laminex",
+      "cat": "CST5000",
+      "amt": "0",
+      "paper": "",
+      "chkOn": true,
+      "detail": {
+        "best": "0",
+        "bestPaper": "",
+        "numOptsBest": [],
+        "nPapers": 9
+      }
+    },
+    {
+      "type": "laminex",
+      "cat": "CST1000",
+      "amt": "0",
+      "paper": "",
+      "chkOn": true,
+      "detail": {
+        "best": "0",
+        "bestPaper": "",
+        "numOptsBest": [],
+        "nPapers": 11
+      }
+    },
+    {
+      "type": "laminex",
+      "cat": "CST7000",
+      "amt": "0",
+      "paper": "",
+      "chkOn": true,
+      "detail": {
+        "best": "0",
+        "bestPaper": "",
+        "numOptsBest": [],
+        "nPapers": 1
+      }
+    },
+    {
+      "type": "laminex",
+      "cat": "CLP1000",
+      "amt": "0",
+      "paper": "",
+      "chkOn": true,
+      "detail": {
+        "best": "0",
+        "bestPaper": "",
+        "numOptsBest": [],
+        "nPapers": 11
+      }
+    }
+  ],
+  "booklet": {
+    "binding_type": [
+      [
+        "BDT2",
+        "以묒쿋"
+      ],
+      [
+        "BDT4",
+        "�ㅽ봽留�"
+      ]
+    ],
+    "bookbinding_type": null,
+    "bdt": null,
+    "print_color_type": null,
+    "cover_color": [
+      [
+        "2/4/8//0",
+        "�묐㈃ 移쇰씪8��"
+      ],
+      [
+        "2/5/12/SPC20/0",
+        "�묐㈃ 移쇰씪8��+湲덉깋"
+      ],
+      [
+        "2/5/12/SPC10/0",
+        "�묐㈃ 移쇰씪8��+����"
+      ],
+      [
+        "2/4/10//1",
+        "�묐㈃ 移쇰씪8��+踰좊떎"
+      ],
+      [
+        "2/5/14/SPC20/1",
+        "�묐㈃ 移쇰씪8��+湲덉깋踰좊떎"
+      ],
+      [
+        "2/5/14/SPC10/1",
+        "�묐㈃ 移쇰씪8��+���됰쿋��"
+      ],
+      [
+        "2/2/3//0",
+        "�꾨㈃1��+�꾨㈃1��(媛숈���)"
+      ],
+      [
+        "2/2/6//0",
+        "�꾨㈃2��+�꾨㈃2��(媛숈���)"
+      ]
+    ],
+    "inner_color": null,
+    "allSelects": [
+      "size_type",
+      "paper_size",
+      "editing_type",
+      "new_bundle_type",
+      "bundle_qty",
+      "cover_paper_kind",
+      "cover_paper_type",
+      "cover_paper_code",
+      "cover_print_page",
+      "cover_color_info",
+      "cover_print_method",
+      "in_paper_kind",
+      "in_paper_type",
+      "in_paper_code",
+      "in_page_qty",
+      "in_color_info",
+      "in_print_method",
+      "add_paper_kind",
+      "add_paper_type",
+      "add_paper_code",
+      "add_page_qty",
+      "add_color_info",
+      "add_print_method",
+      "binding_type",
+      "spring_color",
+      "transparent_set",
+      "osi_num",
+      "coating_type",
+      "in_coating_type",
+      "bak_section_1",
+      "bak_side_1",
+      "bak_type_1",
+      "bak_exist_dongpan_1",
+      "bak_section_2",
+      "bak_side_2",
+      "bak_type_2",
+      "bak_exist_dongpan_2",
+      "bak_section_3",
+      "bak_side_3",
+      "bak_type_3",
+      "bak_exist_dongpan_3",
+      "ap_section_1",
+      "ap_type_1",
+      "ap_exist_dongpan_1",
+      "ap_section_2",
+      "ap_type_2",
+      "ap_exist_dongpan_2",
+      "ap_section_3",
+      "ap_type_3",
+      "ap_exist_dongpan_3",
+      "epoxy_type",
+      "epoxy_kind",
+      "guidori_type",
+      "gq_kind",
+      "gq_email3",
+      "is_proof_hp1"
+    ]
+  }
+}

@@ -190,15 +190,15 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
   {
     finishingValue: 'coating',
     label_ko: '코팅',
-    status: 'runtime',
-    note: '필드추출 완료(chk_is_coating, coating_type/coating_amt). ⚠️자동발주 미확정: chk 토글이 카테고리별 상이 — 캘린더(CCD)에선 토글 가능, 엽서(CDP3000)·스티커(CST1000)에선 단순 .click()으로 안 켜짐(JS 검증/라디오 추정), 배너(CPR5000)는 기본 ON. 카테고리별 활성화 핸들러 확인 후 mapped 승격. 라이브검증: scripts/test-artifacts/omo3022/verify.json',
+    status: 'mapped',
+    note: '라이브 검증(OMO-3030): CPR5000(배너)에서 generic 자동발주 경로로 coating_amt=₩38,000(COT10)~₩86,000(COT50) 확인, chk_is_coating ON. coating_type 은 chk 활성화 후 첫 유효옵션 자동선택(COT10). ※코팅을 별도 옵션으로 제공하는 카테고리(배너/포스터 등)에서만 과금 — 코팅이 용지/상품에 내장된 카테고리(엽서 CDP3000·스티커 CST1000)에선 chk 가 JS 검증으로 꺼지고 amt=0(미적용=정상, 자동 스킵). OMO-3022 verify 가 0 이었던 건 코팅 미제공 카테고리(CDP3000)로 테스트한 탓. 증거: scripts/test-artifacts/omo3030/{probe2,verify}.json',
     fields: [{ name: 'coating_type', runtimeOnly: true }],
   },
   {
     finishingValue: 'cutting',
     label_ko: '가공재단',
     status: 'runtime',
-    note: '필드추출 완료(chk_is_cutting, cutting_type{CTT10~CTT50}+add_cut_x/y_size+add_parts_num). ⚠️자동발주 미확정: 면적비례(박/형압류)인데 CTT10 기본+50×30mm 로 cutting_amt=0. 과금 cutting_type 식별 + chgCuttingSize() 재계산 시퀀스 필요(OMO-2647 박 패턴).',
+    note: '⚠️자동발주 미확정(OMO-3030 결론): 과금은 상품별. CST5000(홀로그램스티커)은 가공재단 무료(200×200mm·10조각에서도 cutting_amt=0). 엽서 CDP3000 은 cutting_amt=₩1,500 잡히나 generic 활성화 후 chk_is_cutting 가 다시 OFF 로 풀려(JS 검증) 발주 제출 시 미반영 위험 → 자동발주 비안전. 상품별 chk 유지 핸들러 확정 전 보류. 증거: scripts/test-artifacts/omo3030/{probe,verify}.json',
     fields: [
       { name: 'cutting_type', options: { CTT10: '재단1', CTT20: '재단2', CTT30: '재단3', CTT40: '재단4', CTT50: '재단5' } },
       { name: 'add_cut_margin_1', options: { '0': '0mm', '1': '1mm', '2': '2mm' } },
@@ -231,7 +231,7 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
     finishingValue: 'bonding',
     label_ko: '접착',
     status: 'runtime',
-    note: '필드추출 완료(chk_is_bonding, bonding_type{BOT10~BOT60}+bonding_num+bonding_x/y_size). ⚠️자동발주 미확정: 면적비례인데 BOT10+50×30mm 로 bonding_amt=0. 과금 BOT 식별 + chgBondingType() 시퀀스 필요.',
+    note: '⚠️자동발주 미확정(OMO-3030 결론): CST5000에서 BOT10~BOT60 전 옵션 × 200×200mm × chgBondingType() 재계산해도 bonding_amt=0. 해당 카테고리에선 접착 무료(내장) 추정. 과금 상품/카테고리 미발굴 → 보류.',
     fields: [
       {
         name: 'bonding_type',
@@ -255,7 +255,7 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
     finishingValue: 'laminex',
     label_ko: '라미넥스',
     status: 'runtime',
-    note: '필드추출 완료(chk_is_laminex, laminex_num). ⚠️자동발주 미확정: CST5000에서 laminex_num 옵션이 populate 안 됨(용지 의존 추정) → surcharge=0. 라미넥스 제공 용지에서 재검증 필요.',
+    note: '⚠️자동발주 미확정(OMO-3030 결론): CST5000/CST1000/CST7000/CLP1000 전 카테고리 × 용지 12종 순회해도 laminex_num select 가 옵션을 populate 하지 않음 → laminex_amt=0. goods_view 경로로 라미넥스 미제공(성원 별도 상품 추정) → 보류.',
     fields: [{ name: 'laminex_num', runtimeOnly: true }],
   },
   {
@@ -292,9 +292,12 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
   {
     finishingValue: 'partial_coating',
     label_ko: '부분코팅',
-    status: 'runtime',
-    note: '필드추출 완료(chk_is_partial_coating, partial_coating_x/y_size+partial_coating_amt). ⚠️자동발주 미확정: CPR5000에서 면적 입력+calcuEstimate 후에도 amt=0(전용 recalc 부재). 책자(CPR4000)/배너 전용 과금식 확인 필요.',
-    fields: [],
+    status: 'mapped',
+    note: '라이브 검증(OMO-3030): CPR4000(책자)에서 generic 자동발주 경로(면적 100×100mm 시드 + calcuEstimate)로 partial_coating_amt=₩150,000 확인, chk_is_partial_coating ON. ※부분코팅은 책자(CPR4000) 전용 과금 — 배너(CPR5000)에선 amt=0(미제공). OMO-3022 verify 가 0 이었던 건 CPR5000(미제공)으로 테스트한 탓. 면적 미지정 시 0 이므로 보수적 기본면적(100×100mm) 주입. 증거: scripts/test-artifacts/omo3030/{probe,verify}.json',
+    fields: [
+      { name: 'partial_coating_x_size', runtimeOnly: true },
+      { name: 'partial_coating_y_size', runtimeOnly: true },
+    ],
   },
   // ── 여전히 재조사 필요(자동발주 미지원, 명확한 chk_is 없음/구조 모호) ──
   {
@@ -400,8 +403,9 @@ export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, strin
   //   면적 비례 후가공(cutting/bonding/partial_coating)은 박/형압과 동일하게 보수적 기본
   //   면적(50×30mm placeholder)을 채워 surcharge=0(무료발주)를 방지한다. 고객이
   //   selected_options 에 명시 필드코드/면적을 넣으면 그 값이 우선(expandFinishing override).
-  // 라이브 surcharge 확인된 5종만 자동발주 기본값 등록(binding/folding/stitching/window/tape).
-  // coating/cutting/bonding/gluing/laminex/partial_coating 은 status='runtime'(자동발주 미확정)
+  // 라이브 surcharge 확인된 7종 자동발주 기본값 등록
+  //   (binding/folding/stitching/window/tape: OMO-3022, coating/partial_coating: OMO-3030).
+  // cutting/bonding/gluing/laminex 는 status='runtime'(자동발주 미확정)
   // — DEFAULT 미등록 → expandFinishingToSwadpiaFields 가 안전하게 스킵(0원 무료발주 방지).
   binding: { __fin_binding: '1', binding_type: 'BDT10', binding_add_set: 'BDS10' },
   folding: { __fin_folding: '1', select_folding_stair: 'FDO01' },    // folding_type/direction 런타임 자동
@@ -409,6 +413,13 @@ export const DEFAULT_FINISHING_FIELD_VALUES: Record<string, Record<string, strin
   window: { __fin_window: '1', window_num: '1' },                   // window_size 런타임 자동
   window_patch: { __fin_window: '1', window_num: '1' },             // 창문 = window
   tape: { __fin_tape: '1', tape_num: '1' },                         // tape_type 런타임 자동
+  // OMO-3030: coating=배너/포스터 등 코팅 제공 카테고리에서 ₩38k+(CPR5000 검증).
+  //   coating_type 은 chk 활성화 후 첫 유효옵션 자동선택(autoPick). 코팅 미제공 카테고리에선
+  //   chk 가 JS 검증으로 풀려 amt=0 → 자동 스킵(안전).
+  coating: { __fin_coating: '1' },
+  // partial_coating=책자(CPR4000) 전용 ₩150k(검증). 면적 미지정 시 0 이므로 보수적
+  //   기본면적(100×100mm) 주입. 고객이 selected_options 에 면적 직접 넣으면 우선(override).
+  partial_coating: { __fin_partial_coating: '1', partial_coating_x_size: '100', partial_coating_y_size: '100' },
 }
 
 /**

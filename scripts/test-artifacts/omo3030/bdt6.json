@@ -1,0 +1,172 @@
+{
+  "cover_paper_kind": [
+    [
+      "PKD10",
+      "일반지"
+    ],
+    [
+      "PKD20",
+      "고급지"
+    ],
+    [
+      "PKD30",
+      "특수지"
+    ],
+    [
+      "PKD40",
+      "(펄)지"
+    ]
+  ],
+  "kindMap": {
+    "PKD10": {
+      "codes": [
+        "NPL080W00",
+        "NPL100W00",
+        "NPL120W00",
+        "NPL080IV0",
+        "NPL100IV0",
+        "ART100W00",
+        "ART120W00",
+        "ART150W00",
+        "ART180W00",
+        "ART200W00",
+        "ART250W00",
+        "ART300W00",
+        "SNW100W00",
+        "SNW120W00",
+        "SNW150W00",
+        "SNW180W00",
+        "SNW200W00",
+        "SNW250W00",
+        "SNW300W00",
+        "VLD08001E",
+        "VLD10001E",
+        "VLD12001E",
+        "VLD15001E",
+        "VLD18001E",
+        "VLD22001E",
+        "VLO070OW0",
+        "VLO080OW0",
+        "VLO100OW0"
+      ],
+      "binding": [
+        "BDT2",
+        "BDT4"
+      ],
+      "hasARE160": false
+    },
+    "PKD20": {
+      "codes": [
+        "VNV105W00",
+        "VNV128W00",
+        "VNV157W00",
+        "VNV186W00",
+        "VNV209W00",
+        "VNV233W00",
+        "VNV256W00",
+        "ARE105W00",
+        "ARE130W00",
+        "ARE160W00",
+        "ARE190W00",
+        "ARE210W00",
+        "ARE230W00",
+        "ARE105W01",
+        "ARE130W01",
+        "ARE160W01",
+        "ARE190W01",
+        "ARE210W01",
+        "ARE230W01",
+        "MSM105W00",
+        "MSM128W00",
+        "MSM157W00",
+        "MSM186W00",
+        "MSM209W00",
+        "MSM233W00",
+        "MSM262W00",
+        "RDV105N00",
+        "RDV130N00",
+        "RDV160N00",
+        "RDV190N00"
+      ],
+      "binding": [
+        "BDT2",
+        "BDT4"
+      ],
+      "hasARE160": true
+    },
+    "PKD30": {
+      "codes": [
+        "RZK120IV0",
+        "CFT30000N",
+        "FLP120000",
+        "FLP195YL0",
+        "FLP235YL0",
+        "MGC120CG0",
+        "MGC120MK0",
+        "MGC120OR0",
+        "MGC120OW1",
+        "MGC120SL0",
+        "MGC120SL1",
+        "MGC120W01",
+        "MGC120WB0",
+        "MGC120Y00",
+        "MGM120W01",
+        "MGM120OW0",
+        "MGM120OR0",
+        "MGM120OP0",
+        "MGM120OM0",
+        "MGM200OW0",
+        "MGM200W01",
+        "MGM250W01",
+        "MGT180OB1",
+        "MGT180OG1",
+        "MGT180OR1",
+        "MGT200OW1",
+        "MGT200W01"
+      ],
+      "binding": [
+        "BDT2",
+        "BDT6",
+        "BDT4"
+      ],
+      "hasARE160": false
+    },
+    "PKD40": {
+      "codes": [
+        "STD120GD0",
+        "STD120SV0",
+        "STD240DM0",
+        "STD240GD0",
+        "STD240SV0",
+        "STD340DM0",
+        "STD340GD0",
+        "STD340SV0",
+        "STD120QZ0",
+        "STD240QZ0",
+        "STD340QZ0",
+        "ORO120IG0",
+        "ORO120QZ1",
+        "ORO220IG0",
+        "ORO220QZ1",
+        "ORO250IG0",
+        "ORO250QZ1",
+        "JAD215SK0",
+        "MJN120KW0",
+        "MJN120MW0",
+        "MJN120ZG0",
+        "MJN200KW0",
+        "MJN200MW0",
+        "MJN250KW0",
+        "MJN250MW0",
+        "MJN250ZG0",
+        "MJN200ZG0"
+      ],
+      "binding": [
+        "BDT2",
+        "BDT4"
+      ],
+      "hasARE160": false
+    }
+  },
+  "directBinding": null
+}

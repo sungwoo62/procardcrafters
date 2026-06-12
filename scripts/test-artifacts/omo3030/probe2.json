@@ -1,0 +1,240 @@
+{
+  "bdt": {
+    "trace": {
+      "raw": [
+        [
+          "BDT2",
+          "以묒쿋"
+        ],
+        [
+          "BDT6",
+          "pur臾댁꽑"
+        ],
+        [
+          "BDT4",
+          "�ㅽ봽留�"
+        ]
+      ],
+      "afterPaper": [
+        [
+          "BDT2",
+          "以묒쿋"
+        ],
+        [
+          "BDT4",
+          "�ㅽ봽留�"
+        ]
+      ],
+      "afterPageQty": [
+        [
+          "BDT2",
+          "以묒쿋"
+        ],
+        [
+          "BDT4",
+          "�ㅽ봽留�"
+        ]
+      ]
+    },
+    "highPage": {
+      "nPageOpts": 161,
+      "results": [
+        {
+          "in_page_qty": "0",
+          "binding": [
+            "BDT2",
+            "BDT4"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "80",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "160",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "240",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "320",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "400",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "480",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        },
+        {
+          "in_page_qty": "560",
+          "binding": [
+            "BDT4",
+            "BDT99"
+          ],
+          "hasBDT6": false
+        }
+      ]
+    }
+  },
+  "cutting": [
+    {
+      "cat": "CST5000",
+      "x": "200",
+      "y": "200",
+      "parts": "10",
+      "amt": "0",
+      "chkOn": true,
+      "fields": {
+        "cutting_type": "CTT10",
+        "add_cut_x_size_1": "200",
+        "add_cut_y_size_1": "200",
+        "add_cut_margin_1": "0",
+        "add_parts_num_1": "10",
+        "add_cut_x_size_2": "",
+        "add_cut_y_size_2": "",
+        "add_parts_num_2": "",
+        "add_cut_x_size_3": "",
+        "add_cut_y_size_3": "",
+        "add_parts_num_3": "",
+        "add_cut_x_size_4": "",
+        "add_cut_y_size_4": "",
+        "add_parts_num_4": "",
+        "cutting_amt": "0"
+      }
+    },
+    {
+      "cat": "CST5000",
+      "x": "100",
+      "y": "100",
+      "parts": "4",
+      "amt": "0",
+      "chkOn": true,
+      "fields": {
+        "cutting_type": "CTT10",
+        "add_cut_x_size_1": "100",
+        "add_cut_y_size_1": "100",
+        "add_cut_margin_1": "0",
+        "add_parts_num_1": "4",
+        "add_cut_x_size_2": "",
+        "add_cut_y_size_2": "",
+        "add_parts_num_2": "",
+        "add_cut_x_size_3": "",
+        "add_cut_y_size_3": "",
+        "add_parts_num_3": "",
+        "add_cut_x_size_4": "",
+        "add_cut_y_size_4": "",
+        "add_parts_num_4": "",
+        "cutting_amt": "0"
+      }
+    },
+    {
+      "cat": "CDP3000",
+      "x": "50",
+      "y": "30",
+      "parts": "4",
+      "amt": "1500",
+      "chkOn": false,
+      "fields": {}
+    }
+  ],
+  "bonding": {
+    "opts": [
+      "BOT10",
+      "BOT20",
+      "BOT30",
+      "BOT40",
+      "BOT50",
+      "BOT60"
+    ],
+    "trials": [
+      {
+        "v": "BOT10",
+        "amt": "0"
+      },
+      {
+        "v": "BOT20",
+        "amt": "0"
+      },
+      {
+        "v": "BOT30",
+        "amt": "0"
+      },
+      {
+        "v": "BOT40",
+        "amt": "0"
+      },
+      {
+        "v": "BOT50",
+        "amt": "0"
+      },
+      {
+        "v": "BOT60",
+        "amt": "0"
+      }
+    ],
+    "fields": {
+      "bonding_type": "BOT60",
+      "bonding_num": "1",
+      "bonding_x_size": "200",
+      "bonding_y_size": "200",
+      "bonding_amt": "0"
+    }
+  },
+  "coating": {
+    "opts": [
+      "COT10",
+      "COT20",
+      "COT40",
+      "COT50"
+    ],
+    "trials": [
+      {
+        "v": "COT10",
+        "amt": "38000"
+      },
+      {
+        "v": "COT20",
+        "amt": "43000"
+      },
+      {
+        "v": "COT40",
+        "amt": "76000"
+      },
+      {
+        "v": "COT50",
+        "amt": "86000"
+      }
+    ],
+    "chkOn": true
+  }
+}
