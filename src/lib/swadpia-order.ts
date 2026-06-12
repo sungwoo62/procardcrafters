@@ -63,6 +63,55 @@ const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
   CLF2000: { print_color_type: 'print_method' },                                          // 메뉴/브로슈어
 }
 
+// ─── 종속(재populate) select 필드 (OMO-3033 / OMO-3030) ─────────────
+//
+// 성원 폼의 일부 select 는 다른 옵션을 선택하는 순간 AJAX 로 옵션 목록이
+// 갈아끼워진다(재populate). 대표 케이스가 책자 `binding_type` —
+// 정적 HTML 엔 [BDT2,BDT6,BDT4] 가 다 있으나, 표지 용지(cover_paper_*)나
+// 내지 페이지수(in_page_qty) 를 고르는 순간 binding_type 이 재populate 되며
+// BDT6(PUR무선제본)는 **특수지(cover_paper_kind=PKD30) 표지에서만** 살아남는다
+// (일반지 PKD10/고급지 PKD20/펄지 PKD40 → BDT2,BDT4 만 남고 BDT6 탈락).
+// 라이브 확정: scripts/test-artifacts/omo3030/{bdt6,probe2}.json.
+//
+// 따라서 이런 종속 필드는 (1) 선행 옵션을 모두 적용한 "뒤에" 설정하고,
+// (2) 설정 직전 live select 에 값이 실제 존재하는지 검증해야 한다. 검증 없이
+// selectEl.selectOption('BDT6') 하면 모호한 Playwright 예외가 나서 어떤 조합이
+// 비호환인지 알 수 없고, 용지/페이지 조합에 따라 간헐 발주 실패한다.
+const DEPENDENT_SELECT_FIELDS = new Set(['binding_type'])
+
+/**
+ * OMO-3033: 옵션 적용 순서를 둘로 가른다.
+ * - immediate: 표지/내지 용지·사이즈 등 먼저 적용할 필드(canonical optKey)
+ * - deferred: 다른 옵션에 따라 재populate 되는 종속 필드 — 반드시 마지막에 설정
+ * 반환 키는 alias 변환 전 canonical optKey 다. 수량·후가공 키는 별도 경로라 제외.
+ */
+export function partitionOptionKeys(
+  options: Record<string, string>,
+  fieldAlias: Record<string, string> = {},
+): { immediate: string[]; deferred: string[] } {
+  const immediate: string[] = []
+  const deferred: string[] = []
+  for (const optKey of Object.keys(options)) {
+    if (optKey === 'quantity' || optKey === 'paper_qty') continue
+    if (isFinishingKey(optKey)) continue
+    const target = fieldAlias[optKey] ?? optKey
+    if (DEPENDENT_SELECT_FIELDS.has(target)) deferred.push(optKey)
+    else immediate.push(optKey)
+  }
+  return { immediate, deferred }
+}
+
+/**
+ * OMO-2485: 요청 수량이 현재 종이의 수량옵션 사다리에 없으면 가장 가까운 유효 수량으로
+ * 스냅한다(요청치 이상 중 최소, 없으면 최대). avail 이 비어있거나 요청치가 이미
+ * 존재하면 요청치 그대로.
+ */
+export function snapQuantity(avail: number[], requested: number): number {
+  if (avail.length === 0 || avail.includes(requested)) return requested
+  const atLeast = avail.filter((q) => q >= requested).sort((a, b) => a - b)
+  return atLeast.length > 0 ? atLeast[0] : Math.max(...avail)
+}
+
 // ─── Types ────────────────────────────────────────────────────
 
 export interface SwadpiaOrderInput {
@@ -865,44 +914,51 @@ async function activateFinishings(
   }
 }
 
+/**
+ * 단일 옵션 필드를 폼에 적용한다 — select(대부분) 또는 hidden radio(paper_gloss 등).
+ * 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리하므로 여기 호출 금지.
+ * 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647)는 점에 주의.
+ */
+async function applyOptionField(page: Page, key: string, value: string): Promise<void> {
+  // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
+  const selectEl = await page.$(`select[name="${key}"]`)
+  if (selectEl) {
+    await selectEl.selectOption(value)
+    await page.waitForTimeout(300)
+    return
+  }
+
+  // hidden radio 버튼 (paper_gloss 등)
+  const radio = await page.$(`input[name="${key}"][value="${value}"]`)
+  if (radio) {
+    await page.evaluate(
+      (params: { name: string; val: string }) => {
+        const el = document.querySelector(`input[name="${params.name}"][value="${params.val}"]`) as HTMLInputElement
+        if (el) {
+          el.checked = true
+          el.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      },
+      { name: key, val: value },
+    )
+    await page.waitForTimeout(300)
+  }
+}
+
 export async function selectOrderOptions(
   page: Page,
   options: Record<string, string>,
   quantity: number,
   fieldAlias: Record<string, string> = {},
 ): Promise<void> {
-  for (const [optKey, value] of Object.entries(options)) {
-    if (optKey === 'quantity' || optKey === 'paper_qty') continue
-    // 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리.
-    // 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647).
-    if (isFinishingKey(optKey)) continue
+  // OMO-3033: 종속(재populate) 필드(책자 binding_type 등)는 선행 옵션 적용 후
+  // 마지막에 설정해야 한다 → immediate / deferred 로 분리.
+  const { immediate, deferred } = partitionOptionKeys(options, fieldAlias)
+
+  // 1) 즉시 적용 필드 (표지/내지 용지, 사이즈 등)
+  for (const optKey of immediate) {
     // canonical option_type → 성원 실제 select name 변환 (OMO-2634)
-    const key = fieldAlias[optKey] ?? optKey
-
-    // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
-    const selectEl = await page.$(`select[name="${key}"]`)
-    if (selectEl) {
-      await selectEl.selectOption(value)
-      await page.waitForTimeout(300)
-      continue
-    }
-
-    // hidden radio 버튼 (paper_gloss 등)
-    const radio = await page.$(`input[name="${key}"][value="${value}"]`)
-    if (radio) {
-      await page.evaluate(
-        (params: { name: string; val: string }) => {
-          const el = document.querySelector(`input[name="${params.name}"][value="${params.val}"]`) as HTMLInputElement
-          if (el) {
-            el.checked = true
-            el.dispatchEvent(new Event('change', { bubbles: true }))
-          }
-        },
-        { name: key, val: value },
-      )
-      await page.waitForTimeout(300)
-      continue
-    }
+    await applyOptionField(page, fieldAlias[optKey] ?? optKey, options[optKey])
   }
 
   // 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
@@ -923,10 +979,8 @@ export async function selectOrderOptions(
           .filter((v) => v !== '' && /^\d+$/.test(v))
           .map(Number),
       )
-      let target = quantity
-      if (avail.length > 0 && !avail.includes(quantity)) {
-        const atLeast = avail.filter((q) => q >= quantity).sort((a, b) => a - b)
-        target = atLeast.length > 0 ? atLeast[0] : Math.max(...avail)
+      const target = snapQuantity(avail, quantity)
+      if (target !== quantity) {
         console.warn(
           `[swadpia-order] 요청수량 ${quantity} 가 이 종이의 수량옵션에 없음 → ${target} 으로 스냅 (옵션 ${avail.slice(0, 4).join(',')}…)`,
         )
@@ -934,6 +988,38 @@ export async function selectOrderOptions(
       await qtySelect.selectOption(String(target))
       await page.waitForTimeout(300)
     }
+  }
+
+  // 3) 종속(재populate) 필드 — 표지/내지 용지·페이지수·수량 적용이 끝나 옵션
+  //    목록이 확정된 "뒤에" 설정한다. 설정 직전 live select 에 값 존재를 검증해
+  //    (OMO-3033) 없으면 명확한 에러로 중단 — 조용한 스킵/오발주 금지.
+  for (const optKey of deferred) {
+    const key = fieldAlias[optKey] ?? optKey
+    const value = options[optKey]
+    const selectEl = await page.$(`select[name="${key}"]`)
+    if (!selectEl) {
+      throw new Error(
+        `[swadpia-order] 종속 옵션 select[name="${key}"] 가 폼에 없음 — ` +
+          `상품 폼 구조 변경 의심. 발주 중단(${optKey}=${value}).`,
+      )
+    }
+    const liveValues: string[] = await selectEl.evaluate((el: Element) =>
+      Array.from((el as HTMLSelectElement).options).map((o) => o.value),
+    )
+    if (!liveValues.includes(value)) {
+      throw new Error(
+        `[swadpia-order] ${key}=${value} 가 현재 옵션 조합에서 선택 불가 ` +
+          `(live 옵션: [${liveValues.filter(Boolean).join(',')}]). ` +
+          (value === 'BDT6'
+            ? `BDT6(PUR무선제본)는 특수지(cover_paper_kind=PKD30) 표지에서만 노출된다 — ` +
+              `현재 표지 용지(${options['paper_code'] ?? '미상'})가 BDT6 비호환. ` +
+              `BDT6 호환 표지로 시드 교정 필요(OMO-3033). `
+            : '') +
+          `오발주 방지를 위해 발주 중단.`,
+      )
+    }
+    await selectEl.selectOption(value)
+    await page.waitForTimeout(300)
   }
 
   await page.waitForTimeout(1000)
