@@ -4,6 +4,7 @@ import { recordCsThread } from '@/lib/cs-threads'
 import {
   activeChatProvider,
   generateChatReply,
+  ChatLlmProviderError,
 } from '@/lib/chat-llm'
 
 const SYSTEM_PROMPT = `You are a friendly print specialist at Procardcrafters, helping customers get instant quotes for professional printing services.
@@ -56,9 +57,10 @@ export async function POST(req: NextRequest) {
 
   // OMO-2703: 챗봇 LLM 공급자는 Anthropic(선호) → Gemini 폴백 순.
   // 두 키 모두 없으면 챗봇 무응답 → 명시적 503으로 진단 가능하게.
+  // reason 필드는 운영 진단용(시크릿 미포함).
   if (!activeChatProvider()) {
     return NextResponse.json(
-      { error: 'Chat service is temporarily unavailable.' },
+      { error: 'Chat service is temporarily unavailable.', reason: 'no_provider' },
       { status: 503 }
     )
   }
@@ -66,10 +68,14 @@ export async function POST(req: NextRequest) {
   let assistantText = ''
   try {
     assistantText = await generateChatReply(SYSTEM_PROMPT, messages)
-  } catch {
+  } catch (err) {
     // 모델 호출 실패(인증·레이트리밋·일시장애)는 클라이언트가 처리 가능한 503으로.
+    const diag =
+      err instanceof ChatLlmProviderError
+        ? { reason: 'provider_error', provider: err.provider, upstreamStatus: err.upstreamStatus }
+        : { reason: 'provider_error' }
     return NextResponse.json(
-      { error: 'Chat service is temporarily unavailable.' },
+      { error: 'Chat service is temporarily unavailable.', ...diag },
       { status: 503 }
     )
   }

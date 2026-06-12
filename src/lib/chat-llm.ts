@@ -13,6 +13,18 @@ export class ChatLlmUnavailableError extends Error {
   }
 }
 
+/** 공급자 호출 실패. 진단용으로 공급자/업스트림 상태를 보존(시크릿 미포함). */
+export class ChatLlmProviderError extends Error {
+  provider: string
+  upstreamStatus?: number
+  constructor(provider: string, upstreamStatus?: number, message?: string) {
+    super(message ?? `${provider} call failed`)
+    this.name = 'ChatLlmProviderError'
+    this.provider = provider
+    this.upstreamStatus = upstreamStatus
+  }
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant'
   content: string
@@ -80,7 +92,7 @@ async function generateWithGemini(
   })
 
   if (!res.ok) {
-    throw new Error(`Gemini API ${res.status}`)
+    throw new ChatLlmProviderError('gemini', res.status, `Gemini API ${res.status}`)
   }
 
   const data = (await res.json()) as {
