@@ -824,11 +824,32 @@ export async function selectOrderOptions(
   }
 
   // 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
+  //
+  // 주의(OMO-2485): 일부 종이(예: 아르미230g ARM230W00)는 paper_code 변경 시
+  // 성원 AJAX 로 paper_qty 사다리가 종이별로 리로드된다. 표준 명함은 200단위
+  // (200,400,…)지만 ARM230W00 은 300단위(300,600,…)라 200 옵션이 없다.
+  // 평면 selectOption('200') 은 "did not find some options" 로 실패한다.
+  // → 현재 select 의 실제 옵션을 읽어 요청 수량이 없으면 가장 가까운 유효 수량
+  //   (요청치 이상 중 최소, 없으면 최대)으로 스냅한다.
   if (quantity) {
     const qtyField = fieldAlias['paper_qty'] ?? 'paper_qty'
     const qtySelect = await page.$(`select[name="${qtyField}"]`)
     if (qtySelect) {
-      await qtySelect.selectOption(String(quantity))
+      const avail = await qtySelect.evaluate((el: Element) =>
+        Array.from((el as HTMLSelectElement).options)
+          .map((o) => o.value)
+          .filter((v) => v !== '' && /^\d+$/.test(v))
+          .map(Number),
+      )
+      let target = quantity
+      if (avail.length > 0 && !avail.includes(quantity)) {
+        const atLeast = avail.filter((q) => q >= quantity).sort((a, b) => a - b)
+        target = atLeast.length > 0 ? atLeast[0] : Math.max(...avail)
+        console.warn(
+          `[swadpia-order] 요청수량 ${quantity} 가 이 종이의 수량옵션에 없음 → ${target} 으로 스냅 (옵션 ${avail.slice(0, 4).join(',')}…)`,
+        )
+      }
+      await qtySelect.selectOption(String(target))
       await page.waitForTimeout(300)
     }
   }
