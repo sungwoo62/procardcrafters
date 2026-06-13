@@ -85,7 +85,7 @@ export const CATEGORY_MAP: Record<string, string> = {
   // 스티커류
   'stickers': 'CST1000',
   'die-cut-stickers': 'CST2000',
-  'holographic-stickers': 'CST5000',   // 스페셜스티커
+  'holographic-stickers': 'CST6000',   // 팬시롤(홀로그램/투명 Pet) — OMO-3095 라이브검증: CST6000 만 홀로그램 용지(STR050HN1) 보유. CST5000(스페셜)엔 홀로그램 없음(샤인실버/금은무광/저온유포/PVC뿐)
   'roll-stickers': 'CST7000',          // 팬시롤스티커
   'price-labels': 'CLP1000',           // 라벨스티커(롤)
   'barcode-labels': 'CLP1000',
