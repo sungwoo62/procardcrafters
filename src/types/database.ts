@@ -46,6 +46,8 @@ export interface PrintProduct {
   hero_image_url: string | null
   default_weight_kg: number
   unit_weight_g: number
+  // OMO-3058: true=배송비 단가포함·무료배송 표시(패키지류). 운임은 margin 으로 흡수.
+  free_shipping?: boolean
   // OMO-3026: 제품별 인쇄규격(트림/블리드/세이프/최소DPI/색공간). 시드 전 제품은 null.
   print_spec: PrintSpec | null
   created_at: string
