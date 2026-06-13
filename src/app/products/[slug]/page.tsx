@@ -9,6 +9,8 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { ENGINE_PRICE_TABLES, engineMinPayKrw } from '@/config/swadpia-engine-prices'
+import { calculatePriceFromSwadpia } from '@/lib/pricing'
 import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
@@ -193,12 +195,21 @@ export default async function ProductDetailPage({ params }: Props) {
 
   // 구조화 데이터(JSON-LD) — 구글 리치 결과(별점·가격·breadcrumb)용.
   const canonical = `${SITE_URL}/products/${product.slug}`
-  const startingPriceUsd = calculateItemPriceUsd({
-    basePriceKrw: product.base_price_krw,
-    marginMultiplier: product.margin_multiplier,
-    extraPricesKrw: [],
-    exchangeRate,
-  })
+  // 엔진 권위표가 있으면 최저 VAT 포함 결제가 기반 시작가로 정합(OMO-3105). 없으면 DB 기준단가.
+  const engineTable = ENGINE_PRICE_TABLES[slug]
+  const engineMinKrw = engineTable ? engineMinPayKrw(engineTable) : null
+  const startingPriceUsd = engineMinKrw
+    ? calculatePriceFromSwadpia({
+        swadpiaCostKrw: engineMinKrw,
+        marginMultiplier: product.margin_multiplier,
+        exchangeRate,
+      })
+    : calculateItemPriceUsd({
+        basePriceKrw: product.base_price_krw,
+        marginMultiplier: product.margin_multiplier,
+        extraPricesKrw: [],
+        exchangeRate,
+      })
   const productJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'Product',

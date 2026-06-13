@@ -11,6 +11,11 @@ import {
   FINISHING_DEFAULT_AREA_MM,
   FINISHING_SURCHARGE,
 } from '@/config/finishing-surcharge'
+import {
+  ENGINE_PRICE_TABLES,
+  enginePaperQuantities,
+  lookupEnginePay,
+} from '@/config/swadpia-engine-prices'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
@@ -99,6 +104,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     }
     return { grouped: map, finishingOptions: fin }
   }, [options])
+
+  // 성원 엔진렌더 ±0 권위 가격표(있으면 generic print_info1 대신 사용) — OMO-3105.
+  // VAT 포함 결제가 기준 + 용지종속 수량 사다리.
+  const engineTable = ENGINE_PRICE_TABLES[product.slug]
+  const qtyType = grouped.has('paper_qty') ? 'paper_qty' : (grouped.has('quantity') ? 'quantity' : null)
 
   // Initialize defaults
   const defaultSelections = useMemo(() => {
@@ -214,6 +224,41 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 100
   }, [selections])
 
+  // 수량 옵션 — 엔진표가 있으면 선택된 용지(+도수)의 사다리에서 파생(용지종속). 없으면 DB 옵션.
+  // 250g→500단위/최소500, 300g→200단위/최소200 (단일 정적사다리 금지 — OMO-3105).
+  const qtyOptions = useMemo<PrintProductOption[]>(() => {
+    const dbOpts = qtyType ? (grouped.get(qtyType) ?? []) : []
+    if (!engineTable) return dbOpts
+    const paper = selections['paper_code'] ?? Object.keys(engineTable.payKrw)[0]
+    const color = selections['print_color_type'] ?? ''
+    const qtys = enginePaperQuantities(engineTable, paper, color)
+    if (qtys.length === 0) return dbOpts
+    const dbByValue = new Map(dbOpts.map((o) => [o.value, o]))
+    return qtys.map((q) => {
+      const base = dbByValue.get(String(q))
+      return {
+        ...(base ?? ({} as PrintProductOption)),
+        value: String(q),
+        label_en: base?.label_en ?? `${q.toLocaleString()} cards`,
+        extra_price_krw: 0,
+      } as PrintProductOption
+    })
+  }, [engineTable, grouped, qtyType, selections])
+
+  // 용지 변경으로 현재 수량이 새 사다리에 없으면 상위 스냅(없으면 최소)으로 정합 — 엔진표 한정.
+  useEffect(() => {
+    if (!engineTable || !qtyType) return
+    const cur = selections[qtyType]
+    if (cur && qtyOptions.some((o) => o.value === cur)) return
+    const paper = selections['paper_code'] ?? ''
+    const color = selections['print_color_type'] ?? ''
+    const snap = lookupEnginePay(engineTable, paper, color, parseInt(cur ?? '0', 10))
+    const next = snap ? String(snap.effectiveQty) : qtyOptions[0]?.value
+    if (next && next !== cur) {
+      setSelections((prev) => ({ ...prev, [qtyType]: next }))
+    }
+  }, [engineTable, qtyType, qtyOptions, selections])
+
   // Determine paper_code for Swadpia print cost lookup.
   // Prefer the user-selected paper_code (from DB options) if it has entries in the Swadpia matrix.
   const swadpiaPaperCode = useMemo(() => {
@@ -227,6 +272,20 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   }, [swadpiaData, selections])
 
   const itemPriceUsd = useMemo(() => {
+    // 엔진 권위표(VAT 포함 결제가)에 마진 적용 — generic print_info1 보다 우선(OMO-3105).
+    if (engineTable) {
+      const paper = selections['paper_code'] ?? Object.keys(engineTable.payKrw)[0]
+      const color = selections['print_color_type'] ?? ''
+      const eng = lookupEnginePay(engineTable, paper, color, selectedQty)
+      if (eng) {
+        return calculatePriceFromSwadpia({
+          swadpiaCostKrw: eng.payKrw,
+          marginMultiplier: product.margin_multiplier,
+          exchangeRate,
+        })
+      }
+    }
+
     if (useSwadpia && swadpiaPaperCode) {
       const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, selectedQty)
       if (swadpia !== null && swadpia.costKrw > 0) {
@@ -250,7 +309,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       extraPricesKrw,
       exchangeRate,
     })
-  }, [product, grouped, selections, exchangeRate, useSwadpia, swadpiaData, swadpiaPaperCode, selectedQty])
+  }, [product, grouped, selections, exchangeRate, useSwadpia, swadpiaData, swadpiaPaperCode, selectedQty, engineTable])
 
   /**
    * 동일가격 프로모션 — Swadpia 최소 수량 한계 때문에 작은 수량 옵션이 더 큰 수량과 같은 단가가 되는 경우,
@@ -259,13 +318,26 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
    */
   const quantityPromoMap = useMemo(() => {
     const map = new Map<string, number>()
+
+    // 엔진표: 요청수량이 용지 사다리 상위로 스냅되면 "추가매수 무료" 표기 (OMO-3105)
+    if (engineTable) {
+      const paper = selections['paper_code'] ?? Object.keys(engineTable.payKrw)[0]
+      const color = selections['print_color_type'] ?? ''
+      for (const opt of qtyOptions) {
+        const requested = parseInt(opt.value, 10)
+        if (!Number.isFinite(requested) || requested <= 0) continue
+        const eng = lookupEnginePay(engineTable, paper, color, requested)
+        if (eng && eng.effectiveQty > requested) map.set(opt.value, eng.effectiveQty)
+      }
+      return map
+    }
+
     if (!useSwadpia || !swadpiaPaperCode) return map
 
-    const qtyType = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
-    const qtyOptions = grouped.get(qtyType)
-    if (!qtyOptions) return map
+    const qOpts = grouped.get(grouped.has('paper_qty') ? 'paper_qty' : 'quantity')
+    if (!qOpts) return map
 
-    for (const opt of qtyOptions) {
+    for (const opt of qOpts) {
       const requested = parseInt(opt.value, 10)
       if (!Number.isFinite(requested) || requested <= 0) continue
       const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, requested)
@@ -274,7 +346,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       }
     }
     return map
-  }, [useSwadpia, swadpiaData, swadpiaPaperCode, grouped])
+  }, [useSwadpia, swadpiaData, swadpiaPaperCode, grouped, engineTable, qtyOptions, selections])
 
   const activePromoEffectiveQty = quantityPromoMap.get(
     selections['paper_qty'] ?? selections['quantity'] ?? '',
@@ -282,11 +354,30 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
   // 수량 옵션별 개당 단가 맵 (할인율 계산용)
   const qtyUnitPriceMap = useMemo(() => {
-    const qtyType = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
-    const qtyOptions = grouped.get(qtyType)
-    if (!qtyOptions) return new Map<string, number>()
     const map = new Map<string, number>()
-    for (const opt of qtyOptions) {
+
+    // 엔진표: 옵션별 개당가 = (VAT 포함 결제가 × 마진 환산 USD) / 실제 인쇄수량(스냅 반영)
+    if (engineTable) {
+      const paper = selections['paper_code'] ?? Object.keys(engineTable.payKrw)[0]
+      const color = selections['print_color_type'] ?? ''
+      for (const opt of qtyOptions) {
+        const qty = parseInt(opt.value, 10)
+        if (!Number.isFinite(qty) || qty <= 0) continue
+        const eng = lookupEnginePay(engineTable, paper, color, qty)
+        if (!eng) continue
+        const usd = calculatePriceFromSwadpia({
+          swadpiaCostKrw: eng.payKrw,
+          marginMultiplier: product.margin_multiplier,
+          exchangeRate,
+        })
+        map.set(opt.value, usd / eng.effectiveQty)
+      }
+      return map
+    }
+
+    const qOpts = qtyType ? (grouped.get(qtyType) ?? []) : []
+    if (qOpts.length === 0) return map
+    for (const opt of qOpts) {
       const qty = parseInt(opt.value, 10)
       if (!Number.isFinite(qty) || qty <= 0) continue
       let price: number
@@ -315,7 +406,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       map.set(opt.value, price / qty)
     }
     return map
-  }, [useSwadpia, swadpiaData, swadpiaPaperCode, product, grouped, selections, exchangeRate, quantityPromoMap])
+  }, [useSwadpia, swadpiaData, swadpiaPaperCode, product, grouped, selections, exchangeRate, quantityPromoMap, engineTable, qtyType, qtyOptions])
 
   const currentQtyKey = selections['paper_qty'] ?? selections['quantity'] ?? ''
   const currentUnitPrice = qtyUnitPriceMap.get(currentQtyKey) ?? null
@@ -396,7 +487,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                 onChange={(e) => setSelections((prev) => ({ ...prev, [type]: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
               >
-                {opts.map((opt) => {
+                {(engineTable ? qtyOptions : opts).map((opt) => {
                   const promoQty = quantityPromoMap.get(opt.value)
                   const perUnit = qtyUnitPriceMap.get(opt.value)
                   const perUnitStr = perUnit !== undefined
