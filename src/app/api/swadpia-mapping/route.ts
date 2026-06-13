@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
+import { requireAdmin } from '@/lib/admin-auth'
 import { PRODUCT_GROUPS, SLUG_TO_GROUP } from '@/config/product-nav'
 import { CATEGORY_MAP } from '@/lib/swadpia'
 import { verifySwadpiaLink } from '@/lib/swadpia-mapping'
@@ -7,12 +8,12 @@ import { verifySwadpiaLink } from '@/lib/swadpia-mapping'
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-// OMO-3058: 성원 맵핑 조회/편집 API.
-// GET  → 전체 제품 맵핑 행(누락분은 기본값으로 시드 후 반환)
+// OMO-3058/3059: 성원 맵핑 조회/편집 API.
+// GET  → 전체 제품 맵핑 행(누락분은 기본값으로 시드 후 반환). 공개 읽기 전용 리포트가 사용.
 // POST → {slug, swadpiaUrl} 저장. 링크를 라이브 검증해 category_code 세팅 + 핑거프린트 스냅샷.
 //
-// 보안: 현재 프리뷰 전용 보드 도구라 쓰기 인증을 두지 않는다(프리뷰 bypass 토큰으로만 도달).
-// prod 승격 시 /admin 인증 게이트 하위로 옮긴다(자식 이슈에서 처리).
+// 보안(OMO-3059 prod 승격): 쓰기(POST)는 requireAdmin 게이트 하위다. 편집 UI는
+// /admin/reports/swadpia-mapping(middleware /admin 게이트), 공개 읽기는 /reports/swadpia-mapping.
 
 const SLUG_META: Record<string, { label: string; group: string }> = Object.fromEntries(
   PRODUCT_GROUPS.flatMap((g) => g.items.map((i) => [i.slug, { label: i.label, group: g.key }])),
@@ -54,6 +55,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
+  // OMO-3059: 쓰기 경로는 어드민 전용. (라우트 middleware 와 별개로 API 직접호출도 차단)
+  const admin = await requireAdmin()
+  if (!admin) {
+    return NextResponse.json({ error: '인증 필요 — 어드민만 맵핑을 편집할 수 있습니다.' }, { status: 401 })
+  }
+
   let body: { slug?: string; swadpiaUrl?: string }
   try {
     body = await req.json()

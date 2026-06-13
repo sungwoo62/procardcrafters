@@ -7,16 +7,13 @@ import {
   AlertTriangle,
   CheckCircle2,
   XCircle,
-  Save,
   Loader2,
-  Link2,
   RefreshCw,
 } from 'lucide-react'
 
-// OMO-3058: 우리 사이트 전체 제품 ↔ 성원(swadpia) 맵핑 편집 + 검증 도구.
-// 보드가 각 제품 옆에 성원 상품 링크를 붙이면 저장 시 라이브 검증해 category_code 를
-// 세팅하고 옵션 핑거프린트를 스냅샷한다. 성원쪽 변경(드리프트)은 별도 크론이 감지해
-// 보드에 보고한다(개선책 포함).
+// OMO-3059: 성원(swadpia) 제품 맵핑 현황 — 공개 읽기 전용 리포트.
+// 링크 편집·검증은 어드민 전용 도구(/admin/reports/swadpia-mapping)로 분리했다.
+// 이 페이지는 GET /api/swadpia-mapping(공개 읽기) 만 사용하며 쓰기 경로가 없다.
 export const dynamic = 'force-dynamic'
 
 // 성원 category_code → 제품명(한국어). 표시용 참고 사전.
@@ -46,8 +43,6 @@ interface Group {
   items: { slug: string; label: string }[]
 }
 
-type Verify = { ok: boolean; categoryCode: string | null; paperCount: number; sizeCount: number; error?: string }
-
 const STATUS_BADGE: Record<string, { text: string; cls: string; icon: 'ok' | 'no' | 'warn' }> = {
   verified: { text: '검증됨', cls: 'text-green-700', icon: 'ok' },
   mapped: { text: '연동(기본)', cls: 'text-emerald-600', icon: 'ok' },
@@ -56,13 +51,10 @@ const STATUS_BADGE: Record<string, { text: string; cls: string; icon: 'ok' | 'no
   drift: { text: '드리프트', cls: 'text-orange-600', icon: 'warn' },
 }
 
-export default function SwadpiaMappingTool() {
+export default function SwadpiaMappingReport() {
   const [rows, setRows] = useState<Row[]>([])
   const [groups, setGroups] = useState<Group[]>([])
   const [loading, setLoading] = useState(true)
-  const [drafts, setDrafts] = useState<Record<string, string>>({})
-  const [saving, setSaving] = useState<string | null>(null)
-  const [feedback, setFeedback] = useState<Record<string, Verify>>({})
 
   async function load() {
     setLoading(true)
@@ -70,28 +62,9 @@ export default function SwadpiaMappingTool() {
     const json = await res.json()
     setRows(json.rows ?? [])
     setGroups(json.groups ?? [])
-    setDrafts(
-      Object.fromEntries((json.rows ?? []).map((r: Row) => [r.slug, r.swadpia_url ?? ''])),
-    )
     setLoading(false)
   }
   useEffect(() => { load() }, [])
-
-  async function save(slug: string) {
-    setSaving(slug)
-    setFeedback((f) => ({ ...f, [slug]: undefined as unknown as Verify }))
-    const res = await fetch('/api/swadpia-mapping', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ slug, swadpiaUrl: drafts[slug] ?? '' }),
-    })
-    const json = await res.json()
-    if (json.row) {
-      setRows((rs) => rs.map((r) => (r.slug === slug ? json.row : r)))
-    }
-    if (json.verify) setFeedback((f) => ({ ...f, [slug]: json.verify }))
-    setSaving(null)
-  }
 
   const byKey = (k: string) => rows.find((r) => r.slug === k)
   const total = rows.length
@@ -107,14 +80,14 @@ export default function SwadpiaMappingTool() {
       </Link>
 
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">성원(swadpia) 제품 맵핑 관리</h1>
+        <h1 className="text-2xl font-bold text-gray-900">성원(swadpia) 제품 맵핑 현황</h1>
         <button onClick={load} className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">
           <RefreshCw className="h-4 w-4" /> 새로고침
         </button>
       </div>
       <p className="mt-1 text-sm text-gray-500">
-        OMO-3058 · 각 제품 옆에 <strong>성원 상품 링크</strong>를 붙이고 저장하면 링크를 라이브 검증해
-        category_code 를 자동 세팅합니다. 성원쪽 변경(링크/옵션 어긋남)은 드리프트 크론이 감지해 보고합니다.
+        OMO-3058/3059 · 우리 제품 ↔ 성원 category_code 연동 현황(읽기 전용)입니다.
+        링크 편집·라이브 검증은 어드민 전용 도구에서 수행합니다.
       </p>
 
       {/* 요약 */}
@@ -124,15 +97,6 @@ export default function SwadpiaMappingTool() {
         <Stat n={mapped} label="연동(기본+검증)" cls="border-emerald-200 bg-emerald-50 text-emerald-700" />
         <Stat n={unmapped} label="미연동" cls="border-red-200 bg-red-50 text-red-700" />
         <Stat n={drift} label="드리프트" cls="border-orange-200 bg-orange-50 text-orange-700" />
-      </div>
-
-      {/* transparent-stickers 답변 */}
-      <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
-        <div className="font-semibold text-blue-900">Q. /products/transparent-stickers 는 성원 무슨 제품?</div>
-        <div className="mt-1 text-blue-800">
-          현재 <strong>미연동</strong>. 아래 표에서 성원 투명 스티커 상품 링크를 붙이고 저장하면 즉시 검증·세팅됩니다.
-          후보는 <code className="rounded bg-blue-100 px-1">CST1000/CST2000</code> 계열 투명 PVC 변형입니다.
-        </div>
       </div>
 
       {loading ? (
@@ -146,55 +110,26 @@ export default function SwadpiaMappingTool() {
                 const row = byKey(item.slug)
                 if (!row) return null
                 const badge = STATUS_BADGE[row.status] ?? STATUS_BADGE.unmapped
-                const fb = feedback[item.slug]
                 return (
-                  <div key={item.slug} className="rounded-lg border border-gray-200 p-3">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <div className="min-w-[140px]">
-                        <div className="font-medium text-gray-900">{item.label}</div>
-                        <div className="font-mono text-xs text-gray-400">{item.slug}</div>
-                      </div>
-                      <div className="text-xs">
-                        <span className="font-mono text-gray-700">{row.category_code ?? '—'}</span>
-                        {row.category_code && SWADPIA_CATEGORY_LABEL[row.category_code] && (
-                          <span className="ml-1 text-gray-400">{SWADPIA_CATEGORY_LABEL[row.category_code]}</span>
-                        )}
-                      </div>
-                      <span className={`ml-auto inline-flex items-center gap-1 text-xs font-medium ${badge.cls}`}>
-                        {badge.icon === 'ok' && <CheckCircle2 className="h-4 w-4" />}
-                        {badge.icon === 'no' && <XCircle className="h-4 w-4" />}
-                        {badge.icon === 'warn' && <AlertTriangle className="h-4 w-4" />}
-                        {badge.text}
-                      </span>
+                  <div key={item.slug} className="flex flex-wrap items-center gap-2 rounded-lg border border-gray-200 p-3">
+                    <div className="min-w-[140px]">
+                      <div className="font-medium text-gray-900">{item.label}</div>
+                      <div className="font-mono text-xs text-gray-400">{item.slug}</div>
                     </div>
-                    <div className="mt-2 flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <Link2 className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-300" />
-                        <input
-                          value={drafts[item.slug] ?? ''}
-                          onChange={(e) => setDrafts((d) => ({ ...d, [item.slug]: e.target.value }))}
-                          placeholder="성원 상품 링크 또는 category_code (예: https://www.swadpia.co.kr/goods/goods_view/CST1000)"
-                          className="w-full rounded-md border border-gray-200 py-1.5 pl-8 pr-2 text-sm focus:border-blue-400 focus:outline-none"
-                        />
-                      </div>
-                      <button
-                        onClick={() => save(item.slug)}
-                        disabled={saving === item.slug}
-                        className="inline-flex items-center gap-1 rounded-md bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 disabled:opacity-50"
-                      >
-                        {saving === item.slug ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                        저장·검증
-                      </button>
+                    <div className="text-xs">
+                      <span className="font-mono text-gray-700">{row.category_code ?? '—'}</span>
+                      {row.category_code && SWADPIA_CATEGORY_LABEL[row.category_code] && (
+                        <span className="ml-1 text-gray-400">{SWADPIA_CATEGORY_LABEL[row.category_code]}</span>
+                      )}
                     </div>
-                    {fb && (
-                      <div className={`mt-1.5 text-xs ${fb.ok ? 'text-green-600' : 'text-amber-600'}`}>
-                        {fb.ok
-                          ? `✓ 검증 통과 — ${fb.categoryCode} (용지 ${fb.paperCount}종 · 사이즈 ${fb.sizeCount}종)`
-                          : `✗ ${fb.error ?? '검증 실패'}`}
-                      </div>
-                    )}
-                    {!fb && row.status === 'drift' && row.verify_error && (
-                      <div className="mt-1.5 text-xs text-orange-600">⚠ 드리프트: {row.verify_error} — 확인 후 재저장하면 알림 해제</div>
+                    <span className={`ml-auto inline-flex items-center gap-1 text-xs font-medium ${badge.cls}`}>
+                      {badge.icon === 'ok' && <CheckCircle2 className="h-4 w-4" />}
+                      {badge.icon === 'no' && <XCircle className="h-4 w-4" />}
+                      {badge.icon === 'warn' && <AlertTriangle className="h-4 w-4" />}
+                      {badge.text}
+                    </span>
+                    {row.status === 'drift' && row.verify_error && (
+                      <div className="w-full text-xs text-orange-600">⚠ 드리프트: {row.verify_error}</div>
                     )}
                   </div>
                 )
@@ -209,7 +144,6 @@ export default function SwadpiaMappingTool() {
         <p className="mt-1">
           검증된 제품은 매일 성원 라이브 데이터와 옵션 핑거프린트(용지·인쇄방식·사이즈·수량단계·기준단가)를 비교합니다.
           변경이 감지되면 해당 행이 <strong>드리프트</strong>로 표시되고, 변경 요약 + 개선책이 보드에 보고됩니다.
-          확인 후 링크를 재저장하면 핑거프린트가 갱신되어 알림이 해제됩니다.
         </p>
       </div>
     </div>
