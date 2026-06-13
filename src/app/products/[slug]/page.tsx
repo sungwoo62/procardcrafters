@@ -21,6 +21,7 @@ import ViewItemTracker from '@/components/ViewItemTracker'
 import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 import ProductReviews from '@/components/ProductReviews'
+import PrintColorNotice from '@/components/PrintColorNotice'
 import FinishingSection from '@/components/FinishingSection'
 import NicheProfessionLinks from '@/components/niche/NicheProfessionLinks'
 import JsonLd from '@/components/JsonLd'
@@ -386,6 +387,11 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Color accuracy notice (OMO-3058): RGB↔CMYK 색차 안내 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 mb-8">
+        <PrintColorNotice />
       </div>
 
       {/* Finishing Options Section */}
