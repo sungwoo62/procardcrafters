@@ -1,3 +1,6 @@
+import type { PrintSpec } from '@/lib/print-spec'
+export type { PrintSpec } from '@/lib/print-spec'
+
 export type ProductCategory =
   | 'business_cards' | 'premium_business_cards' | 'premium_foil_cards'
   | 'stickers' | 'die_cut_stickers' | 'eco_stickers'
@@ -43,6 +46,8 @@ export interface PrintProduct {
   hero_image_url: string | null
   default_weight_kg: number
   unit_weight_g: number
+  // OMO-3026: 제품별 인쇄규격(트림/블리드/세이프/최소DPI/색공간). 시드 전 제품은 null.
+  print_spec: PrintSpec | null
   created_at: string
   updated_at: string
 }
@@ -115,6 +120,20 @@ export interface PrintFile {
   status: FileStatus
   rejection_reason: string | null
   uploaded_at: string
+}
+
+// OMO-3028: 결제후 업로드 시안 동의/책임 고지 기록
+export interface PrintDesignConsent {
+  id: string
+  order_id: string
+  order_item_id: string | null
+  file_id: string | null
+  consent_text: string
+  consent_version: string
+  preflight_snapshot: unknown | null
+  ip_hash: string | null
+  user_agent: string | null
+  agreed_at: string
 }
 
 export interface PrintDesignProof {
