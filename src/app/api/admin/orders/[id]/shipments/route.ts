@@ -3,6 +3,8 @@ import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
 import { quoteShipping } from '@/lib/shipping'
 import { logOrderEvent } from '@/lib/order-events'
+import { computeOrderNetProfit } from '@/lib/order-profit'
+import { sendAdminMarginLossEmail } from '@/lib/email'
 
 // GET: 주문에 속한 모든 송장
 export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -87,9 +89,42 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     },
   })
 
+  // OMO-3058: 실측 배송비 확정 → 순손익 자동 점검. 손해면 margin_alert + 관리자 메일(능동 경보).
+  let netProfit = null
+  try {
+    netProfit = await computeOrderNetProfit(supabase, id)
+    if (netProfit && netProfit.netUsd < 0) {
+      await logOrderEvent({
+        orderId: id,
+        eventType: 'margin_alert',
+        actor: user.email ?? 'admin',
+        metadata: {
+          reason: 'net_loss_after_actual_shipping',
+          net_usd: netProfit.netUsd,
+          actual_shipping_usd: netProfit.actualShipUsd,
+          product_cost_usd: netProfit.productCostUsd,
+          revenue_usd: netProfit.revenueUsd,
+        },
+      })
+      const { data: ordNo } = await supabase
+        .from('print_orders')
+        .select('order_number')
+        .eq('id', id)
+        .maybeSingle()
+      await sendAdminMarginLossEmail({
+        orderNumber: String(ordNo?.order_number ?? id),
+        orderId: id,
+        ...netProfit,
+      }).catch(() => {})
+    }
+  } catch {
+    // 손익 점검 실패는 송장 생성을 막지 않는다.
+  }
+
   return NextResponse.json({
     shipment: data,
     quote,
+    netProfit,
     customerServiceChoice: order.shipping_service_code ?? null,
   })
 }
