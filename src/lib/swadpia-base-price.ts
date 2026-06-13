@@ -106,8 +106,15 @@ export const PRODUCT_BASE_PRICE_SPECS: Record<string, ProductBasePriceSpec> = {
   'gusset-envelopes': { mode: 'quote-only', note: 'CEV1000 비매트릭스·collapse' },
 
   // ── collapse 비대표 제품 (대표 1종만 matrix sync, 나머지는 견적전용) ──
-  // CNC3000: 대표 premium-foil-cards(matrix) / metallic-business-cards 견적전용
-  'metallic-business-cards': { mode: 'quote-only', note: 'CNC3000 collapse 비대표' },
+  // CNC3000: collapse 비대표 → 메탈릭 실버 대표 pin 으로 paper 모드 자동가격 복원 (OMO-3076 확정).
+  // print_info1 이 paper_code 키 매트릭스(LUX200SVU q200 print_unit2=15000)라 lookupPrintCost 결정적.
+  'metallic-business-cards': {
+    mode: 'paper',
+    paperCode: 'LUX200SVU',   // Luxury 실버 200μ
+    quantity: 200,
+    doubleSided: true,
+    note: 'CNC3000 collapse 비대표 → 메탈릭 실버 대표 pin (OMO-3076 확정)',
+  },
   // CLF2000: 대표 brochures(matrix) / menus 견적전용
   'menus': { mode: 'quote-only', note: 'CLF2000 collapse 비대표' },
   // CPR4000: 대표 saddle-stitch-booklet(matrix) / 나머지 견적전용

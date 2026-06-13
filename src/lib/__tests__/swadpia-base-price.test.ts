@@ -152,3 +152,60 @@ describe('deriveProductBasePriceKrw — 제품별 산출 경로', () => {
     expect(r.priceKrw).toBe(7_777)
   })
 })
+
+// OMO-3078: metallic-business-cards(CNC3000) paper 모드 전환 회귀테스트.
+// OMO-3076 데이터 작업 결과 paper 모드로 자동가격 복원이 가능한 제품 1종으로 확정.
+// CNC3000 print_info1 은 paper_code 키 매트릭스(LUX200SVU q200 print_unit2=15000)라
+// lookupPrintCost 가 결정적으로 동작한다.
+describe('OMO-3078 — metallic-business-cards paper 모드', () => {
+  // 라이브 probe 와 동형: LUX200SVU q200 print_unit2=15000, 단/양면 동일.
+  const cnc3000 = (): SwadpiaCategoryData =>
+    categoryData({
+      categoryCode: 'CNC3000',
+      printEntries: [
+        // 단/양면 단가 동일(15000) → side 회귀 안전.
+        { ...entry(200, 'LUX200SVU', 15_000), print_unit1: 15_000 },
+        { ...entry(500, 'LUX200SVU', 13_000), print_unit1: 13_000 },
+        // 다른 용지(비대표) — 대표 pin 이 LUX200SVU 임을 확인하기 위한 잡음.
+        { ...entry(200, 'LUX300GLD', 22_000), print_unit1: 22_000 },
+      ],
+    })
+
+  it('spec 이 paper 모드로 전환되어 있다 (LUX200SVU q200 양면)', () => {
+    const spec = PRODUCT_BASE_PRICE_SPECS['metallic-business-cards']
+    expect(spec?.mode).toBe('paper')
+    expect(spec?.paperCode).toBe('LUX200SVU')
+    expect(spec?.quantity).toBe(200)
+    expect(spec?.doubleSided).toBe(true)
+  })
+
+  it('deriveProductBasePriceKrw 가 15000 / paper 를 반환한다 (라이브 probe 기대값)', () => {
+    const r = deriveProductBasePriceKrw('metallic-business-cards', cnc3000())
+    expect(r.mode).toBe('paper')
+    expect(r.priceKrw).toBe(15_000)
+    expect(r.reason).toBeUndefined()
+  })
+
+  it('단/양면 단가 동일(15000)이라 side 회귀 안전 — quantity 200 고정', () => {
+    // spec 의 quantity(200) 가 적용되어 q500(13000) 에 끌려가지 않아야 한다.
+    const r = deriveProductBasePriceKrw('metallic-business-cards', cnc3000())
+    expect(r.priceKrw).toBe(15_000)
+  })
+
+  it('대표 용지(LUX200SVU)만 채택 — 다른 용지(LUX300GLD 22000)에 오염되지 않음', () => {
+    const r = deriveProductBasePriceKrw('metallic-business-cards', cnc3000())
+    expect(r.priceKrw).not.toBe(22_000)
+    expect(r.priceKrw).toBe(15_000)
+  })
+
+  it('대표 용지가 매트릭스에 없으면 paper-zero 로 null (임의값 기록 안 함)', () => {
+    const data = categoryData({
+      categoryCode: 'CNC3000',
+      printEntries: [{ ...entry(200, 'LUX300GLD', 22_000), print_unit1: 22_000 }],
+    })
+    const r = deriveProductBasePriceKrw('metallic-business-cards', data)
+    expect(r.mode).toBe('paper')
+    expect(r.priceKrw).toBeNull()
+    expect(r.reason).toBe('paper-zero')
+  })
+})
