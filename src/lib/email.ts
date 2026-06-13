@@ -281,6 +281,39 @@ export async function sendAdminFraudAlertEmail(
   })
 }
 
+// OMO-3058: 송장 실측무게로 실 배송비 확정 후 주문이 순손해면 관리자 경보.
+export async function sendAdminMarginLossEmail(data: {
+  orderNumber: string
+  orderId: string
+  netUsd: number
+  revenueUsd: number
+  productCostUsd: number
+  actualShipUsd: number
+}): Promise<void> {
+  if (!resend) return
+  const loss = Math.abs(data.netUsd).toFixed(2)
+  const html = `
+    <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
+      <h2 style="color:#dc2626">Margin Loss Alert — Order ships at a loss</h2>
+      <p>Actual shipping cost (entered with the shipment weight) makes this order a net <b>loss of $${loss}</b>. Review before shipping.</p>
+      <table style="width:100%;border-collapse:collapse">
+        <tr><td style="padding:4px 0;font-weight:bold">Order #</td><td>${data.orderNumber}</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Revenue</td><td>$${data.revenueUsd.toFixed(2)}</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Product cost</td><td>$${data.productCostUsd.toFixed(2)}</td></tr>
+        <tr><td style="padding:4px 0;font-weight:bold">Actual shipping</td><td>$${data.actualShipUsd.toFixed(2)}</td></tr>
+        <tr style="background:#fef2f2"><td style="padding:4px 0;font-weight:bold;color:#dc2626">Net</td><td style="color:#dc2626">-$${loss} USD</td></tr>
+      </table>
+      <p><a href="${SITE_URL}/admin/orders/${data.orderId}" style="display:inline-block;padding:10px 20px;background:#dc2626;color:#fff;text-decoration:none;border-radius:6px">Review in Admin</a></p>
+    </div>
+  `
+  await resend.emails.send({
+    from: FROM,
+    to: ADMIN_EMAIL,
+    subject: `[MARGIN LOSS] #${data.orderNumber} ships at -$${loss}`,
+    html,
+  })
+}
+
 export interface FileRejectionEmailData {
   customerEmail: string
   customerName: string

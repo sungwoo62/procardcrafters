@@ -24,30 +24,41 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient()
   let weightKg = Number(body.weightKg ?? 0)
+  // OMO-3058: 카트의 모든 품목이 free_shipping 제품이면 배송 무료(운임은 단가에 흡수).
+  let allItemsFreeShipping = false
 
-  if (!weightKg && Array.isArray(body.items) && body.items.length > 0) {
+  if (Array.isArray(body.items) && body.items.length > 0) {
     const productIds = body.items.map((i: { productId: string }) => i.productId).filter(Boolean)
     if (productIds.length) {
       const { data: products } = await supabase
         .from('print_products')
-        .select('id, default_weight_kg, unit_weight_g')
+        .select('id, default_weight_kg, unit_weight_g, free_shipping')
         .in('id', productIds)
       const productMap = new Map(
         (products ?? []).map((p) => [
           p.id,
-          { default_weight_kg: Number(p.default_weight_kg ?? 0.5), unit_weight_g: Number(p.unit_weight_g ?? 0) },
+          {
+            default_weight_kg: Number(p.default_weight_kg ?? 0.5),
+            unit_weight_g: Number(p.unit_weight_g ?? 0),
+            free_shipping: Boolean(p.free_shipping),
+          },
         ]),
       )
-      weightKg = calculateOrderWeightKg(
-        body.items.map((i: { productId: string; quantity: number; selectedOptions?: Record<string, string> }) => {
-          const meta = productMap.get(i.productId)
-          return {
-            quantity: Number(i.quantity ?? 1),
-            default_weight_kg: meta?.default_weight_kg ?? 0.5,
-            unit_weight_g: meta?.unit_weight_g ?? 0,
-            selected_options: i.selectedOptions ?? null,
-          }
-        }),
+      if (!weightKg) {
+        weightKg = calculateOrderWeightKg(
+          body.items.map((i: { productId: string; quantity: number; selectedOptions?: Record<string, string> }) => {
+            const meta = productMap.get(i.productId)
+            return {
+              quantity: Number(i.quantity ?? 1),
+              default_weight_kg: meta?.default_weight_kg ?? 0.5,
+              unit_weight_g: meta?.unit_weight_g ?? 0,
+              selected_options: i.selectedOptions ?? null,
+            }
+          }),
+        )
+      }
+      allItemsFreeShipping = body.items.every(
+        (i: { productId: string }) => productMap.get(i.productId)?.free_shipping === true,
       )
     }
   }
@@ -67,7 +78,8 @@ export async function POST(request: NextRequest) {
 
   const meetsSubtotal = threshold > 0 && subtotalUsd >= threshold
   const meetsWeight = maxWeight === 0 || weightKg <= maxWeight
-  const freeShipping = meetsSubtotal && meetsWeight
+  // 임계 기반 무료배송 OR 제품별 free_shipping(패키지: 운임 단가흡수) — OMO-3058
+  const freeShipping = (meetsSubtotal && meetsWeight) || allItemsFreeShipping
 
   // 최저가 옵션 기준 가격 (differential 계산용)
   const cheapestCostUsd = options[defaultOptionIndex]?.costUsd ?? 0
