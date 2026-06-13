@@ -251,10 +251,13 @@ export async function fetchSwadpiaCategoryDataByCode(categoryCode: string): Prom
       print_method_list: String(p.print_method_list ?? ''),
     }))
 
-    // Parse print_info1 (quantity-based print cost matrix)
+    // Parse 수량별 인쇄비 매트릭스.
+    // 옵셋/합판은 print_info1, 디지털(인디고 CDP/토너 COD)은 print_info3 에 담긴다(OMO-3058).
+    // print_info1 이 비어있으면 print_info3 으로 폴백해 디지털 가격도 추출.
+    const printSource = asArray(raw.print_info1).length > 0 ? raw.print_info1 : raw.print_info3
     const printEntries: SwadpiaPrintEntry[] = []
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    for (const entry of asArray<any>(raw.print_info1)) {
+    for (const entry of asArray<any>(printSource)) {
       const qty = parseInt(String(entry.unit_key), 10)
       if (isNaN(qty)) continue
       const info = entry['0']
