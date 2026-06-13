@@ -160,8 +160,19 @@ export const CATEGORY_MAP: Record<string, string> = {
 // 라이브 검증(명함, scripts/omo3061-verify.mjs): 옵셋 CNC1000(200~300,000부),
 // 디지털 CDP1000(1~400부). q1=디지털 600원 vs 옵셋 4,000원→디지털; q10+=옵셋 우세.
 // 신규 쌍 추가 시: 두 코드 모두 print 매트릭스(print_info1/3)가 실가격을 반환하는지
-// 라이브 확인 후 등록한다. (posters/booklets 등은 대형판·페이지수 의존이라 보류 —
-// 옵션 단위 검증 후 후속 등록.)
+// 라이브 확인 후 등록한다.
+//
+// ⚠️ OMO-3062 검증결과 — 후보쌍 posters(CPR2000/CDP4000)·booklets(CPR4000/CDP5000)·
+//    leaflets(CPR3000/CDP7000)·brochures(CLF2000/CDP8000)는 **현 인프라로 등록 불가**.
+//    근거(scripts/omo3062-probe.mjs, probe2.mjs): 이 카테고리들은 다중 size(6~10종)이며
+//    bare json_data POST 는 default size 매트릭스 하나만 반환한다. 결과로 옵셋 CPR2000/
+//    CPR3000/CLF2000 가 모두 동일한 64,000원/장(대형판 디폴트)을 내고, 디지털 파트너
+//    CDP4000 는 600원/장(소형 디폴트) → 프레스 비교가 서로 다른 size 를 비교(apples-to-
+//    oranges)해 오라우팅. 책자는 size + in_page_qty 이중 의존. lookupPressCost 의
+//    "수량→단일가격" 가정은 명함처럼 단일포맷 제품에서만 성립한다.
+//    → 멀티사이즈 제품 등록은 size-키 기반 라우팅 확장이 선행돼야 함(후속 이슈).
+//    토너 COD1000/COD1100: json_data 에 print_unit2 매트릭스 자체가 없음(paper/size 만).
+//    goods_view + JS calcuEstimate 인터랙티브 경로 필요(후속 조사).
 export type PressKind = 'offset' | 'digital'
 
 export interface PressRoute {
