@@ -9,6 +9,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { isSlugHidden } from '@/lib/product-visibility'
 import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
@@ -20,6 +21,7 @@ import ViewItemTracker from '@/components/ViewItemTracker'
 import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
 import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@/types/database'
 import ProductReviews from '@/components/ProductReviews'
+import PrintColorNotice from '@/components/PrintColorNotice'
 import FinishingSection from '@/components/FinishingSection'
 import NicheProfessionLinks from '@/components/niche/NicheProfessionLinks'
 import JsonLd from '@/components/JsonLd'
@@ -148,6 +150,9 @@ export default async function ProductDetailPage({ params }: Props) {
   ])
 
   if (!productData) notFound()
+
+  // OMO-3058: 보드가 고객에게 숨긴 제품(미연동/미판매)은 PDP 도 404
+  if (await isSlugHidden(supabase, slug)) notFound()
 
   const product = productData as PrintProduct
 
@@ -382,6 +387,11 @@ export default async function ProductDetailPage({ params }: Props) {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Color accuracy notice (OMO-3058): RGB↔CMYK 색차 안내 */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-4 mb-8">
+        <PrintColorNotice />
       </div>
 
       {/* Finishing Options Section */}

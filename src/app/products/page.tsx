@@ -10,6 +10,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { PCCF_PRODUCT_SLUGS } from '@/config/pccf-catalog'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
+import { getHiddenSlugs } from '@/lib/product-visibility'
 import type { PrintProduct, CompetitorPriceSummary } from '@/types/database'
 
 const CATEGORY_GRADIENT: Record<string, string> = {
@@ -123,7 +124,9 @@ export default async function ProductsPage() {
       .eq('is_fresh', true),
   ])
   const items = (products as PrintProduct[] | null) ?? []
-  const bySlug = new Map(items.map(p => [p.slug, p]))
+  // OMO-3058: 보드가 고객에게 숨긴 제품(미연동/미판매) 제외
+  const hiddenSlugs = await getHiddenSlugs(supabase)
+  const bySlug = new Map(items.filter(p => !hiddenSlugs.has(p.slug)).map(p => [p.slug, p]))
   // slug → fresh competitor prices (best deal per product)
   const competitorBySlug = new Map<string, CompetitorPriceSummary[]>()
   for (const row of (competitorRows as CompetitorPriceSummary[] | null) ?? []) {
