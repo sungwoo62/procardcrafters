@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="216" height="212" viewBox="0 0 216 212" role="img">
+  <rect x="0" y="0" width="216" height="176" fill="#fde2e4" opacity="0.5"/>
+  <rect x="8" y="8" width="200" height="160" fill="#ffffff" stroke="#15803d" stroke-width="1.5"/>
+  <rect x="16" y="16" width="184" height="144" fill="none" stroke="#15803d" stroke-width="0.6" stroke-dasharray="3 2" opacity="0.7"/>
+  <text x="21.0" y="37.0" font-size="8.5" fill="#334155" font-family="sans-serif">제품명 / 식품유형</text><line x1="16" y1="52.0" x2="200.0" y2="52.0" stroke="#e5e7eb" stroke-width="0.5"/><text x="21.0" y="73.0" font-size="8.5" fill="#334155" font-family="sans-serif">소비기한 · 내용량</text><line x1="16" y1="88.0" x2="200.0" y2="88.0" stroke="#e5e7eb" stroke-width="0.5"/><text x="21.0" y="109.0" font-size="8.5" fill="#334155" font-family="sans-serif">원재료명 · 영양성분</text><line x1="16" y1="124.0" x2="200.0" y2="124.0" stroke="#e5e7eb" stroke-width="0.5"/><text x="21.0" y="145.0" font-size="8.5" fill="#334155" font-family="sans-serif">알레르기 · 신고 1399</text>
+  <text x="8" y="190" font-size="9" fill="#15803d" font-family="sans-serif" font-weight="700">식품 표시사항 라벨</text>
+  <text x="8" y="203" font-size="8" fill="#64748b" font-family="sans-serif">50 × 40 mm · 아트지 80g(STR080ABN) · CMYK · 300dpi · 블리드 2mm(분홍) · 세이프 2mm(점선)</text>
+</svg>
