@@ -83,6 +83,36 @@ const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
 // 비호환인지 알 수 없고, 용지/페이지 조합에 따라 간헐 발주 실패한다.
 const DEPENDENT_SELECT_FIELDS = new Set(['binding_type'])
 
+// ─── 책자(CPR4000) 내지 페이지수 기본값 (OMO-3041) ──────────────────
+//
+// BDT6(PUR무선제본)의 실노출 게이트는 내지 페이지수 in_page_qty ≥ 32 (PUR무선
+// 최소 내지 32p — OMO-3035/3037 라이브 확정). print_product_options 는 canonical
+// 4종(paper_code/print_color_type/paper_size/paper_qty)만 저장 가능해(CHECK 제약)
+// in_page_qty 를 DB 시드로 둘 수 없다. 따라서 책자 카테고리(CPR4000) 자동발주에
+// 한해 내지 페이지수 기본값을 코드에서 주입한다.
+//
+// - 발주 입력에 in_page_qty 가 없으면 → 권장 기본값 64p 주입.
+// - 입력에 in_page_qty 가 있으면 그 값을 존중한다(고객/상위 의도 우선). 단 32 미만이면
+//   PUR무선 자체가 불가(BDT6 미노출)라 발주가 실패하는데, 그 진단/중단은 이미
+//   selectOrderOptions 의 deferred 검증(OMO-3037)이 명확한 에러로 처리한다 — 여기서
+//   조용히 끌어올려 고객 의도와 다른 페이지수로 오발주하지 않는다.
+const BOOKLET_CATEGORY_CODES = new Set(['CPR4000'])
+const BOOKLET_DEFAULT_IN_PAGE_QTY = 64
+
+/**
+ * OMO-3041: 책자(CPR4000) 자동발주 옵션에 내지 페이지수 기본값(≥32, 권장 64p)을
+ * 주입한다. in_page_qty 가 이미 있으면 원본 그대로 반환(입력 의도 존중).
+ * 비-책자 카테고리는 변경 없이 통과.
+ */
+export function withBookletInPageQtyDefault(
+  categoryCode: string,
+  options: Record<string, string>,
+): Record<string, string> {
+  if (!BOOKLET_CATEGORY_CODES.has(categoryCode)) return options
+  if (options['in_page_qty']) return options
+  return { ...options, in_page_qty: String(BOOKLET_DEFAULT_IN_PAGE_QTY) }
+}
+
 /**
  * OMO-3033: 옵션 적용 순서를 둘로 가른다.
  * - immediate: 표지/내지 용지·사이즈 등 먼저 적용할 필드(canonical optKey)
@@ -263,7 +293,11 @@ export async function placeSwadpiaOrder(
     await page.goto(goodsPageUrl, { waitUntil: 'networkidle', timeout: 30000 })
     await page.waitForTimeout(2000)
     const fieldAlias = SWADPIA_FIELD_ALIAS[categoryCode] ?? {}
-    await selectOrderOptions(page, input.selectedOptions, input.quantity, fieldAlias)
+    // OMO-3041: 책자(CPR4000)는 내지 페이지수 기본값(≥32, 권장 64p)을 주입해야
+    // BDT6(PUR무선) 노출 게이트(in_page_qty≥32)를 통과한다. in_page_qty 는 canonical
+    // 옵션이 아니라 시드에 없으므로 발주 직전 코드에서 채운다.
+    const effectiveOptions = withBookletInPageQtyDefault(categoryCode, input.selectedOptions)
+    await selectOrderOptions(page, effectiveOptions, input.quantity, fieldAlias)
 
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
