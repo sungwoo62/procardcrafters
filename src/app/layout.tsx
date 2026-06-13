@@ -32,6 +32,9 @@ const geist = Geist({
 // `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 metadataBase/OG URL 깨짐 유발).
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
 
+// 루트 레이아웃이 라이브 Supabase 데이터(no-store)를 읽으므로 정적 프리렌더 제외 → /_not-found 등 빌드 export 에러 방지.
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
