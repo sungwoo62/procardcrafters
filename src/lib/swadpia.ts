@@ -76,17 +76,22 @@ export const CATEGORY_MAP: Record<string, string> = {
   // 명함류
   'business-cards': 'CNC1000',
   'premium-business-cards': 'CNC2000',
-  'premium-foil-cards': 'CNC3000',       // Luxury 메탈/포일 명함
-  'metallic-business-cards': 'CNC3000',  // Luxury 메탈릭 명함
-  'letterpress-business-cards': 'CNC4000', // 아트지 300g 명함
-  'transparent-business-cards': 'CNC5000', // PET 투명 명함
-  'uv-business-cards': 'CNC6000',        // UV 코팅 명함 (11종)
-  'pearl-business-cards': 'CNC8000',     // UV 코팅 명함 (9종)
+  'premium-foil-cards': 'CNC3000',       // 카드명함(Luxury 화이트/실버/골드 200μ) — OMO-3097 라이브: 메탈·포일 스톡 실재, 유지
+  'metallic-business-cards': 'CNC3000',  // 카드명함(Luxury 메탈릭)
+  'letterpress-business-cards': 'CNC4000', // 하이브리드명함(아트지 백색 300g 단일) — OMO-3097 라이브: 활판 전용 격자 부재, 최근접 아트지300g 유지
+  'transparent-business-cards': 'CNC5000', // 투명하이브리드명함(PET)
+  'uv-business-cards': 'CNC6000',        // 디지털박/에폭시명함 — UV/특수후가공 명함 최적 카테고리, 유지
+  // OMO-3097: pearl→CNC8000(이전)은 라이브에 실재하나(9종, 깨진 라우팅 아님) 펄지가 없음.
+  // 펄 용지(다이니티 골드펄 250g)는 CNC2000 고급지명함에만 존재 → 펄 명함은 CNC2000 으로 라우팅.
+  'pearl-business-cards': 'CNC2000',     // 고급지명함(다이니티 골드펄 250g 옵션) — OMO-3097 라이브검증
   // 스티커류
   'stickers': 'CST1000',
   'die-cut-stickers': 'CST2000',
+  'transparent-stickers': 'CST1000',   // 재단형(투명데드롱 25 용지옵션) — OMO-3097 라이브검증
   'holographic-stickers': 'CST6000',   // 팬시롤(홀로그램/투명 Pet) — OMO-3095 라이브검증: CST6000 만 홀로그램 용지(STR050HN1) 보유. CST5000(스페셜)엔 홀로그램 없음(샤인실버/금은무광/저온유포/PVC뿐)
+  'kraft-stickers': 'CST1000',         // 재단형(크라프트 57g 용지옵션) — OMO-3097 라이브검증
   'roll-stickers': 'CST7000',          // 팬시롤스티커
+  'eco-stickers': 'CST1000',           // 재단형(모조지 80g 용지옵션) — OMO-3097 라이브검증
   'price-labels': 'CLP1000',           // 라벨스티커(롤)
   'barcode-labels': 'CLP1000',
   'food-labels': 'CLP1000',
@@ -98,14 +103,20 @@ export const CATEGORY_MAP: Record<string, string> = {
   'saddle-stitch-booklet': 'CPR4000',  // 책자
   'perfect-bound-booklet': 'CPR4000',
   'catalogs': 'CPR4000',
-  // 우편
+  // 우편·초대장·연하장
   'postcards': 'CDP3000',
-  // 디스플레이
+  'invitation-cards': 'CVS1000',       // 초대장/상품권(일반) — OMO-3097 라이브검증(에폭시형은 CVS6000)
+  'wedding-cards': 'CDP2000',          // 디지털청첩장/초대장(52종 용지) — OMO-3097 라이브검증
+  'greeting-cards-general': 'CCM2000', // 디자인연하장 — OMO-3097 라이브검증
+  // 메모·포스트잇
+  'memo-pads-general': 'CNR3000',      // 떡메모지(매직칼라/모조지) — OMO-3097 라이브검증
+  'sticky-notes': 'CPS7000',           // 사각포스트잇(모조지 80/100g) — OMO-3097 라이브검증
+  // 디스플레이 — OMO-3097: 배너는 CPR5000(종이홀더) 오타 라우팅이었음. CRP(현수막) 코드가 정답(CPR≠CRP).
   'posters': 'CPR2000',
-  'banners': 'CPR5000',
-  'x-banners': 'CPR5000',
-  'rollup-banners': 'CPR5000',
-  'mini-banners': 'CPR5000',
+  'banners': 'CRP5100',                // 현수막(150denier) — OMO-3097 라이브검증(이전 CPR5000=종이홀더 오매핑)
+  'x-banners': 'CRP4000',              // 배너(페트 210µ) — OMO-3097 라이브검증
+  'rollup-banners': 'CRP4000',         // 배너(페트 210µ) — OMO-3097 라이브검증
+  'mini-banners': 'COD1100',           // 종이미니배너 — OMO-3097 라이브검증
   // 봉투·서식
   'standard-envelopes': 'CEV1000',
   'admin-envelopes': 'CEV1000',
@@ -118,6 +129,18 @@ export const CATEGORY_MAP: Record<string, string> = {
   'wall-calendars': 'CCD1000',
   'desk-calendars': 'CCD2000',
   'mini-calendars': 'CCD2000',
+  // 패키징 — OMO-3097 라이브검증(판지/박스 CHI3000, 쇼핑백 CPK 계열)
+  'general-boxes': 'CHI3000',          // 판지/박스(양면마닐라·메탈팩보드)
+  'corrugated-boxes': 'CHI3000',
+  'gift-boxes': 'CHI3000',
+  'cake-boxes': 'CHI3000',
+  'tube-boxes': 'CHI3000',
+  'paper-shopping-bags': 'CPK4000',    // 일반쇼핑백
+  'kraft-bags': 'CPK3000',             // 손잡이쇼핑백
+  'gift-bags': 'CPK2000',              // 리본&브레이드 쇼핑백
+  // 미연동(성원 미취급/타공급 또는 전용 격자 부재) — 의도적 미매핑, 리포트 SWADPIA_UNSUPPORTED 참조:
+  //   hangtag-cards(택 전용격자 부재), paper-pop·foam-pop(POP 카테고리 부재),
+  //   general-notebooks·spring-notebooks·diaries(대량 노트/다이어리 성원 미취급)
 }
 
 // ─── In-memory cache (1-hour TTL) ────────────────────────────
