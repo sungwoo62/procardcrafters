@@ -20,7 +20,8 @@ const MM_TO_PT = 2.834645669
 
 /**
  * PDF 표준폰트(Helvetica)는 WinAnsi 라 한글을 인코딩하지 못한다(throw).
- * 캔버스 텍스트는 ASCII 로 한정하고, 한글/원문 의미는 PDF 메타데이터(UTF-16 안전)에 보존한다.
+ * 캔버스 텍스트는 ASCII 로 한정한다. 고객 노출 파일이라 메타데이터도 영문으로 통일
+ * (한글 미포함) — 비영문 제품명이 들어와도 ?로 치환해 깨짐을 막는다.
  */
 function asciiSafe(s: string): string {
   // eslint-disable-next-line no-control-regex
@@ -141,11 +142,11 @@ export async function buildPrintTemplatePdf(input: TemplatePdfInput): Promise<Ui
     })
   }
 
-  // 메타데이터(UTF-16 안전 — 한글 보존).
-  doc.setTitle(`${productLabel} 인쇄 템플릿 — ${spec.width_mm}×${spec.height_mm}mm`)
+  // 메타데이터 — 고객(영문 사이트) 노출 파일이므로 한글 미포함, 전부 영문(OMO-3027 보드 지시).
+  doc.setTitle(`${productLabel} print template — ${spec.width_mm}x${spec.height_mm}mm`)
   doc.setSubject(
-    `Procardcrafters 인쇄용 빈 템플릿. 트림 ${spec.width_mm}×${spec.height_mm}mm / 블리드 ${spec.bleed_mm}mm / ` +
-    `세이프 ${spec.safe_mm}mm / ${spec.color_mode} / 최소 ${spec.min_dpi}dpi. (OMO-3027)`,
+    `Procardcrafters blank print-ready template. Trim ${spec.width_mm}x${spec.height_mm}mm / ` +
+    `bleed ${spec.bleed_mm}mm / safe ${spec.safe_mm}mm / ${spec.color_mode} / min ${spec.min_dpi}dpi.`,
   )
   doc.setCreator('Procardcrafters')
   doc.setProducer('Procardcrafters print-template generator')
