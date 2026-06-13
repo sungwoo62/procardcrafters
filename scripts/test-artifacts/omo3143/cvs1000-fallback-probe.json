@@ -1,0 +1,24 @@
+{
+  "issue": "OMO-3143",
+  "probedAt": "2026-06-14",
+  "endpoint": "POST https://www.swadpia.co.kr/estimate/estimate_goods/json_data",
+  "finding": "CVS1000 generic JSON endpoint ignores category_code for the price matrix and falls back to the namecard (CNC1000) matrix. q200=4000/SNW300W00 is byte-identical to CNC1000. The endpoint DOES differentiate other namecard codes (CNC2000=3500, CNC3000=10000), so the CVS1000 collapse to CNC1000 is a genuine fallback, not a global outage.",
+  "conclusion": "q200=4000 is the namecard base price leaking through, NOT the real invitation-card price. Real CVS1000 pricing (goods_view cascade, OMO-3111) = MOQ 500 sheets, q500 supply 70,500 KRW. Disposition: quote-only (auto-sync excluded, last-good 25000 preserved). MUST NOT be added to MATRIX_VERIFIED_SLUGS because the fallback matrix has a valid-looking MOQ(200) and value(4000 != 64000 sentinel) and would pass all guards.",
+  "matrixProbe": {
+    "CNC1000": { "rows": 174, "minQty": 200, "derived": 4000, "paper": "SNW300W00", "role": "namecard reference" },
+    "CVS1000": { "rows": 174, "minQty": 200, "derived": 4000, "paper": "SNW300W00", "role": "FALLBACK to CNC1000 (identical)" },
+    "CNC2000": { "rows": 180, "minQty": 200, "derived": 3500, "paper": "ARE230W00" },
+    "CVS2000": { "rows": 175, "minQty": 200, "derived": 3500, "paper": "ARE230W00", "note": "고급초대장 — no customer slug in CATEGORY_MAP, not synced" },
+    "CNC3000": { "rows": 80, "minQty": 200, "derived": 10000, "paper": "RYL200W0U" }
+  },
+  "productParamInvariance": "CVS1000 returns the identical 4000 matrix for product=name|card|est|invitation — the product param does not unlock a CVS-specific matrix.",
+  "realInvitationPrice_OMO3111_cascade": {
+    "category": "CVS1000",
+    "minQty": "500 매",
+    "qtyLadder_head": ["500", "1000", "1500", "2000"],
+    "priceSample_SNW250W00": [
+      { "qty": 500, "supply": 70500, "pay_vat": 77550 },
+      { "qty": 1000, "supply": 125000, "pay_vat": 137500 }
+    ]
+  }
+}
