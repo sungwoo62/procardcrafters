@@ -1,0 +1,139 @@
+{
+  "CPR2000": [
+    {
+      "size": "A0100",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    },
+    {
+      "size": "A0200",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    },
+    {
+      "size": "A0300",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    },
+    {
+      "size": "B0200",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    },
+    {
+      "size": "B0300",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    },
+    {
+      "size": "B0400",
+      "set": true,
+      "unit": {
+        "price_unit1": 93300,
+        "price_unit2": 134310,
+        "PLATE2": 8000
+      }
+    }
+  ],
+  "CDP4000": [
+    {
+      "size": "A0200",
+      "set": true,
+      "unit": {
+        "price_unit1": 124390,
+        "price_unit2": 179070,
+        "PLATE2": null
+      }
+    },
+    {
+      "size": "A0300",
+      "set": true,
+      "unit": {
+        "price_unit1": 124390,
+        "price_unit2": 179070,
+        "PLATE2": null
+      }
+    },
+    {
+      "size": "A0400",
+      "set": true,
+      "unit": {
+        "price_unit1": 124390,
+        "price_unit2": 179070,
+        "PLATE2": null
+      }
+    },
+    {
+      "size": "B0400",
+      "set": true,
+      "unit": {
+        "price_unit1": 124390,
+        "price_unit2": 179070,
+        "PLATE2": null
+      }
+    },
+    {
+      "size": "B2000",
+      "set": true,
+      "unit": {
+        "price_unit1": 124390,
+        "price_unit2": 179070,
+        "PLATE2": null
+      }
+    }
+  ],
+  "COD1000": {
+    "sels": [
+      "paper_type(12)",
+      "print_color_type(4)",
+      "fside_spot_color(7)",
+      "size_type(2)",
+      "paper_size(4)",
+      "paper_qty_select(113)",
+      "order_count(250)"
+    ],
+    "hasP1": true,
+    "unit": {
+      "price_unit1": 252390,
+      "price_unit2": 363330,
+      "PLATE2": 8000
+    }
+  },
+  "COD1100": {
+    "sels": [
+      "paper_type(5)",
+      "print_color_type(2)",
+      "fside_spot_color(7)",
+      "paper_size(2)",
+      "paper_qty_select(106)",
+      "order_count(250)",
+      "basic_banner_lean(3)"
+    ],
+    "hasP1": true,
+    "unit": {
+      "price_unit1": 344100,
+      "price_unit2": 495350,
+      "PLATE2": 8000
+    }
+  }
+}

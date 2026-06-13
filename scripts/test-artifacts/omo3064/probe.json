@@ -1,0 +1,142 @@
+{
+  "loggedIn": true,
+  "fixedQty": 1000,
+  "codes": {
+    "CPR2000": {
+      "code": "CPR2000",
+      "struct": {
+        "hasProduct1": true,
+        "p1methods": [
+          "changeOrderCount",
+          "changePaperType",
+          "changePaper",
+          "changePaperSize",
+          "changePaperQty",
+          "changePrintColor",
+          "changeIsBokPacking",
+          "changePrintPrice",
+          "setPPBakAmtSum",
+          "setPPApAmtSum",
+          "changePPPrice",
+          "calcuIsToday",
+          "calcuIsSat",
+          "calcuEstimate",
+          "printEstimate",
+          "printEstimatePrint",
+          "printEstimateTotPrint",
+          "printEstimateLeftPrint",
+          "changeOrderCount",
+          "changePaperType"
+        ],
+        "sizeSelects": [
+          {
+            "name": "size_type",
+            "optCount": 2,
+            "opts": [
+              "SZT10=洹쒓꺽�ъ씠利�",
+              "SZT20=�ъ씠利덉쭅�묒엯��"
+            ],
+            "onchange": "chgSizeType();"
+          },
+          {
+            "name": "paper_size",
+            "optCount": 6,
+            "opts": [
+              "A0100=A1",
+              "A0200=A2",
+              "A0300=A3",
+              "B0200=B2(2절)",
+              "B0300=B3(4절)",
+              "B0400=B4(8절)"
+            ],
+            "onchange": "chgPaperSize();"
+          },
+          {
+            "name": "paper_size_basis",
+            "optCount": 2,
+            "opts": [
+              "norm=洹쒓꺽",
+              "max=理쒕��ъ씠利�"
+            ],
+            "onchange": "chgPaperSize();"
+          },
+          {
+            "name": "tagong_size",
+            "optCount": 6,
+            "opts": [
+              "3=3mm",
+              "4=4mm",
+              "5=5mm",
+              "6=6mm",
+              "7=7mm",
+              "8=8mm"
+            ],
+            "onchange": "chgTagongSize()"
+          }
+        ],
+        "qtyFields": [
+          {
+            "tag": "INPUT",
+            "name": "paper_margin_qty",
+            "type": "hidden"
+          },
+          {
+            "tag": "INPUT",
+            "name": "paper_yeon_qty",
+            "type": "hidden"
+          },
+          {
+            "tag": "INPUT",
+            "name": "print_unit_key",
+            "type": "hidden"
+          },
+          {
+            "tag": "INPUT",
+            "name": "save_paper_qty",
+            "type": "hidden"
+          },
+          {
+            "tag": "INPUT",
+            "name": "save_order_count",
+            "type": "hidden"
+          },
+          {
+            "tag": "INPUT",
+            "name": "folding_unit_min_amt",
+            "type": "hidden"
+          },
+          {
+            "tag": "SELECT",
+            "name": "paper_qty",
+            "type": "select-one",
+            "optCount": 106
+          },
+          {
+            "tag": "SELECT",
+            "name": "order_count",
+            "type": "select-one",
+            "optCount": 120
+          }
+        ],
+        "priceGlobals": []
+      },
+      "sizeName": "size_type",
+      "prices": [
+        {
+          "sizeVal": "SZT10",
+          "sizeLabel": "洹쒓꺽�ъ씠利�",
+          "qty": 1000,
+          "priced": null
+        },
+        {
+          "sizeVal": "SZT20",
+          "sizeLabel": "�ъ씠利덉쭅�묒엯��",
+          "qty": 1000,
+          "priced": null
+        }
+      ]
+    }
+  },
+  "pairs": {},
+  "toner": {}
+}

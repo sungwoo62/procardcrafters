@@ -1,0 +1,66 @@
+[
+  {
+    "size": "A0100",
+    "unit": {
+      "unit1": 93300,
+      "unit2": 134310,
+      "plate2": 8000,
+      "save_size": "A0200"
+    },
+    "ajax": [
+      {
+        "url": "/estimate/estimate_goods/product_size_preview",
+        "post": "paper_size=A0100&category_code=CPR2000&cut_x_size=594&cut_y_size=841&work_x_size=598&work_y_size=845&product_margin=2&side_color_amount=1&x_size=0&y_size=0&bongto_kind=&bongto_type=&top_size=0&bottom_"
+      }
+    ]
+  },
+  {
+    "size": "B0400",
+    "unit": {
+      "unit1": 93300,
+      "unit2": 134310,
+      "plate2": 8000,
+      "save_size": "A0200"
+    },
+    "ajax": [
+      {
+        "url": "/estimate/estimate_goods/product_size_preview",
+        "post": "paper_size=B0400&category_code=CPR2000&cut_x_size=258&cut_y_size=368&work_x_size=262&work_y_size=372&product_margin=2&side_color_amount=1&x_size=0&y_size=0&bongto_kind=&bongto_type=&top_size=0&bottom_"
+      }
+    ]
+  },
+  {
+    "size": "A0300",
+    "unit": {
+      "unit1": 93300,
+      "unit2": 134310,
+      "plate2": 8000,
+      "save_size": "A0200"
+    },
+    "ajax": [
+      {
+        "url": "/estimate/estimate_goods/product_size_preview",
+        "post": "paper_size=A0300&category_code=CPR2000&cut_x_size=297&cut_y_size=420&work_x_size=301&work_y_size=424&product_margin=2&side_color_amount=1&x_size=0&y_size=0&bongto_kind=&bongto_type=&top_size=0&bottom_"
+      },
+      {
+        "url": "https://analytics.google.com/g/collect?v=2&tid=G-TWY8VMMCH9&gtm=45je66a1v896579736za200zd896579736&_p=1781330927997&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAGQC&ae=a&are=1&cid=830610863.1781330924&frm=0&pscdl=noapi&rcb=2&sr=1400x1400&uaa=x86&uab=64&uafvl=Chromium%3B148.0.7778.96%7CHeadlessChrome%3B148.0.7778.96%7CNot%252FA)Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=10.0&uaw=0&ul=ko-kr&gaf=2&_s=3&tag_exp=115938466~115938469~119456239~119456247&sid=1781330923&sct=1&seg=1&dl=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&dt=%EF%BF%BD%EA%B9%86%EC%8D%9D%EF%BF%BD%EC%A2%8A%EB%B1%B6%EF%BF%BD%EC%87%B1%EB%B8%98%20%EF%BF%BD%EB%8D%8A%EB%9F%B9%EF%BF%BD%EB%8C%81%EF%BF%BD&en=form_start&ep.form_id=order_form&ep.form_name=order_form&ep.form_destination=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&epn.form_length=461&ep.first_field_id=paper_size&ep.first_field_name=paper_size&epn.first_field_position=12&_et=3987&tfd=11125",
+        "post": ""
+      }
+    ]
+  },
+  {
+    "size": "A0100",
+    "unit": {
+      "unit1": 93300,
+      "unit2": 134310,
+      "plate2": 8000,
+      "save_size": "A0200"
+    },
+    "ajax": [
+      {
+        "url": "/estimate/estimate_goods/product_size_preview",
+        "post": "paper_size=A0100&category_code=CPR2000&cut_x_size=594&cut_y_size=841&work_x_size=598&work_y_size=845&product_margin=2&side_color_amount=1&x_size=0&y_size=0&bongto_kind=&bongto_type=&top_size=0&bottom_"
+      }
+    ]
+  }
+]

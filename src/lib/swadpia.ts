@@ -170,9 +170,27 @@ export const CATEGORY_MAP: Record<string, string> = {
 //    CDP4000 는 600원/장(소형 디폴트) → 프레스 비교가 서로 다른 size 를 비교(apples-to-
 //    oranges)해 오라우팅. 책자는 size + in_page_qty 이중 의존. lookupPressCost 의
 //    "수량→단일가격" 가정은 명함처럼 단일포맷 제품에서만 성립한다.
-//    → 멀티사이즈 제품 등록은 size-키 기반 라우팅 확장이 선행돼야 함(후속 이슈).
+//    → 멀티사이즈 제품 등록은 size-키 기반 라우팅 확장이 선행돼야 함(후속 OMO-3064).
 //    토너 COD1000/COD1100: json_data 에 print_unit2 매트릭스 자체가 없음(paper/size 만).
-//    goods_view + JS calcuEstimate 인터랙티브 경로 필요(후속 조사).
+//    goods_view + JS calcuEstimate 인터랙티브 경로 필요(후속 OMO-3064).
+//
+// ⛔ OMO-3064 검증결과(라이브, scripts/omo3064-{jsonparam,interactive,sizewait}.mjs) —
+//    [Task1 size-키 라우팅] **현 인프라로 자동화 불가 확정**. 3중 교차검증:
+//      (a) json_data 는 paper_size/size/print_size 등 어떤 size 파라미터도 무시 →
+//          전 size 동일 매트릭스(CPR2000=항상 64,000원 default A0200) 반환.
+//      (b) goods_view product1: paper_size 직접 set + calcuEstimate 해도 price_unit2
+//          불변(A1~B4 모두 134,310). 디지털 CDP4000 도 동일(전 size 179,070).
+//      (c) 네이티브 onchange(chgPaperSize) 발화 시 AJAX 는 /estimate/estimate_goods/
+//          product_size_preview 로 실치수(A1=594×841, B4=258×368)를 보내지만 **기하학
+//          프리뷰만 반환**, 가격엔지 미반영. save_paper_size 가 선택과 무관하게 default
+//          A0200 에 고정 → size→인쇄단가 연결은 자동화 도달 불가한 server-side commit
+//          단계에서만 해소됨(실견적/발주 액션 위험 없이는 접근 불가).
+//    → 멀티사이즈 듀얼프레스 자동라우팅 **영구 보류**. 보드 결정사항: 해당 제품군은
+//      단일프레스로 등록(자동 프레스선택 미적용)하거나, 사람-게이트 수동 견적 유지.
+//    [Task2 토너(COD) 인터랙티브 견적] product1.calcuEstimate → price_unit2 가 **값을
+//      반환함**(COD1000=363,330 / COD1100=495,350, json_data 엔 매트릭스 부재와 대조).
+//      단 (b)/(c)와 동일한 default-size commit 한계가 잠재 → 저가옵션 추가 전 가드된
+//      라이브 검증(size/qty 정확도) 필수. 추가 여부는 보드 승인(인디고 기본/토너 옵션) 게이트.
 export type PressKind = 'offset' | 'digital'
 
 export interface PressRoute {
