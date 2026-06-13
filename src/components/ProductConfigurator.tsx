@@ -224,6 +224,50 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     [useDualPress, priceForQty, selectedQty],
   )
 
+  // OMO-3067: 현재 선택된(=자유 입력 가능) 수량의 라이브 견적. 성원 매트릭스 스냅·실발주 수량 포함.
+  const liveQuote = useMemo(() => priceForQty(selectedQty), [priceForQty, selectedQty])
+
+  /**
+   * OMO-3067: 성원 가격 매트릭스가 커버하는 수량 구간(min/max).
+   * 자유 입력 수량의 가드(최소/최대)와 placeholder 힌트에 사용한다.
+   * 듀얼 프레스면 옵셋+디지털 두 매트릭스를 합쳐 가능한 최소/최대를 구한다.
+   */
+  const qtyBounds = useMemo(() => {
+    if (!useSwadpia || !swadpiaData) return null
+    const all = [
+      ...swadpiaData.printEntries,
+      ...(useDualPress && digitalData ? digitalData.printEntries : []),
+    ].filter(e => e.print_unit2 > 0)
+    if (!all.length) return null
+    const qs = all.map(e => e.quantity)
+    return { min: Math.min(...qs), max: Math.max(...qs) }
+  }, [useSwadpia, swadpiaData, useDualPress, digitalData])
+
+  // 자유 입력 수량 핸들러 — 숫자만 허용하고 매트릭스 최대치를 넘지 않도록 즉시 클램프(상한).
+  const qtyTypeKey = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
+  const setQtyValue = useCallback(
+    (raw: string) => {
+      let digits = raw.replace(/[^0-9]/g, '')
+      if (qtyBounds && digits) {
+        const n = parseInt(digits, 10)
+        if (Number.isFinite(n) && n > qtyBounds.max) digits = String(qtyBounds.max)
+      }
+      setSelections(prev => ({ ...prev, [qtyTypeKey]: digits }))
+    },
+    [qtyBounds, qtyTypeKey],
+  )
+  // 포커스 아웃 시 최소 수량 미만이면 매트릭스 최소치로 스냅(하한).
+  const clampQtyToMin = useCallback(() => {
+    if (!qtyBounds) return
+    setSelections(prev => {
+      const cur = parseInt(prev[qtyTypeKey] ?? '', 10)
+      if (!Number.isFinite(cur) || cur < qtyBounds.min) {
+        return { ...prev, [qtyTypeKey]: String(qtyBounds.min) }
+      }
+      return prev
+    })
+  }, [qtyBounds, qtyTypeKey])
+
   /**
    * 동일가격 프로모션 — Swadpia 최소 수량 한계 때문에 작은 수량 옵션이 더 큰 수량과 같은 단가가 되는 경우,
    * 고객에게 "동일 가격 — 추가 매수 무료" 프레이밍으로 보여준다.
@@ -248,9 +292,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return map
   }, [useSwadpia, priceForQty, grouped])
 
-  const activePromoEffectiveQty = quantityPromoMap.get(
-    selections['paper_qty'] ?? selections['quantity'] ?? '',
-  )
+  // OMO-3067: 자유 입력 수량도 커버하도록 라이브 견적의 실발주 수량에서 직접 산출
+  // (preset-keyed quantityPromoMap 은 커스텀 값을 못 잡으므로 liveQuote 우선).
+  const activePromoEffectiveQty =
+    liveQuote && liveQuote.effectiveQty > selectedQty
+      ? liveQuote.effectiveQty
+      : quantityPromoMap.get(selections['paper_qty'] ?? selections['quantity'] ?? '')
 
   // 수량 옵션별 개당 단가 맵 (할인율 계산용)
   const qtyUnitPriceMap = useMemo(() => {
@@ -289,7 +336,15 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   }, [priceForQty, product, grouped, selections, exchangeRate])
 
   const currentQtyKey = selections['paper_qty'] ?? selections['quantity'] ?? ''
-  const currentUnitPrice = qtyUnitPriceMap.get(currentQtyKey) ?? null
+  // 자유 입력 수량이면 preset 맵에 없으므로 라이브 견적의 개당 단가로 폴백.
+  const liveUnitPrice = liveQuote
+    ? calculatePriceFromSwadpia({
+        swadpiaCostKrw: liveQuote.costKrw,
+        marginMultiplier: product.margin_multiplier,
+        exchangeRate,
+      }) / liveQuote.effectiveQty
+    : null
+  const currentUnitPrice = qtyUnitPriceMap.get(currentQtyKey) ?? liveUnitPrice
   const maxUnitPrice = qtyUnitPriceMap.size > 1 ? Math.max(...Array.from(qtyUnitPriceMap.values())) : null
   const discountPct = (currentUnitPrice !== null && maxUnitPrice !== null && maxUnitPrice > currentUnitPrice)
     ? Math.round((1 - currentUnitPrice / maxUnitPrice) * 100)
@@ -314,41 +369,97 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         const isQtyType = QUANTITY_TYPES.has(type)
 
         if (isQtyType) {
-          const currentPromo = quantityPromoMap.get(selections[type] ?? '')
+          // OMO-3067: 자유 입력 수량 + 프리셋 칩. 성원 전 구간 가격을 라이브로 커버한다.
+          const curVal = selections[type] ?? ''
+          const presets = opts
+            .map(o => ({ value: o.value, label: o.label_en, n: parseInt(o.value, 10) }))
+            .filter(o => Number.isFinite(o.n) && o.n > 0)
+            .sort((a, b) => a.n - b.n)
+          // 라이브 견적 기반 개당 단가(라운드업 시 실발주 수량으로 나눔).
+          const livePerUnit = useSwadpia && liveQuote
+            ? calculatePriceFromSwadpia({
+                swadpiaCostKrw: liveQuote.costKrw,
+                marginMultiplier: product.margin_multiplier,
+                exchangeRate,
+              }) / liveQuote.effectiveQty
+            : null
+          const livePerUnitStr = livePerUnit !== null
+            ? (livePerUnit < 0.1 ? `$${livePerUnit.toFixed(3)}` : `$${livePerUnit.toFixed(2)}`) + '/pc'
+            : null
+          // 성원 매트릭스가 더 큰 실발주 수량으로 반올림했는지(=추가 매수 무료).
+          const snappedUp = !!liveQuote && liveQuote.effectiveQty > selectedQty
+          const belowMin = !!qtyBounds && selectedQty < qtyBounds.min
           return (
             <div key={type}>
               <label className="block text-sm font-semibold text-gray-700 mb-2">
                 {OPTION_LABEL[type] ?? type}
               </label>
-              <select
-                value={selections[type] ?? ''}
-                onChange={(e) => setSelections((prev) => ({ ...prev, [type]: e.target.value }))}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
-              >
-                {opts.map((opt) => {
-                  const promoQty = quantityPromoMap.get(opt.value)
-                  const perUnit = qtyUnitPriceMap.get(opt.value)
-                  const perUnitStr = perUnit !== undefined
-                    ? (perUnit < 0.1 ? `$${perUnit.toFixed(3)}` : `$${perUnit.toFixed(2)}`) + '/pc'
-                    : ''
-                  const optDiscount = (perUnit !== undefined && maxUnitPrice !== null && maxUnitPrice > perUnit + 0.0001)
-                    ? ` -${Math.round((1 - perUnit / maxUnitPrice) * 100)}%`
-                    : ''
-                  return (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label_en}{perUnitStr ? ` — ${perUnitStr}${optDiscount}` : ''}{promoQty ? ` (→ ${promoQty} pcs free)` : ''}
-                    </option>
-                  )
-                })}
-              </select>
-              {quantityPromoMap.size > 0 && (
-                <p className="mt-1.5 text-[11px] text-amber-700">
-                  💡 Low-quantity orders are <span className="font-semibold">priced like the next available batch</span> — you pay the same and get extra prints free.
+              {/* OMO-3067: 성원 라이브 가격 제품만 자유 입력 — 성원 매트릭스가 전 수량구간을 커버.
+                  비연동(DB 고정 tier) 제품은 프리셋 칩만 노출(임의 수량 미스프라이싱 방지). */}
+              {useSwadpia && (
+                <>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      min={qtyBounds?.min}
+                      max={qtyBounds?.max}
+                      step={1}
+                      value={curVal}
+                      onChange={(e) => setQtyValue(e.target.value)}
+                      onBlur={clampQtyToMin}
+                      placeholder={qtyBounds ? `${qtyBounds.min}–${qtyBounds.max} pcs` : 'Enter quantity'}
+                      aria-label="Quantity"
+                      className="w-full border border-gray-300 rounded-lg pl-3 pr-12 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
+                    />
+                    <span className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-xs text-gray-400">pcs</span>
+                  </div>
+                  {/* 라이브 개당 단가 — 자유 입력에 실시간 반응 */}
+                  {livePerUnitStr && (
+                    <p className="mt-1.5 text-xs text-gray-600">
+                      <span className="font-semibold text-gray-800">{livePerUnitStr}</span>
+                      {' · '}{selectedQty.toLocaleString()} pcs
+                    </p>
+                  )}
+                </>
+              )}
+              {/* 프리셋 빠른 선택 칩 */}
+              {presets.length > 0 && (
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {presets.map((p) => {
+                    const isSelected = curVal === p.value
+                    return (
+                      <button
+                        key={p.value}
+                        type="button"
+                        onClick={() => setSelections((prev) => ({ ...prev, [type]: p.value }))}
+                        className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all ${
+                          isSelected
+                            ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                            : 'border-gray-200 bg-white text-gray-600 hover:border-gray-300'
+                        }`}
+                      >
+                        {p.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+              {/* 최소 수량 가드 안내 */}
+              {qtyBounds && belowMin && (
+                <p className="mt-1.5 text-[11px] text-red-600">
+                  Minimum order is {qtyBounds.min.toLocaleString()} pcs — quantity will round up to {qtyBounds.min.toLocaleString()}.
                 </p>
               )}
-              {currentPromo && (
-                <p className="mt-1 text-[11px] text-amber-700 font-medium">
-                  ✨ Selected quantity gets upgraded to {currentPromo} pcs at no extra cost.
+              {/* 반올림(추가 매수 무료) 안내 — 라이브 입력 수량 기준 */}
+              {snappedUp && !belowMin && (
+                <p className="mt-1.5 text-[11px] text-amber-700 font-medium">
+                  ✨ Rounded up to {liveQuote!.effectiveQty.toLocaleString()} pcs — the nearest production batch. You pay the same and get the extra prints free.
+                </p>
+              )}
+              {qtyBounds && (
+                <p className="mt-1 text-[11px] text-gray-400">
+                  Any quantity from {qtyBounds.min.toLocaleString()} to {qtyBounds.max.toLocaleString()} pcs — live wholesale pricing.
                 </p>
               )}
             </div>
