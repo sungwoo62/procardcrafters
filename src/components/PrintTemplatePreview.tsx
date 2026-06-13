@@ -65,6 +65,17 @@ export default function PrintTemplatePreview({
           <line x1={c.x} y1={c.y + c.sy * gap} x2={c.x} y2={c.y + c.sy * (gap + markLen)} />
         </g>
       ))}
+      {/* 브랜드 표기(OMO-3027) — 다운로드 PDF 와 동일하게 도메인 박아넣음 */}
+      <text
+        x={b + s + 1}
+        y={b + spec.height_mm - s - 1}
+        fontFamily="sans-serif"
+        fontSize={Math.max(2, Math.min(fullW, fullH) * 0.05)}
+        fill="#6366f1"
+        opacity={0.75}
+      >
+        procardcrafters.com
+      </text>
     </svg>
   )
 }

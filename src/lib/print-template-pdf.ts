@@ -133,12 +133,25 @@ export async function buildPrintTemplatePdf(input: TemplatePdfInput): Promise<Ui
       `Trim ${spec.width_mm}x${spec.height_mm}mm  Bleed ${spec.bleed_mm}mm  Safe ${spec.safe_mm}mm  ${spec.color_mode} ${spec.min_dpi}dpi`,
       { x: bleedPt + 3, y: labelY - 6, size: 4, font, color: rgb(0.45, 0.45, 0.45) },
     )
+    // 브랜드 표기(OMO-3027 보드 지시) — 디자인 영역 밖 가이드 라벨로 도메인 박아넣음.
+    page.drawText('procardcrafters.com', {
+      x: bleedPt + 3, y: labelY - 12, size: 4.5, font, color: rgb(0.29, 0.33, 0.86),
+    })
   }
 
-  // 범례(하단) — 가이드 색 의미. 공간이 충분할 때만.
-  if (bleedPt + 12 < trimHpt) {
+  // 하단 가이드 — 저작권/권리 고지 + 색 범례(OMO-3027 보드 지시). 공간 충분할 때만.
+  if (bleedPt + 18 < trimHpt) {
+    // 권리 고지: 템플릿·디자인 권리 보유 + 무단사용 금지.
+    page.drawText('(c) Procardcrafters - procardcrafters.com  |  Template & design rights reserved. Unauthorized use prohibited.', {
+      x: bleedPt + 3, y: bleedPt + 8.5, size: 3.4, font, color: rgb(0.4, 0.4, 0.4),
+    })
     page.drawText('Red=bleed  Black=trim  Blue=safe (delete guides before print)', {
-      x: bleedPt + 3, y: bleedPt + 3, size: 3.6, font, color: rgb(0.55, 0.55, 0.55),
+      x: bleedPt + 3, y: bleedPt + 3, size: 3.4, font, color: rgb(0.55, 0.55, 0.55),
+    })
+  } else if (bleedPt + 9 < trimHpt) {
+    // 좁은 제품: 권리 고지 한 줄만이라도.
+    page.drawText('(c) Procardcrafters - procardcrafters.com  |  Rights reserved. Unauthorized use prohibited.', {
+      x: bleedPt + 3, y: bleedPt + 3, size: 3.2, font, color: rgb(0.4, 0.4, 0.4),
     })
   }
 
@@ -146,11 +159,14 @@ export async function buildPrintTemplatePdf(input: TemplatePdfInput): Promise<Ui
   doc.setTitle(`${productLabel} print template — ${spec.width_mm}x${spec.height_mm}mm`)
   doc.setSubject(
     `Procardcrafters blank print-ready template. Trim ${spec.width_mm}x${spec.height_mm}mm / ` +
-    `bleed ${spec.bleed_mm}mm / safe ${spec.safe_mm}mm / ${spec.color_mode} / min ${spec.min_dpi}dpi.`,
+    `bleed ${spec.bleed_mm}mm / safe ${spec.safe_mm}mm / ${spec.color_mode} / min ${spec.min_dpi}dpi. ` +
+    // 권리 고지를 메타데이터에도 박아 가이드 라벨을 지워도 파일에 권리표시가 남게 한다(OMO-3027).
+    '(c) Procardcrafters (procardcrafters.com). Template and design rights reserved. Unauthorized use prohibited.',
   )
+  doc.setAuthor('Procardcrafters (procardcrafters.com)')
   doc.setCreator('Procardcrafters')
-  doc.setProducer('Procardcrafters print-template generator')
-  doc.setKeywords(['procardcrafters', 'print template', 'bleed', 'trim', 'safe zone', productLabel])
+  doc.setProducer('Procardcrafters print-template generator — procardcrafters.com')
+  doc.setKeywords(['procardcrafters', 'procardcrafters.com', 'print template', 'bleed', 'trim', 'safe zone', 'rights reserved', productLabel])
 
   return doc.save()
 }
