@@ -115,9 +115,9 @@ export const PRODUCT_BASE_PRICE_SPECS: Record<string, ProductBasePriceSpec> = {
     doubleSided: true,
     note: 'CNC3000 collapse 비대표 → 메탈릭 실버 대표 pin (OMO-3076 확정)',
   },
-  // CLF2000: 대표 brochures(matrix) / menus 견적전용
+  // CLF2000 collapse: menus 견적전용 (brochures 는 OMO-3142 garbage 로 quote-only 재분류)
   'menus': { mode: 'quote-only', note: 'CLF2000 collapse 비대표' },
-  // CPR4000: 대표 saddle-stitch-booklet(matrix) / 나머지 견적전용
+  // CPR4000 collapse 잔여 (saddle-stitch-booklet 는 OMO-3142 garbage 로 quote-only 재분류)
   'perfect-bound-booklet': { mode: 'quote-only', note: 'CPR4000 collapse 비대표' },
   'catalogs': { mode: 'quote-only', note: 'CPR4000 collapse 비대표' },
   // CPR5000: 사이즈가격(비매트릭스) collapse — 전 제품 견적전용
@@ -130,9 +130,74 @@ export const PRODUCT_BASE_PRICE_SPECS: Record<string, ProductBasePriceSpec> = {
   'quotation-forms': { mode: 'quote-only', note: 'CNR2000 비매트릭스·collapse' },
   'invoice-forms': { mode: 'quote-only', note: 'CNR2000 비매트릭스·collapse' },
   'ncr-forms': { mode: 'quote-only', note: 'CNR2000 비매트릭스·collapse' },
-  // CCD2000: 대표 desk-calendars(matrix) / mini-calendars 견적전용
+  // CCD collapse: mini-calendars 견적전용 (desk-calendars 도 OMO-3142 garbage 로 quote-only 재분류)
   'mini-calendars': { mode: 'quote-only', note: 'CCD2000 collapse 비대표' },
+
+  // ── OMO-3142 인시던트 재분류 ──
+  // matrix-default 였으나 라이브 probe(scripts/omo3142-probe.mjs) 결과 generic endpoint 가
+  // '수량사다리' 매트릭스가 아닌 '사이즈가격 그리드'(minQty=1, q1 floor 64000/8000 = garbage)를
+  // 반환하는 제품들. 다음 cron 에서 base_price_krw 가 64000 등으로 재오염되므로 견적전용 고정.
+  // (이슈는 4종만 지목했으나 OMO-3097 #77 이 패키징/메모/포스터를 CATEGORY_MAP 에 추가해
+  //  실제 재오염 범위가 더 넓음 — probe 로 전수 확인.)
+  'wall-calendars': { mode: 'quote-only', note: 'CCD1000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'desk-calendars': { mode: 'quote-only', note: 'CCD2000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'leaflets': { mode: 'quote-only', note: 'CPR3000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'saddle-stitch-booklet': { mode: 'quote-only', note: 'CPR4000 사이즈가격 그리드 q1=8000 garbage (OMO-3142 probe)' },
+  'brochures': { mode: 'quote-only', note: 'CLF2000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'posters': { mode: 'quote-only', note: 'CPR2000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'memo-pads-general': { mode: 'quote-only', note: 'CNR3000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  // 비매트릭스 (matrixRows=0) — 원래도 no-matrix 로 skip 됐으나 의도를 명시
+  'sticky-notes': { mode: 'quote-only', note: 'CPS7000 비매트릭스 (OMO-3142 probe)' },
+  'wedding-cards': { mode: 'quote-only', note: 'CDP2000 비매트릭스 (OMO-3142 probe)' },
+  'greeting-cards-general': { mode: 'quote-only', note: 'CCM2000 비매트릭스 (OMO-3142 probe)' },
+  'transparent-stickers': { mode: 'quote-only', note: 'CST1000 비매트릭스 (OMO-3142 probe)' },
+  'kraft-stickers': { mode: 'quote-only', note: 'CST1000 비매트릭스 (OMO-3142 probe)' },
+  'eco-stickers': { mode: 'quote-only', note: 'CST1000 비매트릭스 (OMO-3142 probe)' },
+  // 패키징(박스/가방) — CEO 복구내역 보존 대상. q1=64000 garbage 로 절대 자동 갱신 금지.
+  'general-boxes': { mode: 'quote-only', note: 'CHI3000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'corrugated-boxes': { mode: 'quote-only', note: 'CHI3000 사이즈가격 그리드 garbage (OMO-3142 probe)' },
+  'gift-boxes': { mode: 'quote-only', note: 'CHI3000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'cake-boxes': { mode: 'quote-only', note: 'CHI3000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'tube-boxes': { mode: 'quote-only', note: 'CHI3000 사이즈가격 그리드 garbage (OMO-3142 probe)' },
+  'paper-shopping-bags': { mode: 'quote-only', note: 'CPK4000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  'kraft-bags': { mode: 'quote-only', note: 'CPK3000 사이즈가격 그리드 garbage (OMO-3142 probe)' },
+  'gift-bags': { mode: 'quote-only', note: 'CPK2000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
+  // invitation-cards(CVS1000): probe 가 명함과 동일한 q200=4000 을 줘서 last-good 25000 과 충돌(의심값).
+  //   allowlist 미포함 → 'unverified-matrix' 로 skip(last-good 보존). 별도 base-price 확정 후 재검토.
 }
+
+/**
+ * OMO-3142 가드 — 자동 base_price sync 화이트리스트.
+ *
+ * 배경: 기존엔 PRODUCT_BASE_PRICE_SPECS 에 명시되지 않은 모든 slug 가 'matrix' 기본으로
+ * 떨어져, generic endpoint 가 주는 값을 무조건 기록했다. 그런데 라이브 probe 결과 다수
+ * 카테고리(패키징/캘린더/책자/포스터/메모…)는 수량사다리가 아닌 사이즈가격 그리드를 주어
+ * q1 floor 64000/8000 같은 garbage 를 산출한다(인시던트 근본원인).
+ *
+ * 해결: matrix 자동 갱신을 **default-deny** 로 반전. 라이브 probe 로 '제품별 수량사다리
+ * (MOQ≥100, 카테고리별 상이값)'가 확인된 slug 만 여기에 등재한다. 미등재 matrix slug 는
+ * 'unverified-matrix' 로 skip(last-good 보존) → 미분류/신규 slug 도 절대 garbage 미기록.
+ *
+ * 등재 근거(OMO-3142 probe, 2026-06-14): CNC1000~6000 명함류는 minQty 100~200,
+ * 카테고리별 상이한 정상 단가(4000/3500/10000/8000/9000/4000)를 반환 → 검증.
+ */
+export const MATRIX_VERIFIED_SLUGS = new Set<string>([
+  'business-cards',          // CNC1000 q200=4000
+  'premium-business-cards',  // CNC2000 q200=3500
+  'pearl-business-cards',    // CNC2000 q200=3500
+  'premium-foil-cards',      // CNC3000 q200=10000
+  'letterpress-business-cards', // CNC4000 q200=8000
+  'transparent-business-cards', // CNC5000 q100=9000
+  'uv-business-cards',       // CNC6000 q200=4000
+])
+
+/** 정상 수량사다리의 최소 MOQ. 이보다 작은 최소수량(특히 q1)은 사이즈가격 제품의
+ *  비-수량 그리드 → 기준단가 부적합(garbage 차단). 검증 제품은 모두 MOQ≥100. */
+const MIN_LADDER_QUANTITY = 50
+
+/** 무관 카테고리 다수에 일괄 등장한 q1 floor sentinel(라이브 probe 확인). 검증 slug
+ *  라도 이 값이 산출되면 Swadpia 응답 변형으로 보고 기록 거부(belt-and-suspenders). */
+const SUSPECT_BASE_PRICE_KRW = new Set<number>([64_000])
 
 /**
  * 제품 slug + 카테고리 데이터로 기준단가(KRW)를 결정적으로 산출한다.
@@ -164,9 +229,23 @@ export function deriveProductBasePriceKrw(
       : { priceKrw: null, mode: 'paper', reason: 'paper-zero' }
   }
 
-  // matrix (기본)
+  // matrix (기본) — OMO-3142 default-deny 가드
+  // ① 화이트리스트 미등재 slug 는 자동 갱신 제외(미분류/신규/garbage 카테고리 전부 차단)
+  if (!MATRIX_VERIFIED_SLUGS.has(slug)) {
+    return { priceKrw: null, mode: 'matrix', reason: 'unverified-matrix' }
+  }
+  // ② 최소수량이 정상 MOQ 미만이면 사이즈가격 그리드로 보고 거부
+  const minQty = minPrintQuantity(data)
+  if (minQty !== null && minQty < MIN_LADDER_QUANTITY) {
+    return { priceKrw: null, mode: 'matrix', reason: 'suspect-low-moq' }
+  }
   const price = extractMatrixBasePriceKrw(data)
-  return price !== null
-    ? { priceKrw: price, mode: 'matrix' }
-    : { priceKrw: null, mode: 'matrix', reason: 'no-matrix' }
+  if (price === null) {
+    return { priceKrw: null, mode: 'matrix', reason: 'no-matrix' }
+  }
+  // ③ 무관 카테고리 일괄 garbage sentinel 거부
+  if (SUSPECT_BASE_PRICE_KRW.has(price)) {
+    return { priceKrw: null, mode: 'matrix', reason: 'suspect-value' }
+  }
+  return { priceKrw: price, mode: 'matrix' }
 }
