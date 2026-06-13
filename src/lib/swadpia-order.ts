@@ -68,6 +68,78 @@ const SWADPIA_FIELD_ALIAS: Record<string, Record<string, string>> = {
   CPR2000: { print_color_type: 'fside_color_amount' },                                     // 포스터
 }
 
+// ─── 종속(재populate) select 필드 (OMO-3033 / OMO-3030 / OMO-3037) ──
+//
+// 성원 폼의 일부 select 는 다른 옵션을 선택하는 순간 AJAX 로 옵션 목록이
+// 갈아끼워진다(재populate). 대표 케이스가 책자 `binding_type` —
+// 정적 HTML 엔 [BDT2,BDT6,BDT4] 가 다 있으나, 표지 용지(cover_paper_*)나
+// 내지 페이지수(in_page_qty) 를 고르는 순간 binding_type 이 재populate 되며
+// BDT6(PUR무선제본)의 진짜 노출 게이트는 **내지 페이지수 in_page_qty ≥ 32**
+// (PUR무선 최소 내지 32p). 이 조건이 충족되면 표지는 고급지 PKD20(현행 시드
+// ARE160W00 포함)·특수지 PKD30 등에서 BDT6 가 살아남는다 — PKD30 전용이 아니다.
+// 반대로 일반지 PKD10·펄지 PKD40 은 표지 용지 자체가 BDT6 원천 미노출.
+// (OMO-3037 정정: 종전 "PKD30 표지 전용" 단정은 오류 — OMO-3034 라이브 probe 로 반증.)
+// 라이브 확정: scripts/test-artifacts/omo3034/phase{1,5,6,7}-*.json
+//             (구 omo3030/{bdt6,probe2}.json 은 부분 관측이라 오해 소지).
+//
+// 따라서 이런 종속 필드는 (1) 선행 옵션을 모두 적용한 "뒤에" 설정하고,
+// (2) 설정 직전 live select 에 값이 실제 존재하는지 검증해야 한다. 검증 없이
+// selectEl.selectOption('BDT6') 하면 모호한 Playwright 예외가 나서 어떤 조합이
+// 비호환인지 알 수 없고, 용지/페이지 조합에 따라 간헐 발주 실패한다.
+const DEPENDENT_SELECT_FIELDS = new Set(['binding_type'])
+
+/**
+ * OMO-3033: 옵션 적용 순서를 둘로 가른다.
+ * - immediate: 표지/내지 용지·사이즈 등 먼저 적용할 필드(canonical optKey)
+ * - deferred: 다른 옵션에 따라 재populate 되는 종속 필드 — 반드시 마지막에 설정
+ * 반환 키는 alias 변환 전 canonical optKey 다. 수량·후가공 키는 별도 경로라 제외.
+ */
+export function partitionOptionKeys(
+  options: Record<string, string>,
+  fieldAlias: Record<string, string> = {},
+): { immediate: string[]; deferred: string[] } {
+  const immediate: string[] = []
+  const deferred: string[] = []
+  for (const optKey of Object.keys(options)) {
+    if (optKey === 'quantity' || optKey === 'paper_qty') continue
+    if (isFinishingKey(optKey)) continue
+    const target = fieldAlias[optKey] ?? optKey
+    if (DEPENDENT_SELECT_FIELDS.has(target)) deferred.push(optKey)
+    else immediate.push(optKey)
+  }
+  return { immediate, deferred }
+}
+
+// ─── 책자(CPR4000) 내지 페이지수 기본값 (OMO-3041) ──────────────────
+//
+// BDT6(PUR무선제본)의 실노출 게이트는 내지 페이지수 in_page_qty ≥ 32 (PUR무선
+// 최소 내지 32p — OMO-3035/3037 라이브 확정). print_product_options 는 canonical
+// 4종(paper_code/print_color_type/paper_size/paper_qty)만 저장 가능해(CHECK 제약)
+// in_page_qty 를 DB 시드로 둘 수 없다. 따라서 책자 카테고리(CPR4000) 자동발주에
+// 한해 내지 페이지수 기본값을 코드에서 주입한다.
+//
+// - 발주 입력에 in_page_qty 가 없으면 → 권장 기본값 64p 주입.
+// - 입력에 in_page_qty 가 있으면 그 값을 존중한다(고객/상위 의도 우선). 단 32 미만이면
+//   PUR무선 자체가 불가(BDT6 미노출)라 발주가 실패하는데, 그 진단/중단은 이미
+//   selectOrderOptions 의 deferred 검증(OMO-3037)이 명확한 에러로 처리한다 — 여기서
+//   조용히 끌어올려 고객 의도와 다른 페이지수로 오발주하지 않는다.
+const BOOKLET_CATEGORY_CODES = new Set(['CPR4000'])
+const BOOKLET_DEFAULT_IN_PAGE_QTY = 64
+
+/**
+ * OMO-3041: 책자(CPR4000) 자동발주 옵션에 내지 페이지수 기본값(≥32, 권장 64p)을
+ * 주입한다. in_page_qty 가 이미 있으면 원본 그대로 반환(입력 의도 존중).
+ * 비-책자 카테고리는 변경 없이 통과.
+ */
+export function withBookletInPageQtyDefault(
+  categoryCode: string,
+  options: Record<string, string>,
+): Record<string, string> {
+  if (!BOOKLET_CATEGORY_CODES.has(categoryCode)) return options
+  if (options['in_page_qty']) return options
+  return { ...options, in_page_qty: String(BOOKLET_DEFAULT_IN_PAGE_QTY) }
+}
+
 // ─── Types ────────────────────────────────────────────────────
 
 export interface SwadpiaOrderInput {
@@ -150,7 +222,11 @@ export async function placeSwadpiaOrder(
     await page.goto(goodsPageUrl, { waitUntil: 'networkidle', timeout: 30000 })
     await page.waitForTimeout(2000)
     const fieldAlias = SWADPIA_FIELD_ALIAS[categoryCode] ?? {}
-    await selectOrderOptions(page, input.selectedOptions, input.quantity, fieldAlias)
+    // OMO-3041: 책자(CPR4000)는 내지 페이지수 기본값(≥32, 권장 64p)을 주입해야
+    // BDT6(PUR무선) 노출 게이트(in_page_qty≥32)를 통과한다. in_page_qty 는 canonical
+    // 옵션이 아니라 시드에 없으므로 발주 직전 코드에서 채운다.
+    const effectiveOptions = withBookletInPageQtyDefault(categoryCode, input.selectedOptions)
+    await selectOrderOptions(page, effectiveOptions, input.quantity, fieldAlias)
 
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
@@ -601,47 +677,54 @@ async function activateFinishings(
   }
 }
 
+/**
+ * 단일 옵션 필드를 폼에 적용한다 — select(대부분) 또는 hidden radio(paper_gloss 등).
+ * 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리하므로 여기 호출 금지.
+ * 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647)는 점에 주의.
+ */
+async function applyOptionField(page: Page, key: string, value: string): Promise<void> {
+  // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
+  const selectEl = await page.$(`select[name="${key}"]`)
+  if (selectEl) {
+    await selectEl.selectOption(value)
+    await page.waitForTimeout(300)
+    return
+  }
+
+  // hidden radio 버튼 (paper_gloss 등)
+  const radio = await page.$(`input[name="${key}"][value="${value}"]`)
+  if (radio) {
+    await page.evaluate(
+      (params: { name: string; val: string }) => {
+        const el = document.querySelector(`input[name="${params.name}"][value="${params.val}"]`) as HTMLInputElement
+        if (el) {
+          el.checked = true
+          el.dispatchEvent(new Event('change', { bubbles: true }))
+        }
+      },
+      { name: key, val: value },
+    )
+    await page.waitForTimeout(300)
+  }
+}
+
 export async function selectOrderOptions(
   page: Page,
   options: Record<string, string>,
   quantity: number,
   fieldAlias: Record<string, string> = {},
 ): Promise<void> {
-  for (const [optKey, value] of Object.entries(options)) {
-    if (optKey === 'quantity' || optKey === 'paper_qty') continue
-    // 후가공 필드는 인터랙티브 활성화(activateFinishings)에서 별도 처리.
-    // 여기서 평면 selectOption 하면 숨김 select 라 단가가 안 잡힌다(OMO-2647).
-    if (isFinishingKey(optKey)) continue
+  // OMO-3033: 종속(재populate) 필드(책자 binding_type 등)는 선행 옵션 적용 후
+  // 마지막에 설정해야 한다 → immediate / deferred 로 분리.
+  const { immediate, deferred } = partitionOptionKeys(options, fieldAlias)
+
+  // 1) 즉시 적용 필드 (표지/내지 용지, 사이즈 등)
+  for (const optKey of immediate) {
     // canonical option_type → 성원 실제 select name 변환 (OMO-2634)
-    const key = fieldAlias[optKey] ?? optKey
-
-    // select 요소 직접 선택 (Swadpia는 대부분 select 기반)
-    const selectEl = await page.$(`select[name="${key}"]`)
-    if (selectEl) {
-      await selectEl.selectOption(value)
-      await page.waitForTimeout(300)
-      continue
-    }
-
-    // hidden radio 버튼 (paper_gloss 등)
-    const radio = await page.$(`input[name="${key}"][value="${value}"]`)
-    if (radio) {
-      await page.evaluate(
-        (params: { name: string; val: string }) => {
-          const el = document.querySelector(`input[name="${params.name}"][value="${params.val}"]`) as HTMLInputElement
-          if (el) {
-            el.checked = true
-            el.dispatchEvent(new Event('change', { bubbles: true }))
-          }
-        },
-        { name: key, val: value },
-      )
-      await page.waitForTimeout(300)
-      continue
-    }
+    await applyOptionField(page, fieldAlias[optKey] ?? optKey, options[optKey])
   }
 
-  // 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
+  // 2) 수량 — 카테고리별 실제 수량 select name (paper_qty / paper_qty_select / bundle_qty)
   if (quantity) {
     const qtyField = fieldAlias['paper_qty'] ?? 'paper_qty'
     const qtySelect = await page.$(`select[name="${qtyField}"]`)
@@ -649,6 +732,50 @@ export async function selectOrderOptions(
       await qtySelect.selectOption(String(quantity))
       await page.waitForTimeout(300)
     }
+  }
+
+  // 3) 종속(재populate) 필드 — 표지/내지 용지·페이지수·수량 적용이 끝나 옵션
+  //    목록이 확정된 "뒤에" 설정한다. 설정 직전 live select 에 값 존재를 검증해
+  //    (OMO-3033) 없으면 명확한 에러로 중단 — 조용한 스킵/오발주 금지.
+  for (const optKey of deferred) {
+    const key = fieldAlias[optKey] ?? optKey
+    const value = options[optKey]
+    const selectEl = await page.$(`select[name="${key}"]`)
+    if (!selectEl) {
+      throw new Error(
+        `[swadpia-order] 종속 옵션 select[name="${key}"] 가 폼에 없음 — ` +
+          `상품 폼 구조 변경 의심. 발주 중단(${optKey}=${value}).`,
+      )
+    }
+    const liveValues: string[] = await selectEl.evaluate((el: Element) =>
+      Array.from((el as HTMLSelectElement).options).map((o) => o.value),
+    )
+    // OMO-3037: BDT6 부재의 1순위 원인이 내지 페이지수 부족이라, 검증 throw 전에
+    // in_page_qty<32 면 진단을 좁혀 주는 안내 로그를 남긴다(흐름은 그대로).
+    if (value === 'BDT6' && !liveValues.includes(value)) {
+      const inPageQty = Number(options['in_page_qty'])
+      if (Number.isFinite(inPageQty) && inPageQty < 32) {
+        console.warn(
+          `[swadpia-order] ⚠️ BDT6 미노출 — in_page_qty=${inPageQty} < 32(PUR무선 최소 내지). ` +
+            `표지 용지가 아닌 페이지수가 게이트일 가능성 높음(OMO-3037).`,
+        )
+      }
+    }
+    if (!liveValues.includes(value)) {
+      throw new Error(
+        `[swadpia-order] ${key}=${value} 가 현재 옵션 조합에서 선택 불가 ` +
+          `(live 옵션: [${liveValues.filter(Boolean).join(',')}]). ` +
+          (value === 'BDT6'
+            ? `BDT6(PUR무선제본) 노출 게이트는 내지 페이지수 in_page_qty≥32 이며 ` +
+              `표지는 고급지(PKD20)·특수지(PKD30) 등에서 살아남는다 — 일반지(PKD10)·펄지(PKD40) 표지는 원천 미노출. ` +
+              `부재 원인은 보통 (1) in_page_qty<32(현재 ${options['in_page_qty'] ?? '미상'}) 또는 ` +
+              `(2) 표지 용지(${options['paper_code'] ?? '미상'})가 PKD10/PKD40 계열. ` +
+              `해당 조합을 32p 이상·BDT6 호환 표지로 교정 필요(OMO-3037). `
+            : '') +
+          `오발주 방지를 위해 발주 중단.`,
+      )
+    }
+    await applyOptionField(page, key, value)
   }
 
   await page.waitForTimeout(1000)

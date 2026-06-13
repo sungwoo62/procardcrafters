@@ -1,0 +1,78 @@
+{
+  "target_cover": "MGM200W01",
+  "ts": "2026-06-13T02:13:32.100Z",
+  "page_results": {
+    "28": {
+      "applied": "28",
+      "available_in_select": true,
+      "nPageOpts": 161,
+      "binding_default": "BDT2",
+      "binding": [
+        [
+          "BDT2",
+          "ì¤‘ì²"
+        ],
+        [
+          "BDT4",
+          "ìŠ¤í”„ë§"
+        ]
+      ],
+      "has_BDT6": false
+    },
+    "32": {
+      "applied": "32",
+      "available_in_select": true,
+      "nPageOpts": 161,
+      "binding_default": "BDT2",
+      "binding": [
+        [
+          "BDT2",
+          "ì¤‘ì²"
+        ],
+        [
+          "BDT6",
+          "purë¬´ì„"
+        ],
+        [
+          "BDT4",
+          "ìŠ¤í”„ë§"
+        ]
+      ],
+      "has_BDT6": true
+    },
+    "64": {
+      "applied": "64",
+      "available_in_select": true,
+      "nPageOpts": 161,
+      "binding_default": "BDT2",
+      "binding": [
+        [
+          "BDT2",
+          "ì¤‘ì²"
+        ],
+        [
+          "BDT6",
+          "purë¬´ì„"
+        ],
+        [
+          "BDT4",
+          "ìŠ¤í”„ë§"
+        ]
+      ],
+      "has_BDT6": true
+    }
+  },
+  "cascade": {
+    "ok": true,
+    "cover_paper_kind": "PKD30",
+    "cover_paper_type": "MGM",
+    "typeLabel": "매직매칭",
+    "cover_paper_code": "MGM200W01",
+    "codeLabel": "백색 200g",
+    "in_paper": {
+      "kind": "PKD10",
+      "type": "NPL",
+      "code": "NPL080W00"
+    }
+  }
+}
