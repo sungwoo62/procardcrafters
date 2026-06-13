@@ -95,10 +95,12 @@ export const CATEGORY_MAP: Record<string, string> = {
   'postcards': 'CDP3000',
   // 디스플레이
   'posters': 'CPR2000',
+  // ⚠️ banners/x/rollup: 성원 CPR5000 은 실제 '종이홀더'(오매핑). 성원엔 대형 배너
+  // 카테고리가 없음(미니배너 COD1100 만 존재) → 라우팅 보류, 보드 결정 대기.
   'banners': 'CPR5000',
   'x-banners': 'CPR5000',
   'rollup-banners': 'CPR5000',
-  'mini-banners': 'CPR5000',
+  'mini-banners': 'COD1100',            // 종이미니배너 (OMO-3058 정정: CPR5000→COD1100)
   // 봉투·서식
   'standard-envelopes': 'CEV1000',
   'admin-envelopes': 'CEV1000',
@@ -111,6 +113,35 @@ export const CATEGORY_MAP: Record<string, string> = {
   'wall-calendars': 'CCD1000',
   'desk-calendars': 'CCD2000',
   'mini-calendars': 'CCD2000',
+  // ─── OMO-3058: 성원 전체 카탈로그 정렬 (라이브 검증 완료, 22종 신규) ───
+  // 초대장/안내장/인사장
+  'invitation-cards': 'CVS1000',        // 일반초대장/상품권
+  'wedding-cards': 'CDP2000',           // 디지털청첩장/초대장
+  'greeting-cards-general': 'CCM4000',  // 연하장
+  'hangtag-cards': 'CNC7000',           // 프리컷팅(커팅 행택)
+  // 스티커 변형 (용지 옵션 차이 → 동일 카테고리)
+  'transparent-stickers': 'CST1000',    // 재단형(PVC 투명지 포함)
+  'kraft-stickers': 'CST1000',
+  'eco-stickers': 'CST1000',
+  // 노트/메모
+  'general-notebooks': 'CDP5100',       // 디지털노트
+  'diaries': 'CDP5100',                 // ※성원 전용 다이어리 없음 → 디지털노트 대용
+  'spring-notebooks': 'CDP5100',
+  'memo-pads-general': 'CNR3000',       // 떡메모지
+  'sticky-notes': 'CPS7000',            // 사각포스트잇
+  // POP (성원 대형 POP 없음 → 미니배너 대용, 보드 확인 필요)
+  'paper-pop': 'COD1100',               // 종이미니배너
+  'foam-pop': 'COD1100',                // ※성원 폼보드 없음 → 미니배너 대용(루즈매칭)
+  // 박스 (전부 판지/박스 단일 카테고리)
+  'general-boxes': 'CHI3000',           // 판지/박스
+  'corrugated-boxes': 'CHI3000',
+  'gift-boxes': 'CHI3000',
+  'cake-boxes': 'CHI3000',
+  'tube-boxes': 'CHI3000',
+  // 쇼핑백/봉투백
+  'paper-shopping-bags': 'CPK4000',     // 일반쇼핑백
+  'kraft-bags': 'CPK4000',
+  'gift-bags': 'CPK2000',               // 리본&브레이드 쇼핑백
 }
 
 // ─── In-memory cache (1-hour TTL) ────────────────────────────

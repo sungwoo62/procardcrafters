@@ -44,7 +44,8 @@ export async function GET(req: NextRequest) {
   const drifted: { slug: string; categoryCode: string; summary: string }[] = []
   const errored: { slug: string; error: string }[] = []
 
-  for (const row of rows ?? []) {
+  // 한 행 처리(fetch + 비교 + DB 반영). 부하 분할에 더해 동시성 풀로 60종도 60초 내 처리.
+  async function processRow(row: { slug: string; category_code: string; fingerprint: unknown }) {
     const code = row.category_code as string
     checked.push(row.slug)
     const data = await fetchSwadpiaCategoryDataByCode(code)
@@ -56,14 +57,12 @@ export async function GET(req: NextRequest) {
           .update({ status: 'error', verify_error: data.errorMessage ?? 'fetch 실패' })
           .eq('slug', row.slug)
       }
-      continue
+      return
     }
     const next = computeFingerprint(data)
     const prev = row.fingerprint as SwadpiaFingerprint | null
     const diff = diffFingerprint(prev, next)
     if (!diff) {
-      // 변경 없음 — 최신 핑거프린트로 갱신. 최초 baseline(prev 없음)이면 라이브
-      // 검증 성공으로 간주해 status=verified 승격(보드가 링크 공란이어도 OK). OMO-3058
       if (!dryRun) {
         const upd: Record<string, unknown> = { fingerprint: next }
         if (!prev) {
@@ -73,7 +72,7 @@ export async function GET(req: NextRequest) {
         }
         await supabase.from('print_swadpia_mapping').update(upd).eq('slug', row.slug)
       }
-      continue
+      return
     }
     drifted.push({ slug: row.slug, categoryCode: code, summary: diff.summary })
     if (!dryRun) {
@@ -86,12 +85,17 @@ export async function GET(req: NextRequest) {
         new_fingerprint: next,
         reported: false,
       })
-      // 맵핑 행: 드리프트 표시 + 핑거프린트는 보드 재검증 전까지 보존(prev 유지)
       await supabase
         .from('print_swadpia_mapping')
         .update({ status: 'drift', verify_error: diff.summary })
         .eq('slug', row.slug)
     }
+  }
+
+  // 동시성 8 로 청크 처리(성원 부하·우리 함수시간 균형).
+  const CONCURRENCY = 8
+  for (let i = 0; i < rows.length; i += CONCURRENCY) {
+    await Promise.all(rows.slice(i, i + CONCURRENCY).map((r) => processRow(r)))
   }
 
   return NextResponse.json({

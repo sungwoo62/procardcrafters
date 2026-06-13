@@ -45,9 +45,26 @@ export async function GET() {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 })
   }
+  // CATEGORY_MAP 에 새 코드가 추가되면(예: OMO-3058 전체정렬) 보드가 손대지 않은
+  // 행(swadpia_url null)의 category_code 를 동기화 + status unmapped→mapped 자가치유.
+  const rowsData = data ?? []
+  for (const r of rowsData) {
+    const code = CATEGORY_MAP[r.slug]
+    if (code && !r.swadpia_url && r.category_code !== code) {
+      // 코드가 바뀌면 옛 핑거프린트는 다른 카테고리 기준이라 무효 → null 로 리셋해
+      // 다음 드리프트 점검이 새 카테고리로 깨끗이 baseline 하게 한다(허위 드리프트 방지).
+      const newStatus = r.status === 'unmapped' || !r.status ? 'mapped' : r.status
+      await supabase
+        .from('print_swadpia_mapping')
+        .update({ category_code: code, status: newStatus, fingerprint: null })
+        .eq('slug', r.slug)
+      r.category_code = code
+      r.status = newStatus
+    }
+  }
   // 그룹/슬러그 순서를 PRODUCT_GROUPS 기준으로 정렬해 반환
   const order = new Map(ALL_SLUGS.map((s, i) => [s, i]))
-  const rows = (data ?? []).sort(
+  const rows = rowsData.sort(
     (a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999),
   )
   return NextResponse.json({ rows, groups: PRODUCT_GROUPS })
