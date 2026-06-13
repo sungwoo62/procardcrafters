@@ -3,6 +3,7 @@ import {
   extractMatrixBasePriceKrw,
   deriveProductBasePriceKrw,
   PRODUCT_BASE_PRICE_SPECS,
+  MATRIX_VERIFIED_SLUGS,
 } from '../swadpia-base-price'
 import type { SwadpiaCategoryData, SwadpiaPrintEntry } from '../swadpia'
 
@@ -123,8 +124,9 @@ describe('deriveProductBasePriceKrw — 제품별 산출 경로', () => {
   })
 
   it('matrix 분류여도 런타임 매트릭스가 비면 null(no-matrix) — 임의값 기록 안 함', () => {
-    const data = categoryData({ categoryCode: 'CPR2000', printEntries: [] })
-    const r = deriveProductBasePriceKrw('posters', data)
+    // 검증 slug(business-cards)인데 매트릭스가 비어 있는 경우 → no-matrix
+    const data = categoryData({ categoryCode: 'CNC1000', printEntries: [] })
+    const r = deriveProductBasePriceKrw('business-cards', data)
     expect(r.mode).toBe('matrix')
     expect(r.priceKrw).toBeNull()
     expect(r.reason).toBe('no-matrix')
@@ -207,5 +209,83 @@ describe('OMO-3078 — metallic-business-cards paper 모드', () => {
     expect(r.mode).toBe('paper')
     expect(r.priceKrw).toBeNull()
     expect(r.reason).toBe('paper-zero')
+  })
+})
+
+// OMO-3142: 가격 cron 오가격 재발방지 가드 회귀테스트.
+// 라이브 probe(scripts/omo3142-probe.mjs) 로 확인된 garbage 패턴(사이즈가격 그리드
+// minQty=1, q1 floor 64000/8000)이 base_price_krw 로 기록되지 않아야 한다.
+describe('OMO-3142 — matrix default-deny 가드', () => {
+  // generic endpoint 가 주는 사이즈가격 그리드 garbage 재현(minQty=1, q1 단가=64000)
+  const garbageGrid = (code: string): SwadpiaCategoryData =>
+    categoryData({
+      categoryCode: code,
+      printEntries: [
+        entry(1, 'GRID', 64_000),
+        entry(2, 'GRID', 64_000),
+        entry(3, 'GRID', 64_000),
+      ],
+    })
+
+  it('이슈 지목 4종(wall/desk-calendars, saddle-stitch-booklet, leaflets) 은 quote-only', () => {
+    for (const slug of ['wall-calendars', 'desk-calendars', 'saddle-stitch-booklet', 'leaflets']) {
+      expect(PRODUCT_BASE_PRICE_SPECS[slug]?.mode).toBe('quote-only')
+      const r = deriveProductBasePriceKrw(slug, garbageGrid('CCD1000'))
+      expect(r.priceKrw).toBeNull()
+    }
+  })
+
+  it('probe 로 추가 확인된 garbage 카테고리(brochures/posters/memo) 도 quote-only → null', () => {
+    for (const slug of ['brochures', 'posters', 'memo-pads-general']) {
+      expect(PRODUCT_BASE_PRICE_SPECS[slug]?.mode).toBe('quote-only')
+      expect(deriveProductBasePriceKrw(slug, garbageGrid('CLF2000')).priceKrw).toBeNull()
+    }
+  })
+
+  it('무관제품(박스/가방/메모/카드) 은 garbage 매트릭스를 줘도 절대 매핑되지 않는다', () => {
+    // CEO 복구내역 보존 대상 — 다음 cron 에서 64000 으로 재오염되면 안 됨.
+    const unrelated = [
+      'general-boxes', 'gift-boxes', 'cake-boxes', 'corrugated-boxes', 'tube-boxes',
+      'paper-shopping-bags', 'kraft-bags', 'gift-bags',
+      'memo-pads-general', 'invitation-cards',
+    ]
+    for (const slug of unrelated) {
+      const r = deriveProductBasePriceKrw(slug, garbageGrid('CHI3000'))
+      expect(r.priceKrw).toBeNull() // 견적전용이거나 unverified-matrix → 기록 안 함
+    }
+  })
+
+  it('화이트리스트 미등재 matrix slug 는 unverified-matrix 로 skip (default-deny)', () => {
+    // PRODUCT_BASE_PRICE_SPECS 에도 없고 MATRIX_VERIFIED_SLUGS 에도 없는 미분류 slug
+    const r = deriveProductBasePriceKrw('some-new-unknown-product', garbageGrid('CXX9999'))
+    expect(r.mode).toBe('matrix')
+    expect(r.priceKrw).toBeNull()
+    expect(r.reason).toBe('unverified-matrix')
+  })
+
+  it('검증 slug 라도 minQty 가 정상 MOQ 미만(q1)이면 suspect-low-moq 로 거부', () => {
+    const r = deriveProductBasePriceKrw('business-cards', garbageGrid('CNC1000'))
+    expect(r.priceKrw).toBeNull()
+    expect(r.reason).toBe('suspect-low-moq')
+  })
+
+  it('검증 slug + 정상 MOQ 인데 q1 floor sentinel(64000)이 나오면 suspect-value 로 거부', () => {
+    const data = categoryData({
+      categoryCode: 'CNC1000',
+      printEntries: [entry(200, 'PA', 64_000)],
+    })
+    const r = deriveProductBasePriceKrw('business-cards', data)
+    expect(r.priceKrw).toBeNull()
+    expect(r.reason).toBe('suspect-value')
+  })
+
+  it('검증된 명함류는 정상 매트릭스가를 그대로 산출한다(가드 통과)', () => {
+    const cnc = (price: number) =>
+      categoryData({ categoryCode: 'CNC1000', printEntries: [entry(200, 'PA', price)] })
+    expect(deriveProductBasePriceKrw('business-cards', cnc(4_000)).priceKrw).toBe(4_000)
+    expect(deriveProductBasePriceKrw('premium-foil-cards', cnc(10_000)).priceKrw).toBe(10_000)
+    for (const slug of MATRIX_VERIFIED_SLUGS) {
+      expect(deriveProductBasePriceKrw(slug, cnc(5_000)).priceKrw).toBe(5_000)
+    }
   })
 })
