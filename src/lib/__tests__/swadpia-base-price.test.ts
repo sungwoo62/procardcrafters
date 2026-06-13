@@ -289,3 +289,34 @@ describe('OMO-3142 — matrix default-deny 가드', () => {
     }
   })
 })
+
+describe('OMO-3143 — invitation-cards(CVS1000) 명함 매트릭스 폴백 가드', () => {
+  // 라이브 probe(2026-06-14): CVS1000 generic endpoint 는 category_code 를 무시하고
+  // CNC1000(명함) 매트릭스를 그대로 반환한다 — q200=4000/paper=SNW300W00 이 CNC1000 과 동일.
+  // (실제 초대장가는 goods_view cascade=MOQ 500매·q500 70,500. 4000 은 명함값이며 초대장 실가 아님.)
+  // 위험: 이 매트릭스는 minQty=200(정상 MOQ)·단가=4000(≠64000 sentinel)이라 MOQ/sentinel 가드를
+  //       모두 통과한다 → 만약 화이트리스트에 등재되면 garbage 4000 이 그대로 기록됨.
+  const namecardFallbackMatrix = categoryData({
+    categoryCode: 'CVS1000',
+    printEntries: [
+      entry(200, 'SNW300W00', 4_000), // CNC1000 명함 매트릭스 최소수량/최저단가 재현
+      entry(400, 'SNW300W00', 7_500),
+      entry(500, 'SNW300W00', 9_000),
+    ],
+  })
+
+  it('invitation-cards 는 quote-only 로 명시 분류된다 (last-good 25000 보존)', () => {
+    expect(PRODUCT_BASE_PRICE_SPECS['invitation-cards']?.mode).toBe('quote-only')
+  })
+
+  it('명함 폴백 매트릭스를 줘도 4000 을 기록하지 않고 null(quote-only) 을 반환한다', () => {
+    const r = deriveProductBasePriceKrw('invitation-cards', namecardFallbackMatrix)
+    expect(r.priceKrw).toBeNull()
+    expect(r.mode).toBe('quote-only')
+  })
+
+  it('invitation-cards 는 절대 화이트리스트에 등재되지 않는다 (재발 방지)', () => {
+    // 등재 시 위 폴백 매트릭스가 MOQ/sentinel 가드를 통과해 garbage 4000 을 기록하게 됨.
+    expect(MATRIX_VERIFIED_SLUGS.has('invitation-cards')).toBe(false)
+  })
+})

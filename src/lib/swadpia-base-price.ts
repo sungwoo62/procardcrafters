@@ -162,8 +162,19 @@ export const PRODUCT_BASE_PRICE_SPECS: Record<string, ProductBasePriceSpec> = {
   'paper-shopping-bags': { mode: 'quote-only', note: 'CPK4000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
   'kraft-bags': { mode: 'quote-only', note: 'CPK3000 사이즈가격 그리드 garbage (OMO-3142 probe)' },
   'gift-bags': { mode: 'quote-only', note: 'CPK2000 사이즈가격 그리드 q1=64000 garbage (OMO-3142 probe)' },
-  // invitation-cards(CVS1000): probe 가 명함과 동일한 q200=4000 을 줘서 last-good 25000 과 충돌(의심값).
-  //   allowlist 미포함 → 'unverified-matrix' 로 skip(last-good 보존). 별도 base-price 확정 후 재검토.
+  // invitation-cards(CVS1000): generic JSON endpoint 가 category_code 를 무시하고
+  //   명함(CNC1000) 매트릭스로 폴백한다 — q200=4000/SNW300W00 이 CNC1000 과 바이트 동일
+  //   (OMO-3143 라이브 probe 2026-06-14: CVS1000 rows=174/derived=4000/paper=SNW300W00,
+  //    product=name/card/est/invitation 전부 동일 = CNC1000 과 일치. 반면 CNC2000/3000 은
+  //    rows/derived 가 상이해 엔드포인트가 명함류는 실제 구분함 → CVS1000 만 폴백 확정).
+  //   실제 초대장(CVS1000) 단가는 goods_view cascade(OMO-3111)에서 MOQ 500매·q500 공급가
+  //   70,500 으로, generic matrix 의 4000(=명함값)과 무관. 따라서 4000 은 초대장 실가가
+  //   아니며 자동 sync 부적합 → 'quote-only' 확정(last-good 25000 보존). 절대 화이트리스트
+  //   등재 금지(4000 이 정상 명함값과 같아 오인 위험 → 회귀테스트로 가드).
+  'invitation-cards': {
+    mode: 'quote-only',
+    note: 'CVS1000 generic endpoint 가 명함 CNC1000 매트릭스로 폴백(q200=4000=명함값), 초대장 실가 아님 (OMO-3143 probe)',
+  },
 }
 
 /**
