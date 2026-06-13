@@ -20,6 +20,15 @@ import {
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
+// 성원 goods_view 는 category_code + goods_code 둘 다 필요하다. category 만 주면
+// PHP가 상품객체를 못 찾아 에러 페이지(+한글 깨짐)가 뜬다(OMO-3058 보드 제보).
+// goods_code 패턴: 'G' + category[1:-1] + '1' (예: CNC1000→GNC1001, CDP5100→GDP5101).
+function swadpiaGoodsUrl(categoryCode: string | null): string {
+  if (!categoryCode) return SWADPIA_BASE
+  const goods = 'G' + categoryCode.slice(1, -1) + '1'
+  return `${SWADPIA_BASE}/goods/goods_view/${categoryCode}/${goods}`
+}
+
 // OMO-3058: 우리 사이트 전체 제품 ↔ 성원(swadpia) 맵핑 편집 + 검증 도구.
 // 보드가 각 제품 옆에 성원 상품 링크를 붙이면 저장 시 라이브 검증해 category_code 를
 // 세팅하고 옵션 핑거프린트를 스냅샷한다. 성원쪽 변경(드리프트)은 별도 크론이 감지해
@@ -254,7 +263,7 @@ export default function SwadpiaMappingTool() {
                         {/* OMO-3058: 매핑된 성원 상품 새창 링크 */}
                         {(row.swadpia_url || row.category_code) && (
                           <a
-                            href={row.swadpia_url || `${SWADPIA_BASE}/goods/goods_view/${row.category_code}`}
+                            href={row.swadpia_url || swadpiaGoodsUrl(row.category_code)}
                             target="_blank"
                             rel="noopener noreferrer"
                             title="성원 상품 페이지 (새창)"
