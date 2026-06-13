@@ -16,15 +16,16 @@ export const dynamic = 'force-static'
 // 조사 주석을 근거로 정리. (CNCxxxx=명함, CSTxxxx=스티커, CLPxxxx=라벨, CLF/CPR=인쇄물,
 // CEV=봉투, CNR=전표, CCD=캘린더, CDP=엽서)
 const SWADPIA_CATEGORY_LABEL: Record<string, string> = {
-  CNC1000: '일반 명함',
-  CNC2000: '고급(프리미엄) 명함',
-  CNC3000: '메탈·포일 명함',
-  CNC4000: '아트지 300g 명함',
-  CNC5000: 'PET 투명 명함',
-  CNC6000: 'UV 코팅 명함',
-  CNC8000: '펄 UV 명함',
-  CST1000: '일반 스티커',
+  CNC1000: '일반지명함',
+  CNC2000: '고급지명함(펄지 옵션 포함)', // OMO-3097: 다이니티 골드펄 250g → 펄 명함 라우팅
+  CNC3000: '카드명함(메탈·포일 Luxury)',
+  CNC4000: '하이브리드명함(아트지 300g)',
+  CNC5000: '투명하이브리드명함(PET)',
+  CNC6000: '디지털박/에폭시명함(UV·특수후가공)',
+  CNC8000: '프리미엄 명함(반누보·랑데뷰 등 9종) — 펄지 없음, 현재 미연동', // OMO-3097: 라이브 실재 카테고리지만 펄 용지 부재
+  CST1000: '재단형 스티커(투명데드롱·크라프트·모조 용지옵션)',
   CST2000: '도무송(다이컷) 스티커',
+  CST3000: '차량 스티커', // OMO-3097 라이브검증
   CST4000: '디지털 메탈박(포일·백색잉크) 스티커', // OMO-3083 라이브검증, 현재 미연동 slug
   CST5000: '스페셜 스티커(저온/방수·은지·PVC)', // OMO-3095: 홀로그램 아님(샤인실버/금은무광/저온유포/PVC)
   CST6000: '팬시롤 스티커(홀로그램·투명 Pet)', // OMO-3095: STR050HN1 홀로그램 용지 보유
@@ -35,18 +36,44 @@ const SWADPIA_CATEGORY_LABEL: Record<string, string> = {
   CPR2000: '포스터',
   CPR3000: '리플렛/팜플렛',
   CPR4000: '책자(중철·무선제본)',
-  CPR5000: '종이홀더 ⚠️',
+  CPR5000: '종이홀더', // OMO-3097: 배너 오매핑 정정으로 더 이상 사용 안 함
+  CRP5100: '현수막(150denier)', // OMO-3097 라이브검증
+  CRP4000: '배너(페트 210µ)', // OMO-3097 라이브검증
+  CRP3000: '배너/메쉬(페트·메쉬 1000denier)', // OMO-3097 라이브검증
+  COD1100: '종이미니배너', // OMO-3097 라이브검증
+  CDP2000: '디지털청첩장/초대장', // OMO-3097 라이브검증
   CDP3000: '엽서',
+  CVS1000: '초대장/상품권(일반)', // OMO-3097 라이브검증
+  CVS6000: '에폭시초대장', // OMO-3097 라이브검증
+  CCM2000: '디자인연하장', // OMO-3097 라이브검증
+  CCM4000: '연하장', // OMO-3097 라이브검증
   CEV1000: '봉투',
   CNR2000: '양식·전표(영수증/견적서/거래명세서/NCR)',
+  CNR3000: '떡메모지', // OMO-3097 라이브검증
+  CPS7000: '사각 포스트잇', // OMO-3097 라이브검증
+  CPS7100: '모양 포스트잇', // OMO-3097 라이브검증
   CCD1000: '벽걸이 캘린더',
   CCD2000: '탁상/미니 캘린더',
+  CHI3000: '판지/박스(양면마닐라·메탈팩보드)', // OMO-3097 라이브검증
+  CDP1600: '디지털 판지/박스', // OMO-3097 라이브검증
+  CPK2000: '리본&브레이드 쇼핑백', // OMO-3097 라이브검증
+  CPK3000: '손잡이 쇼핑백', // OMO-3097 라이브검증
+  CPK4000: '일반 쇼핑백', // OMO-3097 라이브검증
+  CPK5000: '소량 쇼핑백', // OMO-3097 라이브검증
 }
 
 // 성원 라우팅이 잘못된(라이브 검증 미반영) 코드 — 표에 경고 표시.
-const KNOWN_MISMATCH: Record<string, string> = {
-  CPR5000:
-    'CPR5000 은 실제로는 "종이홀더" 다. 배너류는 성원 CRP5100/4000/3000·COD1100 이 정답이나 라이브 수정(OMO-2636)이 미머지 상태 → 현재 배너 4종은 잘못된 코드로 라우팅됨.',
+// OMO-3097: 배너 CPR5000(종이홀더) 오매핑은 CRP5100/4000/3000·COD1100 으로 정정 완료 → 비움.
+const KNOWN_MISMATCH: Record<string, string> = {}
+
+// OMO-3097: 의도적 미연동(공란≠미취급 구분). 성원에 대응 카테고리가 없거나 타공장 생산군.
+const SWADPIA_UNSUPPORTED: Record<string, string> = {
+  'hangtag-cards': '성원 택(hangtag) 전용 카테고리/격자 부재 — 별도 공급',
+  'paper-pop': '성원 POP 카테고리 부재 — 타공장 생산군',
+  'foam-pop': '성원 POP 카테고리 부재 — 타공장 생산군',
+  'general-notebooks': '대량 노트 성원 미취급 — 타공장 생산군',
+  'spring-notebooks': '대량 스프링노트 성원 미취급 — 타공장 생산군',
+  'diaries': '대량 다이어리 성원 미취급 — 타공장 생산군',
 }
 
 type Row = {
@@ -56,19 +83,28 @@ type Row = {
   swadpiaName: string
   mapped: boolean
   warn: boolean
+  unsupported: boolean
+  unsupportedNote?: string
 }
 
 function buildRows(items: { slug: string; label: string }[]): Row[] {
   return items.map(({ slug, label }) => {
     const code = CATEGORY_MAP[slug] ?? null
     const mapped = code !== null
+    const unsupported = !mapped && slug in SWADPIA_UNSUPPORTED
     return {
       slug,
       label,
       code,
-      swadpiaName: code ? SWADPIA_CATEGORY_LABEL[code] ?? '(라벨 미정)' : '— 미연동 —',
+      swadpiaName: code
+        ? SWADPIA_CATEGORY_LABEL[code] ?? '(라벨 미정)'
+        : unsupported
+          ? '성원 미취급/타공급'
+          : '— 미연동 —',
       mapped,
       warn: code ? code in KNOWN_MISMATCH : false,
+      unsupported,
+      unsupportedNote: unsupported ? SWADPIA_UNSUPPORTED[slug] : undefined,
     }
   })
 }
@@ -77,7 +113,8 @@ export default function SwadpiaMappingReport() {
   const allRows = PRODUCT_GROUPS.flatMap((g) => buildRows(g.items))
   const total = allRows.length
   const mappedCount = allRows.filter((r) => r.mapped).length
-  const unmappedCount = total - mappedCount
+  const unsupportedCount = allRows.filter((r) => r.unsupported).length
+  const unmappedCount = total - mappedCount - unsupportedCount
   const warnCount = allRows.filter((r) => r.warn).length
 
   return (
@@ -93,7 +130,7 @@ export default function SwadpiaMappingReport() {
         성원(swadpia) 제품 맵핑 현황
       </h1>
       <p className="mt-1 text-sm text-gray-500">
-        OMO-3058 · OMO-3095 · 우리 사이트 전체 제품 ↔ 성원 category_code 매핑. 소스:{' '}
+        OMO-3058 · OMO-3095 · OMO-3097 · 우리 사이트 전체 제품 ↔ 성원 category_code 매핑. 소스:{' '}
         <code className="rounded bg-gray-100 px-1">src/config/product-nav.ts</code> ·{' '}
         <code className="rounded bg-gray-100 px-1">src/lib/swadpia.ts</code>
       </p>
@@ -112,6 +149,38 @@ export default function SwadpiaMappingReport() {
         </div>
       </div>
 
+      {/* OMO-3097 정정 안내 */}
+      <div className="mt-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm">
+        <div className="font-semibold text-green-900">
+          OMO-3097 잔여 정정(2026-06-13 라이브 전수 검증)
+        </div>
+        <ul className="mt-1 list-disc space-y-1 pl-5 text-green-800">
+          <li>
+            <b>배너 오매핑 정정</b>: banners·x·rollup 은{' '}
+            <code className="rounded bg-green-100 px-1">CPR5000</code>(종이홀더, CPR≠CRP 오타)
+            로 오라우팅됐었음 → 현수막{' '}
+            <code className="rounded bg-green-100 px-1">CRP5100</code>·배너{' '}
+            <code className="rounded bg-green-100 px-1">CRP4000</code>·미니배너{' '}
+            <code className="rounded bg-green-100 px-1">COD1100</code> 으로 정정. (성원 미취급
+            아님 — 라이브 격자 실재)
+          </li>
+          <li>
+            <b>펄 명함</b>:{' '}
+            <code className="rounded bg-green-100 px-1">CNC8000</code> 은 라이브에 실재하나
+            펄지가 없어, 펄 용지(다이니티 골드펄 250g)를 보유한{' '}
+            <code className="rounded bg-green-100 px-1">CNC2000</code> 고급지명함으로 정정.
+          </li>
+          <li>
+            <b>공란 채움</b>: 초대장(CVS1000)·청첩장(CDP2000)·연하장(CCM2000)·떡메모지(CNR3000)·포스트잇(CPS7000)·투명/크라프트/에코
+            스티커(CST1000 용지옵션)·쇼핑백(CPK)·박스(CHI3000) 라이브 확인 후 연동.
+          </li>
+          <li>
+            <b>미취급 명시</b>: 택(hangtag)·POP·대량 노트/다이어리는 성원 카테고리 부재 →
+            &lsquo;성원 미취급/타공급&rsquo;으로 구분 표기(공란≠미취급).
+          </li>
+        </ul>
+      </div>
+
       {/* 요약 통계 */}
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div className="rounded-lg border border-gray-200 p-4">
@@ -124,11 +193,11 @@ export default function SwadpiaMappingReport() {
         </div>
         <div className="rounded-lg border border-red-200 bg-red-50 p-4">
           <div className="text-2xl font-bold text-red-700">{unmappedCount}</div>
-          <div className="text-xs text-red-600">미연동(자체/타공장)</div>
+          <div className="text-xs text-red-600">미연동(코드 미확인)</div>
         </div>
-        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-          <div className="text-2xl font-bold text-amber-700">{warnCount}</div>
-          <div className="text-xs text-amber-600">코드 오류 의심</div>
+        <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+          <div className="text-2xl font-bold text-gray-700">{unsupportedCount}</div>
+          <div className="text-xs text-gray-500">성원 미취급(타공급)</div>
         </div>
       </div>
 
@@ -172,7 +241,10 @@ export default function SwadpiaMappingReport() {
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {rows.map((r) => (
-                    <tr key={r.slug} className={r.mapped ? '' : 'bg-red-50/40'}>
+                    <tr
+                      key={r.slug}
+                      className={r.mapped ? '' : r.unsupported ? 'bg-gray-50' : 'bg-red-50/40'}
+                    >
                       <td className="px-3 py-2 font-medium text-gray-900">
                         {r.label}
                       </td>
@@ -189,11 +261,20 @@ export default function SwadpiaMappingReport() {
                             <AlertTriangle className="h-3.5 w-3.5" />
                           </span>
                         )}
+                        {r.unsupported && r.unsupportedNote && (
+                          <span className="ml-1 block text-xs text-gray-400">
+                            {r.unsupportedNote}
+                          </span>
+                        )}
                       </td>
                       <td className="px-3 py-2">
                         {r.mapped ? (
                           <span className="inline-flex items-center gap-1 text-green-700">
                             <CheckCircle2 className="h-4 w-4" /> 연동
+                          </span>
+                        ) : r.unsupported ? (
+                          <span className="inline-flex items-center gap-1 text-gray-500">
+                            <XCircle className="h-4 w-4" /> 미취급
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 text-red-600">
