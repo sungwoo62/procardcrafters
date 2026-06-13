@@ -13,6 +13,8 @@ import {
   RefreshCw,
   Eye,
   EyeOff,
+  ChevronRight,
+  ChevronDown,
 } from 'lucide-react'
 
 // OMO-3058: 우리 사이트 전체 제품 ↔ 성원(swadpia) 맵핑 편집 + 검증 도구.
@@ -51,6 +53,32 @@ interface Group {
 
 type Verify = { ok: boolean; categoryCode: string | null; paperCount: number; sizeCount: number; error?: string }
 
+interface Detail {
+  categoryCode: string | null
+  swadpia: {
+    fetchSuccess: boolean
+    error?: string
+    papers: { code: string; name: string; single: number; double: number }[]
+    printMethods: string[]
+    sizes: { code: string; name: string; mm: string }[]
+    qtyLadder: number[]
+    basePriceKrw: number
+  }
+  applied: {
+    exists: boolean
+    nameKo?: string
+    basePriceKrw?: number
+    isActive?: boolean
+    optionGroups: { optionType: string; count: number; samples: { value: string; label: string; extra: number }[] }[]
+  }
+}
+
+const OPTION_TYPE_LABEL: Record<string, string> = {
+  paper_code: '용지', paper: '용지', print_color_type: '인쇄색상', paper_size: '사이즈',
+  size: '사이즈', paper_qty: '수량', quantity: '수량', finishing: '후가공', finish: '후가공',
+  coating: '코팅', corners: '모서리', sides: '인쇄면', pages: '페이지',
+}
+
 const STATUS_BADGE: Record<string, { text: string; cls: string; icon: 'ok' | 'no' | 'warn' }> = {
   verified: { text: '검증됨', cls: 'text-green-700', icon: 'ok' },
   mapped: { text: '연동(기본)', cls: 'text-emerald-600', icon: 'ok' },
@@ -67,6 +95,8 @@ export default function SwadpiaMappingTool() {
   const [saving, setSaving] = useState<string | null>(null)
   const [hiding, setHiding] = useState<string | null>(null)
   const [feedback, setFeedback] = useState<Record<string, Verify>>({})
+  const [expanded, setExpanded] = useState<Set<string>>(new Set())
+  const [details, setDetails] = useState<Record<string, Detail | 'loading'>>({})
 
   async function load() {
     setLoading(true)
@@ -107,6 +137,21 @@ export default function SwadpiaMappingTool() {
     const json = await res.json()
     if (json.row) setRows((rs) => rs.map((r) => (r.slug === slug ? json.row : r)))
     setHiding(null)
+  }
+
+  async function toggleExpand(slug: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev)
+      if (next.has(slug)) next.delete(slug)
+      else next.add(slug)
+      return next
+    })
+    if (!details[slug]) {
+      setDetails((d) => ({ ...d, [slug]: 'loading' }))
+      const res = await fetch(`/api/swadpia-mapping/detail?slug=${encodeURIComponent(slug)}`)
+      const json = await res.json()
+      setDetails((d) => ({ ...d, [slug]: json as Detail }))
+    }
   }
 
   const byKey = (k: string) => rows.find((r) => r.slug === k)
@@ -168,10 +213,21 @@ export default function SwadpiaMappingTool() {
                 return (
                   <div key={item.slug} className={`rounded-lg border p-3 ${row.hidden_from_customer ? 'border-gray-300 bg-gray-100' : 'border-gray-200'}`}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <div className="min-w-[140px]">
-                        <div className={`font-medium ${row.hidden_from_customer ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{item.label}</div>
-                        <div className="font-mono text-xs text-gray-400">{item.slug}</div>
-                      </div>
+                      <button
+                        onClick={() => toggleExpand(item.slug)}
+                        title="맵핑 상세 보기"
+                        className="flex items-center gap-1 text-left hover:opacity-70"
+                      >
+                        {expanded.has(item.slug) ? (
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                        ) : (
+                          <ChevronRight className="h-4 w-4 text-gray-400" />
+                        )}
+                        <div className="min-w-[130px]">
+                          <div className={`font-medium ${row.hidden_from_customer ? 'text-gray-400 line-through' : 'text-gray-900'}`}>{item.label}</div>
+                          <div className="font-mono text-xs text-gray-400">{item.slug}</div>
+                        </div>
+                      </button>
                       <div className="text-xs">
                         <span className="font-mono text-gray-700">{row.category_code ?? '—'}</span>
                         {row.category_code && SWADPIA_CATEGORY_LABEL[row.category_code] && (
@@ -233,6 +289,9 @@ export default function SwadpiaMappingTool() {
                     {!fb && row.status === 'drift' && row.verify_error && (
                       <div className="mt-1.5 text-xs text-orange-600">⚠ 드리프트: {row.verify_error} — 확인 후 재저장하면 알림 해제</div>
                     )}
+                    {expanded.has(item.slug) && (
+                      <DetailPanel detail={details[item.slug]} />
+                    )}
                   </div>
                 )
               })}
@@ -258,6 +317,90 @@ function Stat({ n, label, cls = 'border-gray-200' }: { n: number; label: string;
     <div className={`rounded-lg border p-4 ${cls}`}>
       <div className="text-2xl font-bold">{n}</div>
       <div className="text-xs opacity-80">{label}</div>
+    </div>
+  )
+}
+
+const krw = (n: number) => `₩${(n ?? 0).toLocaleString('ko-KR')}`
+
+function DetailPanel({ detail }: { detail: Detail | 'loading' | undefined }) {
+  if (!detail || detail === 'loading') {
+    return (
+      <div className="mt-3 flex items-center gap-2 border-t border-gray-100 pt-3 text-xs text-gray-400">
+        <Loader2 className="h-4 w-4 animate-spin" /> 성원 라이브 + 우리 적용 항목 불러오는 중…
+      </div>
+    )
+  }
+  const { swadpia, applied } = detail
+  return (
+    <div className="mt-3 grid gap-4 border-t border-gray-100 pt-3 md:grid-cols-2">
+      {/* 성원 스크랩 */}
+      <div>
+        <div className="mb-1.5 text-xs font-semibold text-gray-700">
+          성원에서 스크랩한 항목{' '}
+          <span className="font-normal text-gray-400">{detail.categoryCode ?? '(미연동)'}</span>
+        </div>
+        {!detail.categoryCode ? (
+          <div className="text-xs text-gray-400">성원 연동 없음 — 링크를 붙이면 스크랩됩니다.</div>
+        ) : !swadpia.fetchSuccess ? (
+          <div className="text-xs text-amber-600">성원 조회 실패: {swadpia.error ?? '알 수 없음'}</div>
+        ) : (
+          <div className="space-y-1.5 text-xs text-gray-600">
+            <div>
+              <span className="font-medium text-gray-700">기준단가</span> {krw(swadpia.basePriceKrw)}{' '}
+              <span className="text-gray-400">(최소수량 양면)</span>
+            </div>
+            <div>
+              <span className="font-medium text-gray-700">용지 {swadpia.papers.length}종</span>:{' '}
+              {swadpia.papers.slice(0, 6).map((p) => p.name).join(', ')}
+              {swadpia.papers.length > 6 && ` 외 ${swadpia.papers.length - 6}`}
+            </div>
+            {swadpia.printMethods.length > 0 && (
+              <div><span className="font-medium text-gray-700">인쇄방식</span>: {swadpia.printMethods.join(', ')}</div>
+            )}
+            {swadpia.sizes.length > 0 && (
+              <div>
+                <span className="font-medium text-gray-700">사이즈 {swadpia.sizes.length}종</span>:{' '}
+                {swadpia.sizes.slice(0, 5).map((s) => s.name || s.code).join(', ')}
+                {swadpia.sizes.length > 5 && ' …'}
+              </div>
+            )}
+            {swadpia.qtyLadder.length > 0 && (
+              <div><span className="font-medium text-gray-700">수량단계</span>: {swadpia.qtyLadder.join(' / ')}</div>
+            )}
+          </div>
+        )}
+      </div>
+      {/* 우리 적용 */}
+      <div>
+        <div className="mb-1.5 text-xs font-semibold text-gray-700">우리 사이트에 적용된 옵션</div>
+        {!applied.exists ? (
+          <div className="text-xs text-gray-400">print_products 에 제품 행 없음(미판매/구성 전).</div>
+        ) : (
+          <div className="space-y-1.5 text-xs text-gray-600">
+            <div>
+              <span className="font-medium text-gray-700">기준가</span> {krw(applied.basePriceKrw ?? 0)} ·{' '}
+              고객노출 {applied.isActive ? 'ON' : 'OFF'}
+            </div>
+            {applied.optionGroups.length === 0 ? (
+              <div className="text-gray-400">설정된 옵션 없음.</div>
+            ) : (
+              applied.optionGroups.map((g) => (
+                <div key={g.optionType}>
+                  <span className="font-medium text-gray-700">
+                    {OPTION_TYPE_LABEL[g.optionType] ?? g.optionType} {g.count}개
+                  </span>
+                  :{' '}
+                  {g.samples
+                    .map((s) => (s.extra ? `${s.label}(+${krw(s.extra)})` : s.label))
+                    .join(', ')}
+                  {g.count > g.samples.length && ` 외 ${g.count - g.samples.length}`}
+                </div>
+              ))
+            )}
+          </div>
+        )}
+      </div>
     </div>
   )
 }
