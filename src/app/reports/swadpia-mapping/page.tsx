@@ -85,6 +85,8 @@ interface Detail {
     exists: boolean
     nameKo?: string
     basePriceKrw?: number
+    marginMultiplier?: number
+    sellPriceKrw?: number
     isActive?: boolean
     optionGroups: { optionType: string; count: number; samples: { value: string; label: string; extra: number }[] }[]
   }
@@ -417,10 +419,16 @@ function DetailPanel({ detail }: { detail: Detail | 'loading' | undefined }) {
           <div className="text-xs text-gray-400">print_products 에 제품 행 없음(미판매/구성 전).</div>
         ) : (
           <div className="space-y-1.5 text-xs text-gray-600">
-            <div>
-              <span className="font-medium text-gray-700">기준가</span> {krw(applied.basePriceKrw ?? 0)} ·{' '}
-              고객노출 {applied.isActive ? 'ON' : 'OFF'}
+            <div className="rounded bg-emerald-50 px-2 py-1.5 text-emerald-900">
+              <span className="font-medium">기준가(원가)</span> {krw(applied.basePriceKrw ?? 0)}
+              {' → '}
+              <span className="font-semibold">판매가 {krw(applied.sellPriceKrw ?? 0)}</span>
+              <span className="text-emerald-700"> (마진 ×{applied.marginMultiplier ?? 3.3})</span>
+              <span className="block text-[11px] text-emerald-700/80">
+                ※ 아래 옵션 추가요금(원가)도 동일하게 ×{applied.marginMultiplier ?? 3.3} 적용 후 USD 환산되어 고객에게 표시됩니다.
+              </span>
             </div>
+            <div>고객노출 {applied.isActive ? 'ON' : 'OFF'}</div>
             {applied.optionGroups.length === 0 ? (
               <div className="text-gray-400">설정된 옵션 없음.</div>
             ) : (

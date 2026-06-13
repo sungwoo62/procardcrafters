@@ -79,7 +79,7 @@ export async function GET(req: NextRequest) {
   // ── 우리 사이트 적용 ────────────────────────────────
   const { data: product } = await supabase
     .from('print_products')
-    .select('id, name_ko, name_en, base_price_krw, is_active')
+    .select('id, name_ko, name_en, base_price_krw, margin_multiplier, is_active')
     .eq('slug', slug)
     .maybeSingle()
 
@@ -87,6 +87,8 @@ export async function GET(req: NextRequest) {
     exists: boolean
     nameKo?: string
     basePriceKrw?: number
+    marginMultiplier?: number
+    sellPriceKrw?: number
     isActive?: boolean
     optionGroups: { optionType: string; count: number; samples: { value: string; label: string; extra: number }[] }[]
   } = { exists: Boolean(product), optionGroups: [] }
@@ -94,6 +96,9 @@ export async function GET(req: NextRequest) {
   if (product) {
     applied.nameKo = product.name_ko
     applied.basePriceKrw = product.base_price_krw
+    // OMO-3058: 디테일 패널은 원가(KRW)를 보여줘 마진이 안 보였음 → 마진배수 + 판매환산가도 반환.
+    applied.marginMultiplier = product.margin_multiplier ?? 3.3
+    applied.sellPriceKrw = Math.round((product.base_price_krw ?? 0) * (product.margin_multiplier ?? 3.3))
     applied.isActive = product.is_active
     const { data: opts } = await supabase
       .from('print_product_options')
