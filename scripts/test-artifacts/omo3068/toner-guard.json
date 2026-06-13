@@ -1,0 +1,380 @@
+{
+  "COD1000": {
+    "code": "COD1000",
+    "sizes": [
+      {
+        "v": "N0100",
+        "t": "90mm*50mm"
+      },
+      {
+        "v": "N0200",
+        "t": "86mm*52mm"
+      },
+      {
+        "v": "N0500",
+        "t": "91mm*55mm"
+      },
+      {
+        "v": "N0600",
+        "t": "85mm*55mm"
+      }
+    ],
+    "counts": 250,
+    "useQ": [
+      "100",
+      "200"
+    ],
+    "qtyRows": [
+      {
+        "qty": "100",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        },
+        "disp": null
+      },
+      {
+        "qty": "200",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        },
+        "disp": null
+      }
+    ],
+    "sizeRows": [
+      {
+        "size": "N0100",
+        "label": "90mm*50mm",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        }
+      },
+      {
+        "size": "N0200",
+        "label": "86mm*52mm",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        }
+      },
+      {
+        "size": "N0500",
+        "label": "91mm*55mm",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        }
+      },
+      {
+        "size": "N0600",
+        "label": "85mm*55mm",
+        "unit": {
+          "price_unit1": 252390,
+          "price_unit2": 363330,
+          "PLATE2": 8000,
+          "save_size": "N0100"
+        }
+      }
+    ],
+    "qtyDistinct": 1,
+    "sizeDistinct": 1,
+    "qtyOk": false,
+    "sizeOk": false,
+    "dispMatch": [
+      {
+        "qty": "100",
+        "unit2": 363330,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "200",
+        "unit2": 363330,
+        "disp": null,
+        "eq": null
+      }
+    ]
+  },
+  "COD1100": {
+    "code": "COD1100",
+    "sizes": [
+      {
+        "v": "N0110",
+        "t": "150mm*300mm"
+      },
+      {
+        "v": "N0120",
+        "t": "180mm*420mm"
+      }
+    ],
+    "counts": 250,
+    "useQ": [
+      "100",
+      "200"
+    ],
+    "qtyRows": [
+      {
+        "qty": "100",
+        "unit": {
+          "price_unit1": 344100,
+          "price_unit2": 495350,
+          "PLATE2": 8000,
+          "save_size": "A0300"
+        },
+        "disp": null
+      },
+      {
+        "qty": "200",
+        "unit": {
+          "price_unit1": 344100,
+          "price_unit2": 495350,
+          "PLATE2": 8000,
+          "save_size": "A0300"
+        },
+        "disp": null
+      }
+    ],
+    "sizeRows": [
+      {
+        "size": "N0110",
+        "label": "150mm*300mm",
+        "unit": {
+          "price_unit1": 344100,
+          "price_unit2": 495350,
+          "PLATE2": 8000,
+          "save_size": "A0300"
+        }
+      },
+      {
+        "size": "N0120",
+        "label": "180mm*420mm",
+        "unit": {
+          "price_unit1": 344100,
+          "price_unit2": 495350,
+          "PLATE2": 8000,
+          "save_size": "A0300"
+        }
+      }
+    ],
+    "qtyDistinct": 1,
+    "sizeDistinct": 1,
+    "qtyOk": false,
+    "sizeOk": false,
+    "dispMatch": [
+      {
+        "qty": "100",
+        "unit2": 495350,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "200",
+        "unit2": 495350,
+        "disp": null,
+        "eq": null
+      }
+    ]
+  },
+  "CDP1000": {
+    "code": "CDP1000",
+    "sizes": [
+      {
+        "v": "N0100",
+        "t": "90mm*50mm"
+      },
+      {
+        "v": "N0200",
+        "t": "86mm*52mm"
+      }
+    ],
+    "counts": 120,
+    "useQ": [
+      "1",
+      "2",
+      "3",
+      "4",
+      "5",
+      "6"
+    ],
+    "qtyRows": [
+      {
+        "qty": "1",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      },
+      {
+        "qty": "2",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      },
+      {
+        "qty": "3",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      },
+      {
+        "qty": "4",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      },
+      {
+        "qty": "5",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      },
+      {
+        "qty": "6",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        },
+        "disp": null
+      }
+    ],
+    "sizeRows": [
+      {
+        "size": "N0100",
+        "label": "90mm*50mm",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        }
+      },
+      {
+        "size": "N0200",
+        "label": "86mm*52mm",
+        "unit": {
+          "price_unit1": 155490,
+          "price_unit2": 223830,
+          "PLATE2": null
+        }
+      }
+    ],
+    "qtyDistinct": 1,
+    "sizeDistinct": 1,
+    "qtyOk": false,
+    "sizeOk": false,
+    "dispMatch": [
+      {
+        "qty": "1",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "2",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "3",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "4",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "5",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      },
+      {
+        "qty": "6",
+        "unit2": 223830,
+        "disp": null,
+        "eq": null
+      }
+    ]
+  },
+  "comparison": [
+    {
+      "qty": "100",
+      "toner": 363330,
+      "indigo": null,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "200",
+      "toner": 363330,
+      "indigo": null,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "1",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "2",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "3",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "4",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "5",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    },
+    {
+      "qty": "6",
+      "toner": null,
+      "indigo": 223830,
+      "cheaper": "n/a"
+    }
+  ]
+}

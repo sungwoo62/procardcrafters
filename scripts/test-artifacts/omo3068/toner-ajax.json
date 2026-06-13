@@ -1,0 +1,38 @@
+{
+  "pq_count": 113,
+  "oc_count": 250,
+  "rows": [
+    {
+      "driver": "paper_qty_select",
+      "v": "100",
+      "unit2": 363330,
+      "ajax": 0
+    },
+    {
+      "driver": "paper_qty_select",
+      "v": "5200",
+      "unit2": 363330,
+      "ajax": 0
+    },
+    {
+      "driver": "paper_qty_select",
+      "v": "10800",
+      "unit2": 363330,
+      "ajax": 0
+    },
+    {
+      "driver": "paper_qty_select",
+      "v": "16400",
+      "unit2": 363330,
+      "ajax": 0
+    },
+    {
+      "driver": "paper_qty_select",
+      "v": "22000",
+      "unit2": 363330,
+      "ajax": 0
+    }
+  ],
+  "distinct": 1,
+  "totalAjax": 0
+}

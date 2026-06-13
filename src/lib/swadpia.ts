@@ -191,6 +191,19 @@ export const CATEGORY_MAP: Record<string, string> = {
 //      반환함**(COD1000=363,330 / COD1100=495,350, json_data 엔 매트릭스 부재와 대조).
 //      단 (b)/(c)와 동일한 default-size commit 한계가 잠재 → 저가옵션 추가 전 가드된
 //      라이브 검증(size/qty 정확도) 필수. 추가 여부는 보드 승인(인디고 기본/토너 옵션) 게이트.
+// ⛔ OMO-3068 가드검증결과(라이브, scripts/omo3068-toner-{guard,ajax}.mjs) — **토너 옵션 보류 확정**.
+//    토너 견적값은 default 한 점에서만 읽히며 size/qty 어느 축으로도 갈라지지 않음:
+//      · COD1000: order_count(250개) 와 paper_size(4개) 전부 sweep → price_unit2 불변(363,330).
+//      · COD1000: 두 번째 드라이버 paper_qty_select 를 100→22,000매까지 sweep 해도 363,330 고정,
+//        가격 재계산 AJAX **0건** 발화(즉 22,000매도 363,330 = 명백한 stale default).
+//      · COD1100: order_count·paper_size sweep 전부 불변(495,350). save_size 가 선택과 무관하게
+//        default(A0300)에 고정 — Task1 size-commit 한계와 동일 근본원인.
+//    → 토너는 json_data 매트릭스가 없어 인터랙티브 경로가 유일한데, 그 경로가 size/qty 를
+//      commit 하지 않으므로 **수량/사이즈별 신뢰가능 단가 산출 불가**. 인디고(CDP) 대비 저가
+//      수량구간도 산출 불가(인디고 단가는 json_data 매트릭스로 별도 취득되나 토너는 비교점 부재).
+//    → 보드정책 "인디고 기본/토너 옵션" 중 **토너 옵션 절반은 미구현으로 종결**. 인디고 기본
+//      라우팅은 기존대로 유지. 토너 재개 조건: 성원이 토너 단가를 json_data 매트릭스로 노출하거나
+//      qty-commit 가능한 견적 API 제공 시(현재 도달 불가).
 export type PressKind = 'offset' | 'digital'
 
 export interface PressRoute {
