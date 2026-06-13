@@ -15,7 +15,10 @@ import {
   EyeOff,
   ChevronRight,
   ChevronDown,
+  ExternalLink,
 } from 'lucide-react'
+
+const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
 // OMO-3058: 우리 사이트 전체 제품 ↔ 성원(swadpia) 맵핑 편집 + 검증 도구.
 // 보드가 각 제품 옆에 성원 상품 링크를 붙이면 저장 시 라이브 검증해 category_code 를
@@ -233,10 +236,32 @@ export default function SwadpiaMappingTool() {
                           <div className="font-mono text-xs text-gray-400">{item.slug}</div>
                         </div>
                       </button>
+                      {/* OMO-3058: 우리 제품 페이지 새창 링크 */}
+                      <a
+                        href={`/products/${item.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="우리 사이트 제품 페이지 (새창)"
+                        className="inline-flex items-center gap-0.5 rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
+                      >
+                        우리제품 <ExternalLink className="h-3 w-3" />
+                      </a>
                       <div className="text-xs">
                         <span className="font-mono text-gray-700">{row.category_code ?? '—'}</span>
                         {row.category_code && SWADPIA_CATEGORY_LABEL[row.category_code] && (
                           <span className="ml-1 text-gray-400">{SWADPIA_CATEGORY_LABEL[row.category_code]}</span>
+                        )}
+                        {/* OMO-3058: 매핑된 성원 상품 새창 링크 */}
+                        {(row.swadpia_url || row.category_code) && (
+                          <a
+                            href={row.swadpia_url || `${SWADPIA_BASE}/goods/goods_view/${row.category_code}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title="성원 상품 페이지 (새창)"
+                            className="ml-1.5 inline-flex items-center gap-0.5 rounded border border-gray-300 bg-white px-1.5 py-0.5 font-medium text-gray-600 hover:bg-gray-50"
+                          >
+                            성원 <ExternalLink className="h-3 w-3" />
+                          </a>
                         )}
                       </div>
                       <span className={`ml-auto inline-flex items-center gap-1 text-xs font-medium ${badge.cls}`}>
