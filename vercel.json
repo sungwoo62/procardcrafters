@@ -35,6 +35,10 @@
     {
       "path": "/api/cron/ingest-ad-spend",
       "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/cron/swadpia-drift",
+      "schedule": "0 18 * * *"
     }
   ]
 }

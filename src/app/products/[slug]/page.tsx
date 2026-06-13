@@ -9,6 +9,7 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { isSlugHidden } from '@/lib/product-visibility'
 import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
@@ -148,6 +149,9 @@ export default async function ProductDetailPage({ params }: Props) {
   ])
 
   if (!productData) notFound()
+
+  // OMO-3058: 보드가 고객에게 숨긴 제품(미연동/미판매)은 PDP 도 404
+  if (await isSlugHidden(supabase, slug)) notFound()
 
   const product = productData as PrintProduct
 

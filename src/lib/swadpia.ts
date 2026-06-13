@@ -5,13 +5,6 @@
  *
  * Endpoint: POST /estimate/estimate_goods/json_data
  * Params: t (timestamp), product=name, category_code
- *
- * OMO-2646 (2026-06-08, 정정): 앞선 진단에서 "비인증 공개 엔드포인트 전면 폐지(404)"로
- * 잘못 결론 내려 SWADPIA_PUBLIC_ENDPOINT_LIVE=false 가드를 넣었으나, 라이브 재검증 결과
- * **엔드포인트는 정상 동작**한다(인증·세션·Referer 불필요, bare POST 도 HTTP 200 + 유효 JSON).
- * 예: POST /estimate/estimate_goods/json_data {t, product=name, category_code=CNC1000}
- *     → paper_info/print_info1/size_info 정상 반환. goods_view 페이지도 비로그인 200.
- * 따라서 가드를 제거하고 라이브 도매가 fetch 를 복원한다. (adpiamall 은 무관 — 무시)
  */
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
@@ -144,7 +137,19 @@ function parseNumber(val: string | number | null | undefined): number {
 }
 
 /**
- * Fetches category pricing data from the Swadpia JSON endpoint.
+ * 성원 json_data 는 카테고리별로 paper_info/size_info 등을 배열이 아니라
+ * 숫자키 객체({"0":{…},"1":{…}}) 또는 false/null 로 줄 때가 있다(스티커 등).
+ * 항상 배열로 정규화해 .map 호출이 깨지지 않게 한다. (OMO-3058)
+ */
+function asArray<T = Record<string, unknown>>(v: unknown): T[] {
+  if (Array.isArray(v)) return v as T[]
+  if (v && typeof v === 'object') return Object.values(v as Record<string, T>)
+  return []
+}
+
+/**
+ * Fetches category pricing data from the Swadpia JSON endpoint by slug.
+ * 슬러그→코드 변환(CATEGORY_MAP) + 1시간 캐시. 실제 fetch 는 …ByCode 위임.
  */
 export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCategoryData> {
   const categoryCode = CATEGORY_MAP[slug]
@@ -166,6 +171,17 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     return cached
   }
 
+  const result = await fetchSwadpiaCategoryDataByCode(categoryCode)
+  if (result.fetchSuccess) cache.set(slug, result)
+  return result
+}
+
+/**
+ * OMO-3058: 임의 성원 category_code 로 직접 가격/옵션 데이터를 조회한다.
+ * 맵핑 검증(보드가 붙인 성원 링크 확인)·드리프트 모니터링에서 사용.
+ * 슬러그 캐시를 거치지 않으므로 항상 라이브 값을 반환한다.
+ */
+export async function fetchSwadpiaCategoryDataByCode(categoryCode: string): Promise<SwadpiaCategoryData> {
   try {
     const formData = new URLSearchParams({
       t: String(Math.floor(Date.now() / 1000)),
@@ -190,7 +206,7 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     const raw = await res.json()
 
     // Parse paper_info
-    const papers: SwadpiaPaper[] = (raw.paper_info ?? []).map((p: Record<string, unknown>) => ({
+    const papers: SwadpiaPaper[] = asArray(raw.paper_info).map((p: Record<string, unknown>) => ({
       paper_code: String(p.paper_code ?? ''),
       paper_type_code: String(p.paper_type_code ?? ''),
       paper_weight: String(p.paper_weight ?? ''),
@@ -206,7 +222,8 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
 
     // Parse print_info1 (quantity-based print cost matrix)
     const printEntries: SwadpiaPrintEntry[] = []
-    for (const entry of (raw.print_info1 ?? [])) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const entry of asArray<any>(raw.print_info1)) {
       const qty = parseInt(String(entry.unit_key), 10)
       if (isNaN(qty)) continue
       const info = entry['0']
@@ -222,7 +239,7 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     }
 
     // Parse size_info
-    const sizes: SwadpiaSize[] = (raw.size_info ?? []).map((s: Record<string, unknown>) => ({
+    const sizes: SwadpiaSize[] = asArray(raw.size_info).map((s: Record<string, unknown>) => ({
       size_type_code: String(s.size_type_code ?? ''),
       size_type_name: String(s.size_type_name ?? ''),
       cut_norm_x_size: String(s.cut_norm_x_size ?? ''),
@@ -238,7 +255,6 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
       fetchSuccess: true,
     }
 
-    cache.set(slug, result)
     return result
 
   } catch (err) {
