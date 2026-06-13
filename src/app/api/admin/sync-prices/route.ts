@@ -1,36 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdmin } from '@/lib/admin-auth'
 import { createServerClient } from '@/lib/supabase'
-import { fetchSwadpiaCategoryData, fetchAllSwadpiaData, type SwadpiaCategoryData } from '@/lib/swadpia'
+import { runSwadpiaSync } from '@/lib/swadpia-sync'
 
 // Admin manual price sync API
 // POST /api/admin/sync-prices           -> Sync all products
 // POST /api/admin/sync-prices?slug=xxx  -> Sync specific product
 // GET  /api/admin/sync-prices           -> Recent price history
-
-const CATEGORY_TO_SLUG: Record<string, string> = {
-  'CNC1000': 'business-cards',
-  'CNC2000': 'premium-business-cards',
-  'CST1000': 'stickers',
-  'CST2000': 'die-cut-stickers',
-  'CLF1000': 'flyers',
-  'CLF2000': 'brochures',
-  'CDP3000': 'postcards',
-  'CPR2000': 'posters',
-  'CPR5000': 'banners',
-}
-
-function extractBasePrice(data: SwadpiaCategoryData): number {
-  if (data.printEntries.length > 0) {
-    const sorted = [...data.printEntries].sort((a, b) => a.quantity - b.quantity)
-    return sorted[0].print_unit2
-  }
-  if (data.papers.length > 0) {
-    const paper = data.papers[0]
-    return Math.round(paper.price_unit1 * paper.price_sale_rate)
-  }
-  return 0
-}
 
 export async function GET(req: NextRequest) {
   const user = await requireAdmin()
@@ -142,59 +118,9 @@ export async function POST(req: NextRequest) {
       results.push({ slug: product.slug, success: true, priceChanged, prevPrice, newPrice })
     }
   } else {
-    // Swadpia scraping mode
-    const swadpiaResults = targetSlug
-      ? [await fetchSwadpiaCategoryData(targetSlug)]
-      : await fetchAllSwadpiaData()
-
-    for (const swData of swadpiaResults) {
-      const slug = CATEGORY_TO_SLUG[swData.categoryCode]
-      if (!slug) continue
-      const product = products.find(p => p.slug === slug)
-      if (!product) continue
-
-      const prevPrice = Number(product.base_price_krw)
-      const newPrice = extractBasePrice(swData)
-      const priceChanged = newPrice > 0 && Math.abs(prevPrice - newPrice) > 0.01
-
-      const { error: historyError } = await supabase.from('print_price_history').insert({
-        product_id: product.id,
-        product_slug: slug,
-        prev_price_krw: prevPrice,
-        new_price_krw: newPrice,
-        price_changed: priceChanged,
-        source_data: {
-          papers: swData.papers.length,
-          printEntries: swData.printEntries.length,
-          sizes: swData.sizes.length,
-        },
-        fetch_success: swData.fetchSuccess,
-        error_message: swData.errorMessage ?? null,
-        source: 'manual',
-      })
-
-      if (historyError) {
-        results.push({ slug, success: false, error: historyError.message })
-        continue
-      }
-
-      if (priceChanged && swData.fetchSuccess) {
-        await supabase
-          .from('print_products')
-          .update({ base_price_krw: newPrice })
-          .eq('id', product.id)
-      }
-
-      results.push({
-        slug,
-        success: true,
-        priceChanged,
-        prevPrice,
-        newPrice,
-        fetchSuccess: swData.fetchSuccess,
-        error: swData.errorMessage,
-      })
-    }
+    // Swadpia scraping mode — OMO-3072: 제품별 루프 + 결정적 기준단가 산출
+    const swadpiaResults = await runSwadpiaSync(supabase, products, 'manual')
+    results.push(...swadpiaResults)
   }
 
   return NextResponse.json({
