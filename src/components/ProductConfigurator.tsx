@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useMemo, useRef } from 'react'
+import { useState, useMemo, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
 import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
-import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
+import { pickCheapestPress, type SwadpiaPaper, type SwadpiaPrintEntry, type SwadpiaSize, type PressKind } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
@@ -20,7 +20,10 @@ interface Props {
   options: PrintProductOption[]
   exchangeRate: number
   shippingUsd: number
+  /** 옵셋(대량) 가격 매트릭스 — 단일 프레스 제품은 이것만 */
   swadpiaData?: SwadpiaClientData
+  /** OMO-3061: 디지털(소량) 가격 매트릭스 — 듀얼 프레스 제품에서만 전달됨 */
+  digitalData?: SwadpiaClientData
 }
 
 const OPTION_LABEL: Record<string, string> = {
@@ -72,7 +75,7 @@ function lookupSwadpiaCost(
   return { costKrw: last.print_unit2, effectiveQty: last.quantity }
 }
 
-export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
+export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData, digitalData }: Props) {
   // Group options by type
   const grouped = useMemo(() => {
     const map = new Map<string, PrintProductOption[]>()
@@ -135,6 +138,10 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
   const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
 
+  // OMO-3061: 듀얼 프레스(옵셋+디지털) 제품이면 수량별 최저가 프레스를 자동 선택한다.
+  // digitalData 가 없으면(=단일 프레스 38종) 기존 단일 매트릭스 경로를 그대로 사용.
+  const useDualPress = useSwadpia && !!digitalData && digitalData.printEntries.length > 0
+
   // Selected quantity — DB 마다 type 명이 다름 (paper_qty / quantity). 둘 다 지원.
   const selectedQty = useMemo(() => {
     const qtyValue = selections['paper_qty'] ?? selections['quantity']
@@ -154,16 +161,47 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return allCodes[0] ?? null
   }, [swadpiaData, selections])
 
-  const itemPriceUsd = useMemo(() => {
-    if (useSwadpia && swadpiaPaperCode) {
-      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, selectedQty)
-      if (swadpia !== null && swadpia.costKrw > 0) {
-        return calculatePriceFromSwadpia({
-          swadpiaCostKrw: swadpia.costKrw,
-          marginMultiplier: product.margin_multiplier,
-          exchangeRate,
-        })
+  /**
+   * OMO-3061: 주어진 수량의 Swadpia 인쇄 원가(KRW) + 실발주 수량 + 선택된 프레스를 반환한다.
+   * - 듀얼 프레스: 옵셋/디지털 매트릭스를 비교해 그 수량의 최저가(또는 유일 가능) 프레스 선택.
+   * - 단일 프레스: 기존 lookupSwadpiaCost 경로(옵셋) 유지.
+   * Swadpia 데이터가 없거나 가격이 안 잡히면 null → 호출측이 DB 기반으로 폴백.
+   */
+  const priceForQty = useCallback(
+    (qty: number): { costKrw: number; effectiveQty: number; press: PressKind } | null => {
+      if (!useSwadpia || !swadpiaData) return null
+      if (useDualPress && digitalData) {
+        const pick = pickCheapestPress(
+          qty,
+          [
+            { press: 'offset', categoryCode: '', entries: swadpiaData.printEntries },
+            { press: 'digital', categoryCode: '', entries: digitalData.printEntries },
+          ],
+          selections['paper_code'],
+        )
+        if (pick && pick.costKrw > 0) {
+          return { costKrw: pick.costKrw, effectiveQty: pick.effectiveQty, press: pick.press }
+        }
+        return null
       }
+      if (!swadpiaPaperCode) return null
+      const sw = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, qty)
+      if (sw !== null && sw.costKrw > 0) {
+        return { costKrw: sw.costKrw, effectiveQty: sw.effectiveQty, press: 'offset' }
+      }
+      return null
+    },
+    [useSwadpia, swadpiaData, useDualPress, digitalData, swadpiaPaperCode, selections],
+  )
+
+  const itemPriceUsd = useMemo(() => {
+    const p = priceForQty(selectedQty)
+    if (p) {
+      return calculatePriceFromSwadpia({
+        swadpiaCostKrw: p.costKrw,
+        marginMultiplier: product.margin_multiplier,
+        exchangeRate,
+      })
     }
 
     // Fallback: DB-based calculation
@@ -178,7 +216,13 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       extraPricesKrw,
       exchangeRate,
     })
-  }, [product, grouped, selections, exchangeRate, useSwadpia, swadpiaData, swadpiaPaperCode, selectedQty])
+  }, [product, grouped, selections, exchangeRate, priceForQty, selectedQty])
+
+  // 선택된 수량에서 자동 선택된 프레스(듀얼 프레스 제품만) — 베네핏 마이크로카피용.
+  const selectedPress = useMemo(
+    () => (useDualPress ? priceForQty(selectedQty)?.press ?? null : null),
+    [useDualPress, priceForQty, selectedQty],
+  )
 
   /**
    * 동일가격 프로모션 — Swadpia 최소 수량 한계 때문에 작은 수량 옵션이 더 큰 수량과 같은 단가가 되는 경우,
@@ -187,7 +231,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
    */
   const quantityPromoMap = useMemo(() => {
     const map = new Map<string, number>()
-    if (!useSwadpia || !swadpiaPaperCode) return map
+    if (!useSwadpia) return map
 
     const qtyType = grouped.has('paper_qty') ? 'paper_qty' : 'quantity'
     const qtyOptions = grouped.get(qtyType)
@@ -196,13 +240,13 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     for (const opt of qtyOptions) {
       const requested = parseInt(opt.value, 10)
       if (!Number.isFinite(requested) || requested <= 0) continue
-      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, requested)
-      if (swadpia && swadpia.effectiveQty > requested) {
-        map.set(opt.value, swadpia.effectiveQty)
+      const p = priceForQty(requested)
+      if (p && p.effectiveQty > requested) {
+        map.set(opt.value, p.effectiveQty)
       }
     }
     return map
-  }, [useSwadpia, swadpiaData, swadpiaPaperCode, grouped])
+  }, [useSwadpia, priceForQty, grouped])
 
   const activePromoEffectiveQty = quantityPromoMap.get(
     selections['paper_qty'] ?? selections['quantity'] ?? '',
@@ -218,17 +262,16 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       const qty = parseInt(opt.value, 10)
       if (!Number.isFinite(qty) || qty <= 0) continue
       let price: number
-      if (useSwadpia && swadpiaPaperCode && swadpiaData) {
-        const sw = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, qty)
-        if (sw !== null && sw.costKrw > 0) {
-          price = calculatePriceFromSwadpia({
-            swadpiaCostKrw: sw.costKrw,
-            marginMultiplier: product.margin_multiplier,
-            exchangeRate,
-          })
-          map.set(opt.value, price / (quantityPromoMap.get(opt.value) ?? qty))
-          continue
-        }
+      const p = priceForQty(qty)
+      if (p) {
+        price = calculatePriceFromSwadpia({
+          swadpiaCostKrw: p.costKrw,
+          marginMultiplier: product.margin_multiplier,
+          exchangeRate,
+        })
+        // 라운드업(프로모) 시 실발주 수량으로 나눠 개당 단가를 산출.
+        map.set(opt.value, price / (p.effectiveQty > qty ? p.effectiveQty : qty))
+        continue
       }
       const extraPricesKrw = Array.from(grouped.entries()).map(([t, os]) => {
         const v = t === qtyType ? opt.value : (selections[t] ?? '')
@@ -243,7 +286,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       map.set(opt.value, price / qty)
     }
     return map
-  }, [useSwadpia, swadpiaData, swadpiaPaperCode, product, grouped, selections, exchangeRate, quantityPromoMap])
+  }, [priceForQty, product, grouped, selections, exchangeRate])
 
   const currentQtyKey = selections['paper_qty'] ?? selections['quantity'] ?? ''
   const currentUnitPrice = qtyUnitPriceMap.get(currentQtyKey) ?? null
@@ -420,6 +463,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <span>Print Cost ({selectedQty} pcs{activePromoEffectiveQty ? ` → ${activePromoEffectiveQty} pcs free upgrade` : ''})</span>
           <span>${itemPriceUsd.toFixed(2)}</span>
         </div>
+        {/* OMO-3061: 수량별 자동 프레스 선택 — 프레스 종류는 숨기고 베네핏만 노출 */}
+        {selectedPress && (
+          <div className="flex items-start gap-1.5 text-[11px] text-gray-500 -mt-1">
+            <span className="text-gray-400">ⓘ</span>
+            <span>
+              {selectedPress === 'digital'
+                ? 'Ideal for small runs — fast turnaround, no minimums.'
+                : 'Best per-unit value at this quantity, with consistent color across the run.'}
+            </span>
+          </div>
+        )}
         {currentUnitPrice !== null && (
           <div className="flex justify-between text-xs text-gray-500 -mt-1">
             <span>Unit price</span>

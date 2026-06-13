@@ -7,6 +7,7 @@
 
 import { createServerClient } from '@/lib/supabase'
 import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
+import { PRESS_ROUTES, resolvePressCategoryCode } from '@/lib/swadpia'
 
 // 내부 상품명 → Swadpia 카테고리 코드 매핑
 const SLUG_TO_CATEGORY: Record<string, string> = {
@@ -21,9 +22,28 @@ const SLUG_TO_CATEGORY: Record<string, string> = {
   'banners':                'CPR5000',
 }
 
+export function productNameToSlug(productNameEn: string): string {
+  return productNameEn.toLowerCase().replace(/\s+/g, '-')
+}
+
 export function toCategoryCode(productNameEn: string): string {
-  const slug = productNameEn.toLowerCase().replace(/\s+/g, '-')
-  return SLUG_TO_CATEGORY[slug] ?? 'UNKNOWN'
+  return SLUG_TO_CATEGORY[productNameToSlug(productNameEn)] ?? 'UNKNOWN'
+}
+
+/**
+ * OMO-3061: 발주용 category_code 를 수량 기반 프레스 라우팅으로 결정한다.
+ * 듀얼 프레스 제품(PRESS_ROUTES)이면 라이브 가격을 비교해 그 수량의 최저가 프레스를
+ * 고른다(고객이 견적받은 것과 동일). 그 외엔 기존 sync 매핑(toCategoryCode) 그대로.
+ */
+export async function resolveOrderCategoryCode(
+  productNameEn: string,
+  quantity: number,
+): Promise<string> {
+  const slug = productNameToSlug(productNameEn)
+  if (PRESS_ROUTES[slug]) {
+    return resolvePressCategoryCode(slug, quantity, toCategoryCode(productNameEn))
+  }
+  return toCategoryCode(productNameEn)
 }
 
 interface OrderItemLike {
@@ -50,20 +70,23 @@ export async function queueFactoryOrdersForPrintOrder(
     .from('print_factory_orders')
     .select('id')
     .eq('print_order_id', printOrderId)
-    .in('status', ['pending', 'placing', 'placed'])
+    .in('status', ['pending', 'placing', 'placed', 'paid'])
     .limit(1)
 
   if (existing && existing.length > 0) return
 
-  const inserts = items.map((item) => ({
-    print_order_id: printOrderId,
-    print_order_item_id: item.id,
-    status: 'pending',
-    category_code: toCategoryCode(item.product_name_en),
-    // 후가공(finishing)을 성원 발주 폼 필드코드로 확장(OMO-2635). finishing 키 없으면 무영향.
-    options_snapshot: expandFinishingToSwadpiaFields(item.selected_options ?? {}),
-    quantity: item.quantity,
-  }))
+  const inserts = await Promise.all(
+    items.map(async (item) => ({
+      print_order_id: printOrderId,
+      print_order_item_id: item.id,
+      status: 'pending',
+      // OMO-3061: 수량 기반 프레스 라우팅(듀얼 프레스 제품은 소량→디지털/대량→옵셋).
+      category_code: await resolveOrderCategoryCode(item.product_name_en, item.quantity),
+      // 후가공(finishing)을 성원 발주 폼 필드코드로 확장(OMO-2635). finishing 키 없으면 무영향.
+      options_snapshot: expandFinishingToSwadpiaFields(item.selected_options ?? {}),
+      quantity: item.quantity,
+    })),
+  )
 
   await supabase.from('print_factory_orders').insert(inserts)
 }

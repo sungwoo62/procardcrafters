@@ -95,10 +95,12 @@ export const CATEGORY_MAP: Record<string, string> = {
   'postcards': 'CDP3000',
   // 디스플레이
   'posters': 'CPR2000',
+  // ⚠️ banners/x/rollup: 성원 CPR5000 은 실제 '종이홀더'(오매핑). 성원엔 대형 배너
+  // 카테고리가 없음(미니배너 COD1100 만 존재) → 라우팅 보류, 보드 결정 대기.
   'banners': 'CPR5000',
   'x-banners': 'CPR5000',
   'rollup-banners': 'CPR5000',
-  'mini-banners': 'CPR5000',
+  'mini-banners': 'COD1100',            // 종이미니배너 (OMO-3058 정정: CPR5000→COD1100)
   // 봉투·서식
   'standard-envelopes': 'CEV1000',
   'admin-envelopes': 'CEV1000',
@@ -111,6 +113,177 @@ export const CATEGORY_MAP: Record<string, string> = {
   'wall-calendars': 'CCD1000',
   'desk-calendars': 'CCD2000',
   'mini-calendars': 'CCD2000',
+  // ─── OMO-3058: 성원 전체 카탈로그 정렬 (라이브 검증 완료, 22종 신규) ───
+  // 초대장/안내장/인사장
+  'invitation-cards': 'CVS1000',        // 일반초대장/상품권
+  'wedding-cards': 'CDP2000',           // 디지털청첩장/초대장
+  'greeting-cards-general': 'CCM4000',  // 연하장
+  'hangtag-cards': 'CNC7000',           // 프리컷팅(커팅 행택)
+  // 스티커 변형 (용지 옵션 차이 → 동일 카테고리)
+  'transparent-stickers': 'CST1000',    // 재단형(PVC 투명지 포함)
+  'kraft-stickers': 'CST1000',
+  'eco-stickers': 'CST1000',
+  // 노트/메모
+  'general-notebooks': 'CDP5100',       // 디지털노트
+  'diaries': 'CDP5100',                 // ※성원 전용 다이어리 없음 → 디지털노트 대용
+  'spring-notebooks': 'CDP5100',
+  'memo-pads-general': 'CNR3000',       // 떡메모지
+  'sticky-notes': 'CPS7000',            // 사각포스트잇
+  // POP (성원 대형 POP 없음 → 미니배너 대용, 보드 확인 필요)
+  'paper-pop': 'COD1100',               // 종이미니배너
+  'foam-pop': 'COD1100',                // ※성원 폼보드 없음 → 미니배너 대용(루즈매칭)
+  // 박스 (전부 판지/박스 단일 카테고리)
+  'general-boxes': 'CHI3000',           // 판지/박스
+  'corrugated-boxes': 'CHI3000',
+  'gift-boxes': 'CHI3000',
+  'cake-boxes': 'CHI3000',
+  'tube-boxes': 'CHI3000',
+  // 쇼핑백/봉투백
+  'paper-shopping-bags': 'CPK4000',     // 일반쇼핑백
+  'kraft-bags': 'CPK4000',
+  'gift-bags': 'CPK2000',               // 리본&브레이드 쇼핑백
+}
+
+// ─── 듀얼 프레스 라우팅 (OMO-3061) ────────────────────────────
+//
+// 성원은 같은 제품을 인쇄방식으로 분할한다:
+//   · 옵셋/합판 (CNC/CPR…) = 대량 저가(gang-run). 명함 기준 최소 200부.
+//   · 디지털 인디고 (CDP…) = 소량(1~400부). 장당 단가는 높으나 초소량 가능.
+//   · 디지털 토너 (COD…) = 초저가 소량 — 단, 가격이 json_data 에 미노출(별도
+//     인터랙티브 경로 필요)이라 현 단계 라우팅 보류(OMO-3061 토너 후속).
+//
+// 보드 승인(OMO-3058 Option A): 제품은 하나로 유지하고, 고객이 수량을 고르면
+// **각 수량에서 더 싸거나 유일하게 가능한 프레스를 자동 선택**한다(프레스 종류는
+// 고객에게 숨김, 베네핏 마이크로카피만). 크로스오버는 고정 MOQ 가 아니라 두 프레스
+// 매트릭스의 수량별 최저가 비교로 결정한다(pickCheapestPress).
+//
+// 라이브 검증(명함, scripts/omo3061-verify.mjs): 옵셋 CNC1000(200~300,000부),
+// 디지털 CDP1000(1~400부). q1=디지털 600원 vs 옵셋 4,000원→디지털; q10+=옵셋 우세.
+// 신규 쌍 추가 시: 두 코드 모두 print 매트릭스(print_info1/3)가 실가격을 반환하는지
+// 라이브 확인 후 등록한다. (posters/booklets 등은 대형판·페이지수 의존이라 보류 —
+// 옵션 단위 검증 후 후속 등록.)
+export type PressKind = 'offset' | 'digital'
+
+export interface PressRoute {
+  /** 옵셋/합판 category_code (대량) */
+  offset: string
+  /** 디지털 인디고 category_code (소량) */
+  digital: string
+}
+
+export const PRESS_ROUTES: Record<string, PressRoute> = {
+  'business-cards': { offset: 'CNC1000', digital: 'CDP1000' }, // 라이브 검증 OMO-3061
+}
+
+export interface PressCostResult {
+  costKrw: number
+  /** 라운드업된 실제 발주 수량(요청 이상 최소 단계) */
+  effectiveQty: number
+  paperCode: string
+}
+
+export interface PressPick extends PressCostResult {
+  press: PressKind
+  categoryCode: string
+}
+
+/**
+ * 단일 프레스 매트릭스에서 수량별 인쇄비를 조회한다(OMO-3061).
+ * - 요청 수량이 이 프레스의 최대 생산 수량을 넘으면 `null`(이 프레스로는 불가).
+ * - 그 외엔 요청 이상 최소 수량단계로 라운드업한다(성원이 못 받는 소량 → 다음 배치).
+ * - preferredPaper 가 해당 단계에 있으면 그 종이, 없으면 최저가 종이를 선택한다.
+ */
+export function lookupPressCost(
+  entries: SwadpiaPrintEntry[],
+  quantity: number,
+  preferredPaper?: string,
+): PressCostResult | null {
+  const valid = entries.filter((e) => e.print_unit2 > 0)
+  if (valid.length === 0) return null
+  const maxQ = valid.reduce((m, e) => Math.max(m, e.quantity), 0)
+  if (quantity > maxQ) return null // 이 프레스로는 해당 수량 생산 불가
+
+  const steps = [...new Set(valid.map((e) => e.quantity))].sort((a, b) => a - b)
+  const step = steps.find((s) => s >= quantity) ?? maxQ
+  const atStep = valid.filter((e) => e.quantity === step)
+  const pref = preferredPaper ? atStep.find((e) => e.paper_code === preferredPaper) : undefined
+  const chosen = pref ?? atStep.reduce((m, e) => (e.print_unit2 < m.print_unit2 ? e : m), atStep[0])
+  return { costKrw: chosen.print_unit2, effectiveQty: step, paperCode: chosen.paper_code }
+}
+
+export interface PressEntrySet {
+  press: PressKind
+  categoryCode: string
+  entries: SwadpiaPrintEntry[]
+}
+
+/**
+ * 주어진 수량에서 가장 저렴한(또는 유일하게 가능한) 프레스를 선택한다(OMO-3061).
+ * 각 프레스를 lookupPressCost 로 평가해 생산 가능한 것 중 최저 KRW 단가를 고른다.
+ * 모두 불가하면 `null`.
+ */
+export function pickCheapestPress(
+  quantity: number,
+  presses: PressEntrySet[],
+  preferredPaper?: string,
+): PressPick | null {
+  let best: PressPick | null = null
+  for (const p of presses) {
+    const c = lookupPressCost(p.entries, quantity, preferredPaper)
+    if (!c) continue
+    if (!best || c.costKrw < best.costKrw) {
+      best = { press: p.press, categoryCode: p.categoryCode, ...c }
+    }
+  }
+  return best
+}
+
+export interface PressData {
+  route: PressRoute
+  offset: SwadpiaCategoryData
+  digital: SwadpiaCategoryData
+}
+
+/**
+ * 듀얼 프레스 제품(PRESS_ROUTES 등록)의 옵셋+디지털 가격 데이터를 함께 조회한다(OMO-3061).
+ * 미등록 슬러그는 `null` → 호출측은 기존 단일 프레스 경로를 그대로 사용.
+ */
+export async function fetchPressData(slug: string): Promise<PressData | null> {
+  const route = PRESS_ROUTES[slug]
+  if (!route) return null
+  const [offset, digital] = await Promise.all([
+    fetchSwadpiaCategoryDataByCode(route.offset),
+    fetchSwadpiaCategoryDataByCode(route.digital),
+  ])
+  return { route, offset, digital }
+}
+
+/**
+ * 자동발주용 — 슬러그+수량으로 실제 발주할 프레스의 category_code 를 결정한다(OMO-3061).
+ * 듀얼 프레스 제품이면 라이브 가격을 비교해 고객이 견적받은 것과 동일한 프레스를 고른다.
+ * 미등록 슬러그/조회 실패 시 fallback(기본 옵셋 코드)으로 안전 폴백.
+ */
+export async function resolvePressCategoryCode(
+  slug: string,
+  quantity: number,
+  fallback?: string,
+): Promise<string> {
+  const route = PRESS_ROUTES[slug]
+  const base = fallback ?? CATEGORY_MAP[slug] ?? slug
+  if (!route) return base
+  try {
+    const [off, dig] = await Promise.all([
+      fetchSwadpiaCategoryDataByCode(route.offset),
+      fetchSwadpiaCategoryDataByCode(route.digital),
+    ])
+    const pick = pickCheapestPress(quantity, [
+      { press: 'offset', categoryCode: route.offset, entries: off.printEntries },
+      { press: 'digital', categoryCode: route.digital, entries: dig.printEntries },
+    ])
+    return pick?.categoryCode ?? route.offset
+  } catch {
+    return route.offset
+  }
 }
 
 // ─── In-memory cache (1-hour TTL) ────────────────────────────
@@ -137,7 +310,19 @@ function parseNumber(val: string | number | null | undefined): number {
 }
 
 /**
- * Fetches category pricing data from the Swadpia JSON endpoint.
+ * 성원 json_data 는 카테고리별로 paper_info/size_info 등을 배열이 아니라
+ * 숫자키 객체({"0":{…},"1":{…}}) 또는 false/null 로 줄 때가 있다(스티커 등).
+ * 항상 배열로 정규화해 .map 호출이 깨지지 않게 한다. (OMO-3058)
+ */
+function asArray<T = Record<string, unknown>>(v: unknown): T[] {
+  if (Array.isArray(v)) return v as T[]
+  if (v && typeof v === 'object') return Object.values(v as Record<string, T>)
+  return []
+}
+
+/**
+ * Fetches category pricing data from the Swadpia JSON endpoint by slug.
+ * 슬러그→코드 변환(CATEGORY_MAP) + 1시간 캐시. 실제 fetch 는 …ByCode 위임.
  */
 export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCategoryData> {
   const categoryCode = CATEGORY_MAP[slug]
@@ -159,6 +344,17 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     return cached
   }
 
+  const result = await fetchSwadpiaCategoryDataByCode(categoryCode)
+  if (result.fetchSuccess) cache.set(slug, result)
+  return result
+}
+
+/**
+ * OMO-3058: 임의 성원 category_code 로 직접 가격/옵션 데이터를 조회한다.
+ * 맵핑 검증(보드가 붙인 성원 링크 확인)·드리프트 모니터링에서 사용.
+ * 슬러그 캐시를 거치지 않으므로 항상 라이브 값을 반환한다.
+ */
+export async function fetchSwadpiaCategoryDataByCode(categoryCode: string): Promise<SwadpiaCategoryData> {
   try {
     const formData = new URLSearchParams({
       t: String(Math.floor(Date.now() / 1000)),
@@ -183,7 +379,7 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     const raw = await res.json()
 
     // Parse paper_info
-    const papers: SwadpiaPaper[] = (raw.paper_info ?? []).map((p: Record<string, unknown>) => ({
+    const papers: SwadpiaPaper[] = asArray(raw.paper_info).map((p: Record<string, unknown>) => ({
       paper_code: String(p.paper_code ?? ''),
       paper_type_code: String(p.paper_type_code ?? ''),
       paper_weight: String(p.paper_weight ?? ''),
@@ -197,9 +393,13 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
       print_method_list: String(p.print_method_list ?? ''),
     }))
 
-    // Parse print_info1 (quantity-based print cost matrix)
+    // Parse 수량별 인쇄비 매트릭스.
+    // 옵셋/합판은 print_info1, 디지털(인디고 CDP/토너 COD)은 print_info3 에 담긴다(OMO-3058).
+    // print_info1 이 비어있으면 print_info3 으로 폴백해 디지털 가격도 추출.
+    const printSource = asArray(raw.print_info1).length > 0 ? raw.print_info1 : raw.print_info3
     const printEntries: SwadpiaPrintEntry[] = []
-    for (const entry of (raw.print_info1 ?? [])) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    for (const entry of asArray<any>(printSource)) {
       const qty = parseInt(String(entry.unit_key), 10)
       if (isNaN(qty)) continue
       const info = entry['0']
@@ -215,7 +415,7 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     }
 
     // Parse size_info
-    const sizes: SwadpiaSize[] = (raw.size_info ?? []).map((s: Record<string, unknown>) => ({
+    const sizes: SwadpiaSize[] = asArray(raw.size_info).map((s: Record<string, unknown>) => ({
       size_type_code: String(s.size_type_code ?? ''),
       size_type_name: String(s.size_type_name ?? ''),
       cut_norm_x_size: String(s.cut_norm_x_size ?? ''),
@@ -231,7 +431,6 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
       fetchSuccess: true,
     }
 
-    cache.set(slug, result)
     return result
 
   } catch (err) {
