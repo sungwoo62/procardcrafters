@@ -1,11 +1,15 @@
 import Link from 'next/link'
-import { ArrowLeft, AlertTriangle, CheckCircle2, XCircle } from 'lucide-react'
+import { ArrowLeft, AlertTriangle } from 'lucide-react'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
 import { CATEGORY_MAP } from '@/lib/swadpia'
+import InteractiveMappingTable, { type GroupWithRows } from './InteractiveMappingTable'
 
-// OMO-3058 / OMO-3095: 우리 사이트 전체 제품 ↔ 성원(swadpia.co.kr) 제품(category_code) 맵핑 현황 리포트.
-// 보드 질의 — "/products/transparent-stickers 는 성원 무슨 제품 맵핑인가" + 전체 맵핑 현황.
+// OMO-3058 / OMO-3095 / OMO-3148: 우리 사이트 전체 제품 ↔ 성원(swadpia.co.kr) 제품(category_code) 맵핑 현황 리포트.
 // PRODUCT_GROUPS(제품 네비)와 CATEGORY_MAP(성원 라우팅)을 단일 소스로 읽어 항상 최신 동기화.
+//
+// OMO-3148(보드 요청): 정적 표 → 행 클릭 시 성원 라이브 옵션 ↔ 우리 적용 옵션 비교가
+// 펼쳐지는 인터랙티브 뷰로 복원. 표/요약 내용은 최신 검증 데이터로 유지하고, 펼침 상세는
+// read-only /api/swadpia-mapping/detail 만 호출한다(쓰기 엔드포인트 없음 → prod 안전).
 //
 // OMO-3095(2026-06-13) 라이브 검증 정정: holographic-stickers 는 CST5000(스페셜)이 아니라
 // CST6000(팬시롤) 로 라우팅. 성원 라이브 격자상 홀로그램 용지(STR050HN1 홀로그램 민무늬 Pet)는
@@ -110,7 +114,12 @@ function buildRows(items: { slug: string; label: string }[]): Row[] {
 }
 
 export default function SwadpiaMappingReport() {
-  const allRows = PRODUCT_GROUPS.flatMap((g) => buildRows(g.items))
+  const groups: GroupWithRows[] = PRODUCT_GROUPS.map((g) => ({
+    key: g.key,
+    title: g.title,
+    rows: buildRows(g.items),
+  }))
+  const allRows = groups.flatMap((g) => g.rows)
   const total = allRows.length
   const mappedCount = allRows.filter((r) => r.mapped).length
   const unsupportedCount = allRows.filter((r) => r.unsupported).length
@@ -217,79 +226,8 @@ export default function SwadpiaMappingReport() {
         </div>
       </div>
 
-      {/* 그룹별 표 */}
-      {PRODUCT_GROUPS.map((group) => {
-        const rows = buildRows(group.items)
-        return (
-          <section key={group.key} className="mt-8">
-            <h2 className="text-lg font-semibold text-gray-900">
-              {group.title}{' '}
-              <span className="text-sm font-normal text-gray-400">
-                ({rows.filter((r) => r.mapped).length}/{rows.length} 연동)
-              </span>
-            </h2>
-            <div className="mt-2 overflow-x-auto rounded-lg border border-gray-200">
-              <table className="w-full text-sm">
-                <thead className="bg-gray-50 text-left text-xs text-gray-500">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">우리 제품</th>
-                    <th className="px-3 py-2 font-medium">슬러그</th>
-                    <th className="px-3 py-2 font-medium">성원 코드</th>
-                    <th className="px-3 py-2 font-medium">성원 제품명</th>
-                    <th className="px-3 py-2 font-medium">상태</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-100">
-                  {rows.map((r) => (
-                    <tr
-                      key={r.slug}
-                      className={r.mapped ? '' : r.unsupported ? 'bg-gray-50' : 'bg-red-50/40'}
-                    >
-                      <td className="px-3 py-2 font-medium text-gray-900">
-                        {r.label}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-xs text-gray-500">
-                        {r.slug}
-                      </td>
-                      <td className="px-3 py-2 font-mono text-xs text-gray-700">
-                        {r.code ?? '—'}
-                      </td>
-                      <td className="px-3 py-2 text-gray-700">
-                        {r.swadpiaName}
-                        {r.warn && (
-                          <span className="ml-1 inline-flex items-center text-amber-600">
-                            <AlertTriangle className="h-3.5 w-3.5" />
-                          </span>
-                        )}
-                        {r.unsupported && r.unsupportedNote && (
-                          <span className="ml-1 block text-xs text-gray-400">
-                            {r.unsupportedNote}
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-3 py-2">
-                        {r.mapped ? (
-                          <span className="inline-flex items-center gap-1 text-green-700">
-                            <CheckCircle2 className="h-4 w-4" /> 연동
-                          </span>
-                        ) : r.unsupported ? (
-                          <span className="inline-flex items-center gap-1 text-gray-500">
-                            <XCircle className="h-4 w-4" /> 미취급
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center gap-1 text-red-600">
-                            <XCircle className="h-4 w-4" /> 미연동
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </section>
-        )
-      })}
+      {/* 그룹별 표 (행 클릭 → 성원↔우리 비교 펼침, OMO-3148) */}
+      <InteractiveMappingTable groups={groups} />
 
       {/* 코드 오류 경고 */}
       {warnCount > 0 && (
