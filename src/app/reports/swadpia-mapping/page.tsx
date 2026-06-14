@@ -201,19 +201,19 @@ export default function SwadpiaMappingReport() {
         </div>
       </div>
 
-      {/* 보드 직접 질의 답변 */}
+      {/* 보드 직접 질의 답변 — OMO-3097 라이브검증으로 연동 완료, OMO-3148 갱신 */}
       <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
         <div className="font-semibold text-blue-900">
           Q. /products/transparent-stickers 는 성원 무슨 제품 맵핑?
         </div>
         <div className="mt-1 text-blue-800">
-          <strong>A. 현재 성원 미연동(맵핑 없음)</strong> 입니다. transparent-stickers
-          는 제품 네비/상세 페이지는 존재하지만 CATEGORY_MAP 에 항목이 없어 성원
-          자동발주·실시간 가격조회 대상이 아닙니다. 성격상 성원{' '}
-          <code className="rounded bg-blue-100 px-1">CST1000(일반)</code>/
-          <code className="rounded bg-blue-100 px-1">CST2000(도무송)</code> 계열의
-          투명 PVC 변형이 후보이나, 성원에 별도 투명 스티커 카테고리 코드가 확인되기
-          전까지는 연동 보류 상태입니다.
+          <strong>A. 성원 연동됨 — </strong>
+          <code className="rounded bg-blue-100 px-1">CST1000</code>(재단형 스티커, 투명데드롱 25
+          용지옵션)로 맵핑되었습니다(OMO-3097 라이브검증). 같은 CST1000 의 용지옵션 변형으로
+          크라프트(<code className="rounded bg-blue-100 px-1">kraft-stickers</code>)·에코
+          (<code className="rounded bg-blue-100 px-1">eco-stickers</code>)도 함께 연동되어
+          성원 자동발주·실시간 가격조회 대상입니다. (도무송형은 별도{' '}
+          <code className="rounded bg-blue-100 px-1">CST2000</code>.)
         </div>
       </div>
 
