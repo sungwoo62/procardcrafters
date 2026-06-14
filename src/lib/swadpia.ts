@@ -359,3 +359,81 @@ export async function fetchAllSwadpiaData(): Promise<SwadpiaCategoryData[]> {
 export type SwadpiaProductResult = SwadpiaCategoryData
 export const fetchSwadpiaProductPrice = fetchSwadpiaCategoryData
 export const fetchAllSwadpiaPrices = fetchAllSwadpiaData
+
+// ─── goods_view HTML 스크랩 (OMO-3148) ───────────────────────────
+//
+// 성원 json_data(견적 가격 매트릭스)에는 후가공(오시/박/형압…)·인쇄색상(양면/단면)이
+// 들어있지 않다. 그 옵션들은 goods_view HTML 폼(chk_* 체크박스 + print_color_type
+// select)에 있다. 맵핑 비교 패널의 "성원 스크랩" 측에 이 둘을 라이브로 긁어 표시해
+// 우리 DB 옵션과 같은 성원 소스 기준으로 정직하게 비교하기 위함(보드 제보 OMO-3148).
+
+const SWADPIA_FINISHING_LABEL: Record<string, string> = {
+  osi: '오시', missing: '미싱', bak: '박', dbak: '디지털박', ap: '형압',
+  numbering: '넘버링', domusong: '도무송', tagong: '타공', guidori: '귀도리',
+  epoxy: '에폭시', coating: '코팅', partial_coating: '부분코팅', folding: '접지',
+  cutting: '재단', binding: '제본', bonding: '무선제본', laminex: '라미넥스',
+  guidori_position: '귀도리위치', tape: '양면테이프', window: '봉투창',
+}
+
+export interface SwadpiaGoodsViewOptions {
+  fetchSuccess: boolean
+  printColors: { code: string; label: string }[]
+  finishings: { code: string; label: string }[]
+  error?: string
+}
+
+/** category_code → goods_code ('G' + 가운데 코드 + '1', 예: CNC1000→GNC1001). */
+function swadpiaGoodsCode(categoryCode: string): string {
+  return 'G' + categoryCode.slice(1, -1) + '1'
+}
+
+/**
+ * 성원 goods_view HTML을 긁어 인쇄색상(print_color_type select)과 후가공(swguide_postpress
+ * 라벨 링크) 옵션을 추출한다. 카테고리별 노출 toggle은 클라이언트 JS(init)가 결정하므로
+ * 폼 템플릿에 존재하는 후가공 집합을 그대로 보고한다(일부 카테고리는 런타임에 일부 숨김).
+ */
+export async function fetchSwadpiaGoodsViewOptions(
+  categoryCode: string,
+): Promise<SwadpiaGoodsViewOptions> {
+  const empty: SwadpiaGoodsViewOptions = { fetchSuccess: false, printColors: [], finishings: [] }
+  if (!categoryCode) return { ...empty, error: 'no category' }
+  try {
+    const url = `${SWADPIA_BASE}/goods/goods_view/${categoryCode}/${swadpiaGoodsCode(categoryCode)}`
+    const res = await fetchWithTimeout(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (compatible; ProcardcraftersMappingBot/1.0)' },
+    })
+    if (!res.ok) return { ...empty, error: `HTTP ${res.status}` }
+    const html = await res.text()
+
+    // 인쇄색상: <select name="print_color_type" ...> 안의 <option value="X">라벨</option>
+    const printColors: { code: string; label: string }[] = []
+    const selMatch = html.match(/<select[^>]*name=["']print_color_type["'][\s\S]*?<\/select>/i)
+    if (selMatch) {
+      const optRe = /<option[^>]*value=["']([^"']+)["'][^>]*>([^<]+)<\/option>/gi
+      let m: RegExpExecArray | null
+      while ((m = optRe.exec(selMatch[0]))) {
+        const label = m[2].replace(/&nbsp;/g, ' ').trim()
+        if (m[1] && label) printColors.push({ code: m[1], label })
+      }
+    }
+
+    // 후가공: 폼의 후가공 라벨 링크 swguide_postpress('osi');">오시</a> 에서 추출한다.
+    // (raw 서버 HTML은 모든 chk_* td가 display:none 이고 노출은 카테고리별 JS init이 결정
+    //  → inline style로는 판별 불가. 폼 템플릿에 존재하는 후가공 옵션 집합을 그대로 보고.)
+    const finishings: { code: string; label: string }[] = []
+    const seen = new Set<string>()
+    const ppRe = /swguide_postpress\(['"]([a-z_]+)['"]\);?\s*">([^<]+)<\/a>/gi
+    let c: RegExpExecArray | null
+    while ((c = ppRe.exec(html))) {
+      const code = c[1]
+      const label = c[2].replace(/&nbsp;/g, ' ').trim()
+      if (!code || code.startsWith('is_') || seen.has(code)) continue
+      seen.add(code)
+      finishings.push({ code, label: label || SWADPIA_FINISHING_LABEL[code] || code })
+    }
+
+    return { fetchSuccess: true, printColors, finishings }
+  } catch (e) {
+    return { ...empty, error: e instanceof Error ? e.message : 'fetch failed' }
+  }
+}
