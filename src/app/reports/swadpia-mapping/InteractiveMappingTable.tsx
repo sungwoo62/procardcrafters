@@ -56,6 +56,8 @@ type Detail = {
     sizes: { code: string; name: string; mm: string }[]
     qtyLadder: number[]
     basePriceKrw: number
+    printColors?: { code: string; label: string }[]
+    finishings?: { code: string; label: string }[]
   }
   applied: {
     exists: boolean
@@ -254,6 +256,21 @@ function DetailPanel({
             )}
             {swadpia.qtyLadder.length > 0 && (
               <div><span className="font-medium text-gray-700">수량단계</span>: {swadpia.qtyLadder.join(' / ')}</div>
+            )}
+            {/* OMO-3148: goods_view HTML 에서 별도 스크랩 (json_data 엔 없는 항목) */}
+            {swadpia.printColors && swadpia.printColors.length > 0 && (
+              <div>
+                <span className="font-medium text-gray-700">인쇄색상 {swadpia.printColors.length}종</span>:{' '}
+                {swadpia.printColors.map((p) => p.label).join(', ')}
+                <span className="ml-1 text-[10px] text-gray-400">(goods_view)</span>
+              </div>
+            )}
+            {swadpia.finishings && swadpia.finishings.length > 0 && (
+              <div>
+                <span className="font-medium text-gray-700">후가공 {swadpia.finishings.length}종</span>:{' '}
+                {swadpia.finishings.map((f) => f.label).join(', ')}
+                <span className="ml-1 text-[10px] text-gray-400">(goods_view)</span>
+              </div>
             )}
           </div>
         )}

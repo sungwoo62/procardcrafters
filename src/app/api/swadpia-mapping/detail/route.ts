@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { fetchSwadpiaCategoryData, CATEGORY_MAP } from '@/lib/swadpia'
+import { fetchSwadpiaCategoryData, fetchSwadpiaGoodsViewOptions, CATEGORY_MAP } from '@/lib/swadpia'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -29,6 +29,9 @@ export async function GET(req: NextRequest) {
     sizes: { code: string; name: string; mm: string }[]
     qtyLadder: number[]
     basePriceKrw: number
+    // OMO-3148: json_data 엔 없는 후가공·인쇄색상을 goods_view HTML 에서 별도 스크랩.
+    printColors: { code: string; label: string }[]
+    finishings: { code: string; label: string }[]
   } = {
     categoryCode,
     fetchSuccess: false,
@@ -37,9 +40,17 @@ export async function GET(req: NextRequest) {
     sizes: [],
     qtyLadder: [],
     basePriceKrw: 0,
+    printColors: [],
+    finishings: [],
   }
   if (categoryCode) {
-    const data = await fetchSwadpiaCategoryData(slug)
+    // 가격 매트릭스(json_data)와 옵션폼(goods_view HTML)을 병렬로 긁는다.
+    const [data, gv] = await Promise.all([
+      fetchSwadpiaCategoryData(slug),
+      fetchSwadpiaGoodsViewOptions(categoryCode),
+    ])
+    swadpia.printColors = gv.printColors
+    swadpia.finishings = gv.finishings
     if (data.fetchSuccess) {
       const sortedQty = [...data.printEntries].sort((a, b) => a.quantity - b.quantity)
       swadpia = {
@@ -66,9 +77,13 @@ export async function GET(req: NextRequest) {
           (a, b) => a - b,
         ),
         basePriceKrw: sortedQty.length ? sortedQty[0].print_unit2 : 0,
+        printColors: gv.printColors,
+        finishings: gv.finishings,
       }
     } else {
+      // 가격 매트릭스 실패해도 goods_view 후가공/인쇄색상은 보여준다.
       swadpia.error = data.errorMessage
+      swadpia.fetchSuccess = gv.fetchSuccess
     }
   }
 
