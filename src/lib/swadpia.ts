@@ -183,12 +183,25 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
     }
   }
 
-  // Check cache
+  // Check cache (slug-keyed)
   const cached = cache.get(slug)
   if (cached && Date.now() - cached.fetchedAt < CACHE_TTL_MS) {
     return cached
   }
 
+  const result = await fetchSwadpiaCategoryDataByCode(categoryCode)
+  if (result.fetchSuccess) cache.set(slug, result)
+  return result
+}
+
+/**
+ * OMO-3156: 슬러그 매핑 없이 임의의 성원 category_code 로 직접 라이브 조회한다.
+ * 맵핑 리포트의 링크 검증(verifySwadpiaLink)이 보드가 붙인 임의 링크를 검증할 때 사용한다.
+ * (슬러그 캐시는 호출측인 fetchSwadpiaCategoryData 가 담당 — 여기선 캐시하지 않는다.)
+ */
+export async function fetchSwadpiaCategoryDataByCode(
+  categoryCode: string,
+): Promise<SwadpiaCategoryData> {
   try {
     const formData = new URLSearchParams({
       t: String(Math.floor(Date.now() / 1000)),
@@ -261,7 +274,6 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
       fetchSuccess: true,
     }
 
-    cache.set(slug, result)
     return result
 
   } catch (err) {
