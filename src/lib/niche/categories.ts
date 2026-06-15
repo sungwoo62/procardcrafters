@@ -105,6 +105,11 @@ const F = {
     blurb: 'Put the offer on the front and the details on the back — both sides, full color.',
     icon: '🔁',
   } as NicheFeature,
+  adhesive: {
+    name: 'Sticks and Stays',
+    blurb: 'Pressure-sensitive label stock with adhesive that holds on jars, boxes and curved surfaces.',
+    icon: '🏷️',
+  } as NicheFeature,
 }
 
 const SEE_ALL = (catSlug: string): InternalLink => ({
@@ -548,6 +553,198 @@ export const NICHE_CATEGORIES: NicheCategory[] = [
           { label: 'Event posters', href: '/posters/for/event-posters' },
           { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
           SEE_ALL('posters'),
+        ],
+        priceFrom: 19,
+      },
+    ],
+  },
+
+  // ===================== LABELS =====================
+  // ⚠️ US-market(en-US). KR 규제 콘텐츠(label-usecases.ts, OMO-3090)와 분리 — 이 카테고리는
+  //    영문 보편 용례만 다룬다. CTA 퍼널은 활성 제품 /products/roll-stickers(롤 라벨).
+  {
+    slug: 'labels',
+    productSlug: 'roll-stickers',
+    label: 'Labels',
+    labelSingular: 'Label',
+    schemaCategory: 'Labels',
+    hubMetaTitle: 'Custom Labels by Use Case — Product, Shipping, Waterproof & Barcode | ProCardCrafters',
+    hubMetaDescription:
+      'Custom labels built for the job — product and packaging labels, shipping and address labels, waterproof outdoor labels, and barcode or QR labels. Die-cut to any shape, durable material, any quantity.',
+    hubH1: 'Custom Labels Built for the Job',
+    hubSubhead: 'Die-cut to any shape on durable, adhesive stock — tuned to where the label has to stick.',
+    hubFeatures: [F.adhesive, F.dieCut, F.durable, F.fullColor],
+    entries: [
+      {
+        slug: 'product-packaging-labels',
+        audience: 'Product & Packaging Labels',
+        audienceSingular: 'Product Label',
+        h1: 'Custom Product & Packaging Labels',
+        metaTitle: 'Custom Product Labels — Packaging & Brand Labels in Bulk | ProCardCrafters',
+        metaDescription:
+          'Custom product and packaging labels that make your packaging look retail-ready. Full-color, die-cut to fit your jar, bottle or box, on durable adhesive stock. Any quantity, proofed before printing. From $24.',
+        heroSubhead:
+          'On the shelf, the label is the product. Make your packaging look like it belongs in a store.',
+        intro:
+          'A clean, well-printed label is what turns a generic container into a branded product. Whether it wraps a jar, a bottle or a box, the label carries your logo, your story and the details a buyer scans before they decide. ProCardCrafters prints product and packaging labels in full color, die-cut to fit your container, on durable adhesive stock — so what reaches the shelf looks like a real brand, not a kitchen-table experiment.',
+        useCases: [
+          'Jars, bottles, tins and pouches for food, drinks and cosmetics',
+          'Box and carton labels for retail and ecommerce packaging',
+          'Batch, flavor and variant labels in short, mixed runs',
+          'Seal and "thank you" labels that finish the unboxing',
+        ],
+        features: [F.adhesive, F.dieCut, F.durable, F.proof],
+        faqs: [
+          {
+            question: 'Can you cut labels to fit a round jar or an odd-shaped bottle?',
+            answer:
+              'Yes. We die-cut to your dimensions — circles, ovals, rounded rectangles or a custom outline that wraps your container cleanly. We proof the size and cut before the full run.',
+          },
+          {
+            question: 'Will the label survive moisture, oils and handling?',
+            answer:
+              'We offer durable, water- and oil-resistant stocks suited to jars, bottles and refrigerated or handled products. Tell us the container and contents and we’ll match a material that won’t smudge or peel.',
+          },
+          {
+            question: 'Can I print several products or variants in one order?',
+            answer:
+              'Yes. We can print multiple designs in a single run so a small batch of several products stays affordable. Send your variants and we’ll lay them out together.',
+          },
+        ],
+        internalLinks: [
+          { label: 'Waterproof & outdoor labels', href: '/labels/for/waterproof-labels' },
+          { label: 'Barcode & QR labels', href: '/labels/for/barcode-labels' },
+          { label: 'Product & packaging stickers', href: '/stickers/for/product-labels' },
+          SEE_ALL('labels'),
+        ],
+        priceFrom: 24,
+      },
+      {
+        slug: 'shipping-labels',
+        audience: 'Shipping & Address Labels',
+        audienceSingular: 'Shipping Label',
+        h1: 'Custom Shipping & Address Labels',
+        metaTitle: 'Shipping & Address Labels — Custom Mailing Labels in Bulk | ProCardCrafters',
+        metaDescription:
+          'Custom shipping and address labels for ecommerce and fulfillment. Clean, durable adhesive labels with your branding — any quantity, proofed before printing. From $19.',
+        heroSubhead:
+          'Every package is a touchpoint. Turn the shipping label into part of the brand, not an afterthought.',
+        intro:
+          'A shipping label does more than route a box — it’s often the first thing a customer sees when their order arrives. Smudged, peeling labels make a brand look careless; clean, branded ones make the package feel considered. ProCardCrafters prints shipping and address labels on durable adhesive stock that stays put and stays legible through the mail stream, so your packaging looks as professional as what’s inside.',
+        useCases: [
+          'Return-address and branded sender labels for ecommerce',
+          'Fulfillment and warehouse labels for outbound orders',
+          'Mailing and direct-mail address labels in bulk',
+          'Pack-out labels that pair with your packaging and inserts',
+        ],
+        features: [F.adhesive, F.durable, F.sizes, F.fullColor],
+        faqs: [
+          {
+            question: 'Can I add my logo and return address to the label?',
+            answer:
+              'Yes. We print your branding, return address and any fixed details in full color, and proof the layout before the run so everything reads cleanly.',
+          },
+          {
+            question: 'Will the adhesive hold through shipping and handling?',
+            answer:
+              'We print on adhesive stock built to stay put on boxes, mailers and poly bags through the mail stream. Tell us your packaging surface and we’ll match the right material.',
+          },
+          {
+            question: 'Do you print in large quantities for high-volume shipping?',
+            answer:
+              'Yes — bulk runs are where labels get cheapest per piece. Whether you ship dozens or thousands of orders, we can size the run to your volume.',
+          },
+        ],
+        internalLinks: [
+          { label: 'Product & packaging labels', href: '/labels/for/product-packaging-labels' },
+          { label: 'Barcode & QR labels', href: '/labels/for/barcode-labels' },
+          SEE_ALL('labels'),
+        ],
+        priceFrom: 19,
+      },
+      {
+        slug: 'waterproof-labels',
+        audience: 'Waterproof & Outdoor Labels',
+        audienceSingular: 'Waterproof Label',
+        h1: 'Custom Waterproof & Outdoor Labels',
+        metaTitle: 'Waterproof Labels — Durable Outdoor & Weatherproof Labels | ProCardCrafters',
+        metaDescription:
+          'Custom waterproof and outdoor labels built to survive water, weather and handling. Durable, water-resistant adhesive stock, die-cut to any shape — any quantity. From $24.',
+        heroSubhead:
+          'Some labels live a hard life. Print them on stock that survives water, weather and a few hundred touches.',
+        intro:
+          'A paper label that bubbles in the cooler or fades in the sun makes the whole product look cheap. For anything that lives near water or outdoors — bottles, coolers, equipment, garden and bath products — the label has to be as tough as the package. ProCardCrafters prints waterproof and outdoor labels on durable, water-resistant adhesive stock, die-cut to your shape, so the label still looks sharp after the bottle’s been in the fridge or the gear’s been in the rain.',
+        useCases: [
+          'Bottles, tumblers and coolers that get wet or chilled',
+          'Bath, garden, cleaning and outdoor-product packaging',
+          'Equipment, asset and gear labels exposed to the elements',
+          'Cosmetic and personal-care labels that meet water daily',
+        ],
+        features: [F.durable, F.adhesive, F.dieCut, F.finishMattGloss],
+        faqs: [
+          {
+            question: 'How waterproof are these labels?',
+            answer:
+              'We print on water-resistant stocks with laminate options that hold up to splashes, condensation and handling far better than paper. Tell us where the label lives and we’ll recommend the most durable option.',
+          },
+          {
+            question: 'Will they hold up outdoors and in the sun?',
+            answer:
+              'For outdoor and sunlit placement we offer more durable, fade- and moisture-resistant materials. Let us know the exposure and we’ll match a stock built for it.',
+          },
+          {
+            question: 'Can you cut them to a custom shape?',
+            answer:
+              'Yes. We die-cut to your outline — rounded rectangles, circles or a custom shape that fits your container — and proof the cut before printing.',
+          },
+        ],
+        internalLinks: [
+          { label: 'Product & packaging labels', href: '/labels/for/product-packaging-labels' },
+          { label: 'Waterproof brand stickers', href: '/stickers/for/brand-stickers' },
+          SEE_ALL('labels'),
+        ],
+        priceFrom: 24,
+      },
+      {
+        slug: 'barcode-labels',
+        audience: 'Barcode & QR Labels',
+        audienceSingular: 'Barcode Label',
+        h1: 'Custom Barcode & QR Labels',
+        metaTitle: 'Barcode & QR Labels — Custom Product & Inventory Labels | ProCardCrafters',
+        metaDescription:
+          'Custom barcode and QR code labels for retail, inventory and packaging. Crisp, scannable printing on durable adhesive stock, any size and quantity — proofed before printing. From $19.',
+        heroSubhead:
+          'A barcode only works if it scans every time. Print it crisp, at the right size, on stock that stays put.',
+        intro:
+          'Barcode and QR labels carry the data that makes retail, inventory and tracking work — and a fuzzy or undersized code that won’t scan grinds everything to a halt. ProCardCrafters prints barcode and QR labels with crisp, high-contrast detail on durable adhesive stock, sized so scanners read them first time, so your products move through checkout, warehouse and fulfillment without the re-scan.',
+        useCases: [
+          'Retail product and price labels with scannable barcodes',
+          'Inventory, asset and warehouse bin labels',
+          'QR codes linking packaging to a site, menu or registration',
+          'Carton and case labels for fulfillment and tracking',
+        ],
+        features: [F.fullColor, F.adhesive, F.sizes, F.durable],
+        faqs: [
+          {
+            question: 'Will the barcodes scan reliably?',
+            answer:
+              'We print barcodes and QR codes at high contrast and resolution, sized for dependable scanning. Send your code data or artwork and we’ll proof it at the right size before the run.',
+          },
+          {
+            question: 'Can you print variable barcodes or sequential numbers?',
+            answer:
+              'Tell us what you need — if your run requires a set of distinct codes or numbers, share the data and we’ll confirm what we can lay out before you order.',
+          },
+          {
+            question: 'What size should a barcode or QR label be?',
+            answer:
+              'It depends on the scanner and where it’s applied. Tell us the use and surface and we’ll recommend a size that scans reliably, then proof it before printing.',
+          },
+        ],
+        internalLinks: [
+          { label: 'Product & packaging labels', href: '/labels/for/product-packaging-labels' },
+          { label: 'Shipping & address labels', href: '/labels/for/shipping-labels' },
+          SEE_ALL('labels'),
         ],
         priceFrom: 19,
       },
