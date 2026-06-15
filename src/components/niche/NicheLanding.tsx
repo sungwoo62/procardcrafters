@@ -4,10 +4,26 @@
 
 import type { CSSProperties } from 'react'
 import type { ProfessionContent } from '@/lib/niche/professions'
-import { getFinishes } from '@/lib/niche/finishes'
+import { getFinishes, presetFinishingValues } from '@/lib/niche/finishes'
 
 const BLUE = '#2563eb'
 const DARK = '#1d4ed8'
+
+// 추천옵션 딥링크 대상 제품(프리미엄 명함 구성기).
+const PRESET_PRODUCT = 'premium-business-cards'
+
+/**
+ * "추천옵션대로 만들기" 딥링크.
+ * 추천 마감 중 주문 가능한 후가공(foil_stamp/deboss_emboss/die_cut)을 finishing 쿼리로 실어
+ * /products/premium-business-cards 구성기가 해당 후가공을 미리 체크한 상태로 진입.
+ * niche 파라미터로 출처 추적.
+ */
+function presetHref(p: ProfessionContent): string {
+  const values = presetFinishingValues(p.recommendedFinishes)
+  const params = new URLSearchParams({ niche: p.slug })
+  if (values.length > 0) params.set('finishing', values.join(','))
+  return `/products/${PRESET_PRODUCT}?${params.toString()}`
+}
 
 // .container / .btn 글로벌 클래스 대체(procardcrafters 미정의) — 인라인으로 자체 완결.
 const CONTAINER: CSSProperties = { maxWidth: '1120px', margin: '0 auto', padding: '0 1.25rem' }
@@ -33,6 +49,7 @@ function Breadcrumbs({ profession }: { profession: string }) {
 
 export default function NicheLanding({ p }: { p: ProfessionContent }) {
   const finishes = getFinishes(p.recommendedFinishes)
+  const buildHref = presetHref(p)
 
   return (
     <div lang="en-US">
@@ -43,8 +60,8 @@ export default function NicheLanding({ p }: { p: ProfessionContent }) {
           <h1 style={{ fontSize: '2.4rem', fontWeight: 800, margin: '1.25rem 0 1rem', lineHeight: 1.15 }}>{p.h1}</h1>
           <p style={{ fontSize: '1.2rem', opacity: 0.92, maxWidth: '640px', marginBottom: '2rem' }}>{p.heroSubhead}</p>
           <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <a href={`/quote?type=namecard&niche=${p.slug}`} style={{ ...BTN, background: 'white', color: BLUE, fontSize: '1.05rem', padding: '0.9rem 2.25rem', fontWeight: 700 }}>
-              Get a Free Quote
+            <a href={buildHref} style={{ ...BTN, background: 'white', color: BLUE, fontSize: '1.05rem', padding: '0.9rem 2.25rem', fontWeight: 700 }}>
+              Build my cards with these finishes
             </a>
             <a href="/business-cards/for" style={{ ...BTN, background: 'transparent', color: 'white', fontSize: '1.05rem', padding: '0.9rem 2.25rem', fontWeight: 700, border: '2px solid white' }}>
               See All Finishes
@@ -80,12 +97,29 @@ export default function NicheLanding({ p }: { p: ProfessionContent }) {
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(240px,1fr))', gap: '1.25rem' }}>
             {finishes.map((f) => (
-              <div key={f.slug} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', padding: '1.5rem' }}>
-                <div style={{ fontSize: '1.8rem', marginBottom: '0.6rem' }} aria-hidden>{f.icon}</div>
-                <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>{f.name}</h3>
-                <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.55 }}>{f.blurb}</p>
+              <div key={f.slug} style={{ background: 'white', border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={f.image}
+                  alt={`${f.name} on a premium business card`}
+                  loading="lazy"
+                  style={{ width: '100%', height: '160px', objectFit: 'cover', display: 'block', background: '#e2e8f0' }}
+                />
+                <div style={{ padding: '1.5rem' }}>
+                  <div style={{ fontSize: '1.4rem', marginBottom: '0.4rem' }} aria-hidden>{f.icon}</div>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.5rem' }}>{f.name}</h3>
+                  <p style={{ color: '#475569', fontSize: '0.95rem', lineHeight: 1.55 }}>{f.blurb}</p>
+                </div>
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: 'center', marginTop: '2.5rem' }}>
+            <a href={buildHref} style={{ ...BTN, background: BLUE, color: 'white', fontSize: '1.05rem', padding: '0.9rem 2.5rem', fontWeight: 700 }}>
+              Build with these recommended finishes →
+            </a>
+            <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.75rem' }}>
+              Opens the designer with these finishes pre-selected — adjust anything before you order.
+            </p>
           </div>
         </div>
       </section>
@@ -95,10 +129,10 @@ export default function NicheLanding({ p }: { p: ProfessionContent }) {
         <div style={{ ...CONTAINER, textAlign: 'center', maxWidth: '640px' }}>
           <h2 style={{ fontSize: '1.6rem', fontWeight: 700, marginBottom: '0.75rem' }}>Ready to design yours?</h2>
           <p style={{ color: '#475569', marginBottom: '2rem' }}>
-            Tell us about your card and we&apos;ll send a free quote and proof. No account required.
+            Start from our recommended setup and tweak it — every order is proofed before printing. No account required.
           </p>
-          <a href={`/quote?type=namecard&niche=${p.slug}`} style={{ ...BTN, background: BLUE, color: 'white', fontSize: '1.1rem', padding: '1rem 2.75rem', fontWeight: 700 }}>
-            Get My Free Quote
+          <a href={buildHref} style={{ ...BTN, background: BLUE, color: 'white', fontSize: '1.1rem', padding: '1rem 2.75rem', fontWeight: 700 }}>
+            Design my {p.professionSingular.toLowerCase()} cards
           </a>
         </div>
       </section>

@@ -150,6 +150,33 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     }))
   }
 
+  // 딥링크 프리셋(OMO-3211): /products/...?finishing=foil_stamp,deboss_emboss
+  // 니치 랜딩 "추천옵션대로 만들기" CTA 가 추천 후가공을 실어 보내면 마운트 시 1회 미리 선택.
+  // 이 제품에 실제 존재하는 후가공만 적용(없는 값은 무시 — graceful).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const raw = new URLSearchParams(window.location.search).get('finishing')
+    if (!raw) return
+    const available = new Set(finishingOptions.map((o) => o.value))
+    const wanted = raw
+      .split(',')
+      .map((s) => s.trim())
+      .filter((v) => v && available.has(v))
+    if (wanted.length === 0) return
+    setFinishings(new Set(wanted))
+    setAreas((prev) => {
+      const next = { ...prev }
+      for (const v of wanted) {
+        if ((AREA_PRICED_FINISHINGS as readonly string[]).includes(v) && !next[v]) {
+          next[v] = { w: FINISHING_DEFAULT_AREA_MM.width, h: FINISHING_DEFAULT_AREA_MM.height }
+        }
+      }
+      return next
+    })
+    // 마운트 1회만 — finishingOptions 는 제품별 고정(memoized).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)

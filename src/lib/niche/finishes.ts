@@ -19,7 +19,23 @@ export type Finish = {
   blurb: string
   /** 이모지 아이콘(시각 그리드용, 외부 자산 의존 없음). */
   icon: string
+  /**
+   * 마감을 보여주는 실사진(추천옵션 관련, OMO-3211 보드 요청).
+   * Unsplash(next.config remotePatterns 허용 호스트) — 전부 HTTP 200 검증(2026-06-15).
+   */
+  image: string
+  /**
+   * ProductConfigurator 후가공 옵션 value(주문 가능 마감만).
+   * "추천옵션대로 만들기" 딥링크가 /products/...?finishing= 에 실어 프리셀렉트.
+   * 미설정(undefined)=주문 후가공 토글이 아닌 마감(용지/QR 아트워크 등) → 프리셀렉트 제외.
+   * 매핑 근거: src/config/finishing-surcharge.ts (foil_stamp/deboss_emboss/die_cut 만 주문가).
+   */
+  configValue?: string
 }
+
+// Unsplash 사진 ID — 각 마감 주제별. clean 쿼리스트링으로 next/image·img 모두 안전.
+const IMG = (id: string) =>
+  `https://images.unsplash.com/photo-${id}?auto=format&fit=crop&w=800&q=70`
 
 export const FINISHES: Finish[] = [
   {
@@ -27,38 +43,54 @@ export const FINISHES: Finish[] = [
     name: 'Metallic Foil Stamping',
     blurb: 'Gold, silver, rose-gold and holographic foils that catch the light the moment you hand a card over.',
     icon: '✨',
+    image: IMG('1597979732130-9d2ad18df38b'),
+    configValue: 'foil_stamp',
   },
   {
     slug: 'emboss-deboss',
     name: 'Embossing & Debossing',
     blurb: 'Raised or recessed impressions pressed into thick stock — a tactile, crafted finish you feel before you read a word.',
     icon: '🔲',
+    image: IMG('1699662585308-fcb113a0a4ba'),
+    configValue: 'deboss_emboss',
   },
   {
     slug: 'raised-gloss',
     name: 'Raised Epoxy Gloss',
     blurb: 'Clear, glossy raised accents over a matte card — logos and details that stand up off the surface and catch the eye.',
     icon: '💧',
+    image: IMG('1777652918753-d66882b15391'),
   },
   {
     slug: 'textured-stock',
     name: 'Textured & Specialty Stock',
     blurb: 'Heavyweight cotton, linen and specialty papers that signal quality the instant a card is in someone’s hand.',
     icon: '🧵',
+    image: IMG('1516409590654-e8d51fc2d25c'),
   },
   {
     slug: 'die-cut',
     name: 'Die-Cut & Rounded Shapes',
     blurb: 'Rounded corners, custom outlines and cut-out shapes that make a card unmistakably yours in a stack of rectangles.',
     icon: '✂️',
+    image: IMG('1765483469974-3f544df12caf'),
+    configValue: 'die_cut',
   },
   {
     slug: 'qr-smart',
     name: 'QR Smart Cards',
     blurb: 'A printed QR code that opens your portfolio, listings, booking link or contact details in one scan — no app, nothing to install.',
     icon: '📲',
+    image: IMG('1595079676339-1534801ad6cf'),
   },
 ]
+
+/** 추천 마감 중 주문 가능한 configValue 만 추출(딥링크 프리셋용). */
+export function presetFinishingValues(slugs: string[]): string[] {
+  return slugs
+    .map((s) => BY_SLUG.get(s)?.configValue)
+    .filter((v): v is string => Boolean(v))
+}
 
 const BY_SLUG = new Map(FINISHES.map((f) => [f.slug, f]))
 
