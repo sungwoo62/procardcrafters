@@ -177,6 +177,29 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // 제너릭 옵션 프리셋(OMO-3215): /products/...?preset=size:3x3,material:vinyl
+  // 니치 랜딩 ctaPresetHref 가 후가공 외 옵션(사이즈/소재 등)을 type:value 로 실어 보내면
+  // 마운트 시 1회 초기 selections 에 주입. 이 제품에 실제 존재하는 type/value 만 적용(graceful).
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const raw = new URLSearchParams(window.location.search).get('preset')
+    if (!raw) return
+    const next: Record<string, string> = {}
+    for (const pair of raw.split(',')) {
+      const idx = pair.indexOf(':')
+      if (idx < 0) continue
+      const type = pair.slice(0, idx).trim()
+      const value = pair.slice(idx + 1).trim()
+      if (!type || !value) continue
+      const opts = grouped.get(type)
+      if (opts && opts.some((o) => o.value === value)) next[type] = value
+    }
+    if (Object.keys(next).length === 0) return
+    setSelections((prev) => ({ ...prev, ...next }))
+    // 마운트 1회만 — grouped 는 제품별 고정(memoized).
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
   const [uploadedFileId, setUploadedFileId] = useState<string | null>(null)
