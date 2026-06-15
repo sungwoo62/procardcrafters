@@ -15,9 +15,11 @@
 
 import {
   FoilLayer,
+  FoilPaperCut,
   FOIL_DEFAULT_BAK_TYPE,
   FOIL_DEFAULT_BAK_SIDE,
   foilLayersToFields,
+  validateFoilLayers,
 } from '@/config/swadpia-finishing-fields'
 
 /** fabric 오브젝트의 캔버스 px 기준 bounding rect (`object.getBoundingRect()` 형태). */
@@ -40,7 +42,8 @@ export interface FoilDetectGeom {
  * 합집합 bounding box(모든 박 오브젝트를 감싸는 최소 사각형)를 1개 레이어로 매핑한다.
  *  - 박 오브젝트가 없으면 [] (박 미사용 → 별색판/레이어 미생성, OMO-2706 '' 반환과 정합).
  *  - 치수는 (px / scale) 을 **정수 mm 로 반올림**(성원 가로·세로 입력은 정수 mm).
- *  - 면적 가드(640~60000mm²)·개수 검증은 호출측에서 validateFoilLayers 로 수행(여기선 추출만).
+ *  - 사이즈 가드(성원 chk_size_high = 용지 cut 규격 대비 per-axis 상한, OMO-3262/3264)·개수
+ *    검증은 호출측에서 validateFoilLayers(layers, paperCut) 로 수행(여기선 추출만).
  */
 export function detectFoilLayersFromObjects(
   rects: FoilObjectRect[],
@@ -84,6 +87,63 @@ export function detectFoilLayersFromObjects(
       bak_side: FOIL_DEFAULT_BAK_SIDE,
     },
   ]
+}
+
+/** fabric 오브젝트의 박 자동감지에 필요한 최소 형태(테스트 가능하도록 인터페이스로 분리). */
+export interface FoilCanvasObject {
+  /** OMO-2706 별색판 소스: data.finish 가 truthy 인 오브젝트만 박으로 본다. */
+  data?: { finish?: unknown } | null
+  /** fabric visible. false 면 제외(OMO-2706 getFinishPlateDataUrl 과 동일 조건). */
+  visible?: boolean
+  /** fabric `getBoundingRect()` — 캔버스 px 기준 bounding rect. */
+  getBoundingRect: () => FoilObjectRect
+}
+
+/** EditorClient 가 넘기는 캔버스 최소 형태. */
+export interface FoilCanvasLike {
+  getObjects: () => FoilCanvasObject[]
+}
+
+/** detectFoilLayersFromCanvas 결과 — 직렬화 파라미터 + 레이어 + 검증. */
+export interface FoilDetectResult {
+  /** /order 진입용 직렬화 파라미터(박 없으면 빈 맵). */
+  params: Record<string, string>
+  /** 자동감지된 박 레이어(박 없으면 빈 배열). */
+  layers: FoilLayer[]
+  /** validateFoilLayers 결과(박 없으면 ok=true·빈 errors). */
+  validation: { ok: boolean; errors: string[] }
+}
+
+/**
+ * EditorClient 통합 진입점: 캔버스의 박(data.finish) 오브젝트를 OMO-2706 별색판과 **동일 소스**로
+ * 모아 합집합 bbox → 레이어 → /order 직렬화 파라미터 + per-axis 사이즈 검증을 한 번에 산출한다.
+ *
+ *  - 박 오브젝트 없음 → params {} / layers [] / validation.ok=true (회귀 없음).
+ *  - paperCut(제품 cut 규격 mm)을 주면 성원 chk_size_high 와 동일하게 가로/세로 ≤ 용지 cut 검증.
+ *    위반 시 validation.ok=false — 호출측이 발주 전 차단하고 errors 를 노출한다.
+ */
+export function detectFoilLayersFromCanvas(
+  canvas: FoilCanvasLike | null | undefined,
+  geom: FoilDetectGeom,
+  opts?: { existingFinishing?: string; paperCut?: FoilPaperCut },
+): FoilDetectResult {
+  const empty: FoilDetectResult = { params: {}, layers: [], validation: { ok: true, errors: [] } }
+  if (!canvas || typeof canvas.getObjects !== 'function') return empty
+
+  const finishObjs = canvas
+    .getObjects()
+    .filter((o) => o && o.data?.finish && o.visible !== false)
+  if (finishObjs.length === 0) return empty
+
+  const rects = finishObjs.map((o) => o.getBoundingRect())
+  const layers = detectFoilLayersFromObjects(rects, geom)
+  if (layers.length === 0) return empty
+
+  return {
+    params: foilLayersToOrderParams(layers, opts?.existingFinishing),
+    layers,
+    validation: validateFoilLayers(layers, opts?.paperCut),
+  }
 }
 
 /**

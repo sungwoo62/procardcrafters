@@ -1,8 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   detectFoilLayersFromObjects,
+  detectFoilLayersFromCanvas,
   foilLayersToOrderParams,
   type FoilObjectRect,
+  type FoilCanvasObject,
 } from '../editor-foil-detect'
 import {
   validateFoilLayers,
@@ -69,29 +71,31 @@ describe('detectFoilLayersFromObjects — 합집합 bbox 결정론 추출', () =
   })
 })
 
-describe('detect → validate 면적 가드 정합(성원 chk_size_low/high)', () => {
-  it('정상 면적(20×10=200... → 640 미만)은 가드에 걸린다', () => {
-    const layers = detectFoilLayersFromObjects(
-      [{ left: 0, top: 0, width: 80, height: 40 }],
-      { scale: 4 },
-    ) // 20×10 = 200mm² < 640
-    expect(validateFoilLayers(layers).ok).toBe(false)
-  })
-
-  it('면적 640~60000 범위 내는 통과 (40×40=1600mm²)', () => {
+describe('detect → validate per-axis 용지 cut 가드(성원 chk_size_high, OMO-3262/3264)', () => {
+  it('paperCut 미지정 → 양수 검사만 통과(면적창 가정 제거)', () => {
     const layers = detectFoilLayersFromObjects(
       [{ left: 0, top: 0, width: 160, height: 160 }],
       { scale: 4 },
-    ) // 40×40 = 1600
+    ) // 40×40
     expect(validateFoilLayers(layers).ok).toBe(true)
   })
 
-  it('면적 60000 초과는 차단 (300×250=75000mm²)', () => {
+  it('박 bbox 가 용지 cut 규격 이내면 통과', () => {
     const layers = detectFoilLayersFromObjects(
-      [{ left: 0, top: 0, width: 1200, height: 1000 }],
+      [{ left: 0, top: 0, width: 120, height: 80 }],
       { scale: 4 },
-    ) // 300×250 = 75000 > 60000
-    expect(validateFoilLayers(layers).ok).toBe(false)
+    ) // 30×20mm
+    // 명함 cut 90×50 → 30≤90, 20≤50 통과
+    expect(validateFoilLayers(layers, { cutX: 90, cutY: 50 }).ok).toBe(true)
+  })
+
+  it('박 가로가 용지 cut 가로 초과 → 차단', () => {
+    const layers = detectFoilLayersFromObjects(
+      [{ left: 0, top: 0, width: 400, height: 80 }],
+      { scale: 4 },
+    ) // 100×20mm
+    // 명함 cut 90×50 → 100 > 90 차단
+    expect(validateFoilLayers(layers, { cutX: 90, cutY: 50 }).ok).toBe(false)
   })
 })
 
@@ -131,5 +135,64 @@ describe('foilLayersToOrderParams — /order 직렬화 + finishing 병합', () =
       { scale: 4 },
     )
     expect(foilLayersToOrderParams(layers).finishing).toBe('foil_stamp')
+  })
+})
+
+// 캔버스 통합 진입점 — OMO-2706 별색판과 동일 소스(data.finish) 필터링.
+function mkObj(rect: FoilObjectRect, finish: boolean, visible = true): FoilCanvasObject {
+  return { data: { finish }, visible, getBoundingRect: () => rect }
+}
+
+describe('detectFoilLayersFromCanvas — 캔버스 통합(동일 소스 필터링)', () => {
+  it('null 캔버스 → 빈 결과(회귀 없음)', () => {
+    const r = detectFoilLayersFromCanvas(null, { scale: 4 })
+    expect(r).toEqual({ params: {}, layers: [], validation: { ok: true, errors: [] } })
+  })
+
+  it('data.finish 오브젝트 없음(디자인 요소만) → 빈 결과', () => {
+    const canvas = {
+      getObjects: () => [
+        mkObj({ left: 0, top: 0, width: 100, height: 100 }, false),
+        mkObj({ left: 0, top: 0, width: 50, height: 50 }, false),
+      ],
+    }
+    const r = detectFoilLayersFromCanvas(canvas, { scale: 4 })
+    expect(r.layers).toEqual([])
+    expect(r.params).toEqual({})
+  })
+
+  it('finish 오브젝트만 합집합 — 디자인 요소는 bbox 에서 제외', () => {
+    const canvas = {
+      getObjects: () => [
+        mkObj({ left: 0, top: 0, width: 1000, height: 1000 }, false), // 디자인(무시)
+        mkObj({ left: 40, top: 40, width: 120, height: 80 }, true), // 박 30×20mm @scale4
+      ],
+    }
+    const r = detectFoilLayersFromCanvas(canvas, { scale: 4 }, {
+      existingFinishing: 'die_cut',
+      paperCut: { cutX: 90, cutY: 50 },
+    })
+    expect(r.layers).toHaveLength(1)
+    expect(r.layers[0].x_size).toBe(30)
+    expect(r.layers[0].y_size).toBe(20)
+    expect(r.params.finishing).toBe('die_cut,foil_stamp')
+    expect(r.params.bak_x_size_1).toBe('30')
+    expect(r.validation.ok).toBe(true)
+  })
+
+  it('visible:false 인 finish 오브젝트는 제외(OMO-2706 조건 일치)', () => {
+    const canvas = {
+      getObjects: () => [mkObj({ left: 0, top: 0, width: 120, height: 80 }, true, false)],
+    }
+    expect(detectFoilLayersFromCanvas(canvas, { scale: 4 }).layers).toEqual([])
+  })
+
+  it('박 bbox 가 용지 cut 초과 → validation.ok=false (발주 전 차단 신호)', () => {
+    const canvas = {
+      getObjects: () => [mkObj({ left: 0, top: 0, width: 400, height: 80 }, true)], // 100×20mm
+    }
+    const r = detectFoilLayersFromCanvas(canvas, { scale: 4 }, { paperCut: { cutX: 90, cutY: 50 } })
+    expect(r.validation.ok).toBe(false)
+    expect(r.validation.errors.length).toBeGreaterThan(0)
   })
 })
