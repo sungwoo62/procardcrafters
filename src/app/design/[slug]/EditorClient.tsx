@@ -19,6 +19,7 @@ import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as GenTemplateDef } from '@/config/templates'
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
+import { detectFoilLayersFromCanvas } from '@/lib/editor-foil-detect'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -4285,6 +4286,24 @@ export default function EditorClient({ product, options }: Props) {
           const val = searchParams.get(key)
           if (val) optionParams.set(key, val)
         }
+        // OMO-3261: 에디터 박(foil) 자동 치수 매핑 — 캔버스의 박 별색판 오브젝트(OMO-2706
+        // data.finish, 동일 소스)를 합집합 bbox 로 측정해 레이어 가로×세로(mm)를 산출하고,
+        // foilLayersToFields(OMO-3257) 직렬화 키를 패스스루에 주입한다. 박 오브젝트가 없으면
+        // 빈 결과 → 회귀 없음. per-axis 사이즈(용지 cut=제품 규격) 위반 시 발주 전 차단.
+        const foil = detectFoilLayersFromCanvas(
+          fabricRef.current,
+          { scale },
+          {
+            existingFinishing: optionParams.get('finishing') ?? searchParams.get('finishing') ?? '',
+            paperCut: { cutX: dims.widthMm, cutY: dims.heightMm },
+          },
+        )
+        if (!foil.validation.ok) {
+          setOrdering(false)
+          setOrderError(foil.validation.errors.join(' '))
+          return
+        }
+        for (const [key, val] of Object.entries(foil.params)) optionParams.set(key, val)
         const optStr = optionParams.toString()
         window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
       } else {
