@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import type { PrintProductOption } from '@/types/database'
 import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
+import { paperDisplay } from '@/config/paper-display'
 
 interface PaperPopupProps {
   // 용지/후가공 옵션 모두 받는다(후가공은 카탈로그에서 합성한 최소 객체 가능).
@@ -108,44 +109,18 @@ const PAPER_TAGS: Record<string, string[]> = {
   CTN600W00: ['Premium cotton', 'Crane Lettra', 'Letterpress'],
 }
 
-// OMO-3196: 프리미엄/특수지는 라이브 성원 데이터라 코드가 가변 → 라벨(한/영) 키워드로
-// 설명·태그를 매칭한다. (premium-business-cards 의 랑데뷰/반누보/스타드림 등 설명 누락 대응.)
-const PREMIUM_PAPER_BY_KEYWORD: { match: RegExp; desc: string; tags: string[] }[] = [
-  { match: /랑데뷰|rendez|rendezvous/i, desc: 'Premium uncoated stock with a smooth natural surface and superb ink hold — a designer favorite for refined cards.', tags: ['Premium', 'Uncoated', 'Natural'] },
-  { match: /반누보|nouveau|vanouvert/i, desc: 'Soft, refined uncoated paper with a delicate texture and warm white tone — elegant and tactile.', tags: ['Premium', 'Uncoated', 'Soft texture'] },
-  { match: /스타드림|stardream/i, desc: 'Pearlescent metallic stock with a shimmering finish that shifts in the light — luxurious and eye-catching.', tags: ['Pearlescent', 'Metallic', 'Luxury'] },
-  { match: /마제스틱|majestic/i, desc: 'Luxury pearl-metallic stock with a subtle sheen — a premium feel for high-end cards.', tags: ['Pearl', 'Metallic', 'Luxury'] },
-  { match: /린넨|리넨|linen/i, desc: 'Linen-embossed stock with a woven, cloth-like texture — classic and sophisticated.', tags: ['Linen texture', 'Premium', 'Embossed'] },
-  { match: /펄지|펄|pearl/i, desc: 'Pearlescent coated stock with a soft shimmer that adds a premium glow to your design.', tags: ['Pearlescent', 'Premium', 'Shimmer'] },
-  { match: /큐리어스|curious/i, desc: 'Specialty metallic/translucent stock with a distinctive, modern finish.', tags: ['Specialty', 'Metallic'] },
-  { match: /크라프트|kraft/i, desc: 'Natural brown kraft stock with a rustic, eco feel — uncoated and easy to write on.', tags: ['Kraft', 'Natural', 'Eco'] },
-  { match: /콘트라스트|컨트라스트|contrast/i, desc: 'Smooth premium uncoated stock with crisp print contrast and a clean modern feel.', tags: ['Premium', 'Uncoated', 'Smooth'] },
-]
-
-function premiumPaperInfo(label: string): { desc: string; tags: string[] } | null {
-  for (const p of PREMIUM_PAPER_BY_KEYWORD) {
-    if (p.match.test(label)) {
-      const weight = label.match(/(\d{2,3})\s*g/i)?.[1]
-      return { desc: weight ? `${p.desc} (${weight}gsm)` : p.desc, tags: p.tags }
-    }
-  }
-  // 코드/카탈로그 모두 없을 때 무게라도 있으면 일반 설명.
-  const weight = label.match(/(\d{2,3})\s*g/i)?.[1]
-  if (weight) return { desc: `Premium specialty card stock — ${weight}gsm, substantial in hand.`, tags: ['Premium', `${weight}gsm`] }
-  return null
-}
-
 export default function PaperPopup({ option, inline = false }: PaperPopupProps) {
   // OMO-3196: 후가공 옵션이면 카탈로그(이미지/설명)로 폴백 — DB 후가공 행은 이미지/설명이
   // 비어 있어도 "맞는 이미지랑 설명"을 보여준다.
   const fin = FINISHING_BY_VALUE[option.value]
   const textureSrc = getTextureSrc(option.value, option.image_url || fin?.image_url || null)
-  // OMO-3196: 프리미엄 특수지(코드 가변)는 라벨 키워드로 설명/태그 폴백.
-  const premium = !fin ? premiumPaperInfo(`${option.label_en ?? ''} ${option.label_ko ?? ''}`) : null
-  const tags = PAPER_TAGS[option.value] ?? premium?.tags ?? (fin ? [fin.label_ko] : [])
+  // OMO-3196: 용지(특히 특수지)는 US-친화 표시명/특징/설명을 paper-display 에서 라벨 키워드로 매칭.
+  const disp = !fin ? paperDisplay(`${option.label_en ?? ''} ${option.label_ko ?? ''}`) : null
+  const title = disp?.name || option.label_en
+  const tags = PAPER_TAGS[option.value] ?? disp?.features ?? (fin ? [fin.label_ko] : [])
   // OMO-2314: customer-facing — render English fields only.
   // OMO-3195: fall back to the code-keyed description so options with an empty DB field still explain the stock.
-  const description = option.description_en || PAPER_DESC[option.value] || premium?.desc || fin?.description_en || null
+  const description = option.description_en || PAPER_DESC[option.value] || disp?.desc || fin?.description_en || null
 
   return (
     <div
@@ -175,7 +150,7 @@ export default function PaperPopup({ option, inline = false }: PaperPopupProps) 
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-gray-900 leading-tight mb-1.5">
-            {option.label_en}
+            {title}
           </p>
           {description && (
             <p className="text-[11px] text-gray-600 leading-snug mb-1.5">

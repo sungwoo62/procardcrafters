@@ -8,7 +8,8 @@ import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { pickCheapestPress, type SwadpiaPaper, type SwadpiaPrintEntry, type SwadpiaSize, type PressKind } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
 import SizePopup from '@/components/SizePopup'
-import { finishingsForCategory } from '@/config/finishing-catalog'
+import { finishingsForCategory, finishingSurchargeKrw } from '@/config/finishing-catalog'
+import { paperDisplay } from '@/config/paper-display'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
 interface SwadpiaClientData {
@@ -108,6 +109,21 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   )
   const [finishSel, setFinishSel] = useState<Set<string>>(new Set())
   const finishingCsv = Array.from(finishSel).join(',')
+
+  // OMO-3196: 후가공 surcharge(성원 calcuEstimate probe 기반) → USD(마진·환율 반영).
+  const finishUsd = useCallback(
+    (krw: number) =>
+      calculatePriceFromSwadpia({ swadpiaCostKrw: krw, marginMultiplier: product.margin_multiplier, exchangeRate }),
+    [product.margin_multiplier, exchangeRate],
+  )
+  const finishingUsd = useMemo(() => {
+    let krw = 0
+    for (const v of finishSel) {
+      const s = finishingSurchargeKrw(v, product.category)
+      if (s) krw += s
+    }
+    return krw > 0 ? finishUsd(krw) : 0
+  }, [finishSel, product.category, finishUsd])
 
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
@@ -305,7 +321,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     : 0
 
   const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
-  const totalUsd = itemPriceUsd + rushUsd + shippingUsd
+  const totalUsd = itemPriceUsd + rushUsd + shippingUsd + finishingUsd
   const productionWindow = formatProductionWindow(product, leadTier)
 
   return (
@@ -378,9 +394,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                 onChange={(e) => setSelections((prev) => ({ ...prev, [type]: e.target.value }))}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
               >
-                {opts.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label_en}</option>
-                ))}
+                {opts.map((opt) => {
+                  // OMO-3196: 미국 고객용 표시명 + 이름 옆 짧은 특징 2~3개.
+                  const disp = paperDisplay(`${opt.label_en ?? ''} ${opt.label_ko ?? ''}`)
+                  const name = disp?.name ?? opt.label_en
+                  const feats = disp?.features?.slice(0, 3).join(' · ')
+                  return (
+                    <option key={opt.value} value={opt.value}>
+                      {feats ? `${name} — ${feats}` : name}
+                    </option>
+                  )
+                })}
               </select>
               {selectedOpt && (
                 <div className="mt-2">
@@ -456,6 +480,8 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             {finishingOptions.map((f) => {
               const isSelected = finishSel.has(f.value)
               const hoverKey = `finishing:${f.value}`
+              const sKrw = finishingSurchargeKrw(f.value, product.category)
+              const sUsd = sKrw ? finishUsd(sKrw) : null
               return (
                 <div key={f.value} className="relative">
                   {hoveredPaper === hoverKey && (
@@ -489,14 +515,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                     }`}
                   >
                     {f.label_en}
-                    <span className="ml-1.5 text-gray-400">ⓘ</span>
+                    <span className={`ml-1.5 text-xs ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>
+                      {sUsd ? `+$${sUsd.toFixed(2)}` : 'quote'}
+                    </span>
+                    <span className="ml-1 text-gray-400">ⓘ</span>
                   </button>
                 </div>
               )
             })}
           </div>
           <p className="mt-1.5 text-[11px] text-gray-500">
-            💡 Tap or hover ⓘ to preview each finish. Finishing is quoted separately — we&apos;ll confirm the price before production.
+            💡 Tap or hover ⓘ to preview each finish. Prices are estimates from our wholesale rates (vary by size/quantity) — confirmed before production. &quot;quote&quot; items are priced individually.
           </p>
         </div>
       )}
@@ -594,6 +623,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                 </span>
               )}
             </span>
+          </div>
+        )}
+        {finishingUsd > 0 && (
+          <div className="flex justify-between text-sm text-gray-600">
+            <span>Finishing ({finishSel.size} selected)</span>
+            <span>+ ${finishingUsd.toFixed(2)}</span>
           </div>
         )}
         {rushUsd > 0 && (
