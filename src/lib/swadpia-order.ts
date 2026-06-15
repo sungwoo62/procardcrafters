@@ -805,16 +805,29 @@ export async function selectOrderOptions(
   for (const [k, v] of Object.entries(options)) {
     if (isFinishingKey(k)) finishingOpts[k] = v
   }
-  // OMO-3257 박 사이즈 가드: 박 레이어(최대 3)의 가로/세로 양수·개수 검증을 발주 전에 수행한다.
-  //   성원 chk_size_high 의 per-axis(용지 cut 규격 대비) 상한은 라이브 RE(OMO-3262)로 확정됐고,
-  //   용지 cut 치수 배선 후 paperCut 인자로 강화한다(OMO-3264). 그 전까지 최종 사이즈 권위는
-  //   activateFinishings → calcuEstimate 가 트리거하는 성원 자체 chk_size_low/high 다.
+  // OMO-3264 박 사이즈 가드: 박 레이어(최대 3)의 가로/세로를 발주 전에 검증한다.
+  //   성원 chk_size_high 의 per-axis(용지 cut 규격 대비) 상한은 라이브 RE(OMO-3262)로 확정됨
+  //   (0<x≤cutX && 0<y≤cutY). 용지 cut 치수는 성원 자체 권위 소스인 ppBak.getCutXSize/
+  //   getCutYSize(현재 폼에 적용된 용지/사이즈 기준)에서 읽어 paperCut 으로 주입한다.
+  //   읽기 실패(globals 미준비 등) 시 양수 검사만 수행 — 최종 권위는 activateFinishings →
+  //   calcuEstimate 가 트리거하는 성원 자체 chk_size_low/high 다(거짓거부 방지).
   const foilLayers = parseFoilLayersFromOptions(finishingOpts)
   if (foilLayers.length > 0) {
-    const v = validateFoilLayers(foilLayers)
+    const paperCut = await page
+      .evaluate(() => {
+        const pb = (window as unknown as { ppBak?: { getCutXSize?: () => unknown; getCutYSize?: () => unknown } }).ppBak
+        if (!pb || typeof pb.getCutXSize !== 'function' || typeof pb.getCutYSize !== 'function') return null
+        const cutX = Number(pb.getCutXSize())
+        const cutY = Number(pb.getCutYSize())
+        if (!Number.isFinite(cutX) || cutX <= 0 || !Number.isFinite(cutY) || cutY <= 0) return null
+        return { cutX, cutY }
+      })
+      .catch(() => null)
+    const v = validateFoilLayers(foilLayers, paperCut ?? undefined)
     if (!v.ok) {
       throw new Error(
-        `[swadpia-order] 박 레이어 검증 실패(가로/세로 양수, 최대 ${MAX_FOIL_LAYERS}레이어) — ` +
+        `[swadpia-order] 박 레이어 검증 실패(가로/세로 양수, 최대 ${MAX_FOIL_LAYERS}레이어` +
+          `${paperCut ? `, 용지 cut ${paperCut.cutX}×${paperCut.cutY}mm 이내` : ''}) — ` +
           `발주 중단: ${v.errors.join(' / ')}`,
       )
     }

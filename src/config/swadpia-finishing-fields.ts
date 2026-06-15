@@ -360,6 +360,78 @@ export interface FoilPaperCut {
 }
 
 /**
+ * 용지 규격(성원 size_info) 한 항목의 최소 형태 — cut 규격(mm) 해석용.
+ * `@/lib/swadpia`의 SwadpiaSize 와 호환되며(필드 부분집합) config 레이어가
+ * lib 에 의존하지 않도록 별도 정의한다.
+ */
+export interface FoilSizeOption {
+  size_type_code?: string
+  /** 예: "(90*50)" — 라벨/완성 규격 표기 */
+  size_type_name?: string
+  /** 재단 가로(mm) — 박 가드의 cutX 권위 소스 */
+  cut_norm_x_size?: string | number
+  /** 재단 세로(mm) — 박 가드의 cutY 권위 소스 */
+  cut_norm_y_size?: string | number
+}
+
+/** "90x50" / "(90*50)" / "90 × 50mm" 등에서 (가로,세로) mm 쌍을 추출. 실패 시 null. */
+function parseDimPair(s: string | undefined): [number, number] | null {
+  if (!s) return null
+  const m = s.match(/(\d+(?:\.\d+)?)\s*[x*×]\s*(\d+(?:\.\d+)?)/i)
+  if (!m) return null
+  const a = Number(m[1])
+  const b = Number(m[2])
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0 || b <= 0) return null
+  return [a, b]
+}
+
+/**
+ * 선택된 용지 규격에서 박 사이즈 가드용 cut 치수(mm)를 해석한다(OMO-3264).
+ * 권위 소스 = size_info 의 cut_norm_x/y_size(성원 `ppBak.getCutXSize/getCutYSize` 와 동일 규격).
+ *
+ * 매칭 순서:
+ *  1) selectedSize 가 size_type_code 와 일치 → 그 규격
+ *  2) selectedSize 의 치수쌍(예 "90x50")이 어떤 규격의 size_type_name 치수쌍과 일치(가로/세로
+ *     스왑 허용) → 그 규격
+ *  3) 사용 가능한 규격이 단 1개뿐 → 그것
+ *  4) 그 외 undefined — 모호하면 per-axis 가드를 건너뛰고 양수 검사만(거짓거부 방지).
+ *     이 경우 최종 권위는 발주 시 성원 calcuEstimate(chk_size_high) 다.
+ * cut_norm 이 유한·양수가 아닌 항목은 후보에서 제외한다.
+ */
+export function resolveFoilPaperCut(
+  sizes: FoilSizeOption[] | undefined,
+  selectedSize?: string,
+): FoilPaperCut | undefined {
+  if (!sizes || sizes.length === 0) return undefined
+  const usable = sizes
+    .map((s) => ({
+      code: s.size_type_code,
+      name: s.size_type_name,
+      cutX: Number(s.cut_norm_x_size),
+      cutY: Number(s.cut_norm_y_size),
+    }))
+    .filter((s) => Number.isFinite(s.cutX) && s.cutX > 0 && Number.isFinite(s.cutY) && s.cutY > 0)
+  if (usable.length === 0) return undefined
+
+  if (selectedSize) {
+    const byCode = usable.find((s) => s.code === selectedSize)
+    if (byCode) return { cutX: byCode.cutX, cutY: byCode.cutY }
+
+    const sel = parseDimPair(selectedSize)
+    if (sel) {
+      const byDim = usable.find((s) => {
+        const d = parseDimPair(s.name)
+        return d && ((d[0] === sel[0] && d[1] === sel[1]) || (d[0] === sel[1] && d[1] === sel[0]))
+      })
+      if (byDim) return { cutX: byDim.cutX, cutY: byDim.cutY }
+    }
+  }
+
+  if (usable.length === 1) return { cutX: usable[0].cutX, cutY: usable[0].cutY }
+  return undefined
+}
+
+/**
  * 박 레이어 배열을 검증한다.
  *  - 개수 1..MAX_FOIL_LAYERS, 각 레이어 가로/세로 > 0.
  *  - paperCut 가 주어지면 성원 chk_size_high 와 동일하게 per-axis 상한(가로/세로 ≤ 용지 cut)

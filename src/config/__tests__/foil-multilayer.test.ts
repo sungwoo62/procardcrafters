@@ -4,6 +4,7 @@ import {
   validateFoilLayers,
   foilLayersToFields,
   parseFoilLayersFromOptions,
+  resolveFoilPaperCut,
   type FoilLayer,
 } from '../swadpia-finishing-fields'
 import { finishingSurchargeKrw, finishingSurchargeKrwFromOptions } from '../finishing-surcharge'
@@ -32,6 +33,13 @@ describe('validateFoilLayers — 양수·개수 + per-axis(용지규격) 가드'
     expect(validateFoilLayers([layer(8, 80)]).ok).toBe(true)
   })
 
+  it('경계: 용지규격과 같으면 허용(≤), 1mm 라도 초과면 거부 (OMO-3262 RE: y50=cutY50 허용)', () => {
+    const cut = { cutX: 90, cutY: 50 }
+    expect(validateFoilLayers([layer(90, 50)], cut).ok).toBe(true) // 정확히 규격 = 허용
+    expect(validateFoilLayers([layer(91, 50)], cut).ok).toBe(false) // 가로 91 > 90
+    expect(validateFoilLayers([layer(90, 51)], cut).ok).toBe(false) // 세로 51 > 50
+  })
+
   it('레이어 개수 1~3 허용, 0개·4개 거부', () => {
     expect(validateFoilLayers([]).ok).toBe(false)
     expect(validateFoilLayers([layer(50, 30)]).ok).toBe(true)
@@ -55,6 +63,49 @@ describe('validateFoilLayers — 양수·개수 + per-axis(용지규격) 가드'
     const v = validateFoilLayers([layer(50, 30), layer(50, 99)], cut) // 레이어2 세로 99 > 50
     expect(v.ok).toBe(false)
     expect(v.errors.some((e) => e.includes('레이어 2'))).toBe(true)
+  })
+})
+
+describe('resolveFoilPaperCut — 용지규격 → cut 치수(mm) 해석 (OMO-3264)', () => {
+  const namecard = {
+    size_type_code: 'N0100',
+    size_type_name: '(90*50)',
+    cut_norm_x_size: '90',
+    cut_norm_y_size: '50',
+  }
+
+  it('size_type_code 일치 시 그 규격의 cut 치수 반환', () => {
+    expect(resolveFoilPaperCut([namecard], 'N0100')).toEqual({ cutX: 90, cutY: 50 })
+  })
+
+  it('치수쌍("90x50")이 size_type_name 과 일치하면 매칭(스왑 허용)', () => {
+    const other = { size_type_code: 'X', size_type_name: '(50*30)', cut_norm_x_size: '50', cut_norm_y_size: '30' }
+    expect(resolveFoilPaperCut([namecard, other], '90x50')).toEqual({ cutX: 90, cutY: 50 })
+    expect(resolveFoilPaperCut([namecard, other], '50x90')).toEqual({ cutX: 90, cutY: 50 }) // 스왑
+  })
+
+  it('규격이 1개뿐이면 선택값 없이도 그것 사용', () => {
+    expect(resolveFoilPaperCut([namecard])).toEqual({ cutX: 90, cutY: 50 })
+  })
+
+  it('모호(다중 규격·매칭 실패)하면 undefined → per-axis 가드 스킵(양수만)', () => {
+    const other = { size_type_code: 'X', size_type_name: '(50*30)', cut_norm_x_size: '50', cut_norm_y_size: '30' }
+    expect(resolveFoilPaperCut([namecard, other], 'ZZZ')).toBeUndefined()
+  })
+
+  it('빈 입력·유효치수 없는 규격은 undefined', () => {
+    expect(resolveFoilPaperCut(undefined, 'N0100')).toBeUndefined()
+    expect(resolveFoilPaperCut([], 'N0100')).toBeUndefined()
+    expect(
+      resolveFoilPaperCut([{ size_type_code: 'B', cut_norm_x_size: '0', cut_norm_y_size: 'x' }], 'B'),
+    ).toBeUndefined()
+  })
+
+  it('해석된 cut 을 validateFoilLayers 에 주입하면 RE 케이스 재현', () => {
+    const cut = resolveFoilPaperCut([namecard], 'N0100')
+    expect(validateFoilLayers([{ x_size: 8, y_size: 80 }], cut).ok).toBe(false) // 세로>50
+    expect(validateFoilLayers([{ x_size: 2, y_size: 2 }], cut).ok).toBe(true) // 소형 허용
+    expect(validateFoilLayers([{ x_size: 95, y_size: 40 }], cut).ok).toBe(false) // 가로>90
   })
 })
 

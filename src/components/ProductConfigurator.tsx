@@ -15,6 +15,7 @@ import {
   MAX_FOIL_LAYERS,
   validateFoilLayers,
   foilLayersToFields,
+  resolveFoilPaperCut,
   type FoilLayer,
 } from '@/config/swadpia-finishing-fields'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
@@ -437,11 +438,21 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     return total
   }, [finishings, areas, foilLayers, finishingUnitUsd])
 
-  // OMO-3257 박 면적 검증(성원 chk_size_low/high: 640~60000mm²/레이어). UI 경고용.
-  const foilValidation = useMemo(
-    () => validateFoilLayers(foilLayers.map((l) => ({ x_size: l.w, y_size: l.h }))),
-    [foilLayers],
+  // OMO-3264 박 사이즈 가드: 선택된 용지 규격(size_info)의 cut 치수(mm)를 해석.
+  //   성원 ppBak.getCutXSize/getCutYSize 와 동일한 cut_norm_x/y_size 권위 소스.
+  const foilPaperCut = useMemo(
+    () => resolveFoilPaperCut(swadpiaData?.sizes, selections['paper_size'] ?? selections['size']),
+    [swadpiaData, selections],
   )
+
+  // OMO-3264 박 검증(성원 chk_size_high: 용지규격 대비 per-axis 상한, 0<x≤cutX && 0<y≤cutY).
+  //   용지 cut 치수를 알면 per-axis 로 차단, 모르면 양수 검사만(거짓거부 방지). UI 경고/차단용.
+  const foilValidation = useMemo(
+    () => validateFoilLayers(foilLayers.map((l) => ({ x_size: l.w, y_size: l.h })), foilPaperCut),
+    [foilLayers, foilPaperCut],
+  )
+  // 박 선택 + 검증 실패 시 주문/에디터 진행 차단.
+  const foilBlocksOrder = finishings.has(FOIL) && foilLayers.length > 0 && !foilValidation.ok
 
   // 선택된 후가공을 성원 자동발주 필드명으로 직렬화(URL 파라미터). expandFinishingToSwadpiaFields 가 소비.
   const finishingParams = useMemo(() => {
@@ -607,9 +618,10 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                   {selected && isFoil && (
                     <div className="px-3 pb-3 -mt-0.5 space-y-2">
                       {foilLayers.map((l, i) => {
-                        // 양수 검사만(거짓거부 방지). 용지규격 대비 per-axis 상한은 OMO-3264 에서
-                        // 용지 cut 치수 배선 후 적용. 최종 사이즈 권위는 성원 calcuEstimate.
-                        const outOfRange = (l.w !== 0 && l.w <= 0) || (l.h !== 0 && l.h <= 0)
+                        // OMO-3264: 양수 + 용지규격 대비 per-axis 상한(cut 치수 해석 시). 가로/세로
+                        // 각각 용지 cut 을 넘으면 해당 입력칸을 강조. 최종 권위는 성원 calcuEstimate.
+                        const wOver = l.w <= 0 || (!!foilPaperCut && l.w > foilPaperCut.cutX)
+                        const hOver = l.h <= 0 || (!!foilPaperCut && l.h > foilPaperCut.cutY)
                         return (
                           <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
                             <span className="font-medium w-14 shrink-0">Layer {i + 1}</span>
@@ -619,7 +631,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                               value={l.w || ''}
                               onChange={(e) => setFoilLayerDim(i, 'w', e.target.value)}
                               className={`w-16 border rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 ${
-                                outOfRange ? 'border-red-400' : 'border-gray-300'
+                                wOver ? 'border-red-400' : 'border-gray-300'
                               }`}
                               aria-label={`layer ${i + 1} width mm`}
                             />
@@ -630,7 +642,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                               value={l.h || ''}
                               onChange={(e) => setFoilLayerDim(i, 'h', e.target.value)}
                               className={`w-16 border rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 ${
-                                outOfRange ? 'border-red-400' : 'border-gray-300'
+                                hOver ? 'border-red-400' : 'border-gray-300'
                               }`}
                               aria-label={`layer ${i + 1} height mm`}
                             />
@@ -659,6 +671,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       )}
                       {!foilValidation.ok && (
                         <p className="text-[11px] text-red-500">{foilValidation.errors[0]}</p>
+                      )}
+                      {foilPaperCut && (
+                        <p className="text-[11px] text-gray-400">
+                          Each foil layer must fit within the paper size ({foilPaperCut.cutX} × {foilPaperCut.cutY} mm).
+                        </p>
                       )}
                       <p className="text-[11px] text-gray-400">
                         Foil price = sum of each layer&apos;s area. Final amount is confirmed by our production system.
@@ -875,29 +892,62 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
       {/* Order / Editor Buttons */}
       <div className="space-y-2">
-        <Link
-          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier }).toString()}`}
-          onClick={() => {
-            if (ctaVariantKey) trackClick(EXPERIMENT_KEY, ctaVariantKey)
-          }}
-          className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
-        >
-          <span className="inline-flex items-center gap-2">
-            <Pencil className="w-5 h-5" />
-            {ctaLabel}
-          </span>
-        </Link>
-        <Link
-          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
-          className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
-        >
-          <span className="inline-flex items-center gap-2">
-            {uploadStatus === 'done'
-              ? <><FileText className="w-5 h-5" /> Order with Uploaded File</>
-              : <><ShoppingCart className="w-5 h-5" /> Upload File & Order</>
-            }
-          </span>
-        </Link>
+        {/* OMO-3264: 박 사이즈 가드 위반 시 진행 차단(용지규격 초과 발주 방지). */}
+        {foilBlocksOrder && (
+          <p className="flex items-start gap-1.5 text-[11px] text-red-600 bg-red-50 border border-red-200 rounded-md p-2">
+            <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+            <span>{foilValidation.errors[0] ?? 'Please fix the foil layer dimensions before ordering.'}</span>
+          </p>
+        )}
+        {foilBlocksOrder ? (
+          <button
+            type="button"
+            disabled
+            className="block w-full text-center bg-indigo-300 text-white px-6 py-3.5 rounded-xl font-semibold cursor-not-allowed"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Pencil className="w-5 h-5" />
+              {ctaLabel}
+            </span>
+          </button>
+        ) : (
+          <Link
+            href={`/design/${product.slug}?${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier }).toString()}`}
+            onClick={() => {
+              if (ctaVariantKey) trackClick(EXPERIMENT_KEY, ctaVariantKey)
+            }}
+            className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Pencil className="w-5 h-5" />
+              {ctaLabel}
+            </span>
+          </Link>
+        )}
+        {foilBlocksOrder ? (
+          <button
+            type="button"
+            disabled
+            className="block w-full text-center bg-blue-300 text-white px-6 py-3.5 rounded-xl font-semibold cursor-not-allowed"
+          >
+            <span className="inline-flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5" />
+              {uploadStatus === 'done' ? 'Order with Uploaded File' : 'Upload File & Order'}
+            </span>
+          </button>
+        ) : (
+          <Link
+            href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, ...finishingParams, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
+            className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
+          >
+            <span className="inline-flex items-center gap-2">
+              {uploadStatus === 'done'
+                ? <><FileText className="w-5 h-5" /> Order with Uploaded File</>
+                : <><ShoppingCart className="w-5 h-5" /> Upload File & Order</>
+              }
+            </span>
+          </Link>
+        )}
       </div>
     </div>
   )
