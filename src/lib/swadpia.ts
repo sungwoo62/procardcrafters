@@ -14,6 +14,8 @@
  * 따라서 가드를 제거하고 라이브 도매가 fetch 를 복원한다. (adpiamall 은 무관 — 무시)
  */
 
+import { synthesizeBagPrintEntries } from '@/config/bag-pricing'
+
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 const FETCH_TIMEOUT_MS = 15_000
 
@@ -135,9 +137,15 @@ export const CATEGORY_MAP: Record<string, string> = {
   'gift-boxes': 'CHI3000',
   'cake-boxes': 'CHI3000',
   'tube-boxes': 'CHI3000',
-  'paper-shopping-bags': 'CPK4000',    // 일반쇼핑백
-  'kraft-bags': 'CPK3000',             // 손잡이쇼핑백
-  'gift-bags': 'CPK2000',              // 리본&브레이드 쇼핑백
+  // 쇼핑백 — 성원 상단 4버튼 = 4개 독립 category_code (OMO-3197, 라이브 재크롤 검증)
+  //   CPK2000 리본&브레이드 쇼핑백 / CPK4000 종이끈 쇼핑백 /
+  //   CPK3000 끈없는 쇼핑백 / CPK5000 소량 쇼핑백(50·100 전용)
+  // 옵션(용지/사이즈/수량)은 scripts/omo3197-bag-options.json 에 라이브 스냅샷 보관.
+  'paper-shopping-bags': 'CPK4000',     // 종이끈 쇼핑백 (꼬임끈 손잡이)
+  'kraft-bags': 'CPK4000',              // 크라프트지 = CPK4000 용지 변형(동일 카테고리)
+  'gift-bags': 'CPK2000',               // 리본&브레이드 쇼핑백 (리본 손잡이)
+  'handleless-bags': 'CPK3000',         // 끈없는 쇼핑백
+  'small-batch-bags': 'CPK5000',        // 소량 쇼핑백 (50·100매)
   // 미연동(성원 미취급/타공급 또는 전용 격자 부재) — 의도적 미매핑, 리포트 SWADPIA_UNSUPPORTED 참조:
   //   hangtag-cards(택 전용격자 부재), paper-pop·foam-pop(POP 카테고리 부재),
   //   general-notebooks·spring-notebooks·diaries(대량 노트/다이어리 성원 미취급)
@@ -252,10 +260,15 @@ export async function fetchSwadpiaCategoryData(slug: string): Promise<SwadpiaCat
       cut_norm_y_size: String(s.cut_norm_y_size ?? ''),
     }))
 
+    // OMO-3200: 쇼핑백(CPK2000/3000/4000/5000)은 print_info1 의 paper_code 가 비고
+    // unit_key 가 내부 index 라 위 정적 파싱으로는 수량↔단가 매핑이 불가하다.
+    // calcuEstimate 인터랙티브로 추출한 수량별 도매원가 매트릭스로 printEntries 를 대체한다.
+    const bagEntries = synthesizeBagPrintEntries(categoryCode)
+
     const result: SwadpiaCategoryData = {
       categoryCode,
       papers,
-      printEntries,
+      printEntries: bagEntries ?? printEntries,
       sizes,
       fetchedAt: Date.now(),
       fetchSuccess: true,

@@ -114,6 +114,8 @@ export const PRODUCT_GROUPS: ProductGroup[] = [
       { slug: 'paper-shopping-bags', label: 'Shopping Bags' },
       { slug: 'kraft-bags', label: 'Kraft Bags' },
       { slug: 'gift-bags', label: 'Gift Bags' },
+      { slug: 'handleless-bags', label: 'Handleless Bags' },
+      { slug: 'small-batch-bags', label: 'Small-Batch Bags' },
     ],
   },
 ]
