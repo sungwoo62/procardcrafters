@@ -125,7 +125,9 @@ async function crawlScope(page, scope, helpers, a, ctx) {
           const total = toInt(s.total), screen = toInt(s.screen)
           sizeRows.push({
             size_code: sizeCode, size_label: sz.label, paper_code: pp.v || '', paper_label: pp.label,
-            side, side_label: sd.label, qty: q.n, total, paper: toInt(s.paper), plate: toInt(s.plate), print: toInt(s.print),
+            // print_color_type: 인쇄방식/제본 등 가격축(단면/양면은 side). side 와 함께 키 구성(마이그 ...000020).
+            side, side_label: sd.label, print_color_type: scope.sideField ? (sd.v || '') : '',
+            qty: q.n, total, paper: toInt(s.paper), plate: toInt(s.plate), print: toInt(s.print),
             screen, parity: screen != null && total != null && screen === total, source: 'sampled',
           })
         }

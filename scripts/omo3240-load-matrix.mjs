@@ -25,13 +25,13 @@ if (fs.existsSync(envPath)) {
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL
 const SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY
 
-function rowsFromArtifact(artifact) {
+function rowsFromArtifact(artifact, hasPct) {
   const out = []
   for (const r of artifact.results || []) {
     if (r.error || !r.rows) continue
     for (const row of r.rows) {
       if (!Number.isFinite(row.total)) continue // 가격 미독취 셀 제외
-      out.push({
+      const o = {
         category_code: r.code,
         product_slug: r.slug || null,
         size_code: row.size_code || '',
@@ -43,8 +43,11 @@ function rowsFromArtifact(artifact) {
         plate_price: row.plate ?? null,
         print_price: row.print ?? null,
         source: row.source || 'sampled',
-        option_combo: { size_label: row.size_label, paper_label: row.paper_label, side_label: row.side_label, qty_field: r.qtyField },
-      })
+        option_combo: { size_label: row.size_label, paper_label: row.paper_label, side_label: row.side_label, print_color_type: row.print_color_type || '', qty_field: r.qtyField },
+      }
+      // print_color_type 컬럼이 배포된 경우에만 키에 포함(마이그 ...000020 전엔 컬럼 부재 → 제외).
+      if (hasPct) o.print_color_type = row.print_color_type || ''
+      out.push(o)
     }
   }
   return out
@@ -53,7 +56,13 @@ function rowsFromArtifact(artifact) {
 export async function loadMatrix(artifact) {
   if (!SUPABASE_URL || !SERVICE_KEY) { console.error('[load] SUPABASE 키 누락 — 적재 불가'); return { ok: false, reason: 'no-keys' } }
   const supabase = createClient(SUPABASE_URL, SERVICE_KEY)
-  const rows = rowsFromArtifact(artifact)
+  // print_color_type 컬럼 배포 여부 감지 → 유니크키/행 구성 분기(전·후방 호환).
+  const pctProbe = await supabase.from('print_swadpia_price_matrix').select('print_color_type').limit(1)
+  const hasPct = !pctProbe.error
+  const onConflict = hasPct
+    ? 'category_code,size_code,paper_code,side,print_color_type,qty'
+    : 'category_code,size_code,paper_code,side,qty'
+  const rows = rowsFromArtifact(artifact, hasPct)
   const sampledCount = rows.filter(r => r.source === 'sampled').length
   const interpolatedCount = rows.filter(r => r.source === 'interpolated').length
   const categoryCodes = [...new Set(rows.map(r => r.category_code))]
@@ -83,7 +92,7 @@ export async function loadMatrix(artifact) {
   for (let i = 0; i < rows.length; i += BATCH) {
     const batch = rows.slice(i, i + BATCH).map(r => ({ ...r, crawl_run_id: runId }))
     const up = await supabase.from('print_swadpia_price_matrix')
-      .upsert(batch, { onConflict: 'category_code,size_code,paper_code,side,qty' })
+      .upsert(batch, { onConflict })
     if (up.error) { failed += batch.length; console.error(`[load] batch ${i} 오류:`, up.error.message) }
     else upserted += batch.length
   }
