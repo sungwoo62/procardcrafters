@@ -1,0 +1,1247 @@
+{
+  "gate2": {
+    "product": "CPR2000",
+    "baseSnap": {
+      "total": "87200",
+      "paper": "23200",
+      "plate": "32000",
+      "print": "32000"
+    },
+    "selects": [
+      {
+        "name": "paper_kind",
+        "optCount": 1
+      },
+      {
+        "name": "paper_type",
+        "optCount": 9
+      },
+      {
+        "name": "paper_code",
+        "optCount": 7
+      },
+      {
+        "name": "fside_color_amount",
+        "optCount": 2
+      },
+      {
+        "name": "fside_full_bg",
+        "optCount": 2
+      },
+      {
+        "name": "fside_spot_color",
+        "optCount": 7
+      },
+      {
+        "name": "bside_color_amount",
+        "optCount": 3
+      },
+      {
+        "name": "bside_full_bg",
+        "optCount": 2
+      },
+      {
+        "name": "bside_spot_color",
+        "optCount": 7
+      },
+      {
+        "name": "print_method",
+        "optCount": 2
+      },
+      {
+        "name": "size_type",
+        "optCount": 2
+      },
+      {
+        "name": "paper_size",
+        "optCount": 6
+      },
+      {
+        "name": "paper_size_basis",
+        "optCount": 2
+      },
+      {
+        "name": "paper_qty",
+        "optCount": 106
+      },
+      {
+        "name": "order_count",
+        "optCount": 120
+      },
+      {
+        "name": "is_box_packing",
+        "optCount": 2
+      },
+      {
+        "name": "f_design_type",
+        "optCount": 4
+      },
+      {
+        "name": "f_cnt_type",
+        "optCount": 121
+      },
+      {
+        "name": "f_design_edit",
+        "optCount": 3
+      },
+      {
+        "name": "f_cnt_edit",
+        "optCount": 121
+      },
+      {
+        "name": "b_design_type",
+        "optCount": 4
+      },
+      {
+        "name": "b_cnt_type",
+        "optCount": 121
+      },
+      {
+        "name": "b_design_edit",
+        "optCount": 3
+      },
+      {
+        "name": "b_cnt_edit",
+        "optCount": 121
+      },
+      {
+        "name": "design_price_add1",
+        "optCount": 7
+      },
+      {
+        "name": "d_cnt_add1",
+        "optCount": 121
+      },
+      {
+        "name": "design_price_add2",
+        "optCount": 5
+      },
+      {
+        "name": "d_cnt_add2",
+        "optCount": 121
+      },
+      {
+        "name": "design_price_add3",
+        "optCount": 5
+      },
+      {
+        "name": "d_cnt_add3",
+        "optCount": 121
+      },
+      {
+        "name": "design_price_add4",
+        "optCount": 5
+      },
+      {
+        "name": "d_cnt_add4",
+        "optCount": 121
+      },
+      {
+        "name": "design_price_add5",
+        "optCount": 5
+      },
+      {
+        "name": "d_cnt_add5",
+        "optCount": 121
+      },
+      {
+        "name": "folding_type",
+        "optCount": 0
+      },
+      {
+        "name": "folding_direction",
+        "optCount": 0
+      },
+      {
+        "name": "select_folding_stair",
+        "optCount": 0
+      },
+      {
+        "name": "select_folding_stair2",
+        "optCount": 0
+      },
+      {
+        "name": "osi_num",
+        "optCount": 0
+      },
+      {
+        "name": "osi_type",
+        "optCount": 2
+      },
+      {
+        "name": "missing_num",
+        "optCount": 0
+      },
+      {
+        "name": "coating_type",
+        "optCount": 8
+      },
+      {
+        "name": "domusong_section",
+        "optCount": 1
+      },
+      {
+        "name": "domusong_type",
+        "optCount": 0
+      },
+      {
+        "name": "domusong_num",
+        "optCount": 0
+      },
+      {
+        "name": "domusong_finishing",
+        "optCount": 0
+      },
+      {
+        "name": "domusong_exist_mok",
+        "optCount": 0
+      },
+      {
+        "name": "bak_section_1",
+        "optCount": 1
+      },
+      {
+        "name": "bak_side_1",
+        "optCount": 3
+      },
+      {
+        "name": "bak_type_1",
+        "optCount": 12
+      },
+      {
+        "name": "bak_exist_dongpan_1",
+        "optCount": 0
+      },
+      {
+        "name": "bak_section_2",
+        "optCount": 1
+      },
+      {
+        "name": "bak_side_2",
+        "optCount": 3
+      },
+      {
+        "name": "bak_type_2",
+        "optCount": 12
+      },
+      {
+        "name": "bak_exist_dongpan_2",
+        "optCount": 0
+      },
+      {
+        "name": "bak_section_3",
+        "optCount": 1
+      },
+      {
+        "name": "bak_side_3",
+        "optCount": 3
+      },
+      {
+        "name": "bak_type_3",
+        "optCount": 12
+      },
+      {
+        "name": "bak_exist_dongpan_3",
+        "optCount": 0
+      },
+      {
+        "name": "ap_section_1",
+        "optCount": 1
+      },
+      {
+        "name": "ap_type_1",
+        "optCount": 1
+      },
+      {
+        "name": "ap_exist_dongpan_1",
+        "optCount": 0
+      },
+      {
+        "name": "ap_section_2",
+        "optCount": 1
+      },
+      {
+        "name": "ap_type_2",
+        "optCount": 1
+      },
+      {
+        "name": "ap_exist_dongpan_2",
+        "optCount": 0
+      },
+      {
+        "name": "ap_section_3",
+        "optCount": 1
+      },
+      {
+        "name": "ap_type_3",
+        "optCount": 1
+      },
+      {
+        "name": "ap_exist_dongpan_3",
+        "optCount": 0
+      },
+      {
+        "name": "numbering_type",
+        "optCount": 1
+      },
+      {
+        "name": "numbering_num",
+        "optCount": 2
+      },
+      {
+        "name": "tagong_num",
+        "optCount": 4
+      },
+      {
+        "name": "tagong_size",
+        "optCount": 6
+      },
+      {
+        "name": "cutting_type",
+        "optCount": 5
+      },
+      {
+        "name": "add_cut_margin_1",
+        "optCount": 3
+      },
+      {
+        "name": "binding_type",
+        "optCount": 1
+      },
+      {
+        "name": "binding_add_set",
+        "optCount": 4
+      },
+      {
+        "name": "bundle_type",
+        "optCount": 0
+      },
+      {
+        "name": "bonding_type",
+        "optCount": 0
+      },
+      {
+        "name": "laminex_num",
+        "optCount": 0
+      },
+      {
+        "name": "epoxy_type",
+        "optCount": 1
+      },
+      {
+        "name": "epoxy_kind",
+        "optCount": 1
+      },
+      {
+        "name": "stitching_type",
+        "optCount": 0
+      },
+      {
+        "name": "stitching_direction",
+        "optCount": 3
+      },
+      {
+        "name": "gq_kind",
+        "optCount": 5
+      },
+      {
+        "name": "gq_email3",
+        "optCount": 18
+      },
+      {
+        "name": "is_proof_hp1",
+        "optCount": 8
+      },
+      {
+        "name": "",
+        "optCount": 18
+      }
+    ],
+    "qtyProbe": [
+      {
+        "field": "order_count",
+        "present": true,
+        "options": [
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "rows": [
+          {
+            "val": "1",
+            "total": "87200"
+          },
+          {
+            "val": "2",
+            "total": "174400"
+          },
+          {
+            "val": "3",
+            "total": "261600"
+          },
+          {
+            "val": "4",
+            "total": "348800"
+          }
+        ],
+        "distinctTotals": 4,
+        "movesTotal": true
+      },
+      {
+        "field": "paper_qty",
+        "present": true,
+        "options": [
+          "250",
+          "500",
+          "1000",
+          "1500"
+        ],
+        "rows": [
+          {
+            "val": "250",
+            "total": "348800"
+          },
+          {
+            "val": "500",
+            "total": "415600"
+          },
+          {
+            "val": "1000",
+            "total": "548800"
+          },
+          {
+            "val": "1500",
+            "total": "746000"
+          }
+        ],
+        "distinctTotals": 4,
+        "movesTotal": true
+      },
+      {
+        "field": "order_qty",
+        "present": false,
+        "note": "absent"
+      },
+      {
+        "field": "goods_qty",
+        "present": false,
+        "note": "absent"
+      }
+    ]
+  },
+  "gate3": {
+    "CDP3000": {
+      "hasTotalInput": true,
+      "baseSnap": {
+        "total": "7700",
+        "paper": "1000",
+        "plate": "",
+        "print": "5200"
+      },
+      "selects": [
+        {
+          "name": "paper_kind",
+          "optCount": 5
+        },
+        {
+          "name": "paper_code",
+          "optCount": 20
+        },
+        {
+          "name": "print_color_type",
+          "optCount": 2
+        },
+        {
+          "name": "fside_spot_color",
+          "optCount": 8
+        },
+        {
+          "name": "bside_spot_color",
+          "optCount": 8
+        },
+        {
+          "name": "print_method",
+          "optCount": 2
+        },
+        {
+          "name": "size_type",
+          "optCount": 2
+        },
+        {
+          "name": "paper_size",
+          "optCount": 1
+        },
+        {
+          "name": "is_cut",
+          "optCount": 1
+        },
+        {
+          "name": "paper_qty",
+          "optCount": 113
+        },
+        {
+          "name": "order_count",
+          "optCount": 120
+        },
+        {
+          "name": "is_box_packing",
+          "optCount": 2
+        },
+        {
+          "name": "class_order_count",
+          "optCount": 1
+        },
+        {
+          "name": "f_design_type",
+          "optCount": 4
+        },
+        {
+          "name": "f_cnt_type",
+          "optCount": 121
+        },
+        {
+          "name": "f_design_edit",
+          "optCount": 3
+        },
+        {
+          "name": "f_cnt_edit",
+          "optCount": 121
+        },
+        {
+          "name": "b_design_type",
+          "optCount": 4
+        },
+        {
+          "name": "b_cnt_type",
+          "optCount": 121
+        },
+        {
+          "name": "b_design_edit",
+          "optCount": 3
+        },
+        {
+          "name": "b_cnt_edit",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add1",
+          "optCount": 7
+        },
+        {
+          "name": "d_cnt_add1",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add2",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add2",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add3",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add3",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add4",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add4",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add5",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add5",
+          "optCount": 121
+        },
+        {
+          "name": "osi_num",
+          "optCount": 0
+        },
+        {
+          "name": "osi_direction",
+          "optCount": 0
+        },
+        {
+          "name": "missing_num",
+          "optCount": 0
+        },
+        {
+          "name": "missing_direction",
+          "optCount": 0
+        },
+        {
+          "name": "coating_type",
+          "optCount": 6
+        },
+        {
+          "name": "domusong_section",
+          "optCount": 1
+        },
+        {
+          "name": "domusong_type",
+          "optCount": 0
+        },
+        {
+          "name": "domusong_num",
+          "optCount": 8
+        },
+        {
+          "name": "domusong_exist_mok",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_1",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_1",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_1",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_1",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_2",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_2",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_2",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_2",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_3",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_3",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_3",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_3",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_1",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_1",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_1",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_2",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_2",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_2",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_3",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_3",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_3",
+          "optCount": 0
+        },
+        {
+          "name": "tagong_num",
+          "optCount": 4
+        },
+        {
+          "name": "tagong_size",
+          "optCount": 6
+        },
+        {
+          "name": "folding_type",
+          "optCount": 15
+        },
+        {
+          "name": "bonding_type",
+          "optCount": 4
+        },
+        {
+          "name": "guidori_type",
+          "optCount": 8
+        },
+        {
+          "name": "dbak_section_1",
+          "optCount": 1
+        },
+        {
+          "name": "dbak_side_1",
+          "optCount": 3
+        },
+        {
+          "name": "dbak_type_1",
+          "optCount": 4
+        },
+        {
+          "name": "dbak_exist_dongpan_1",
+          "optCount": 0
+        },
+        {
+          "name": "dbak_section_2",
+          "optCount": 1
+        },
+        {
+          "name": "dbak_side_2",
+          "optCount": 3
+        },
+        {
+          "name": "dbak_type_2",
+          "optCount": 4
+        },
+        {
+          "name": "dbak_exist_dongpan_2",
+          "optCount": 0
+        },
+        {
+          "name": "dbak_section_3",
+          "optCount": 1
+        },
+        {
+          "name": "dbak_side_3",
+          "optCount": 3
+        },
+        {
+          "name": "dbak_type_3",
+          "optCount": 4
+        },
+        {
+          "name": "dbak_exist_dongpan_3",
+          "optCount": 0
+        },
+        {
+          "name": "depoxy_type_1",
+          "optCount": 0
+        },
+        {
+          "name": "depoxy_kind_1",
+          "optCount": 1
+        },
+        {
+          "name": "depoxy_type_2",
+          "optCount": 0
+        },
+        {
+          "name": "depoxy_kind_2",
+          "optCount": 1
+        },
+        {
+          "name": "gq_kind",
+          "optCount": 5
+        },
+        {
+          "name": "gq_email3",
+          "optCount": 18
+        },
+        {
+          "name": "is_proof_hp1",
+          "optCount": 8
+        },
+        {
+          "name": "",
+          "optCount": 18
+        }
+      ],
+      "sizeField": "size_type",
+      "sizeRows": [
+        {
+          "v": "SZT10",
+          "total": "7700"
+        },
+        {
+          "v": "SZT20",
+          "total": "6200"
+        }
+      ],
+      "sizeDistinct": 2
+    },
+    "COD1100": {
+      "hasTotalInput": true,
+      "baseSnap": {
+        "total": "4000",
+        "paper": "700",
+        "plate": "0",
+        "print": "1000"
+      },
+      "selects": [
+        {
+          "name": "is_add_banner_lean",
+          "optCount": 1
+        },
+        {
+          "name": "add_banner_lean1",
+          "optCount": 1
+        },
+        {
+          "name": "add_banner_lean2",
+          "optCount": 1
+        },
+        {
+          "name": "add_banner_lean_ea",
+          "optCount": 1
+        },
+        {
+          "name": "banner_coating",
+          "optCount": 1
+        },
+        {
+          "name": "eyelet",
+          "optCount": 1
+        },
+        {
+          "name": "board_type",
+          "optCount": 1
+        },
+        {
+          "name": "paper_kind",
+          "optCount": 0
+        },
+        {
+          "name": "paper_type",
+          "optCount": 5
+        },
+        {
+          "name": "paper_code",
+          "optCount": 1
+        },
+        {
+          "name": "fside_full_bg",
+          "optCount": 1
+        },
+        {
+          "name": "bside_full_bg",
+          "optCount": 1
+        },
+        {
+          "name": "print_color_type",
+          "optCount": 2
+        },
+        {
+          "name": "fside_spot_color",
+          "optCount": 7
+        },
+        {
+          "name": "bside_spot_color",
+          "optCount": 7
+        },
+        {
+          "name": "print_method",
+          "optCount": 2
+        },
+        {
+          "name": "size_type",
+          "optCount": 1
+        },
+        {
+          "name": "paper_size",
+          "optCount": 2
+        },
+        {
+          "name": "paper_size_basis",
+          "optCount": 1
+        },
+        {
+          "name": "is_cut",
+          "optCount": 1
+        },
+        {
+          "name": "object_cutting",
+          "optCount": 0
+        },
+        {
+          "name": "object_cutting_level",
+          "optCount": 0
+        },
+        {
+          "name": "small_size_type",
+          "optCount": 0
+        },
+        {
+          "name": "print_method2",
+          "optCount": 0
+        },
+        {
+          "name": "print_position_setting",
+          "optCount": 0
+        },
+        {
+          "name": "ink_use",
+          "optCount": 3
+        },
+        {
+          "name": "paper_qty_select",
+          "optCount": 106
+        },
+        {
+          "name": "order_count",
+          "optCount": 250
+        },
+        {
+          "name": "rope_type",
+          "optCount": 3
+        },
+        {
+          "name": "rope_length",
+          "optCount": 11
+        },
+        {
+          "name": "rope_num",
+          "optCount": 20
+        },
+        {
+          "name": "class_order_count",
+          "optCount": 1
+        },
+        {
+          "name": "basic_banner_lean",
+          "optCount": 3
+        },
+        {
+          "name": "f_design_type",
+          "optCount": 4
+        },
+        {
+          "name": "f_cnt_type",
+          "optCount": 121
+        },
+        {
+          "name": "f_design_edit",
+          "optCount": 3
+        },
+        {
+          "name": "f_cnt_edit",
+          "optCount": 121
+        },
+        {
+          "name": "b_design_type",
+          "optCount": 4
+        },
+        {
+          "name": "b_cnt_type",
+          "optCount": 121
+        },
+        {
+          "name": "b_design_edit",
+          "optCount": 3
+        },
+        {
+          "name": "b_cnt_edit",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add1",
+          "optCount": 7
+        },
+        {
+          "name": "d_cnt_add1",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add2",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add2",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add3",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add3",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add4",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add4",
+          "optCount": 121
+        },
+        {
+          "name": "design_price_add5",
+          "optCount": 5
+        },
+        {
+          "name": "d_cnt_add5",
+          "optCount": 121
+        },
+        {
+          "name": "osi_num",
+          "optCount": 0
+        },
+        {
+          "name": "osi_type",
+          "optCount": 0
+        },
+        {
+          "name": "osi_direction",
+          "optCount": 0
+        },
+        {
+          "name": "missing_num",
+          "optCount": 0
+        },
+        {
+          "name": "missing_direction",
+          "optCount": 0
+        },
+        {
+          "name": "coating_type",
+          "optCount": 6
+        },
+        {
+          "name": "domusong_section",
+          "optCount": 1
+        },
+        {
+          "name": "domusong_type",
+          "optCount": 0
+        },
+        {
+          "name": "domusong_num",
+          "optCount": 4
+        },
+        {
+          "name": "domusong_exist_mok",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_1",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_1",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_1",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_1",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_2",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_2",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_2",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_2",
+          "optCount": 0
+        },
+        {
+          "name": "bak_section_3",
+          "optCount": 1
+        },
+        {
+          "name": "bak_side_3",
+          "optCount": 3
+        },
+        {
+          "name": "bak_type_3",
+          "optCount": 15
+        },
+        {
+          "name": "bak_exist_dongpan_3",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_1",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_1",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_1",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_2",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_2",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_2",
+          "optCount": 0
+        },
+        {
+          "name": "ap_section_3",
+          "optCount": 1
+        },
+        {
+          "name": "ap_type_3",
+          "optCount": 2
+        },
+        {
+          "name": "ap_exist_dongpan_3",
+          "optCount": 0
+        },
+        {
+          "name": "tagong_num",
+          "optCount": 1
+        },
+        {
+          "name": "tagong_size",
+          "optCount": 1
+        },
+        {
+          "name": "folding_type",
+          "optCount": 15
+        },
+        {
+          "name": "bonding_type",
+          "optCount": 4
+        },
+        {
+          "name": "guidori_type",
+          "optCount": 8
+        },
+        {
+          "name": "laminex_num",
+          "optCount": 0
+        },
+        {
+          "name": "laminex_type",
+          "optCount": 1
+        },
+        {
+          "name": "numbering_type",
+          "optCount": 1
+        },
+        {
+          "name": "numbering_num",
+          "optCount": 2
+        },
+        {
+          "name": "cutting_type",
+          "optCount": 5
+        },
+        {
+          "name": "add_cut_margin_1",
+          "optCount": 3
+        },
+        {
+          "name": "binding_type",
+          "optCount": 1
+        },
+        {
+          "name": "binding_add_set",
+          "optCount": 4
+        },
+        {
+          "name": "bundle_type",
+          "optCount": 0
+        },
+        {
+          "name": "stitching_type",
+          "optCount": 0
+        },
+        {
+          "name": "stitching_direction",
+          "optCount": 3
+        },
+        {
+          "name": "gq_kind",
+          "optCount": 5
+        },
+        {
+          "name": "gq_email3",
+          "optCount": 18
+        },
+        {
+          "name": "is_proof_hp1",
+          "optCount": 8
+        },
+        {
+          "name": "",
+          "optCount": 18
+        }
+      ],
+      "sizeField": "paper_size",
+      "sizeRows": [
+        {
+          "v": "N0110",
+          "total": "4000"
+        },
+        {
+          "v": "N0120",
+          "total": "4100"
+        }
+      ],
+      "sizeDistinct": 2
+    }
+  },
+  "gate1": {
+    "hiddenBefore": {
+      "total": "110400",
+      "paper": "46400",
+      "plate": "32000",
+      "print": "32000"
+    },
+    "cartTrigger": "5 嫄�",
+    "capturedPost": {
+      "url": "https://www.google.com/g/collect?v=2&tid=G-TWY8VMMCH9&gtm=45je66a1v896579736za200zd896579736&_p=1781538376537&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAGQC&ae=a&are=1&cid=401478623.1781538329&frm=0&pscdl=noapi&rcb=18&sr=1400x1800&uaa=x86&uab=64&uafvl=Chromium%3B148.0.7778.96%7CHeadlessChrome%3B148.0.7778.96%7CNot%252FA%29Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=10.0&uaw=0&ul=ko-kr&gaf=3&_s=4&tag_exp=115938466%7E115938469%7E118395335%7E119456239%7E119456247&sid=1781538328&sct=1&seg=1&dl=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&dt=%EF%BF%BD%EA%B9%86%EC%8D%9D%EF%BF%BD%EC%A2%8A%EB%B1%B6%EF%BF%BD%EC%87%B1%EB%B8%98+%EF%BF%BD%EB%8D%8A%EB%9F%B9%EF%BF%BD%EB%8C%81%EF%BF%BD&en=form_start&ep.form_id=order_form&ep.form_name=order_form&ep.form_destination=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&epn.form_length=461&ep.first_field_id=paper_size&ep.first_field_name=paper_size&epn.first_field_position=12&_et=3931&tfd=6958",
+      "postData": ""
+    },
+    "totalPriceInPayload": null
+  }
+}

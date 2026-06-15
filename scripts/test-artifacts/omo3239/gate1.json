@@ -1,0 +1,31 @@
+{
+  "hiddenTotal": "110400",
+  "structural": {
+    "formExists": true,
+    "formAction": "https://www.swadpia.co.kr/goods/goods_view/CPR2000",
+    "totalPriceExists": true,
+    "totalPriceName": "total_price",
+    "totalPriceValue": "110400",
+    "totalPriceDisabled": false,
+    "totalPriceType": "hidden",
+    "totalPriceInsideForm": true,
+    "serializedHasTotal": true,
+    "serializedTotalValue": "110400"
+  },
+  "clicked": "NONE",
+  "posts": [
+    {
+      "url": "https://analytics.google.com/g/collect?v=2&tid=G-TWY8VMMCH9&gtm=45je66b0h2v896579736za200zd896579736&_p=1781538637664&gcd=13l3l3l3l1l1&npa=0&dma=0&_eu=AEEAAGQC&ae=a&are=1&cid=433871334.1781538627&frm=0&pscdl=noapi&rcb=17&sr=1400x1800&uaa=x86&uab=64&uafvl=Chromium%3B148.0.7778.96%7CHeadlessChrome%3B148.0.7778.96%7CNot%252FA)Brand%3B99.0.0.0&uam=&uamb=0&uap=Windows&uapv=10.0&uaw=0&ul=ko-kr&gaf=2&_s=3&tag_exp=115938465~115938469~119456239~119456247&sid=1781538626&sct=1&seg=1&dl=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&dt=%EF%BF%BD%EA%B9%86%EC%8D%9D%EF%BF%BD%EC%A2%8A%EB%B1%B6%EF%BF%BD%EC%87%B1%EB%B8%98%20%EF%BF%BD%EB%8D%8A%EB%9F%B9%EF%BF%BD%EB%8C%81%EF%BF%BD&en=form_start&ep.form_id=order_form&ep.form_name=order_form&ep.form_destination=https%3A%2F%2Fwww.swadpia.co.kr%2Fgoods%2Fgoods_view%2FCPR2000&epn.form_length=461&ep.first_field_id=paper_size&ep.first_field_name=paper_size&epn.first_field_position=12&_et=6642&tfd=13629",
+      "hasTotal": false,
+      "totalVal": null,
+      "hasRegist": false
+    },
+    {
+      "url": "https://y.clarity.ms/collect",
+      "hasTotal": false,
+      "totalVal": null,
+      "hasRegist": false
+    }
+  ],
+  "registPost": null
+}
