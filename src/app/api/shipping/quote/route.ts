@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { quoteShippingOptions, calculateOrderWeightKg } from '@/lib/shipping'
+import { extractGsm } from '@/lib/weight-estimate'
 import { createServerClient } from '@/lib/supabase'
 
 // 공개 견적 엔드포인트
@@ -24,30 +25,68 @@ export async function POST(request: NextRequest) {
 
   const supabase = createServerClient()
   let weightKg = Number(body.weightKg ?? 0)
+  // OMO-3058: 카트의 모든 품목이 free_shipping 제품이면 배송 무료(운임은 단가에 흡수).
+  let allItemsFreeShipping = false
 
-  if (!weightKg && Array.isArray(body.items) && body.items.length > 0) {
+  if (Array.isArray(body.items) && body.items.length > 0) {
     const productIds = body.items.map((i: { productId: string }) => i.productId).filter(Boolean)
     if (productIds.length) {
-      const { data: products } = await supabase
-        .from('print_products')
-        .select('id, default_weight_kg, unit_weight_g')
-        .in('id', productIds)
+      // OMO-3190: print_spec(재단치수) + 선택 종이 옵션(평량 gsm)으로 물리 무게 산출.
+      const [{ data: products }, { data: paperOptions }] = await Promise.all([
+        supabase
+          .from('print_products')
+          .select('id, default_weight_kg, unit_weight_g, free_shipping, print_spec')
+          .in('id', productIds),
+        supabase
+          .from('print_product_options')
+          .select('product_id, option_type, value, label_ko, label_en')
+          .in('product_id', productIds)
+          .eq('option_type', 'paper'),
+      ])
+      const paperByProduct = new Map<string, { value: string; label_ko: string; label_en: string }[]>()
+      for (const o of paperOptions ?? []) {
+        const arr = paperByProduct.get(o.product_id) ?? []
+        arr.push({ value: String(o.value ?? ''), label_ko: String(o.label_ko ?? ''), label_en: String(o.label_en ?? '') })
+        paperByProduct.set(o.product_id, arr)
+      }
       const productMap = new Map(
         (products ?? []).map((p) => [
           p.id,
-          { default_weight_kg: Number(p.default_weight_kg ?? 0.5), unit_weight_g: Number(p.unit_weight_g ?? 0) },
+          {
+            default_weight_kg: Number(p.default_weight_kg ?? 0.5),
+            unit_weight_g: Number(p.unit_weight_g ?? 0),
+            free_shipping: Boolean(p.free_shipping),
+            spec: (p.print_spec as { width_mm?: number; height_mm?: number } | null) ?? null,
+          },
         ]),
       )
-      weightKg = calculateOrderWeightKg(
-        body.items.map((i: { productId: string; quantity: number; selectedOptions?: Record<string, string> }) => {
-          const meta = productMap.get(i.productId)
-          return {
-            quantity: Number(i.quantity ?? 1),
-            default_weight_kg: meta?.default_weight_kg ?? 0.5,
-            unit_weight_g: meta?.unit_weight_g ?? 0,
-            selected_options: i.selectedOptions ?? null,
-          }
-        }),
+      // 선택된 종이 옵션 값에서 평량(gsm) 추출 — value 매칭 우선, 실패 시 옵션 라벨 텍스트.
+      function resolveGsm(productId: string, selected?: Record<string, string>): number | null {
+        const picked = selected?.paper ?? selected?.paper_code
+        const opts = paperByProduct.get(productId) ?? []
+        const match = picked ? opts.find((o) => o.value === picked) : opts[0]
+        const src = match ?? opts[0]
+        // 1) 선택 값 자체에 gsm 이 박혀있는 경우 ("snow_350")
+        return extractGsm(picked, src?.label_ko, src?.label_en, src?.value)
+      }
+      if (!weightKg) {
+        weightKg = calculateOrderWeightKg(
+          body.items.map((i: { productId: string; quantity: number; selectedOptions?: Record<string, string> }) => {
+            const meta = productMap.get(i.productId)
+            return {
+              quantity: Number(i.quantity ?? 1),
+              default_weight_kg: meta?.default_weight_kg ?? 0.5,
+              unit_weight_g: meta?.unit_weight_g ?? 0,
+              selected_options: i.selectedOptions ?? null,
+              basis_weight_gsm: resolveGsm(i.productId, i.selectedOptions),
+              sheet_width_mm: meta?.spec?.width_mm ?? null,
+              sheet_height_mm: meta?.spec?.height_mm ?? null,
+            }
+          }),
+        )
+      }
+      allItemsFreeShipping = body.items.every(
+        (i: { productId: string }) => productMap.get(i.productId)?.free_shipping === true,
       )
     }
   }
@@ -67,7 +106,8 @@ export async function POST(request: NextRequest) {
 
   const meetsSubtotal = threshold > 0 && subtotalUsd >= threshold
   const meetsWeight = maxWeight === 0 || weightKg <= maxWeight
-  const freeShipping = meetsSubtotal && meetsWeight
+  // 임계 기반 무료배송 OR 제품별 free_shipping(패키지: 운임 단가흡수) — OMO-3058
+  const freeShipping = (meetsSubtotal && meetsWeight) || allItemsFreeShipping
 
   // 최저가 옵션 기준 가격 (differential 계산용)
   const cheapestCostUsd = options[defaultOptionIndex]?.costUsd ?? 0

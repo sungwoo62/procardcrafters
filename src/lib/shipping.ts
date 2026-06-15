@@ -12,6 +12,7 @@
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate, krwToUsd } from '@/lib/exchange-rate'
 import { fetchFedexRates, fedexServiceToInternalCode, isFedexApiConfigured } from '@/lib/fedex-api'
+import { estimateItemWeight, pickBox } from '@/lib/weight-estimate'
 
 const DEFAULT_VAT_MARKUP_PCT = 10
 const DEFAULT_FALLBACK_USD = 35
@@ -494,28 +495,51 @@ export interface OrderWeightItem {
   default_weight_kg?: number | null
   unit_weight_g?: number | null
   selected_options?: Record<string, string> | null
+  // OMO-3190: 평량(gsm) + 재단치수(mm)가 있으면 물리 산식(gsm × 면적 × 수량)으로
+  // 종이 무게를 직접 산출한다. 없으면 unit_weight_g/default_weight_kg fallback.
+  basis_weight_gsm?: number | null
+  sheet_width_mm?: number | null
+  sheet_height_mm?: number | null
+}
+
+/** 품목별 "내용물(종이) 무게"(g) — 박스 tare 미포함. */
+function itemContentWeightG(it: OrderWeightItem): number {
+  const orderQty = it.quantity ?? 1
+  const optionQty = parseQuantityOption(it.selected_options?.quantity)
+  const pieceCount = optionQty > 0 ? optionQty : orderQty
+
+  // 1) 물리 산식: 평량 + 재단치수가 있으면 gsm × 면적 × 수량 (OMO-3190)
+  const gsm = Number(it.basis_weight_gsm ?? 0)
+  if (gsm > 0) {
+    const { paperWeightG } = estimateItemWeight({
+      gsm,
+      sheetWidthMm: it.sheet_width_mm ?? null,
+      sheetHeightMm: it.sheet_height_mm ?? null,
+      quantity: pieceCount,
+    })
+    return paperWeightG
+  }
+  // 2) 정적 1매 무게 × 수량
+  const unitG = Number(it.unit_weight_g ?? 0)
+  if (unitG > 0) return unitG * pieceCount
+  // 3) legacy default_weight_kg × 주문수량
+  return Number(it.default_weight_kg ?? 0.5) * orderQty * 1000
 }
 
 /**
- * 주문 총 무게(kg) 계산.
- * 우선순위:
- *   1) unit_weight_g × piece_count
- *      piece_count = selected_options.quantity (있으면)
- *                 또는 it.quantity (체크아웃 라우트는 이미 pieceCount 를 넣음)
- *   2) default_weight_kg × it.quantity (legacy)
- *   3) 0.5kg
+ * 주문 총 무게(kg) = 모든 품목 내용물 무게 합계 + 배송 박스 1개 tare.
+ *
+ * 내용물 무게는 품목별 우선순위로 산출:
+ *   1) 평량(gsm) × 재단면적 × 수량  — 물리 산식(OMO-3190)
+ *   2) unit_weight_g × piece_count   — 정적 1매 무게
+ *   3) default_weight_kg × 주문수량   — legacy fallback
+ * 합산된 종이 무게에 맞는 최소 박스 tier 를 골라 박스 무게까지 더한다.
  */
 export function calculateOrderWeightKg(items: OrderWeightItem[]): number {
-  return items.reduce((sum, it) => {
-    const orderQty = it.quantity ?? 1
-    const unitG = Number(it.unit_weight_g ?? 0)
-    if (unitG > 0) {
-      const optionQty = parseQuantityOption(it.selected_options?.quantity)
-      const pieceCount = optionQty > 0 ? optionQty : orderQty
-      return sum + (unitG * pieceCount) / 1000
-    }
-    return sum + Number(it.default_weight_kg ?? 0.5) * orderQty
-  }, 0)
+  const contentG = items.reduce((sum, it) => sum + itemContentWeightG(it), 0)
+  if (contentG <= 0) return 0.5
+  const { tareG } = pickBox(contentG)
+  return Math.round(((contentG + tareG) / 1000) * 1000) / 1000
 }
 
 /** "500" / "500매" / "500 sheets" 등에서 숫자만 추출 */
