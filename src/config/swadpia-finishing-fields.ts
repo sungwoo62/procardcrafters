@@ -313,3 +313,195 @@ export function expandFinishingToSwadpiaFields(
   }
   return out
 }
+
+// ─── OMO-3257: 박(foil) 멀티레이어 (최대 3 레이어 면적 합산) ─────────────────
+//
+// 박 금액 = Σ(레이어별 가로×세로 면적 단가). 성원 JS 근거(OMO-3238 확정):
+//   settingExistBakDongpan(2/3) 로 레이어 2/3 행 생성 → 레이어별 calcuBakPrice()
+//   → setPPBakAmtSum() 으로 bak_amt 합산. [+] 로 최대 3 레이어.
+// 결정론: 가격은 성원 응답 bak_amt/pay_amt 에서만 읽고, 치수는 고객 입력값(추론 금지).
+
+/** 박 레이어 최대 개수(성원 _1/_2/_3 세트). */
+export const MAX_FOIL_LAYERS = 3
+
+/** 박 종류(BKT0x) / 면(BKD10/20/30) 기본값. UI 미선택 시 사용. */
+export const FOIL_DEFAULT_BAK_TYPE = 'BKT02' // 금박(유광)
+export const FOIL_DEFAULT_BAK_SIDE = 'BKD10' // 전면
+
+export interface FoilLayer {
+  /** 박 영역 가로(mm) */
+  x_size: number
+  /** 박 영역 세로(mm) */
+  y_size: number
+  /** 박 종류 BKT0x (미지정 시 FOIL_DEFAULT_BAK_TYPE) */
+  bak_type?: string
+  /** 박 면 BKD10(전면)/BKD20(후면)/BKD30(양면) (미지정 시 FOIL_DEFAULT_BAK_SIDE) */
+  bak_side?: string
+}
+
+export interface FoilLayerValidation {
+  ok: boolean
+  /** 사용자 노출용 한국어 오류 메시지(레이어별). ok=true 면 빈 배열. */
+  errors: string[]
+}
+
+/**
+ * 성원 박 사이즈 가드(chk_size_low/high)는 라이브 RE(OMO-3262) 결과 **고정 면적창이
+ * 아니라 용지 cut 규격(가로/세로 mm) 대비 per-axis 상한**으로 확인됐다:
+ *   유효 조건 = 0 < x ≤ cutX && 0 < y ≤ cutY (면적 하한 없음 — 2×2mm 도 정상).
+ * 따라서 검증에 paperCut(용지 재단 규격 mm)을 주면 per-axis 로 차단하고,
+ * 없으면 양수·개수만 본다(거짓거부 방지). 정밀 per-axis 데이터 배선은 OMO-3264.
+ */
+export interface FoilPaperCut {
+  /** 용지 재단 가로(mm) */
+  cutX: number
+  /** 용지 재단 세로(mm) */
+  cutY: number
+}
+
+/**
+ * 용지 규격(성원 size_info) 한 항목의 최소 형태 — cut 규격(mm) 해석용.
+ * `@/lib/swadpia`의 SwadpiaSize 와 호환되며(필드 부분집합) config 레이어가
+ * lib 에 의존하지 않도록 별도 정의한다.
+ */
+export interface FoilSizeOption {
+  size_type_code?: string
+  /** 예: "(90*50)" — 라벨/완성 규격 표기 */
+  size_type_name?: string
+  /** 재단 가로(mm) — 박 가드의 cutX 권위 소스 */
+  cut_norm_x_size?: string | number
+  /** 재단 세로(mm) — 박 가드의 cutY 권위 소스 */
+  cut_norm_y_size?: string | number
+}
+
+/** "90x50" / "(90*50)" / "90 × 50mm" 등에서 (가로,세로) mm 쌍을 추출. 실패 시 null. */
+function parseDimPair(s: string | undefined): [number, number] | null {
+  if (!s) return null
+  const m = s.match(/(\d+(?:\.\d+)?)\s*[x*×]\s*(\d+(?:\.\d+)?)/i)
+  if (!m) return null
+  const a = Number(m[1])
+  const b = Number(m[2])
+  if (!Number.isFinite(a) || !Number.isFinite(b) || a <= 0 || b <= 0) return null
+  return [a, b]
+}
+
+/**
+ * 선택된 용지 규격에서 박 사이즈 가드용 cut 치수(mm)를 해석한다(OMO-3264).
+ * 권위 소스 = size_info 의 cut_norm_x/y_size(성원 `ppBak.getCutXSize/getCutYSize` 와 동일 규격).
+ *
+ * 매칭 순서:
+ *  1) selectedSize 가 size_type_code 와 일치 → 그 규격
+ *  2) selectedSize 의 치수쌍(예 "90x50")이 어떤 규격의 size_type_name 치수쌍과 일치(가로/세로
+ *     스왑 허용) → 그 규격
+ *  3) 사용 가능한 규격이 단 1개뿐 → 그것
+ *  4) 그 외 undefined — 모호하면 per-axis 가드를 건너뛰고 양수 검사만(거짓거부 방지).
+ *     이 경우 최종 권위는 발주 시 성원 calcuEstimate(chk_size_high) 다.
+ * cut_norm 이 유한·양수가 아닌 항목은 후보에서 제외한다.
+ */
+export function resolveFoilPaperCut(
+  sizes: FoilSizeOption[] | undefined,
+  selectedSize?: string,
+): FoilPaperCut | undefined {
+  if (!sizes || sizes.length === 0) return undefined
+  const usable = sizes
+    .map((s) => ({
+      code: s.size_type_code,
+      name: s.size_type_name,
+      cutX: Number(s.cut_norm_x_size),
+      cutY: Number(s.cut_norm_y_size),
+    }))
+    .filter((s) => Number.isFinite(s.cutX) && s.cutX > 0 && Number.isFinite(s.cutY) && s.cutY > 0)
+  if (usable.length === 0) return undefined
+
+  if (selectedSize) {
+    const byCode = usable.find((s) => s.code === selectedSize)
+    if (byCode) return { cutX: byCode.cutX, cutY: byCode.cutY }
+
+    const sel = parseDimPair(selectedSize)
+    if (sel) {
+      const byDim = usable.find((s) => {
+        const d = parseDimPair(s.name)
+        return d && ((d[0] === sel[0] && d[1] === sel[1]) || (d[0] === sel[1] && d[1] === sel[0]))
+      })
+      if (byDim) return { cutX: byDim.cutX, cutY: byDim.cutY }
+    }
+  }
+
+  if (usable.length === 1) return { cutX: usable[0].cutX, cutY: usable[0].cutY }
+  return undefined
+}
+
+/**
+ * 박 레이어 배열을 검증한다.
+ *  - 개수 1..MAX_FOIL_LAYERS, 각 레이어 가로/세로 > 0.
+ *  - paperCut 가 주어지면 성원 chk_size_high 와 동일하게 per-axis 상한(가로/세로 ≤ 용지 cut)
+ *    을 적용한다. paperCut 미지정 시 양수 검사만(면적창 가정 제거 — OMO-3262 RE).
+ */
+export function validateFoilLayers(
+  layers: FoilLayer[],
+  paperCut?: FoilPaperCut,
+): FoilLayerValidation {
+  const errors: string[] = []
+  if (layers.length < 1) errors.push('박 레이어가 최소 1개 필요합니다.')
+  if (layers.length > MAX_FOIL_LAYERS) {
+    errors.push(`박 레이어는 최대 ${MAX_FOIL_LAYERS}개까지 추가할 수 있습니다.`)
+  }
+  layers.forEach((l, i) => {
+    const n = i + 1
+    const x = Number(l.x_size)
+    const y = Number(l.y_size)
+    if (!Number.isFinite(x) || !Number.isFinite(y) || x <= 0 || y <= 0) {
+      errors.push(`박 레이어 ${n}: 가로·세로(mm)를 0보다 큰 값으로 입력하세요.`)
+      return
+    }
+    if (paperCut) {
+      if (x > paperCut.cutX) {
+        errors.push(`박 레이어 ${n}: 가로 ${x}mm 가 용지 규격(${paperCut.cutX}mm)보다 큽니다.`)
+      }
+      if (y > paperCut.cutY) {
+        errors.push(`박 레이어 ${n}: 세로 ${y}mm 가 용지 규격(${paperCut.cutY}mm)보다 큽니다.`)
+      }
+    }
+  })
+  return { ok: errors.length === 0, errors }
+}
+
+/**
+ * 박 레이어 배열 → 성원 발주 폼 필드코드(bak_*_N) 평면 맵.
+ * activateFinishings(swadpia-order.ts) 가 이 키들을 폼에 적용한다.
+ * 최대 3 레이어까지만 직렬화(초과분은 무시).
+ */
+export function foilLayersToFields(layers: FoilLayer[]): Record<string, string> {
+  const out: Record<string, string> = {}
+  layers.slice(0, MAX_FOIL_LAYERS).forEach((l, i) => {
+    const idx = i + 1
+    out[`bak_section_${idx}`] = 'BKS10' // 신규
+    out[`bak_side_${idx}`] = l.bak_side || FOIL_DEFAULT_BAK_SIDE
+    out[`bak_type_${idx}`] = l.bak_type || FOIL_DEFAULT_BAK_TYPE
+    out[`bak_compare_${idx}`] = 'BAC10' // 내용같음
+    out[`bak_x_size_${idx}`] = String(l.x_size)
+    out[`bak_y_size_${idx}`] = String(l.y_size)
+  })
+  return out
+}
+
+/**
+ * 평면 옵션맵(bak_*_N)에서 박 레이어 배열을 복원한다.
+ * surcharge 합산·발주 면적 가드에서 공용으로 쓴다. bak_x_size_N 또는 bak_y_size_N
+ * 가 존재하는 인덱스만 레이어로 본다(1..3).
+ */
+export function parseFoilLayersFromOptions(opts: Record<string, string>): FoilLayer[] {
+  const layers: FoilLayer[] = []
+  for (let i = 1; i <= MAX_FOIL_LAYERS; i++) {
+    const x = opts[`bak_x_size_${i}`]
+    const y = opts[`bak_y_size_${i}`]
+    if (x === undefined && y === undefined) continue
+    layers.push({
+      x_size: Number(x),
+      y_size: Number(y),
+      bak_type: opts[`bak_type_${i}`],
+      bak_side: opts[`bak_side_${i}`],
+    })
+  }
+  return layers
+}

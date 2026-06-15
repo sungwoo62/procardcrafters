@@ -17,6 +17,11 @@ import * as fs from 'fs'
 import * as os from 'os'
 import type { Page, Frame, Response, BrowserType } from 'playwright'
 import { CATEGORY_MAP } from './swadpia'
+import {
+  MAX_FOIL_LAYERS,
+  parseFoilLayersFromOptions,
+  validateFoilLayers,
+} from '@/config/swadpia-finishing-fields'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
@@ -616,6 +621,20 @@ async function activateFinishings(
           chk.dispatchEvent(new Event('change', { bubbles: true }))
         }
         try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
+        // 1-b. OMO-3257 박 멀티레이어: bak_x_size_N(N≥2) 가 fieldMap 에 있으면
+        //   settingExistBakDongpan(i) 로 레이어 행을 먼저 생성해야 bak_*_2/_3 필드가
+        //   폼에 존재한다(성원 JS 근거, OMO-3238 확정). 레이어 2..N 순서로 호출하고,
+        //   가격은 setIsPostpress→calcuEstimate 가 setPPBakAmtSum 으로 bak_amt 합산(결정론).
+        if (ppType === 'bak') {
+          let maxLayer = 1
+          for (const fname of Object.keys(fieldMap)) {
+            const m = fname.match(/^bak_x_size_(\d+)$/)
+            if (m) maxLayer = Math.max(maxLayer, Number(m[1]))
+          }
+          for (let i = 2; i <= maxLayer; i++) {
+            try { w.settingExistBakDongpan && w.settingExistBakDongpan(i) } catch { /* */ }
+          }
+        }
         // 2. section/type/size 설정 (kind 는 populate 후 별도)
         for (const [n, v] of Object.entries(fieldMap)) {
           if (n.endsWith('_kind')) continue
@@ -785,6 +804,33 @@ export async function selectOrderOptions(
   const finishingOpts: Record<string, string> = {}
   for (const [k, v] of Object.entries(options)) {
     if (isFinishingKey(k)) finishingOpts[k] = v
+  }
+  // OMO-3264 박 사이즈 가드: 박 레이어(최대 3)의 가로/세로를 발주 전에 검증한다.
+  //   성원 chk_size_high 의 per-axis(용지 cut 규격 대비) 상한은 라이브 RE(OMO-3262)로 확정됨
+  //   (0<x≤cutX && 0<y≤cutY). 용지 cut 치수는 성원 자체 권위 소스인 ppBak.getCutXSize/
+  //   getCutYSize(현재 폼에 적용된 용지/사이즈 기준)에서 읽어 paperCut 으로 주입한다.
+  //   읽기 실패(globals 미준비 등) 시 양수 검사만 수행 — 최종 권위는 activateFinishings →
+  //   calcuEstimate 가 트리거하는 성원 자체 chk_size_low/high 다(거짓거부 방지).
+  const foilLayers = parseFoilLayersFromOptions(finishingOpts)
+  if (foilLayers.length > 0) {
+    const paperCut = await page
+      .evaluate(() => {
+        const pb = (window as unknown as { ppBak?: { getCutXSize?: () => unknown; getCutYSize?: () => unknown } }).ppBak
+        if (!pb || typeof pb.getCutXSize !== 'function' || typeof pb.getCutYSize !== 'function') return null
+        const cutX = Number(pb.getCutXSize())
+        const cutY = Number(pb.getCutYSize())
+        if (!Number.isFinite(cutX) || cutX <= 0 || !Number.isFinite(cutY) || cutY <= 0) return null
+        return { cutX, cutY }
+      })
+      .catch(() => null)
+    const v = validateFoilLayers(foilLayers, paperCut ?? undefined)
+    if (!v.ok) {
+      throw new Error(
+        `[swadpia-order] 박 레이어 검증 실패(가로/세로 양수, 최대 ${MAX_FOIL_LAYERS}레이어` +
+          `${paperCut ? `, 용지 cut ${paperCut.cutX}×${paperCut.cutY}mm 이내` : ''}) — ` +
+          `발주 중단: ${v.errors.join(' / ')}`,
+      )
+    }
   }
   if (Object.keys(finishingOpts).length > 0) {
     await activateFinishings(page, finishingOpts)
