@@ -46,17 +46,24 @@ const CAUTIONS = [
   {
     icon: AlertTriangle,
     title: 'Minimum spacing between elements',
-    body: 'If two foil elements sit too close together, the foil can spread and merge. Keep at least 0.3mm of space between separate foil elements.',
+    body: 'If two foil elements sit too close together, the foil can spread and merge. Keep at least 0.3 mm (≈ 0.012 in) of space between separate foil elements.',
   },
 ]
 
+// 고객용(영미권) 디스플레이명. 실제 성원 용지 매핑(구현 OMO-3258):
+//   Ultra-White Smooth   = 아르미 울트라화이트 230/310g
+//   Natural Textured     = 랑데뷰 내츄럴 310g
+//   Soft-White Felt      = 반누보 화이트 204g
+//   Snow-White Felt      = 반누보 스노우화이트 227g
 const PAPERS = [
-  'Armi Ultra White 230g',
-  'Armi Ultra White 310g',
-  'Rendezvous Natural 310g',
-  'Banuvo White 204g',
-  'Banuvo Snow White 227g',
+  { name: 'Ultra-White Smooth', weight: '230 / 310 gsm · 85 / 115 lb cover' },
+  { name: 'Natural Textured', weight: '310 gsm · 115 lb cover' },
+  { name: 'Soft-White Felt', weight: '204 gsm · 75 lb cover' },
+  { name: 'Snow-White Felt', weight: '227 gsm · 84 lb cover' },
 ]
+
+// 디지털박 고정가: ₩15,000 ÷ 1,535 KRW/USD (보드 지정 환율) = $9.77
+const DIGITAL_FOIL_USD = '$9.77'
 
 /** 명함 목업 — 인쇄 결과(컬러 도트 패턴 + 골드 로고). */
 function CardMockup({ side }: { side: 'front' | 'back' }) {
@@ -80,13 +87,13 @@ function CardMockup({ side }: { side: 'front' | 'back' }) {
       ) : (
         <g>
           <text x="196" y="74" textAnchor="middle" fontFamily="Georgia, serif" fontSize="13" fill="#7a5c12" fontWeight="bold">
-            Sora Park
+            Olivia Bennett
           </text>
           <text x="196" y="90" textAnchor="middle" fontFamily="sans-serif" fontSize="7" fill="#9a7b3a">
             Senior Manager
           </text>
           <text x="196" y="104" textAnchor="middle" fontFamily="sans-serif" fontSize="6" fill="#9a7b3a">
-            www.minagod.com · +82 010 0000 0000
+            minagod.com · +1 (415) 555-0199
           </text>
         </g>
       )}
@@ -144,8 +151,8 @@ export default function DigitalFoilGuidePage() {
               <span className="font-semibold text-gray-900">no size limit</span>.
             </p>
             <div className="inline-flex items-baseline gap-2 bg-amber-50 border border-amber-200 rounded-xl px-5 py-3">
-              <span className="text-3xl font-bold text-amber-600">₩15,000</span>
-              <span className="text-sm text-gray-500">flat rate · per business-card order</span>
+              <span className="text-3xl font-bold text-amber-600">{DIGITAL_FOIL_USD}</span>
+              <span className="text-sm text-gray-500">flat add-on · per business-card order</span>
             </div>
           </div>
           <div className="bg-gray-50 rounded-xl p-6 border border-gray-200">
@@ -154,8 +161,12 @@ export default function DigitalFoilGuidePage() {
             </h3>
             <ul className="space-y-2">
               {PAPERS.map((p) => (
-                <li key={p} className="flex items-center gap-2 text-sm text-gray-700">
-                  <Check className="w-4 h-4 text-green-600 shrink-0" /> {p}
+                <li key={p.name} className="flex items-start gap-2 text-sm text-gray-700">
+                  <Check className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                  <span>
+                    <span className="font-medium text-gray-900">{p.name}</span>
+                    <span className="block text-xs text-gray-500">{p.weight}</span>
+                  </span>
                 </li>
               ))}
             </ul>
