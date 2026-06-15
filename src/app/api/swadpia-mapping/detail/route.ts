@@ -102,7 +102,8 @@ export async function GET(req: NextRequest) {
     marginMultiplier?: number
     sellPriceKrw?: number
     isActive?: boolean
-    optionGroups: { optionType: string; count: number; samples: { value: string; label: string; extra: number }[] }[]
+    // labels: 누락 비교용 전체 라벨 목록(samples 는 8개 캡이라 비교엔 부적합). OMO-3187
+    optionGroups: { optionType: string; count: number; labels: string[]; samples: { value: string; label: string; extra: number }[] }[]
   } = { exists: Boolean(product), optionGroups: [] }
 
   if (product) {
@@ -126,6 +127,7 @@ export async function GET(req: NextRequest) {
     applied.optionGroups = [...byType.entries()].map(([optionType, list]) => ({
       optionType,
       count: list.length,
+      labels: list.map((x) => x.label),
       samples: list.slice(0, 8),
     }))
   }
