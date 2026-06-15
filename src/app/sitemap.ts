@@ -1,5 +1,5 @@
 import type { MetadataRoute } from 'next'
-import { getAllProfessions } from '@/lib/niche/professions'
+import { getNicheGroups, getNicheByGroup } from '@/lib/niche/content'
 
 // `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 상대경로/교차도메인 sitemap 유발).
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
@@ -68,17 +68,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.6,
   }))
 
-  // 직업별 니치 랜딩(OMO-2971) — SEED + print_niche_pages DB row 자동 포함(drift 0).
-  const professions = await getAllProfessions()
-  const nichePages: MetadataRoute.Sitemap = [
-    { url: `${SITE_URL}/business-cards/for`, changeFrequency: 'weekly', priority: 0.7, lastModified: now },
-    ...professions.map((p) => ({
-      url: `${SITE_URL}/business-cards/for/${p.slug}`,
-      lastModified: now,
-      changeFrequency: 'weekly' as const,
-      priority: 0.7,
-    })),
-  ]
+  // 니치 랜딩(OMO-3215 일반화) — 전 제품군 루프. 그룹별 SEED + print_niche_pages DB row 자동 포함(drift 0).
+  // 콘텐츠가 1개 이상인 그룹만 hub/item 을 노출(빈 그룹 thin-page 회피).
+  const nicheByGroup = await Promise.all(
+    getNicheGroups().map(async (g) => ({ group: g.group, items: await getNicheByGroup(g.group) })),
+  )
+  const nichePages: MetadataRoute.Sitemap = nicheByGroup
+    .filter((g) => g.items.length > 0)
+    .flatMap((g) => [
+      { url: `${SITE_URL}/${g.group}/for`, changeFrequency: 'weekly' as const, priority: 0.7, lastModified: now },
+      ...g.items.map((c) => ({
+        url: `${SITE_URL}/${g.group}/for/${c.slug}`,
+        lastModified: now,
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      })),
+    ])
 
   return [...staticPages, ...productPages, ...templatePages, ...nichePages]
 }
