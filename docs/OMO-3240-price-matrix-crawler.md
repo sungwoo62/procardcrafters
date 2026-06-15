@@ -34,6 +34,19 @@ select 변경 후 **networkidle + settle(1.2s)** 강제 — 게이트2 교훈(re
   권장. 보간값 vs 재표집 실측 오차 임계 초과 곡선은 전수표집 승격 = **parity 게이트(자식 C
   OMO-3242 cron)**. 본 이슈(child A)는 표집+보간 적재까지.
 
+## 패리티 게이트 — 크롤 vs 화면 공급가 (OMO-3238 리뷰 권고 반영)
+명함 파일럿 비교(`omo3238-card-compare2.mjs`)에서 **hidden `total_price` == 화면 공급가
+(`#lbl_supply_amt`)** 가 전건 일치 → `total_price` 가 ground truth, 기존 `json_data` unit2 는
+실가 아님(~2.5× 과대). 이 검증을 크롤러에 **내장**했다:
+- 매 표집행이 hidden `total_price` 와 함께 visible 공급가(`lbl_supply_amt`)를 읽고
+  `parity=(screen===total)` 플래그를 기록. 제품/아티팩트 단위 `parity{withScreen,match,pass}` 롤업.
+- **적재 게이트**: 화면값을 읽은 표집행 중 하나라도 크롤≠화면이면 `--load` 가 차단(exit 2).
+  강제 적재는 `--force`(권장 안 함). 게이트 통과 로그: `[parity] 크롤==화면 N/N ✅ 게이트 PASS`.
+- 라이브 검증(2026-06-15): CPR2000·CDP3000·COD1100 그룹별 1종 **9/9 일치** —
+  CNC1000(명함) 결과가 멀티사이즈·디지털·토너 전 그룹으로 확장됨을 실증.
+- ⚠️ `json_data` 기반 기존 base price 가 실가와 틀어졌을 수 있음 → 매트릭스 적재 후
+  전수 교체가 가격 정합성 회복 경로(자식 B 라우팅 OMO-3241 에서 룩업 우선).
+
 ## 안전 (이슈 주의 준수)
 - **라이브-퍼-리퀘스트 아님** — 오프라인 배치 표집만. 고객 가격경로는 DB 매트릭스 룩업(자식 B).
 - **실주문/장바구니 등록 금지** — `goods_action=regist`/`goods_mode=cart`/`/cart`/`/order` POST 는

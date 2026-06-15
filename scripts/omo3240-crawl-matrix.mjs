@@ -59,7 +59,7 @@ const PRODUCT_CONFIG = {
 
 // ── CLI 파싱 ───────────────────────────────────────────────────────────
 function parseArgs(argv) {
-  const a = { maxPaper: Infinity, maxSize: Infinity, qtyPoints: 5, products: null, side: true, load: false, headed: false, throttle: DEFAULT_THROTTLE_MS }
+  const a = { maxPaper: Infinity, maxSize: Infinity, qtyPoints: 5, products: null, side: true, load: false, headed: false, force: false, throttle: DEFAULT_THROTTLE_MS }
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i]
     if (k === '--products') a.products = argv[++i].split(',').map(s => s.trim().toUpperCase())
@@ -68,6 +68,7 @@ function parseArgs(argv) {
     else if (k === '--qty-points') a.qtyPoints = parseInt(argv[++i], 10)
     else if (k === '--no-side') a.side = false
     else if (k === '--load') a.load = true
+    else if (k === '--force') a.force = true
     else if (k === '--headed') a.headed = true
     else if (k === '--throttle') a.throttle = parseInt(argv[++i], 10)
   }
@@ -157,7 +158,9 @@ async function crawlProduct(page, code, cfg, a, helpers) {
           await settle()
           await page.waitForTimeout(a.throttle)
           const s = await snap()
-          sampled.push({ qty: q, total: toInt(s.total), paper: toInt(s.paper), plate: toInt(s.plate), print: toInt(s.print), source: 'sampled' })
+          const screen = toInt(s.screen)
+          const total = toInt(s.total)
+          sampled.push({ qty: q, total, paper: toInt(s.paper), plate: toInt(s.plate), print: toInt(s.print), screen, parity: screen != null && total != null && screen === total, source: 'sampled' })
         }
         const side = sideField ? (/(양면|2|double)/i.test(sd.t) ? 2 : 1) : 1
         const combo = { size_code: sz.v || '', size_label: sz.t, paper_code: pp.v || '', paper_label: pp.t, side, side_label: sd.t }
@@ -166,7 +169,12 @@ async function crawlProduct(page, code, cfg, a, helpers) {
       }
     }
   }
-  return { ...meta, rowCount: rows.length, sampledCount: rows.filter(r => r.source === 'sampled').length, interpolatedCount: rows.filter(r => r.source === 'interpolated').length, rows }
+  // 패리티 게이트(OMO-3238 리뷰 권고): 화면 공급가를 읽은 표집행 중 크롤==화면 비율.
+  const sampledRows = rows.filter(r => r.source === 'sampled')
+  const withScreen = sampledRows.filter(r => Number.isFinite(r.screen))
+  const parityMatch = withScreen.filter(r => r.parity).length
+  const parity = { sampled: sampledRows.length, withScreen: withScreen.length, match: parityMatch, pass: withScreen.length > 0 && parityMatch === withScreen.length }
+  return { ...meta, parity, rowCount: rows.length, sampledCount: sampledRows.length, interpolatedCount: rows.filter(r => r.source === 'interpolated').length, rows }
 }
 
 async function main() {
@@ -196,8 +204,11 @@ async function main() {
   await Promise.all([page.waitForNavigation({ timeout: 25000 }).catch(() => {}), page.click('#icon_member_login').catch(() => page.keyboard.press('Enter'))])
 
   const v = name => page.evaluate(n => { const e = document.querySelector(`input[name="${n}"],#${n}`); return e ? e.value : null }, name)
+  // 화면 공급가(고객/직원에게 보이는 숫자) — OMO-3238 리뷰 권고: hidden total_price 가 ground truth 임을
+  // 매 표집마다 visible 공급가와 대조해 패리티 게이트(크롤==화면)를 아티팩트에 자기-인증한다.
+  const visSupply = () => page.evaluate(() => { const e = document.getElementById('lbl_supply_amt'); return e ? e.textContent.trim() : null })
   const helpers = {
-    snap: async () => ({ total: await v('total_price'), paper: await v('paper_price'), plate: await v('plate_price'), print: await v('print_price') }),
+    snap: async () => ({ total: await v('total_price'), paper: await v('paper_price'), plate: await v('plate_price'), print: await v('print_price'), screen: await visSupply() }),
     settle: async () => { await page.waitForLoadState('networkidle', { timeout: 15000 }).catch(() => {}); await page.waitForTimeout(1200) },
     enumSelects: () => page.evaluate(() => Array.from(document.querySelectorAll('select')).map(s => ({
       name: s.name, id: s.id, optCount: s.options.length, selected: s.value,
@@ -213,7 +224,8 @@ async function main() {
     try {
       const r = await crawlProduct(page, code, PRODUCT_CONFIG[code], a, helpers)
       results.push(r)
-      console.log(r.error ? ` ERROR: ${r.error}` : ` ${r.sampledCount} sampled + ${r.interpolatedCount} interp = ${r.rowCount} rows (${r.qtyOptionCount} qty opts)`)
+      const par = r.parity ? ` · 패리티 ${r.parity.match}/${r.parity.withScreen} ${r.parity.pass ? '✅' : '⚠️'}` : ''
+      console.log(r.error ? ` ERROR: ${r.error}` : ` ${r.sampledCount} sampled + ${r.interpolatedCount} interp = ${r.rowCount} rows (${r.qtyOptionCount} qty opts)${par}`)
     } catch (e) {
       results.push({ code, error: String(e).slice(0, 300) })
       console.log(` EXCEPTION: ${String(e).slice(0, 120)}`)
@@ -224,10 +236,14 @@ async function main() {
   const finishedAt = new Date().toISOString()
   const sampledTotal = results.reduce((s, r) => s + (r.sampledCount || 0), 0)
   const interpTotal = results.reduce((s, r) => s + (r.interpolatedCount || 0), 0)
+  // 적재 게이트: 화면 공급가를 읽은 모든 표집행에서 크롤==화면이어야 한다(OMO-3238 권고).
+  const parityWith = results.reduce((s, r) => s + (r.parity?.withScreen || 0), 0)
+  const parityMatch = results.reduce((s, r) => s + (r.parity?.match || 0), 0)
+  const parityPass = parityWith > 0 && parityMatch === parityWith
   const artifact = {
     issue: 'OMO-3240', startedAt, finishedAt,
     args: { products: targets, maxPaper: a.maxPaper, maxSize: a.maxSize, qtyPoints: a.qtyPoints, side: a.side, throttle: a.throttle },
-    summary: { products: targets.length, sampledTotal, interpolatedTotal: interpTotal },
+    summary: { products: targets.length, sampledTotal, interpolatedTotal: interpTotal, parity: { withScreen: parityWith, match: parityMatch, pass: parityPass } },
     results,
   }
   fs.mkdirSync(OUT_DIR, { recursive: true })
@@ -237,13 +253,18 @@ async function main() {
   fs.writeFileSync(`${OUT_DIR}/matrix-latest.json`, JSON.stringify(artifact, null, 2))
   console.log(`\n[artifact] ${file}`)
   console.log(`[summary] ${targets.length} products · ${sampledTotal} sampled · ${interpTotal} interpolated`)
+  console.log(`[parity] 크롤==화면 ${parityMatch}/${parityWith} ${parityPass ? '✅ 게이트 PASS' : '⚠️ 게이트 FAIL (적재 차단)'}`)
 
   if (a.load) {
+    if (!parityPass && !a.force) {
+      console.error('[load] ✗ 패리티 게이트 FAIL — 크롤≠화면 행이 있어 적재 차단(OMO-3238 권고). 강제 적재는 --force.')
+      process.exit(2)
+    }
     console.log('[load] DB 적재 시도 → omo3240-load-matrix.mjs')
     const { loadMatrix } = await import('./omo3240-load-matrix.mjs')
     await loadMatrix(artifact)
   } else {
-    console.log('[hint] DB 적재: node scripts/omo3240-load-matrix.mjs (마이그 배포 후)')
+    console.log('[hint] DB 적재: node scripts/omo3240-load-matrix.mjs (마이그 배포 후 · 패리티 PASS 시)')
   }
 }
 
