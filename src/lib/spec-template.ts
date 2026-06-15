@@ -95,37 +95,37 @@ export function buildTemplateSvg(spec: TemplateSpec): string {
 
   const label = spec.productLabel ?? spec.productSlug
   const finNote = r.finishRules.length
-    ? r.finishRules.map((f) => `${f.label_ko}(${f.spotLayerName})`).join(', ')
-    : '없음'
+    ? r.finishRules.map((f) => `${f.label}(${f.spotLayerName})`).join(', ')
+    : 'None'
 
   const spotLayers = r.finishRules
     .map(
       (f) => `  <g inkscape:groupmode="layer" inkscape:label="${f.spotLayerName}" data-spot="M100" data-finish="${f.value}">
     <title>${f.spotLayerName} — ${f.note}</title>
-    <!-- ${f.note} 외형 M100(${M100_RGB_HEX}) / 채널=별색 1도. -->
+    <!-- ${f.note} Outline M100(${M100_RGB_HEX}) / channel = 1-color spot. -->
     <rect x="${sx + sw / 4}" y="${sy + sh / 4}" width="${sw / 2}" height="${sh / 2}"
       fill="none" stroke="${M100_RGB_HEX}" stroke-width="0.3" stroke-dasharray="1 1" opacity="0.7"/>
     <text x="${tx + tw / 2}" y="${ty + th / 2}" font-family="sans-serif" font-size="2.4"
-      fill="${M100_RGB_HEX}" text-anchor="middle">${f.label_ko} 별색영역 (M100)</text>
+      fill="${M100_RGB_HEX}" text-anchor="middle">${f.label} spot area (M100)</text>
   </g>`,
     )
     .join('\n')
 
-  // 가이드: 블리드(빨강 점선) / 트림(검정 실선) / 세이프(파랑 점선).
+  // Guides: bleed (red dashed) / trim (black solid) / safe (blue dashed).
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
   width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}">
-  <title>성원 규격 템플릿 — ${label} ${tw}×${th}mm</title>
-  <desc>트림 ${tw}×${th}mm / 블리드 ${bleedMm}mm / 세이프 ${safeMm}mm / 후가공 별색: ${finNote}. 외형 M100=별색 1도, K100·CMYK 금지(OMO-2704).</desc>
-  <g inkscape:groupmode="layer" inkscape:label="가이드_비인쇄" data-guide="true">
-    <title>가이드(비인쇄) — 출력 전 삭제</title>
+  <title>Print Spec Template — ${label} ${tw}×${th}mm</title>
+  <desc>Trim ${tw}×${th}mm / Bleed ${bleedMm}mm / Safe ${safeMm}mm / Finish spot: ${finNote}. Outline M100 = 1-color spot, do not use K100/CMYK (OMO-2704).</desc>
+  <g inkscape:groupmode="layer" inkscape:label="Guides_NonPrinting" data-guide="true">
+    <title>Guides (non-printing) — delete before output</title>
     <rect x="0" y="0" width="${W}" height="${H}" fill="none" stroke="#ff0000" stroke-width="0.25" stroke-dasharray="2 1"/>
     <rect x="${tx}" y="${ty}" width="${tw}" height="${th}" fill="none" stroke="#000000" stroke-width="0.35"/>
     <rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" fill="none" stroke="#0066ff" stroke-width="0.25" stroke-dasharray="1 1"/>
-    <text x="${tx}" y="${Math.max(ty - 1, 2)}" font-family="sans-serif" font-size="2">트림 ${tw}×${th}mm · 블리드 ${bleedMm}mm · 세이프 ${safeMm}mm</text>
+    <text x="${tx}" y="${Math.max(ty - 1, 2)}" font-family="sans-serif" font-size="2">Trim ${tw}×${th}mm · Bleed ${bleedMm}mm · Safe ${safeMm}mm</text>
   </g>
-  <g inkscape:groupmode="layer" inkscape:label="디자인_CMYK" data-design="true">
-    <title>디자인(CMYK) — 여기에 작업</title>
+  <g inkscape:groupmode="layer" inkscape:label="Design_CMYK" data-design="true">
+    <title>Design (CMYK) — work here</title>
   </g>
 ${spotLayers}
 </svg>
@@ -190,14 +190,14 @@ export async function buildTemplatePdf(spec: TemplateSpec): Promise<Uint8Array> 
       width: pw, height: ph,
       borderColor: cmyk(0, 1, 0, 0), borderWidth: 0.6, borderDashArray: [3, 3],
     })
-    page.drawText(`${f.spotLayerId} (M100 spot / ${asciiSafe(f.label_ko)})`, {
+    page.drawText(`${f.spotLayerId} (M100 spot / ${asciiSafe(f.label)})`, {
       x: bleedPt + 2, y: noteY, size: 4, font, color: cmyk(0, 1, 0, 0),
     })
     noteY += 6
   }
 
   doc.setTitle(`Swadpia template — ${label} ${r.trimW}x${r.trimH}mm`)
-  doc.setSubject('성원 규격 인쇄 템플릿 (트림/블리드/세이프 + M100 별색 레이어). OMO-2709')
+  doc.setSubject('Print spec template (trim/bleed/safe + M100 spot finishing layer). OMO-2709')
   doc.setCreator('Procardcrafters — OMO-2709')
   doc.setKeywords(['swadpia', 'template', 'M100', 'spot', ...spec.finishing])
 

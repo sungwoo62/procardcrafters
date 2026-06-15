@@ -51,7 +51,8 @@ export const M100_RGB_HEX = '#EC008C'
 export interface FinishingSpotRule {
   /** finishing-catalog.ts value 와 동일 키 */
   value: string
-  label_ko: string
+  /** 영문 표시명(에디터·템플릿 UI). */
+  label: string
   /** 별색 레이어명(SVG/UTF-8 표시용, 일러스트에서 그대로 보임). */
   spotLayerName: string
   /**
@@ -68,31 +69,31 @@ export interface FinishingSpotRule {
 export const FINISHING_SPOT_RULES: Record<string, FinishingSpotRule> = {
   foil_stamp: {
     value: 'foil_stamp',
-    label_ko: '박',
-    spotLayerName: 'M100_별색_박',
+    label: 'Foil',
+    spotLayerName: 'M100_Spot_Foil',
     spotLayerId: 'M100_SPOT_FOIL',
-    note: '박 적용 영역을 이 레이어에 M100(별색 1도)으로 작도하세요. K100·CMYK 금지.',
+    note: 'Draw the foil area on this layer in M100 (1-color spot). Do not use K100 or CMYK.',
   },
   deboss_emboss: {
     value: 'deboss_emboss',
-    label_ko: '형압',
-    spotLayerName: 'M100_별색_형압',
+    label: 'Emboss / Deboss',
+    spotLayerName: 'M100_Spot_Emboss',
     spotLayerId: 'M100_SPOT_EMBOSS',
-    note: '형압(엠보/디보스) 영역을 이 레이어에 M100(별색 1도)으로 작도하세요.',
+    note: 'Draw the emboss/deboss area on this layer in M100 (1-color spot).',
   },
   domusong: {
     value: 'domusong',
-    label_ko: '도무송',
-    spotLayerName: 'M100_별색_도무송',
+    label: 'Die-Cut',
+    spotLayerName: 'M100_Spot_Diecut',
     spotLayerId: 'M100_SPOT_DIECUT',
-    note: '도무송(칼선) 경로를 이 레이어에 M100(별색 1도) 선으로 작도하세요.',
+    note: 'Draw the die-cut (knife) path on this layer as an M100 (1-color spot) line.',
   },
   spot_uv: {
     value: 'spot_uv',
-    label_ko: '에폭시/스팟UV',
-    spotLayerName: 'M100_별색_에폭시',
+    label: 'Spot UV / Epoxy',
+    spotLayerName: 'M100_Spot_Epoxy',
     spotLayerId: 'M100_SPOT_EPOXY',
-    note: '에폭시(스팟UV) 영역을 이 레이어에 M100(별색 1도)으로 작도하세요.',
+    note: 'Draw the spot UV (epoxy) area on this layer in M100 (1-color spot).',
   },
 }
 
