@@ -12,6 +12,7 @@
 //   인증/비SEO → 정적 프리렌더 제외.
 export const dynamic = 'force-dynamic'
 
+import { useEffect, useState } from 'react'
 import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
 import { OrderVerificationPanel } from '@/components/OrderVerificationPanel'
 
@@ -135,6 +136,193 @@ function buildPanelData(spec: TestSpec) {
   }
 }
 
+// ─── OMO-3241 ③ 매트릭스 vs 현행가 대조(parity) ───────────────────────
+type MatrixCoverage = {
+  categoryCode: string
+  productSlug: string | null
+  routed: boolean
+  cells: number
+  sampled: number
+  interpolated: number
+  qtyRange: [number, number]
+  sizeCount: number
+  paperCount: number
+  printColorTypes: string[]
+  representative: {
+    combo: string
+    qty: number
+    matrixWholesaleKrw: number
+    source: string
+    matrixCustomerUsd: number | null
+    currentCustomerUsd: number | null
+    deltaPct: number | null
+  } | null
+}
+type MatrixParity = {
+  generatedAt: string
+  rate: number
+  routedCategories: string[]
+  totalCells: number
+  coverage: MatrixCoverage[]
+  recentRuns: Array<{
+    id: string
+    started_at: string
+    status: string
+    sampled_count: number
+    interpolated_count: number
+    drift_detected: boolean
+    error: string | null
+  }>
+}
+
+function MatrixParitySection() {
+  const [data, setData] = useState<MatrixParity | null>(null)
+  const [err, setErr] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/admin/qa/matrix-parity')
+      .then(async (r) => {
+        if (!r.ok) throw new Error((await r.json().catch(() => ({}))).error ?? `HTTP ${r.status}`)
+        return r.json()
+      })
+      .then(setData)
+      .catch((e) => setErr(e.message))
+  }, [])
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+        ④ 매트릭스 vs 현행가 대조 — 멀티사이즈/디지털/토너 (OMO-3241)
+      </h2>
+      <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded p-3 leading-relaxed">
+        <strong>컷오버 게이트:</strong> 멀티사이즈/디지털/토너는 성원 json_data 가 size 를 무시(전 size 동일가)해
+        라이브 가격경로로 정확한 단가를 못 낸다 → 오프라인 크롤러가 hidden total_price 를 표집해
+        <code className="px-1 bg-gray-100 rounded">print_swadpia_price_matrix</code> 에 적재(OMO-3240). 아래는
+        <strong> 현행 고객가(base_price_krw×margin)</strong> 대비 <strong>매트릭스 도매가×margin</strong> 의 델타다.
+        라이브 가격 변경(회귀 리스크)이므로 parity 확인 + 보드 승인 + <code className="px-1 bg-gray-100 rounded">SWADPIA_MATRIX_ROUTING=on</code>
+        후에만 컷오버한다(플래그 OFF=현행 유지).
+      </div>
+
+      {err && <div className="text-sm text-red-600">대조 데이터 로드 실패: {err}</div>}
+      {!data && !err && <div className="text-sm text-gray-400">대조 데이터 로딩 중…</div>}
+
+      {data && (
+        <>
+          <div className="text-xs text-gray-500">
+            적재 셀 {data.totalCells.toLocaleString()}개 · 라우팅 대상 {data.routedCategories.length}종 ·
+            기준환율 ₩{data.rate}/USD · 생성 {new Date(data.generatedAt).toLocaleString()}
+          </div>
+          <div className="overflow-x-auto border rounded-lg">
+            <table className="w-full text-xs">
+              <thead className="bg-gray-50 text-gray-600">
+                <tr>
+                  <th className="px-2 py-2 text-left">카테고리</th>
+                  <th className="px-2 py-2 text-right">셀</th>
+                  <th className="px-2 py-2 text-right">size·용지·인쇄</th>
+                  <th className="px-2 py-2 text-right">qty 범위</th>
+                  <th className="px-2 py-2 text-right">대표 qty</th>
+                  <th className="px-2 py-2 text-right">현행가</th>
+                  <th className="px-2 py-2 text-right">매트릭스가</th>
+                  <th className="px-2 py-2 text-right">델타</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.coverage.map((c) => {
+                  const rep = c.representative
+                  const delta = rep?.deltaPct
+                  const deltaColor =
+                    delta == null
+                      ? 'text-gray-400'
+                      : Math.abs(delta) < 5
+                      ? 'text-gray-600'
+                      : Math.abs(delta) < 25
+                      ? 'text-amber-600'
+                      : 'text-red-600 font-semibold'
+                  return (
+                    <tr key={c.categoryCode} className="border-t">
+                      <td className="px-2 py-2">
+                        <div className="font-mono text-gray-800">{c.categoryCode}</div>
+                        <div className="text-gray-400">{c.productSlug ?? '—'}</div>
+                      </td>
+                      <td className="px-2 py-2 text-right">
+                        {c.cells}
+                        {c.interpolated > 0 && (
+                          <span className="text-gray-400"> ({c.interpolated} interp)</span>
+                        )}
+                      </td>
+                      <td className="px-2 py-2 text-right text-gray-500">
+                        {c.sizeCount}·{c.paperCount}·{c.printColorTypes.filter(Boolean).length || 1}
+                      </td>
+                      <td className="px-2 py-2 text-right text-gray-500">
+                        {c.qtyRange[0]}–{c.qtyRange[1]}
+                      </td>
+                      <td className="px-2 py-2 text-right">{rep?.qty ?? '—'}</td>
+                      <td className="px-2 py-2 text-right">
+                        {rep?.currentCustomerUsd != null ? `$${rep.currentCustomerUsd}` : '—'}
+                      </td>
+                      <td className="px-2 py-2 text-right">
+                        {rep?.matrixCustomerUsd != null ? `$${rep.matrixCustomerUsd}` : '—'}
+                        {rep && rep.source !== 'sampled' && (
+                          <span className="text-gray-400"> ({rep.source})</span>
+                        )}
+                      </td>
+                      <td className={`px-2 py-2 text-right ${deltaColor}`}>
+                        {delta == null ? '—' : `${delta > 0 ? '+' : ''}${delta}%`}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="text-xs text-gray-500">
+            <strong>판정:</strong> 델타 &lt;5% 회색(무시가능) · 5–25% 주황(검토) · ≥25% 빨강(컷오버 시 큰 가격이동, 보드 확인 필수).
+            현행가는 단일 base_price_krw 라 size/qty 미반영 → 매트릭스 컷오버가 곧 size/qty 정확가 도입이다.
+          </div>
+
+          <div className="border rounded-lg overflow-hidden">
+            <div className="bg-gray-50 px-3 py-2 text-xs font-medium text-gray-700 border-b">
+              최근 크롤 런 (드리프트 안전망 — 크롤≠화면 차단)
+            </div>
+            <table className="w-full text-xs">
+              <thead className="bg-white text-gray-500">
+                <tr>
+                  <th className="px-2 py-1 text-left">시각</th>
+                  <th className="px-2 py-1 text-left">상태</th>
+                  <th className="px-2 py-1 text-right">sampled</th>
+                  <th className="px-2 py-1 text-right">interp</th>
+                  <th className="px-2 py-1 text-left">drift</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.recentRuns.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-2 py-2 text-gray-400">
+                      크롤 런 기록 없음
+                    </td>
+                  </tr>
+                )}
+                {data.recentRuns.map((run) => (
+                  <tr key={run.id} className="border-t">
+                    <td className="px-2 py-1">{new Date(run.started_at).toLocaleString()}</td>
+                    <td className="px-2 py-1">{run.status}</td>
+                    <td className="px-2 py-1 text-right">{run.sampled_count}</td>
+                    <td className="px-2 py-1 text-right">{run.interpolated_count}</td>
+                    <td className={`px-2 py-1 ${run.drift_detected ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>
+                      {run.drift_detected ? '⚠️ drift' : 'ok'}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
+    </section>
+  )
+}
+
 export default function SwadpiaParityQaPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
@@ -192,9 +380,11 @@ export default function SwadpiaParityQaPage() {
         )
       })}
 
+      <MatrixParitySection />
+
       <footer className="text-xs text-gray-400 border-t pt-4">
         증거 아티팩트: scripts/test-artifacts/omo2903/ (option-linkage / finishing-transform / db-option-linkage).
-        파리티 기준: OMO-2902 parity-report.md.
+        파리티 기준: OMO-2902 parity-report.md · 매트릭스 라우팅: OMO-3241 / 적재 OMO-3240 / 오라클 OMO-3239.
       </footer>
     </div>
   )
