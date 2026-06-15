@@ -13,7 +13,7 @@ import {
   AlertTriangle, CheckCircle, XCircle, FlipHorizontal2, X,
   ZoomIn, ZoomOut, Maximize2, Copy, Grid3x3, Group, Ungroup, Loader2,
   AlignVerticalJustifyStart, AlignVerticalJustifyCenter, AlignVerticalJustifyEnd,
-  Monitor, Upload, Sparkles, SlidersHorizontal, Shapes, MoreHorizontal,
+  Monitor, Upload, Sparkles, SlidersHorizontal, Shapes,
 } from 'lucide-react'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { FINISHING_BY_VALUE, ELEMENT_FINISH_KINDS, DEFAULT_FOIL_SPOT_COLOR, type FinishKind } from '@/config/finishing-catalog'
@@ -40,7 +40,7 @@ interface PreflightResult {
   message: string
 }
 
-// OMO-2328: 통합 Pre-flight 이슈
+// OMO-2328: Unified pre-flight issue
 interface PreflightIssue {
   level: 'block' | 'warn'
   category: 'required' | 'low_dpi' | 'safe_area' | 'empty_canvas'
@@ -55,7 +55,7 @@ interface ImageQuality {
   fileBytes: number
 }
 
-// OMO-2705: 오브젝트 data.finish 모델 — 요소 단위 후가공 지정.
+// OMO-2705: Object data.finish model — per-element finishing assignment.
 interface FinishData {
   kind: FinishKind
   spotColor: string
@@ -68,7 +68,7 @@ interface LayerInfo {
   visible: boolean
   locked: boolean
   imageQuality?: ImageQuality
-  /** OMO-2705: 켜진 후가공 (없으면 undefined). 사진(image)에는 적용 불가. */
+  /** OMO-2705: Active finishing (undefined if none). Cannot be applied to photos (image). */
   finish?: FinishData
 }
 
@@ -133,16 +133,16 @@ interface SelectedProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 //
-// 새 템플릿 추가 가이드라인
-// 1) TEMPLATE_CATALOG에 { name, category, bg, description, products: [slug] } 추가
-//    - BN = banners, PB = premium_business_cards, BC = 명함 공용, ST/DC = 스티커, PC = 엽서
-//    - 신규 카테고리는 TemplateCategory 타입 + TEMPLATE_CATEGORY_LABELS에도 추가
-// 2) REQUIRED_FIELDS에 제품 fieldKey 스키마 정의 (사이드 패널 ↔ 캔버스 바인딩)
-// 3) buildTemplate()에 name 분기 추가
-//    - mm 좌표는 mmToPx(mm, scale) 변환 후 사용
-//    - 텍스트 박스: addTextbox(canvas, fabric, text, x, y, width, options)
-//    - data.fieldKey를 REQUIRED_FIELDS의 key와 일치시켜야 즉시반영 작동
-// 4) products 배열이 비어 있는 템플릿은 모든 페이지에 노출됨 (범용)
+// Guidelines for adding a new template
+// 1) Add { name, category, bg, description, products: [slug] } to TEMPLATE_CATALOG
+//    - BN = banners, PB = premium_business_cards, BC = shared business cards, ST/DC = stickers, PC = postcards
+//    - For a new category, also add it to the TemplateCategory type + TEMPLATE_CATEGORY_LABELS
+// 2) Define the product fieldKey schema in REQUIRED_FIELDS (side panel <-> canvas binding)
+// 3) Add a name branch to buildTemplate()
+//    - mm coordinates are used after mmToPx(mm, scale) conversion
+//    - Text box: addTextbox(canvas, fabric, text, x, y, width, options)
+//    - data.fieldKey must match the key in REQUIRED_FIELDS for live updates to work
+// 4) Templates with an empty products array are shown on all pages (universal)
 
 const PRODUCT_DIMS: Record<string, EditorDimensions> = {
   business_cards:          { widthMm: 85,  heightMm: 55,  bleedMm: 3, safeMm: 3 },
@@ -158,8 +158,8 @@ const PRODUCT_DIMS: Record<string, EditorDimensions> = {
 const DEFAULT_DIMS: EditorDimensions = { widthMm: 85, heightMm: 55, bleedMm: 3, safeMm: 3 }
 
 // ─── Required fields per product ──────────────────────────────────────────────
-// 제품별 Required 입력 필드. 사용자가 입력하면 캔버스의 data.fieldKey가 일치하는
-// Textbox에 즉시 반영된다. 빈 캔버스에서는 신규 텍스트 박스가 자동 생성된다.
+// Required input fields per product. When the user types, the change is applied
+// instantly to the Textbox whose canvas data.fieldKey matches. On an empty canvas, a new text box is auto-created.
 
 const REQUIRED_FIELDS: Record<string, FieldDef[]> = {
   business_cards: [
@@ -301,39 +301,39 @@ const BR = ['brochures']
 const PO = ['posters']
 
 const TEMPLATE_CATALOG: TemplateDef[] = [
-  // ── Business / Professional (명함)
+  // ── Business / Professional (business cards)
   { name: 'Classic',            category: 'business',    bg: '#ffffff', description: 'Traditional layout',       products: BC },
   { name: 'Corporate',          category: 'business',    bg: '#0f172a', description: 'Dark professional',        products: BC },
   { name: 'Executive',          category: 'business',    bg: '#ffffff', description: 'Elegant & formal',         products: BC },
   { name: 'Law Firm',           category: 'business',    bg: '#1c2a40', description: 'Dark navy, gold serif',    products: BC },
   { name: 'Consultant',         category: 'business',    bg: '#ffffff', description: 'Clean blue accent',        products: BC },
   { name: 'Finance',            category: 'business',    bg: '#0d1b2a', description: 'Midnight, gold stripe',    products: BC },
-  // ── Minimal (명함)
+  // ── Minimal (business cards)
   { name: 'Blank',              category: 'minimal',     bg: '#ffffff', description: 'Start from scratch',       products: BC },
   { name: 'Minimal',            category: 'minimal',     bg: '#ffffff', description: 'Clean & simple',           products: BC },
   { name: 'Dark',               category: 'minimal',     bg: '#1a1a1a', description: 'Dark with accent',         products: BC },
   { name: 'Mono',               category: 'minimal',     bg: '#f5f5f5', description: 'Pure monochrome',          products: BC },
-  // ── Creative (명함)
+  // ── Creative (business cards)
   { name: 'Bold',               category: 'creative',    bg: '#4f46e5', description: 'Vibrant accent',           products: BC },
   { name: 'Creative',           category: 'creative',    bg: '#fef3c7', description: 'Warm tone',                products: BC },
   { name: 'Photographer',       category: 'creative',    bg: '#111111', description: 'Dark portfolio',           products: BC },
   { name: 'Artist',             category: 'creative',    bg: '#ffffff', description: 'Gallery white',            products: BC },
-  // ── Food & Hospitality (명함)
+  // ── Food & Hospitality (business cards)
   { name: 'Restaurant',         category: 'food',        bg: '#7b1d1d', description: 'Warm deep red',            products: BC },
   { name: 'Cafe',               category: 'food',        bg: '#3b1f0a', description: 'Coffee & cream',           products: BC },
   { name: 'Bakery',             category: 'food',        bg: '#fdf6e3', description: 'Soft warm beige',          products: BC },
-  // ── Health & Wellness (명함)
+  // ── Health & Wellness (business cards)
   { name: 'Medical',            category: 'health',      bg: '#f0f9ff', description: 'Clean clinical blue',      products: BC },
   { name: 'Fitness',            category: 'health',      bg: '#0f172a', description: 'Bold energy orange',       products: BC },
   { name: 'Beauty Spa',         category: 'health',      bg: '#fff1f2', description: 'Soft rose & gold',         products: BC },
-  // ── Technology (명함)
+  // ── Technology (business cards)
   { name: 'Tech Startup',       category: 'tech',        bg: '#0f0f23', description: 'Dark gradient purple',     products: BC },
   { name: 'Developer',          category: 'tech',        bg: '#0d1117', description: 'Terminal dark',            products: BC },
-  // ── Real Estate & Architecture (명함)
+  // ── Real Estate & Architecture (business cards)
   { name: 'Realtor',            category: 'realestate',  bg: '#ffffff', description: 'Gold prestige',            products: BC },
   { name: 'Architect',          category: 'realestate',  bg: '#f8f8f8', description: 'Minimal grid lines',       products: BC },
 
-  // ══ 신규 명함 +20 ════════════════════════════════════════════════════════════
+  // ══ New business cards +20 ════════════════════════════════════════════════════
   // ── Business +5
   { name: 'Event Planner',      category: 'business',    bg: '#2d1b69', description: 'Deep purple & gold',       products: BC },
   { name: 'Travel Agent',       category: 'business',    bg: '#0c4a6e', description: 'Sky blue horizon',         products: BC },
@@ -361,7 +361,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Real Estate v2',     category: 'realestate',  bg: '#1e293b', description: 'Dark slate prestige',      products: BC },
   { name: 'Tutor',              category: 'minimal',     bg: '#ffffff', description: 'Clean academic white',      products: BC },
 
-  // ══ 스티커 10 (70×70mm) ══════════════════════════════════════════════════════
+  // ══ Stickers 10 (70×70mm) ════════════════════════════════════════════════════
   { name: 'Logo Round',         category: 'sticker',     bg: '#ffffff', description: '',            products: ST },
   { name: 'Quote Square',       category: 'sticker',     bg: '#fef9c3', description: '',          products: ST },
   { name: 'Brand Badge',        category: 'sticker',     bg: '#1e293b', description: '',            products: ST },
@@ -373,7 +373,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Sale Badge',         category: 'sticker',     bg: '#7c3aed', description: '',              products: ST },
   { name: 'Minimal Label',      category: 'sticker',     bg: '#f8fafc', description: '',            products: ST },
 
-  // ══ 도무송 스티커 8 (70×70mm, 비정형 컷) ════════════════════════════════════
+  // ══ Die-cut stickers 8 (70×70mm, irregular cut) ════════════════════════════════
   { name: 'Circle Logo',        category: 'sticker',     bg: '#ffffff', description: '',    products: DC },
   { name: 'Heart Love',         category: 'sticker',     bg: '#fdf2f8', description: '',          products: DC },
   { name: 'Star Badge',         category: 'sticker',     bg: '#fef9c3', description: '',              products: DC },
@@ -383,7 +383,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Character Card',     category: 'sticker',     bg: '#faf5ff', description: '',          products: DC },
   { name: 'Hexagon Label',      category: 'sticker',     bg: '#f0f9ff', description: '',          products: DC },
 
-  // ══ 엽서 10 (152×102mm 가로) ════════════════════════════════════════════════
+  // ══ Postcards 10 (152×102mm landscape) ══════════════════════════════════════
   { name: 'Greeting Card',      category: 'postcard',    bg: '#fff7ed', description: '',            products: PC },
   { name: 'Invitation',         category: 'postcard',    bg: '#1e1b4b', description: '',               products: PC },
   { name: 'Thank You Note',     category: 'postcard',    bg: '#fdf2f8', description: '',            products: PC },
@@ -395,7 +395,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Farewell Card',      category: 'postcard',    bg: '#fafafa', description: '',              products: PC },
   { name: 'Congrats Card',      category: 'postcard',    bg: '#fefce8', description: '',              products: PC },
 
-  // ══ 배너 8 (200×300mm, 세로형) ══════════════════════════════════════════════
+  // ══ Banners 8 (200×300mm, portrait) ════════════════════════════════════════
   { name: 'Banner Grand Open',  category: 'banner', bg: '#1e40af', description: 'Blue grand opening', products: BN },
   { name: 'Banner Big Sale',    category: 'banner', bg: '#dc2626', description: 'Red bold sale',       products: BN },
   { name: 'Banner Green Event', category: 'banner', bg: '#065f46', description: 'Forest green event',  products: BN },
@@ -405,7 +405,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Banner Seasonal',    category: 'banner', bg: '#fef3c7', description: 'Warm seasonal',       products: BN },
   { name: 'Banner Season Sale', category: 'banner', bg: '#831843', description: 'Deep pink season sale', products: BN },
 
-  // ══ 고급명함 8 (85×55mm, 고급 마감) ════════════════════════════════════════
+  // ══ Premium business cards 8 (85×55mm, premium finish) ════════════════════════
   { name: 'Luxe Black',          category: 'luxury',      bg: '#0a0a0a', description: '',           products: PB },
   { name: 'Gold Stamp',          category: 'luxury',      bg: '#1a1203', description: '',        products: PB },
   { name: 'Marble Edge',         category: 'luxury',      bg: '#f8f8f8', description: '',          products: PB },
@@ -415,7 +415,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Rose Gold Foil',      category: 'luxury',      bg: '#2d1515', description: '',         products: PB },
   { name: 'Minimal Noir',        category: 'luxury',      bg: '#f5f5f0', description: '',     products: PB },
 
-  // ══ 전단지 12 (148×210mm A5 세로) ════════════════════════════════════════════
+  // ══ Flyers 12 (148×210mm A5 portrait) ════════════════════════════════════════
   { name: 'Flyer Open Event',    category: 'flyer',       bg: '#ff6b00', description: '',         products: FY },
   { name: 'Flyer Season Sale',   category: 'flyer',       bg: '#1d4ed8', description: '',         products: FY },
   { name: 'Flyer Restaurant',    category: 'flyer',       bg: '#7b1d1d', description: '',            products: FY },
@@ -429,7 +429,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Flyer Promo',         category: 'flyer',       bg: '#dc2626', description: '',         products: FY },
   { name: 'Flyer Festival',      category: 'flyer',       bg: '#7c3aed', description: '',           products: FY },
 
-  // ══ 브로슈어 10 (148×210mm A5 세로) ══════════════════════════════════════════
+  // ══ Brochures 10 (148×210mm A5 portrait) ══════════════════════════════════════
   { name: 'Brochure Company',    category: 'brochure',    bg: '#0f172a', description: '',           products: BR },
   { name: 'Brochure Service',    category: 'brochure',    bg: '#f0fdfa', description: '',             products: BR },
   { name: 'Brochure Catalog',    category: 'brochure',    bg: '#1e293b', description: '',       products: BR },
@@ -441,7 +441,7 @@ const TEMPLATE_CATALOG: TemplateDef[] = [
   { name: 'Brochure IT',         category: 'brochure',    bg: '#0f0f23', description: '',               products: BR },
   { name: 'Brochure Legal',      category: 'brochure',    bg: '#1c2a40', description: '',           products: BR },
 
-  // ══ 포스터 12 (210×297mm A4 세로) ════════════════════════════════════════════
+  // ══ Posters 12 (210×297mm A4 portrait) ════════════════════════════════════════
   { name: 'Poster Concert',      category: 'poster',      bg: '#0d0d0d', description: '',           products: PO },
   { name: 'Poster Exhibition',   category: 'poster',      bg: '#fafafa', description: '',          products: PO },
   { name: 'Poster Movie',        category: 'poster',      bg: '#1a0a2e', description: '',          products: PO },
@@ -579,8 +579,8 @@ async function loadGoogleFont(fontName: string): Promise<void> {
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
 
-// 일러스트레이터식 페이스트보드(대지 밖 작업영역) 여백 — 대지 밖에 둔 오브젝트도
-// 잘리지 않고 보이도록 캔버스를 이만큼 더 키운다. (mm 단위, 대지 사방)
+// Illustrator-style pasteboard (work area outside the artboard) margin — enlarge the
+// canvas by this much so objects placed outside the artboard stay visible and uncut. (mm units, on all sides of the artboard)
 const PASTEBOARD_MM = 24
 
 function getScale(dims: EditorDimensions): number {
@@ -614,8 +614,8 @@ function calcImageQuality(imgObj: any, scale: number, fileBytes = 0): ImageQuali
   return { dpi, level, originalWidth: nw, originalHeight: nh, fileBytes }
 }
 
-// 다운로드 파일 식별 코드: YYMMDD-HHMM-RAND4 (예: 260605-1438-K3F9)
-// 동일 디자인을 여러 번 받아도 시점·랜덤 토큰으로 파일을 구별할 수 있게 한다.
+// Download file identifier code: YYMMDD-HHMM-RAND4 (e.g. 260605-1438-K3F9)
+// Lets files be distinguished by timestamp and random token even when the same design is downloaded multiple times.
 function generateDownloadCode() {
   const now = new Date()
   const yy = (now.getFullYear() % 100).toString().padStart(2, '0')
@@ -638,7 +638,7 @@ export default function EditorClient({ product, options }: Props) {
   const searchParams = useSearchParams()
   const dims = PRODUCT_DIMS[product.category] ?? DEFAULT_DIMS
   const scale = getScale(dims)
-  // 페이스트보드 포함 — 대지(트림+블리드) 사방에 PASTEBOARD_MM 여백.
+  // Includes pasteboard — PASTEBOARD_MM margin on all sides of the artboard (trim + bleed).
   const canvasW = Math.round(mmToPx(dims.widthMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM, scale))
   const canvasH = Math.round(mmToPx(dims.heightMm + 2 * dims.bleedMm + 2 * PASTEBOARD_MM, scale))
 
@@ -664,13 +664,12 @@ export default function EditorClient({ product, options }: Props) {
   const [selectedProps, setSelectedProps] = useState<SelectedProps | null>(null)
   const [tool, setTool] = useState<'select' | 'text' | 'rect' | 'image'>('select')
   const [activePanel, setActivePanel] = useState<'layers' | 'templates' | 'shapes' | 'properties' | 'yourinfo' | 'finishes'>('yourinfo')
-  // OMO-2708: 좌측 아이콘 레일의 "More" 오버플로 팝오버
-  const [railMoreOpen, setRailMoreOpen] = useState(false)
+  // OMO-2708: "More" overflow popover on the left icon rail
   const productFields = REQUIRED_FIELDS[product.category] ?? DEFAULT_REQUIRED_FIELDS
   const allFormFields: (FieldDef & { required: boolean })[] =
     productFields.map(f => ({ ...f, required: f.required ?? true }))
   const [bgColor, setBgColor] = useState('#ffffff')
-  // 줌/팬 (일러스트식 작업영역)
+  // Zoom/pan (Illustrator-style work area)
   const [zoom, setZoom] = useState(1)
   const [showGrid, setShowGrid] = useState(false)
   const [bgRemoving, setBgRemoving] = useState(false)
@@ -696,7 +695,7 @@ export default function EditorClient({ product, options }: Props) {
   const [templateCategory, setTemplateCategory] = useState<TemplateCategory | 'all'>('all')
   const [templateSearch, setTemplateSearch] = useState('')
 
-  // 통합 필드 값 (Required + Optional 통합 패널)
+  // Unified field values (Required + Optional unified panel)
   const [fieldValues, setFieldValues] = useState<Record<string, string>>(() => {
     const init: Record<string, string> = {}
     for (const f of allFormFields) init[f.key] = ''
@@ -726,22 +725,68 @@ export default function EditorClient({ product, options }: Props) {
   const [touchedFields, setTouchedFields] = useState<Set<string>>(new Set())
   const missingInfoPanelRef = useRef<HTMLDivElement>(null)
 
-  // OMO-2328: 통합 Pre-flight 모달
+  // OMO-2328: Unified pre-flight modal
   const [showPreflightModal, setShowPreflightModal] = useState(false)
   const [preflightIssues, setPreflightIssues] = useState<PreflightIssue[]>([])
   const [preflightAcknowledged, setPreflightAcknowledged] = useState<Set<string>>(new Set())
   const fieldInputRefs = useRef<Record<string, HTMLInputElement | HTMLTextAreaElement | null>>({})
 
-  // OMO-2325: Custom fields (동적 추가/삭제)
+  // OMO-2325: Custom fields (dynamic add/remove)
   const [customFields, setCustomFields] = useState<CustomField[]>([])
 
+  // OMO-2617: Mobile fallback — the editor is a desktop-only layout, so it gets cut off at narrow widths.
+  // On mobile viewports we surface a "desktop recommended" notice + a direct print-file upload -> straight-to-order path.
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileUploading, setMobileUploading] = useState(false)
+  const [mobileUploadError, setMobileUploadError] = useState('')
+  const mobileFileInputRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !window.matchMedia) return
+    const mq = window.matchMedia('(max-width: 767px)')
+    const update = () => setIsMobile(mq.matches)
+    update()
+    mq.addEventListener('change', update)
+    return () => mq.removeEventListener('change', update)
+  }, [])
+
+  async function handleMobileDirectUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-selecting the same file
+    if (!file) return
+    setMobileUploading(true)
+    setMobileUploadError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file, file.name)
+      const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
+      const data = await uploadRes.json()
+      if (uploadRes.ok && data.fileId) {
+        const optionParams = new URLSearchParams()
+        for (const opt of options) {
+          const val = searchParams.get(opt.option_type)
+          if (val) optionParams.set(opt.option_type, val)
+        }
+        const optStr = optionParams.toString()
+        window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
+      } else {
+        setMobileUploading(false)
+        setMobileUploadError(data.error || 'Upload failed. Please try again.')
+      }
+    } catch {
+      setMobileUploading(false)
+      setMobileUploadError('Something went wrong. Please try again.')
+    }
+  }
+
   function getMissingRequired(values: Record<string, string>) {
-    // 인쇄물의 진실은 캔버스다. 폼이 비어 있어도 캔버스의 해당 필드 텍스트가 차 있으면
-    // 충족으로 본다. 또 디자인에 존재하지 않는 필드(예: 명함 템플릿엔 company/phone 없음)는
-    // 강제하지 않는다 — 그렇지 않으면 모든 템플릿 주문이 막힌다.
+    // The canvas is the source of truth for the printed piece. Even if the form is empty, a field
+    // counts as satisfied if its corresponding field text is filled on the canvas. Fields that don't
+    // exist in the design (e.g. business card templates have no company/phone) are not enforced —
+    // otherwise every template order would be blocked.
     const canvas = fabricRef.current
-    const filledKeys = new Set<string>()   // 캔버스에 텍스트가 차 있는 필드
-    const presentKeys = new Set<string>()  // 캔버스에 존재하는 필드(비어 있어도)
+    const filledKeys = new Set<string>()   // fields with text filled on the canvas
+    const presentKeys = new Set<string>()  // fields present on the canvas (even if empty)
     if (canvas) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       canvas.getObjects().forEach((o: any) => {
@@ -754,14 +799,14 @@ export default function EditorClient({ product, options }: Props) {
     return allFormFields
       .filter(f => f.required)
       .filter(f => {
-        if (values[f.key]?.trim()) return false   // 폼에 입력됨 → 충족
-        if (filledKeys.has(f.key)) return false    // 캔버스에 텍스트 있음 → 충족
-        return presentKeys.has(f.key)              // 디자인에 있으나 비어 있음 → 누락. 없으면 강제 안 함
+        if (values[f.key]?.trim()) return false   // entered in the form → satisfied
+        if (filledKeys.has(f.key)) return false    // has text on the canvas → satisfied
+        return presentKeys.has(f.key)              // present in the design but empty → missing. Not enforced if absent
       })
       .map(f => ({ key: f.key, label: f.label }))
   }
 
-  // ── OMO-2325: Custom field 캔버스 동기화 ──────────────────────────────────
+  // ── OMO-2325: Custom field canvas sync ──────────────────────────────────
 
   async function applyCustomFieldToCanvas(field: CustomField) {
     const fabric = fabricModRef.current ?? await import('fabric')
@@ -777,7 +822,7 @@ export default function EditorClient({ product, options }: Props) {
       obj.set('text', field.value || `[${field.label || field.id}]`)
       if (field.label && obj.data) obj.data.name = field.label || field.id
     } else if (field.value || field.label) {
-      // 빈 캔버스에 신규 생성 — 기존 커스텀 박스 갯수 기반으로 배치
+      // Create new on an empty canvas — position based on the number of existing custom boxes
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const existingCustomCount = canvas.getObjects().filter((o: any) => o.data?.isCustom).length
       const top = bl + mmToPx(8 + (allFormFields.length + existingCustomCount) * 8, scale)
@@ -977,7 +1022,7 @@ export default function EditorClient({ product, options }: Props) {
       const tag = (e.target as HTMLElement).tagName
       const typing = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT'
 
-      // Space = 일시적 핸드(팬) 툴 — 입력 중이 아닐 때만
+      // Space = temporary hand (pan) tool — only when not typing
       if (e.code === 'Space' && !typing) {
         if (!spaceDownRef.current) {
           spaceDownRef.current = true
@@ -989,7 +1034,7 @@ export default function EditorClient({ product, options }: Props) {
       }
       if (typing) return
 
-      // 방향키 넛지 — 선택 객체 이동 (Shift = 10px)
+      // Arrow-key nudge — move the selected object (Shift = 10px)
       if (e.key.startsWith('Arrow')) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const obj: any = canvas.getActiveObject()
@@ -1095,13 +1140,13 @@ export default function EditorClient({ product, options }: Props) {
     const trimH = mmToPx(dims.heightMm, scale)
     const safePx = mmToPx(dims.safeMm, scale)
 
-    // 페이스트보드(대지 밖 작업영역) — 캔버스 전체를 옅은 회색으로. 여기 둔 오브젝트도 보임.
+    // Pasteboard (work area outside the artboard) — fill the whole canvas light gray. Objects placed here stay visible.
     const pasteboard = new fabric.Rect({
       left: 0, top: 0, width: canvasW, height: canvasH,
       fill: '#eceef2', selectable: false, evented: false,
       data: { role: 'pasteboard' },
     })
-    // 대지 그림자 — 일러스트 느낌의 입체감
+    // Artboard shadow — Illustrator-style depth
     const artboardShadow = new fabric.Rect({
       left: padPx + mmToPx(1, scale), top: padPx + mmToPx(1, scale),
       width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
@@ -1109,7 +1154,7 @@ export default function EditorClient({ product, options }: Props) {
       fill: 'rgba(15,23,42,0.18)', selectable: false, evented: false,
       data: { role: 'pasteboard' },
     })
-    // 블리드(재단 여백) 영역 — 대지 안쪽, 재단되어 버려지는 구간
+    // Bleed (trim margin) area — inside the artboard, the region that gets cut and discarded
     const bleedBg = new fabric.Rect({
       left: padPx, top: padPx,
       width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
@@ -1122,7 +1167,7 @@ export default function EditorClient({ product, options }: Props) {
       fill: bg, selectable: false, evented: false,
       data: { role: 'trim-bg' },
     })
-    // 블리드 외곽선 — 대지 경계(잘리는 영역 포함)를 또렷하게 표시
+    // Bleed outline — clearly marks the artboard boundary (including the area that gets cut)
     const bleedBorder = new fabric.Rect({
       left: padPx, top: padPx,
       width: mmToPx(dims.widthMm + 2 * dims.bleedMm, scale),
@@ -1131,14 +1176,14 @@ export default function EditorClient({ product, options }: Props) {
       selectable: false, evented: false,
       data: { role: 'bleed-bg' },
     })
-    // 재단선(trim): 빨간 실선 — 이 선에서 재단됨
+    // Trim line: solid red — cut along this line
     const trimBorder = new fabric.Rect({
       left: trimX, top: trimY, width: trimW, height: trimH,
       fill: 'transparent', stroke: 'rgba(239,68,68,0.85)', strokeWidth: 1.5,
       selectable: false, evented: false,
       data: { role: 'trim-border' },
     })
-    // 안전 영역(safe zone): 파란 점선 — 텍스트/중요 요소는 이 안에
+    // Safe zone: blue dashed line — keep text and important elements inside this
     const safeBorder = new fabric.Rect({
       left: trimX + safePx, top: trimY + safePx,
       width: trimW - 2 * safePx, height: trimH - 2 * safePx,
@@ -1154,7 +1199,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.add(bleedBorder)
     canvas.add(trimBorder)
     canvas.add(safeBorder)
-    // 배경 스택 순서 (뒤 → 앞): pasteboard → shadow → bleed → trim → borders
+    // Background stack order (back -> front): pasteboard -> shadow -> bleed -> trim -> borders
     canvas.sendObjectToBack(safeBorder)
     canvas.sendObjectToBack(trimBorder)
     canvas.sendObjectToBack(bleedBorder)
@@ -1207,7 +1252,7 @@ export default function EditorClient({ product, options }: Props) {
     let snappedX = false
     let snappedY = false
 
-    // ── 대지 기준 스냅 (중앙/좌우/상하 가장자리) ──
+    // ── Snap to artboard (center / left-right / top-bottom edges) ──
     if (Math.abs(objL + objW / 2 - docCX) < snapPx) {
       obj.set('left', docCX - objW / 2)
       guides.push(vLine(docCX)); snappedX = true
@@ -1233,7 +1278,7 @@ export default function EditorClient({ product, options }: Props) {
       guides.push(hLine(trimY + trimH)); snappedY = true
     }
 
-    // ── 오브젝트 간 스마트 가이드 (다른 객체의 좌/중앙/우 · 상/중앙/하) ──
+    // ── Smart guides between objects (other objects' left/center/right and top/center/bottom) ──
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const others = canvas.getObjects().filter((o: any) =>
       o !== obj && !isBackground(o) && o.data?.role !== 'crop' && o.data?.role !== 'guide')
@@ -1244,7 +1289,7 @@ export default function EditorClient({ product, options }: Props) {
       const oT = o.top ?? 0
       const oW = o.getScaledWidth?.() ?? o.width ?? 0
       const oH = o.getScaledHeight?.() ?? o.height ?? 0
-      // X축: 좌-좌, 중앙-중앙, 우-우
+      // X axis: left-left, center-center, right-right
       const xPairs: [number, number][] = [
         [curL, oL], [curL + objW / 2, oL + oW / 2], [curL + objW, oL + oW],
       ]
@@ -1258,7 +1303,7 @@ export default function EditorClient({ product, options }: Props) {
           }
         }
       }
-      // Y축: 상-상, 중앙-중앙, 하-하
+      // Y axis: top-top, center-center, bottom-bottom
       const yPairs: [number, number][] = [
         [curT, oT], [curT + objH / 2, oT + oH / 2], [curT + objH, oT + oH],
       ]
@@ -1296,9 +1341,9 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  // 자동 생성 명함 템플릿 — 썸네일(TemplatePreview)과 동일한 공유 스펙
-  // (buildCardLayout)으로 fabric 객체를 구성한다. 두 렌더러가 같은 프리미티브
-  // 배열을 소비하므로 썸네일과 에디터가 좌표·텍스트까지 1:1로 일치한다.
+  // Auto-generated business card templates — build fabric objects from the same shared spec
+  // (buildCardLayout) used by the thumbnail (TemplatePreview). Both renderers consume the same
+  // primitive array, so the thumbnail and the editor match 1:1 down to coordinates and text.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function buildSpecTemplate(canvas: any, fabric: typeof import('fabric'), spec: GenTemplateDef) {
     const bl = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
@@ -1330,8 +1375,8 @@ export default function EditorClient({ product, options }: Props) {
         if (p.rotate) opts.angle = p.rotate
         canvas.add(new fabric.Rect(opts))
       } else if (p.kind === 'circle') {
-        // undefined 키를 넘기면 fabric.Circle 의 채움 원이 렌더되지 않는 사례가 있어,
-        // 정의된 키만 포함해 동작하는 수동 템플릿 원과 동일한 형태로 생성한다.
+        // Passing undefined keys can prevent fabric.Circle's filled circle from rendering, so
+        // build it the same way as the working manual-template circle, including only defined keys.
         const copts: Record<string, unknown> = {
           left: bl + mmToPx(p.cx - p.r, scale), top: bl + mmToPx(p.cy - p.r, scale),
           radius: mmToPx(p.r, scale),
@@ -1342,9 +1387,9 @@ export default function EditorClient({ product, options }: Props) {
         if (p.opacity != null) copts.opacity = p.opacity
         canvas.add(new fabric.Circle(copts))
       } else if (p.kind === 'poly') {
-        // fabric Polygon 은 점들을 자체 bbox 기준으로 정규화하므로, left/top 을 bl 로만
-        // 주면 (0,0)에서 시작하지 않는 도형(예: 우측 삼각형)이 좌상단으로 끌려온다.
-        // 점들의 최소 x·y 만큼 left/top 을 보정해 절대 좌표를 보존한다.
+        // fabric Polygon normalizes points relative to its own bbox, so setting left/top to just bl
+        // would pull a shape that doesn't start at (0,0) (e.g. a right-side triangle) to the top-left.
+        // Offset left/top by the points' minimum x/y to preserve absolute coordinates.
         const pxPts = p.pts.map(([x, y]) => ({ x: mmToPx(x, scale), y: mmToPx(y, scale) }))
         const minX = Math.min(...pxPts.map(pt => pt.x))
         const minY = Math.min(...pxPts.map(pt => pt.y))
@@ -1380,7 +1425,7 @@ export default function EditorClient({ product, options }: Props) {
       if (trimBg) trimBg.set('fill', bg)
     }
 
-    // 자동 생성 명함 템플릿 처리 → 스펙 기반 렌더 후 종료.
+    // Handle auto-generated business card templates → spec-based render, then return.
     const genSpec = GENERATED_TEMPLATE_MAP[name]
     if (genSpec) {
       buildSpecTemplate(canvas, fabric, genSpec)
@@ -1388,8 +1433,8 @@ export default function EditorClient({ product, options }: Props) {
       return
     }
 
-    // 수동 명함 템플릿도 동일한 공유 스펙으로 렌더 → 썸네일과 1:1 일치.
-    // (Classic·Corporate 등 기존 전용 디자인을 공유 레이아웃으로 통합)
+    // Manual business card templates also render from the same shared spec → 1:1 match with the thumbnail.
+    // (Consolidates legacy dedicated designs like Classic and Corporate into the shared layout.)
     const def = TEMPLATE_CATALOG.find(t => t.name === name)
     if (def && CARD_CATEGORIES.has(def.category)) {
       const colors = resolveCardColors({ ...def, bg })
@@ -1931,7 +1976,7 @@ export default function EditorClient({ product, options }: Props) {
         data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' },
       })
 
-    // ══ 신규 명함 +20 ═════════════════════════════════════════════════════════
+    // ══ New business cards +20 ════════════════════════════════════════════════
 
     } else if (name === 'Event Planner') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(3, scale), fill: '#f59e0b', data: { id: makeId(), name: 'Top Bar', layerType: 'rect' } }))
@@ -2079,7 +2124,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'Math & Science Tutor · Grade 7–12', bl + mmToPx(5, scale), bl + mmToPx(30, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#3b82f6', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
       addTextbox(canvas, fabric, 'minjae@academiapro.kr', bl + mmToPx(5, scale), bl + mmToPx(40, scale), mmToPx(70, scale), { fontSize: mmToPx(2.8, scale), fill: '#6b7280', data: { id: makeId(), name: 'Email', layerType: 'text', fieldKey: 'email' } })
 
-    // ══ 스티커 (70×70mm) ════════════════════════════════════════════════════════
+    // ══ Stickers (70×70mm) ══════════════════════════════════════════════════════
 
     } else if (name === 'Logo Round') {
       const cx = mmToPx(35, scale), cy = mmToPx(35, scale), r = mmToPx(30, scale)
@@ -2141,7 +2186,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'LABEL', bl + mmToPx(5, scale), bl + mmToPx(24, scale), mmToPx(60, scale), { fontSize: mmToPx(8, scale), fontWeight: 'bold', fill: '#111827', textAlign: 'center', charSpacing: 300, data: { id: makeId(), name: 'Label', layerType: 'text', fieldKey: 'headline' } })
       addTextbox(canvas, fabric, 'subtitle text', bl + mmToPx(5, scale), bl + mmToPx(46, scale), mmToPx(60, scale), { fontSize: mmToPx(4, scale), fill: '#9ca3af', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
 
-    // ══ 도무송 스티커 (70×70mm, 안전 영역 5mm) ══════════════════════════════════
+    // ══ Die-cut stickers (70×70mm, 5mm safe area) ══════════════════════════════════
     // safe zone: content within 10mm~60mm (x) and 10mm~60mm (y)
 
     } else if (name === 'Circle Logo') {
@@ -2194,7 +2239,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'LABEL', bl + mmToPx(10, scale), bl + mmToPx(22, scale), mmToPx(50, scale), { fontSize: mmToPx(7, scale), fontWeight: 'bold', fill: '#0c4a6e', textAlign: 'center', charSpacing: 150, data: { id: makeId(), name: 'Text', layerType: 'text', fieldKey: 'headline' } })
       addTextbox(canvas, fabric, 'product info', bl + mmToPx(10, scale), bl + mmToPx(45, scale), mmToPx(50, scale), { fontSize: mmToPx(4, scale), fill: '#0369a1', textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'sub' } })
 
-    // ══ 엽서 (152×102mm 가로) ═══════════════════════════════════════════════════
+    // ══ Postcards (152×102mm landscape) ═════════════════════════════════════════
     // Left half (image area): 0~76mm  Right half (text area): 76~152mm
     // fieldKey: greeting, body, signature
 
@@ -2271,9 +2316,9 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'CONGRATULATIONS', bl + mmToPx(8, scale), bl + mmToPx(45, scale), mmToPx(130, scale), { fontSize: mmToPx(4, scale), fontWeight: 'bold', fill: '#d97706', charSpacing: 200, textAlign: 'center', data: { id: makeId(), name: 'Sub', layerType: 'text', fieldKey: 'body' } })
       addTextbox(canvas, fabric, '', bl + mmToPx(8, scale), bl + mmToPx(76, scale), mmToPx(130, scale), { fontSize: mmToPx(3.5, scale), fill: '#b45309', textAlign: 'right', data: { id: makeId(), name: 'Sign', layerType: 'text', fieldKey: 'signature' } })
 
-    // ══ 배너 (200×300mm, 세로형) ════════════════════════════════════════════════
+    // ══ Banners (200×300mm, portrait) ══════════════════════════════════════════
     // safe zone: bleed 5mm. fieldKey: main, sub, date, contact
-    // y 좌표 = bleed + mm 값. 헤드라인은 큰 폰트 위주로 배치한다.
+    // y coordinate = bleed + mm value. Headlines are laid out mainly with large fonts.
 
     } else if (name === 'Banner Grand Open') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#1e40af', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
@@ -2341,9 +2386,9 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(175, scale), mmToPx(180, scale), { fontSize: mmToPx(7.5, scale), fill: '#f9a8d4', textAlign: 'center', data: { id: makeId(), name: 'Date', layerType: 'text', fieldKey: 'date' } })
       addTextbox(canvas, fabric, '02-0000-0000', bl + mmToPx(10, scale), bl + mmToPx(263, scale), mmToPx(180, scale), { fontSize: mmToPx(6.5, scale), fill: '#fbcfe8', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    // ══ 고급명함 (85×55mm, premium_business_cards) ════════════════════════════
-    // 럭셔리 마감 시뮬레이션. fieldKey: name, title, company, phone, email
-    // 좌표는 business_cards와 동일 스케일 (widthMm=85, heightMm=55)
+    // ══ Premium business cards (85×55mm, premium_business_cards) ══════════════════
+    // Luxury finish simulation. fieldKey: name, title, company, phone, email
+    // Coordinates use the same scale as business_cards (widthMm=85, heightMm=55)
 
     } else if (name === 'Luxe Black') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0a0a0a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
@@ -2414,7 +2459,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, 'Design Consultant', bl + mmToPx(12, scale), bl + mmToPx(31, scale), mmToPx(63, scale), { fontSize: mmToPx(2.8, scale), fill: '#666666', data: { id: makeId(), name: 'Title', layerType: 'text', fieldKey: 'title' } })
       addTextbox(canvas, fabric, 'hello@noir.studio  ·  010-0000-1234', bl + mmToPx(5, scale), bl + mmToPx(41, scale), mmToPx(75, scale), { fontSize: mmToPx(2.5, scale), fill: '#888888', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'email' } })
 
-    // ══ 전단지 (148×210mm A5) ══════════════════════════════════════════════════════
+    // ══ Flyers (148×210mm A5) ══════════════════════════════════════════════════════
 
     } else if (name === 'Flyer Open Event') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(55, scale), fill: '#ff6b00', data: { id: makeId(), name: 'Header', layerType: 'rect' } }))
@@ -2561,7 +2606,7 @@ export default function EditorClient({ product, options }: Props) {
       addTextbox(canvas, fabric, '', bl + mmToPx(10, scale), bl + mmToPx(175, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(4, scale), fill: '#ddd6fe', textAlign: 'center', data: { id: makeId(), name: 'Venue', layerType: 'text', fieldKey: 'venue' } })
       addTextbox(canvas, fabric, '02-1234-5678', bl + mmToPx(10, scale), bl + mmToPx(196, scale), mmToPx(dims.widthMm - 20, scale), { fontSize: mmToPx(3.8, scale), fill: '#c4b5fd', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    // ══ 브로슈어 (148×210mm A5) ══════════════════════════════════════════════════
+    // ══ Brochures (148×210mm A5) ══════════════════════════════════════════════════
 
     } else if (name === 'Brochure Company') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0f172a', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
@@ -2700,7 +2745,7 @@ export default function EditorClient({ product, options }: Props) {
       canvas.add(new fabric.Rect({ left: bl, top: bl + mmToPx(dims.heightMm - 28, scale), width: mmToPx(dims.widthMm, scale), height: mmToPx(28, scale), fill: '#1c2a40', data: { id: makeId(), name: 'Footer', layerType: 'rect' } }))
       addTextbox(canvas, fabric, '02-1234-5678  |  law@firm.kr', bl + mmToPx(8, scale), bl + mmToPx(dims.heightMm - 20, scale), mmToPx(dims.widthMm - 16, scale), { fontSize: mmToPx(3.5, scale), fill: '#b8860b', textAlign: 'center', data: { id: makeId(), name: 'Contact', layerType: 'text', fieldKey: 'contact' } })
 
-    // ══ 포스터 (210×297mm A4) ══════════════════════════════════════════════════════
+    // ══ Posters (210×297mm A4) ══════════════════════════════════════════════════════
 
     } else if (name === 'Poster Concert') {
       canvas.add(new fabric.Rect({ left: bl, top: bl, width: mmToPx(dims.widthMm, scale), height: mmToPx(dims.heightMm, scale), fill: '#0d0d0d', data: { id: makeId(), name: 'BG', layerType: 'rect' } }))
@@ -2883,7 +2928,7 @@ export default function EditorClient({ product, options }: Props) {
     })
   }
 
-  // ── 모든 필드 일괄 동기화 (Apply to design 버튼) ─────────────────────────
+  // ── Sync all fields at once (Apply to design button) ─────────────────────────
   async function applyAllFields(values: Record<string, string>) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
@@ -2902,7 +2947,7 @@ export default function EditorClient({ product, options }: Props) {
           if (o.set) o.set('text', val || `[${key}]`)
         })
       } else if (val) {
-        // 해당 fieldKey 박스 없을 때만 신규 생성
+        // Create new only when there is no box for this fieldKey
         const top = bl + mmToPx(8 + newBoxIdx * 8, scale)
         const fontSize = fieldDef.type === 'multiline'
           ? mmToPx(2.8, scale)
@@ -2926,7 +2971,7 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
-  // ── 필드 즉시 반영 (입력 시 캔버스 실시간 업데이트) ─────────────────────
+  // ── Apply field instantly (live canvas update as you type) ─────────────────────
   async function applyRequiredField(key: string, value: string) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const canvas = fabricRef.current
@@ -2943,7 +2988,7 @@ export default function EditorClient({ product, options }: Props) {
         if (o.set) o.set('text', value || fallback)
       })
     } else if (value) {
-      // 빈 캔버스에서 처음 입력하면 새 텍스트 박스 자동 생성
+      // On first input on an empty canvas, auto-create a new text box
       const orderIdx = allFormFields.findIndex(f => f.key === key)
       const top = bl + mmToPx(8 + Math.max(orderIdx, 0) * 8, scale)
       const fontSize = (def?.type === 'multiline')
@@ -3044,8 +3089,8 @@ export default function EditorClient({ product, options }: Props) {
         width: canvasW,
         height: canvasH,
         preserveObjectStacking: true,
-        // Retina 스케일링 활성화 — 고해상도(레티나) 화면에서 캔버스가 흐릿하게
-        // 보이던 문제 해결. devicePixelRatio 만큼 백킹 스토어를 키워 선명하게 렌더.
+        // Enable retina scaling — fixes the canvas looking blurry on high-resolution (retina)
+        // displays. Scales the backing store by devicePixelRatio for crisp rendering.
         enableRetinaScaling: true,
       })
       fabricRef.current = canvas
@@ -3055,8 +3100,8 @@ export default function EditorClient({ product, options }: Props) {
 
       // Load template from URL param or default to Classic
       const urlTemplate = searchParams.get('template')
-      // 자동 생성 템플릿(GENERATED_TEMPLATE_MAP)도 인정해야 함 — 누락 시 'Classic'으로
-      // 폴백되어 썸네일과 에디터 렌더가 완전히 달라지는 버그가 발생한다.
+      // Auto-generated templates (GENERATED_TEMPLATE_MAP) must also be recognized — otherwise it
+      // falls back to 'Classic', causing a bug where the thumbnail and editor renders differ entirely.
       const isKnownTemplate = !!urlTemplate &&
         (TEMPLATE_CATALOG.some(t => t.name === urlTemplate) || !!GENERATED_TEMPLATE_MAP[urlTemplate])
       const initialTemplate = isKnownTemplate ? (urlTemplate as string) : 'Classic'
@@ -3073,7 +3118,7 @@ export default function EditorClient({ product, options }: Props) {
       canvas.on('selection:updated', () => syncSelected(canvas))
       canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null) })
 
-      // OMO-2705: 박 오버레이 — 화면 ctx 에서만 그린다 (export ctx 는 제외).
+      // OMO-2705: Foil overlay — drawn only on the screen ctx (excludes the export ctx).
       canvas.on('after:render', (opt: { ctx?: CanvasRenderingContext2D }) => {
         const ctx = opt?.ctx
         if (!ctx || ctx !== canvas.getContext()) return
@@ -3130,7 +3175,7 @@ export default function EditorClient({ product, options }: Props) {
         opt.e.stopPropagation()
       })
 
-      // Space + drag 팬 (일러스트식 핸드 툴)
+      // Space + drag pan (Illustrator-style hand tool)
       canvas.on('mouse:down', (opt: { e: MouseEvent }) => {
         if (!spaceDownRef.current) return
         panningRef.current = true
@@ -3361,7 +3406,7 @@ export default function EditorClient({ product, options }: Props) {
     bgColorRef.current = bg
     buildTemplate(canvas, fabric, name, bg)
 
-    // Smart Fill: 이미 입력된 필드값을 새 템플릿 박스에 자동 반영
+    // Smart Fill: automatically apply already-entered field values to the new template's boxes
     for (const [key, val] of Object.entries(fieldValues)) {
       if (!val) continue
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3411,13 +3456,13 @@ export default function EditorClient({ product, options }: Props) {
     if (patch.textAlign !== undefined) obj.set('textAlign', patch.textAlign)
     if (patch.charSpacing !== undefined) obj.set('charSpacing', patch.charSpacing)
     if (patch.lineHeight !== undefined) obj.set('lineHeight', patch.lineHeight)
-    // 텍스트 아웃라인
+    // Text outline
     if (patch.textStroke !== undefined) obj.set('stroke', patch.textStroke)
     if (patch.textStrokeWidth !== undefined) {
       obj.set('strokeWidth', patch.textStrokeWidth)
       if (patch.textStrokeWidth > 0) obj.set('paintFirst', 'stroke')
     }
-    // 그림자
+    // Shadow
     if (patch.shadowEnabled !== undefined || patch.shadowColor !== undefined ||
         patch.shadowOffsetX !== undefined || patch.shadowOffsetY !== undefined ||
         patch.shadowBlur !== undefined) {
@@ -3472,8 +3517,8 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
-  // ── 이미지 배경 제거 (클라이언트 사이드 AI, @imgly/background-removal) ────────
-  // 모델은 첫 실행 시 브라우저에서 lazy 로드 (API 키 불필요).
+  // ── Image background removal (client-side AI, @imgly/background-removal) ────────
+  // The model lazy-loads in the browser on first run (no API key required).
 
   async function removeImageBackground() {
     const canvas = fabricRef.current
@@ -3497,16 +3542,16 @@ export default function EditorClient({ product, options }: Props) {
         el.onerror = reject
         el.src = url
       })
-      // 기존 위치/스케일/각도/필터 유지하며 src 교체
+      // Swap the src while keeping the existing position/scale/angle/filters
       img.setElement(newEl)
       img.applyFilters()
       void fabric
       canvas.requestRenderAll()
       syncLayers(canvas)
       saveHistory(canvas)
-      showUploadToast('배경을 제거했습니다.')
+      showUploadToast('Background removed.')
     } catch {
-      showUploadToast('배경 제거에 실패했습니다. 다시 시도해 주세요.')
+      showUploadToast('Background removal failed. Please try again.')
     } finally {
       setBgRemoving(false)
     }
@@ -3694,9 +3739,9 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
-  // ── OMO-2705: 요소 단위 후가공(박) ─────────────────────────────────────────
-  // Finishes 탭에서 요소 체크 → 오브젝트 data.finish on/off. 사진(raster)에는 박
-  // 금지 — 벡터/텍스트만 후가공 가능 (Done 기준 raster 가드).
+  // ── OMO-2705: Per-element finish (foil) ─────────────────────────────────────────
+  // Checking an element in the Finishes tab toggles object data.finish on/off. Foil is
+  // not allowed on photos (raster) — only vector/text can be finished (raster guard).
   function toggleElementFinish(id: string, kind: FinishKind = 'foil_stamp') {
     const canvas = fabricRef.current
     if (!canvas) return
@@ -3704,7 +3749,7 @@ export default function EditorClient({ product, options }: Props) {
     const obj = canvas.getObjects().find((o: any) => o.data?.id === id)
     if (!obj) return
     if (obj.type === 'image') {
-      showUploadToast('사진에는 박을 적용할 수 없어요 — 텍스트·도형 요소만 가능합니다.')
+      showUploadToast('Foil can\'t be applied to photos — only text and shape elements.')
       return
     }
     const cur = obj.data?.finish as FinishData | undefined
@@ -3715,8 +3760,8 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
-  // 박 켜진 오브젝트에 비파괴 금박 오버레이(시머 아웃라인) 렌더.
-  // after:render 에서 화면 ctx 에만 그린다 — 인쇄 export(toDataURL)에는 칠하지 않음.
+  // Render a non-destructive gold foil overlay (shimmer outline) on foil-enabled objects.
+  // Drawn only on the screen ctx in after:render — not painted into the print export (toDataURL).
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   function renderFinishOverlays(canvas: any, ctx: CanvasRenderingContext2D) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3736,10 +3781,10 @@ export default function EditorClient({ product, options }: Props) {
       ctx.lineTo(c[2].x, c[2].y)
       ctx.lineTo(c[3].x, c[3].y)
       ctx.closePath()
-      // 금박 틴트
+      // Gold foil tint
       ctx.fillStyle = 'rgba(212,175,55,0.20)'
       ctx.fill()
-      // 시머 아웃라인 — 외곽 골드 + 안쪽 밝은 점선
+      // Shimmer outline — outer gold + inner bright dashed
       ctx.lineJoin = 'round'
       ctx.setLineDash([])
       ctx.lineWidth = 2.5 / zoom
@@ -3805,13 +3850,13 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
-  // ── 줌 / 팬 컨트롤 ──────────────────────────────────────────────────────────
+  // ── Zoom / pan controls ──────────────────────────────────────────────────────────
 
   function applyZoom(targetZoom: number) {
     const canvas = fabricRef.current
     if (!canvas) return
     const z = Math.min(Math.max(targetZoom, 0.2), 5)
-    // 캔버스 중앙 기준 줌
+    // Zoom centered on the canvas
     canvas.zoomToPoint({ x: canvas.getWidth() / 2, y: canvas.getHeight() / 2 }, z)
     setZoom(z)
   }
@@ -3825,7 +3870,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.requestRenderAll()
   }
 
-  // ── 정렬 (대지 기준) ────────────────────────────────────────────────────────
+  // ── Alignment (relative to the artboard) ────────────────────────────────────────────────────────
 
   type AlignMode = 'left' | 'centerH' | 'right' | 'top' | 'centerV' | 'bottom'
   function alignToArtboard(mode: AlignMode) {
@@ -3854,7 +3899,7 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
-  // ── 선택 객체 복제 ──────────────────────────────────────────────────────────
+  // ── Duplicate selected object ──────────────────────────────────────────────────────────
 
   async function duplicateActive() {
     const canvas = fabricRef.current
@@ -3872,7 +3917,7 @@ export default function EditorClient({ product, options }: Props) {
     saveHistory(canvas)
   }
 
-  // ── 그리드 토글 ─────────────────────────────────────────────────────────────
+  // ── Grid toggle ─────────────────────────────────────────────────────────────
 
   async function toggleGrid() {
     const canvas = fabricRef.current
@@ -3880,11 +3925,11 @@ export default function EditorClient({ product, options }: Props) {
     const fabric = fabricModRef.current ?? await import('fabric')
     const next = !showGrid
     setShowGrid(next)
-    // 기존 그리드 제거
+    // Remove the existing grid
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     canvas.getObjects().filter((o: any) => o.data?.role === 'grid').forEach((o: object) => canvas.remove(o))
     if (!next) { canvas.requestRenderAll(); return }
-    // 대지(트림) 영역에 5mm 간격 그리드
+    // 5mm-spaced grid over the artboard (trim) area
     const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
@@ -3899,12 +3944,12 @@ export default function EditorClient({ product, options }: Props) {
       lines.push(new fabric.Line([trimX, y, trimX + trimW, y], { stroke: 'rgba(99,102,241,0.15)', strokeWidth: 1, selectable: false, evented: false, data: { role: 'grid' } }))
     }
     lines.forEach(l => { canvas.add(l); canvas.sendObjectToBack(l) })
-    // 배경(트림/블리드/페이스트보드)보다는 앞, 사용자 객체보다는 뒤로 — 트림bg 다음에 오도록 재정렬
+    // In front of the background (trim/bleed/pasteboard) but behind user objects — reorder to sit right after trim-bg
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const trimBg = canvas.getObjects().find((o: any) => o.data?.role === 'trim-bg')
     if (trimBg) {
       lines.forEach(l => canvas.sendObjectToBack(l))
-      // pasteboard/shadow/bleed/trimBg 를 그리드보다 뒤로 다시 보냄
+      // Send pasteboard/shadow/bleed/trimBg back behind the grid again
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const behind = canvas.getObjects().filter((o: any) => ['pasteboard', 'bleed-bg', 'trim-bg'].includes(o.data?.role))
       behind.forEach((o: object) => canvas.sendObjectToBack(o))
@@ -3912,7 +3957,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.requestRenderAll()
   }
 
-  // ── 그룹화 / 그룹해제 ───────────────────────────────────────────────────────
+  // ── Group / ungroup ───────────────────────────────────────────────────────
 
   function groupSelected() {
     const canvas = fabricRef.current
@@ -3944,8 +3989,8 @@ export default function EditorClient({ product, options }: Props) {
   // ── Export ────────────────────────────────────────────────────────────────
 
   // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
-  // 블리드 포함 영역(= trim + 2×bleed)을 export 한다. 인쇄소 재단 기준을 맞추기 위함.
-  // includeBleed=false 인 경우 trim만 export (PNG 미리보기 등 호환용).
+  // Exports the bleed-inclusive area (= trim + 2×bleed) to match the print shop's trim reference.
+  // When includeBleed=false, only the trim is exported (for PNG preview and similar compatibility).
   function getExportDataUrl(targetDpi = 150, includeBleed = true): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
@@ -3953,7 +3998,7 @@ export default function EditorClient({ product, options }: Props) {
     const padPx = mmToPx(PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
-    // 페이스트보드 오프셋만큼 크롭 시작점 이동 (대지 영역만 export).
+    // Shift the crop start by the pasteboard offset (export only the artboard area).
     const exportLeft = padPx + (includeBleed ? 0 : bleedPx)
     const exportTop = padPx + (includeBleed ? 0 : bleedPx)
     const exportW = includeBleed ? trimW + 2 * bleedPx : trimW
@@ -3986,9 +4031,10 @@ export default function EditorClient({ product, options }: Props) {
     return dataUrl
   }
 
-  // OMO-2706: M100 별색 후가공판 — data.finish 켜진 오브젝트만 단색 M100(C0 M100 Y0 K0)/
-  // 배경 백색으로 렌더. 크롭 지오메트리는 getExportDataUrl 와 픽셀 동일 → 디자인판과 정합 일치.
-  // 후가공 오브젝트가 없으면 '' 반환(별색판 미생성).
+  // OMO-2706: M100 spot finish plate — renders only objects with data.finish as solid M100
+  // (C0 M100 Y0 K0) on a white background. Crop geometry is pixel-identical to getExportDataUrl,
+  // so it registers exactly with the design plate.
+  // Returns '' when there are no finish objects (no spot plate generated).
   function getFinishPlateDataUrl(targetDpi = 300, includeBleed = true): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
@@ -3997,7 +4043,7 @@ export default function EditorClient({ product, options }: Props) {
     const finishObjs = objs.filter((o) => o.data?.finish && o.visible !== false)
     if (finishObjs.length === 0) return ''
 
-    // 원복용 상태 스냅샷
+    // State snapshot for restoring afterward
     const prevBg = canvas.backgroundColor
     const saved = objs.map((o) => ({
       o,
@@ -4010,18 +4056,18 @@ export default function EditorClient({ product, options }: Props) {
     const finishSet = new Set(finishObjs)
     for (const o of objs) {
       if (finishSet.has(o)) {
-        // 별색 실루엣: M100 단색 채움, 불투명, 그림자 제거(망점 방지 — 1도 스팟).
+        // Spot silhouette: solid M100 fill, opaque, shadow removed (avoids halftoning — 1-color spot).
         o.set({ opacity: 1, shadow: null })
         o.set('fill', M100_RGB_HEX)
         if (o.stroke) o.set('stroke', M100_RGB_HEX)
       } else {
-        // 디자인 요소·가이드(트림/블리드/세이프)는 별색판에서 숨김.
+        // Hide design elements and guides (trim/bleed/safe) on the spot plate.
         o.set('visible', false)
       }
     }
     canvas.backgroundColor = '#FFFFFF'
 
-    // ── 크롭 지오메트리: getExportDataUrl 와 동일하게 계산 ──
+    // ── Crop geometry: computed identically to getExportDataUrl ──
     const bleedPx = mmToPx(dims.bleedMm, scale)
     const padPx = mmToPx(PASTEBOARD_MM, scale)
     const trimW = mmToPx(dims.widthMm, scale)
@@ -4050,7 +4096,7 @@ export default function EditorClient({ product, options }: Props) {
     })
     canvas.setViewportTransform(vpt)
 
-    // 원복
+    // Restore
     for (const s of saved) {
       s.o.set({ visible: s.visible, fill: s.fill, stroke: s.stroke, opacity: s.opacity, shadow: s.shadow })
     }
@@ -4060,7 +4106,7 @@ export default function EditorClient({ product, options }: Props) {
   }
 
   function exportPng() {
-    // PNG 미리보기는 trim 영역만 (블리드 제외) — 디자인 시안 확인용
+    // The PNG preview is trim only (no bleed) — for checking the design proof
     const dataUrl = getExportDataUrl(150, false)
     if (!dataUrl) return
     const code = generateDownloadCode()
@@ -4068,7 +4114,7 @@ export default function EditorClient({ product, options }: Props) {
     link.download = `pcc-${product.slug}-${code}.png`
     link.href = dataUrl
     link.click()
-    // OMO-2706: 박이 있으면 M100 별색판도 동일 기준으로 함께 내려받는다.
+    // OMO-2706: If foil is present, download the M100 spot plate together on the same basis.
     const finishUrl = getFinishPlateDataUrl(150, false)
     if (finishUrl) {
       const fl = document.createElement('a')
@@ -4080,13 +4126,13 @@ export default function EditorClient({ product, options }: Props) {
 
   // ── Phase 6: PDF export ────────────────────────────────────────────────────
 
-  // OMO-2706: 디자인판 + (박이 있으면) M100 별색 후가공판을 단일 PDF로 산출.
-  // 두 페이지는 동일 치수/블리드/재단선을 공유 → 인쇄소 정합(레지스트레이션) 픽셀 일치.
-  // 단일 파일·1슬롯(OMO-2704 결정 준수): 페이지1=디자인(CMYK), 페이지2=M100 별색 1도.
+  // OMO-2706: Produces the design plate + (if foil is present) the M100 spot finish plate as a single PDF.
+  // Both pages share the same dimensions/bleed/crop marks → pixel-exact print registration.
+  // Single file, 1 slot (per OMO-2704 decision): page 1 = design (CMYK), page 2 = M100 spot, 1-color.
   async function buildPdfBlob(): Promise<Blob> {
     const designUrl = getExportDataUrl(300, true)
     if (!designUrl) throw new Error('Export failed')
-    const finishUrl = getFinishPlateDataUrl(300, true) // 박 없으면 ''
+    const finishUrl = getFinishPlateDataUrl(300, true) // '' when no foil
     const { PDFDocument, StandardFonts, rgb, PDFName, PDFArray, PDFHexString } = await import('pdf-lib')
     const pdfDoc = await PDFDocument.create()
     const MM_PER_PT = 2.8346
@@ -4096,7 +4142,7 @@ export default function EditorClient({ product, options }: Props) {
     const pageW = trimWpt + 2 * bleedPt
     const pageH = trimHpt + 2 * bleedPt
 
-    // 재단선(crop marks) 지오메트리 — 두 페이지 공통(정합 일치).
+    // Crop mark geometry — shared by both pages (registration match).
     const markLenPt = Math.max(bleedPt, 3 * MM_PER_PT)
     const markStroke = 0.25
     const trimL = bleedPt
@@ -4110,7 +4156,7 @@ export default function EditorClient({ product, options }: Props) {
 
     const helv = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-    // 한 페이지(이미지 + 재단선 + 선택적 라벨) 추가. 라벨은 블리드(재단 폐기) 구간에만.
+    // Add one page (image + crop marks + optional label). The label sits only in the bleed (trimmed-away) area.
     const addPlate = async (dataUrl: string, label?: string) => {
       const page = pdfDoc.addPage([pageW, pageH])
       const pngBytes = await fetch(dataUrl).then(r => r.arrayBuffer())
@@ -4136,9 +4182,9 @@ export default function EditorClient({ product, options }: Props) {
     await addPlate(designUrl)
     if (finishUrl) {
       await addPlate(finishUrl, 'M100 SPOT PLATE / FINISH ONLY (C0 M100 Y0 K0)')
-      // OMO-2706: 별색판에 명명 OCG 레이어 등록 — OMO-2709 템플릿(spec-template.ts)과
-      // 동일 컨벤션(spotLayerName SSOT). 고객 템플릿 ↔ 생산 익스포트 별색 인코딩 1:1 정합.
-      // 박(foil_stamp) MVP: 레이어명 = 'M100_별색_박'. UTF-16 로 한글 레이어명 보존.
+      // OMO-2706: Register a named OCG layer on the spot plate — same convention as the
+      // OMO-2709 template (spec-template.ts) with spotLayerName as the SSOT. Customer template ↔
+      // production export spot encoding stay 1:1. Foil (foil_stamp) MVP: layer name = 'M100_Spot_Foil'.
       try {
         const ctx = pdfDoc.context
         const ocg = ctx.obj({
@@ -4154,7 +4200,7 @@ export default function EditorClient({ product, options }: Props) {
           D: ctx.obj({ Order: order, ON: on }),
         }))
       } catch {
-        // 레이어 메타 실패는 별색판 본질을 깨지 않으므로 무시.
+        // A layer-metadata failure doesn't break the spot plate itself, so ignore it.
       }
     }
 
@@ -4236,8 +4282,8 @@ export default function EditorClient({ product, options }: Props) {
       results.push({ level: 'warn', message: '' })
     }
 
-    // 안전 영역 침범 여부 확인 — 텍스트만 검사한다.
-    // 배경·도형 색 채움은 블리드를 위해 가장자리까지 채우는 게 정상(재단됨)이므로 제외.
+    // Check for safe-area intrusion — only text is checked.
+    // Background and shape color fills normally extend to the edge for bleed (trimmed away), so they're excluded.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isTextObj = (o: any) => o.data?.layerType === 'text' || o.type === 'textbox' || o.type === 'i-text' || o.type === 'text'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4263,7 +4309,7 @@ export default function EditorClient({ product, options }: Props) {
       results.push({ level: 'ok', message: `Important text is within the safe area (${dims.safeMm}mm). Backgrounds extending to the edge is normal for bleed.` })
     }
 
-    // 이미지 해상도 체크 (실제 픽셀 vs 출력 크기 기준 DPI 계산)
+    // Image resolution check (DPI from actual pixels vs. output size)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const imageObjs = userObjs.filter((o: any) => o.type === 'image')
     if (imageObjs.length === 0 && userObjs.length > 0) {
@@ -4288,20 +4334,20 @@ export default function EditorClient({ product, options }: Props) {
       }
     })
 
-    // 배경색 확인
+    // Background color check
     if (bgColor === '#ffffff' || bgColor === '#fff') {
       results.push({ level: 'ok', message: '' })
     } else {
       results.push({ level: 'ok', message: `Background color ${bgColor} set.` })
     }
 
-    // 내보내기 해상도 (항상 300dpi)
+    // Export resolution (always 300dpi)
     results.push({ level: 'ok', message: `PDF export: 300 DPI (includes ${dims.bleedMm}mm bleed and trim marks).` })
 
-    // CMYK 전환 안내
+    // CMYK conversion notice
     results.push({ level: 'warn', message: '' })
 
-    // 치수 정보
+    // Dimension info
     results.push({ level: 'ok', message: `Product size: ${dims.widthMm}×${dims.heightMm}mm (bleed ${dims.bleedMm}mm, safe area ${dims.safeMm}mm).` })
 
     return results
@@ -4442,7 +4488,7 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
-  // ── OMO-2328: Pre-flight 검증 헬퍼 ───────────────────────────────────────────
+  // ── OMO-2328: Pre-flight validation helpers ───────────────────────────────────────────
 
   function isCanvasEmpty(): boolean {
     const canvas = fabricRef.current
@@ -4474,8 +4520,9 @@ export default function EditorClient({ product, options }: Props) {
     const trimY = bl
     const trimW = mmToPx(dims.widthMm, scale)
     const trimH = mmToPx(dims.heightMm, scale)
-    // 텍스트만 검사한다. 배경·도형 색 채움은 블리드를 위해 안전영역을 넘어 가장자리까지
-    // 채우는 게 정상(재단됨)이므로 위반으로 보지 않는다. 잘리면 안 되는 건 "중요한 텍스트".
+    // Only text is checked. Background and shape color fills normally extend past the safe area
+    // to the edge for bleed (trimmed away), so they aren't treated as violations. What must not be
+    // cut off is "important text".
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const isText = (o: any) => o.data?.layerType === 'text' || o.type === 'textbox' || o.type === 'i-text' || o.type === 'text'
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -4543,6 +4590,55 @@ export default function EditorClient({ product, options }: Props) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
+      {/* OMO-2617: Mobile fallback overlay — the editor is desktop-only. Shows guidance + direct file upload on narrow widths */}
+      {isMobile && (
+        <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center overflow-y-auto bg-white px-6 py-10 text-center">
+          <input
+            ref={mobileFileInputRef}
+            type="file"
+            accept="application/pdf,application/illustrator,application/postscript,image/vnd.adobe.photoshop,image/png,image/jpeg,image/tiff,.pdf,.ai,.eps,.psd,.png,.jpg,.jpeg,.tif,.tiff"
+            onChange={handleMobileDirectUpload}
+            className="hidden"
+          />
+          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
+            <Monitor className="h-8 w-8 text-indigo-600" />
+          </div>
+          <h2 className="mt-5 text-xl font-bold text-gray-900">The editor works best on desktop</h2>
+          <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
+            It has many precise design tools and isn&apos;t optimized for mobile screens.
+            Open it on a computer to use the full design editor.
+          </p>
+
+          <div className="mt-8 w-full max-w-sm rounded-2xl border border-gray-200 bg-gray-50 p-5 text-left">
+            <p className="text-sm font-semibold text-gray-800">Already have a print-ready file?</p>
+            <p className="mt-1 text-xs leading-relaxed text-gray-500">
+              Upload your finished design file (PDF, AI, PNG, JPG, etc.) and start your order.
+            </p>
+            <button
+              onClick={() => mobileFileInputRef.current?.click()}
+              disabled={mobileUploading}
+              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {mobileUploading ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
+              ) : (
+                <><Upload className="h-4 w-4" /> Upload file & start order</>
+              )}
+            </button>
+            {mobileUploadError && (
+              <p className="mt-2 text-xs text-red-500">{mobileUploadError}</p>
+            )}
+          </div>
+
+          <Link
+            href={`/products/${product.slug}`}
+            className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+          >
+            <ArrowLeft className="h-4 w-4" /> Back to product page
+          </Link>
+        </div>
+      )}
+
       {/* Upload toast */}
       {imageToast && (
         <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-[60] flex items-center gap-2 rounded-lg bg-gray-900 px-4 py-2.5 text-sm text-white shadow-xl pointer-events-none">
@@ -4551,7 +4647,7 @@ export default function EditorClient({ product, options }: Props) {
         </div>
       )}
 
-      {/* 통합 Pre-flight 모달 (OMO-2328) */}
+      {/* Unified pre-flight modal (OMO-2328) */}
       {showPreflightModal && (() => {
         const blockIssues = preflightIssues.filter(i => i.level === 'block')
         const warnIssues = preflightIssues.filter(i => i.level === 'warn')
@@ -4794,19 +4890,20 @@ export default function EditorClient({ product, options }: Props) {
       </div>
 
       <div className="flex flex-1 overflow-hidden">
-        {/* OMO-2708: 좌측 아이콘 레일 (Vistaprint식) — Product options / Text / Uploads / Graphics / Finishes / More */}
-        <div className="relative w-16 bg-white border-r border-gray-200 flex flex-col items-center py-2 shrink-0 z-20">
+        {/* OMO-2708: Left icon rail (Vistaprint-style) — Product options / Text / Uploads / Graphics / Finishes / More */}
+        <div className="relative order-1 w-16 bg-white border-r border-gray-200 flex flex-col items-center py-2 shrink-0 z-20 overflow-y-auto">
           {([
-            { id: 'yourinfo',  icon: SlidersHorizontal, label: '제품옵션', type: 'panel' as const },
-            { id: 'text',      icon: Type,              label: '텍스트',  type: 'action' as const },
-            { id: 'uploads',   icon: Upload,            label: '업로드',  type: 'action' as const },
-            { id: 'shapes',    icon: Shapes,            label: '그래픽',  type: 'panel' as const },
-            { id: 'finishes',  icon: Sparkles,          label: 'Finishes', type: 'panel' as const },
-            { id: 'more',      icon: MoreHorizontal,    label: '더보기',  type: 'more' as const },
+            { id: 'yourinfo',   icon: SlidersHorizontal, label: 'Product',    type: 'panel' as const },
+            { id: 'text',       icon: Type,              label: 'Text',       type: 'action' as const },
+            { id: 'uploads',    icon: Upload,            label: 'Uploads',    type: 'action' as const },
+            { id: 'shapes',     icon: Shapes,            label: 'Graphics',   type: 'panel' as const },
+            { id: 'finishes',   icon: Sparkles,          label: 'Finishes',   type: 'panel' as const },
+            { id: 'templates',  icon: LayoutTemplate,    label: 'Templates',  type: 'panel' as const },
+            { id: 'layers',     icon: Layers,            label: 'Layers',     type: 'panel' as const },
+            { id: 'properties', icon: SlidersHorizontal, label: 'Properties', type: 'panel' as const },
           ]).map(({ id, icon: Icon, label, type }) => {
             const active =
-              type === 'panel' ? activePanel === id && !railMoreOpen
-              : type === 'more' ? railMoreOpen || activePanel === 'templates' || activePanel === 'layers' || activePanel === 'properties'
+              type === 'panel' ? activePanel === id
               : type === 'action' && id === 'text' ? tool === 'text'
               : false
             return (
@@ -4814,10 +4911,9 @@ export default function EditorClient({ product, options }: Props) {
                 key={id}
                 title={label}
                 onClick={() => {
-                  if (type === 'panel') { setActivePanel(id as 'yourinfo' | 'shapes' | 'finishes'); setRailMoreOpen(false) }
-                  else if (type === 'more') { setRailMoreOpen(v => !v) }
-                  else if (id === 'text') { setTool('text'); setRailMoreOpen(false) }
-                  else if (id === 'uploads') { imageInputRef.current?.click(); setRailMoreOpen(false) }
+                  if (type === 'panel') { setActivePanel(id as 'yourinfo' | 'shapes' | 'finishes' | 'templates' | 'layers' | 'properties') }
+                  else if (id === 'text') { setTool('text') }
+                  else if (id === 'uploads') { imageInputRef.current?.click() }
                 }}
                 className={`w-full flex flex-col items-center gap-1 py-2.5 text-[10px] font-medium transition-colors ${active ? 'text-indigo-600' : 'text-gray-500 hover:text-gray-800'}`}
               >
@@ -4829,32 +4925,11 @@ export default function EditorClient({ product, options }: Props) {
             )
           })}
 
-          {/* More 오버플로 팝오버 — Templates / Layers / Properties */}
-          {railMoreOpen && (
-            <>
-              <div className="fixed inset-0 z-10" onClick={() => setRailMoreOpen(false)} />
-              <div className="absolute left-[60px] bottom-2 z-20 w-40 rounded-xl border border-gray-200 bg-white py-1.5 shadow-xl">
-                {([
-                  { id: 'templates',  icon: LayoutTemplate, label: '템플릿' },
-                  { id: 'layers',     icon: Layers,         label: '레이어' },
-                  { id: 'properties', icon: SlidersHorizontal, label: '속성' },
-                ] as const).map(({ id, icon: Icon, label }) => (
-                  <button
-                    key={id}
-                    onClick={() => { setActivePanel(id); setRailMoreOpen(false) }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 text-xs font-medium transition-colors ${activePanel === id ? 'text-indigo-600 bg-indigo-50' : 'text-gray-600 hover:bg-gray-50'}`}
-                  >
-                    <Icon className="w-4 h-4" /> {label}
-                  </button>
-                ))}
-              </div>
-            </>
-          )}
         </div>
 
         {/* Canvas area */}
-        <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
-          {/* OMO-2708: 캔버스 크롬 — 앞/뒤 스와치 + 인쇄 가이드 토글 (상단 좌측) */}
+        <div className="relative order-3 flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+          {/* OMO-2708: Canvas chrome — front/back swatch + print guide toggle (top left) */}
           <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
             <div className="flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 p-0.5">
               {(['front', 'back'] as const).map(side => (
@@ -4863,13 +4938,13 @@ export default function EditorClient({ product, options }: Props) {
                   onClick={() => switchSide(side)}
                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${activeSide === side ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100'}`}
                 >
-                  {side === 'front' ? '앞면' : '뒷면'}
+                  {side === 'front' ? 'Front' : 'Back'}
                 </button>
               ))}
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
               <button
                 onClick={copyFrontToBack}
-                title="앞면 디자인을 뒷면으로 복사"
+                title="Copy front design to back"
                 className="w-7 h-7 flex items-center justify-center rounded-md text-gray-500 hover:bg-gray-100 hover:text-indigo-600"
               >
                 <CopyPlus className="w-3.5 h-3.5" />
@@ -4877,28 +4952,28 @@ export default function EditorClient({ product, options }: Props) {
             </div>
             <button
               onClick={toggleBleedGuides}
-              title={showBleed ? '재단선·안전영역 숨기기' : '재단선·안전영역 표시'}
+              title={showBleed ? 'Hide trim & safe area' : 'Show trim & safe area'}
               className={`flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium shadow-md transition-colors ${showBleed ? 'border-indigo-300 text-indigo-600 bg-indigo-50' : 'border-gray-200 text-gray-500 bg-white hover:text-gray-800'}`}
             >
-              <FlipHorizontal2 className="w-3.5 h-3.5" /> 재단·안전선
+              <FlipHorizontal2 className="w-3.5 h-3.5" /> Trim & safe
             </button>
           </div>
 
-          {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
+          {/* Alignment toolbar (relative to artboard) — shown when selected */}
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
               <span className="text-[10px] text-gray-400 px-1.5 font-medium">Align</span>
-              <button onClick={() => alignToArtboard('left')} title="좌측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignLeft className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('centerH')} title="가로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignCenter className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('right')} title="우측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignRight className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('left')} title="Align left" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignLeft className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerH')} title="Center horizontal" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('right')} title="Align right" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignRight className="w-4 h-4" /></button>
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
-              <button onClick={() => alignToArtboard('top')} title="상단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyStart className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('centerV')} title="세로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('bottom')} title="하단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('top')} title="Align top" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyStart className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerV')} title="Center vertical" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('bottom')} title="Align bottom" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
-              <button onClick={groupSelected} title="그룹 (Ctrl+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Group className="w-4 h-4" /></button>
-              <button onClick={ungroupSelected} title="그룹해제 (Ctrl+Shift+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Ungroup className="w-4 h-4" /></button>
-              <button onClick={duplicateActive} title="복제 (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
+              <button onClick={groupSelected} title="Group (Ctrl+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Group className="w-4 h-4" /></button>
+              <button onClick={ungroupSelected} title="Ungroup (Ctrl+Shift+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Ungroup className="w-4 h-4" /></button>
+              <button onClick={duplicateActive} title="Duplicate (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
             </div>
           )}
 
@@ -4909,33 +4984,33 @@ export default function EditorClient({ product, options }: Props) {
             <canvas ref={canvasElRef} />
           </div>
 
-          {/* OMO-2708: 하단 줌바 (중앙 정렬) */}
+          {/* OMO-2708: Bottom zoom bar (centered) */}
           <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-200 px-1.5 py-1">
-            <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
-            <button onClick={resetView} title="100% / 맞춤 (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
-            <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
+            <button onClick={zoomOut} title="Zoom out (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
+            <button onClick={resetView} title="100% / Fit (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
+            <button onClick={zoomIn} title="Zoom in (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
             <span className="w-px h-4 bg-gray-200 mx-0.5" />
-            <button onClick={resetView} title="화면 맞춤" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
-            <button onClick={toggleGrid} title="그리드 (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
+            <button onClick={resetView} title="Fit to screen" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={toggleGrid} title="Grid (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
           </div>
 
-          {/* 팬 힌트 */}
-          <div className="absolute bottom-3 right-3 z-10 text-[10px] text-gray-400 bg-white/70 rounded px-2 py-1 pointer-events-none">
-            Space+드래그로 이동 · 휠로 확대/축소
+          {/* Pan/zoom hint */}
+          <div className="absolute bottom-3 right-3 z-10 text-[11px] font-medium text-gray-600 bg-white/95 shadow-md border border-gray-200 rounded px-2.5 py-1.5 pointer-events-none">
+            Space+drag to pan · scroll to zoom
           </div>
         </div>
 
-        {/* Right panel */}
-        <div className="w-64 bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
-          {/* OMO-2708: 패널 헤더 — 선택은 좌측 아이콘 레일이 담당, 여기선 현재 패널명만 표시 */}
+        {/* Side panel — docked immediately right of the icon rail (OMO-3233) */}
+        <div className="order-2 w-64 bg-white border-r border-gray-200 flex flex-col overflow-hidden shrink-0">
+          {/* OMO-2708: Panel header — selection is handled by the left icon rail; here we only show the current panel name */}
           {(() => {
             const PANEL_META: Record<string, { icon: typeof FileText; label: string }> = {
-              yourinfo:   { icon: SlidersHorizontal, label: '제품 옵션' },
-              templates:  { icon: LayoutTemplate,    label: '템플릿' },
-              shapes:     { icon: Shapes,            label: '그래픽' },
+              yourinfo:   { icon: SlidersHorizontal, label: 'Product options' },
+              templates:  { icon: LayoutTemplate,    label: 'Templates' },
+              shapes:     { icon: Shapes,            label: 'Graphics' },
               finishes:   { icon: Sparkles,          label: 'Finishes' },
-              layers:     { icon: Layers,            label: '레이어' },
-              properties: { icon: SlidersHorizontal, label: '속성' },
+              layers:     { icon: Layers,            label: 'Layers' },
+              properties: { icon: SlidersHorizontal, label: 'Properties' },
             }
             const meta = PANEL_META[activePanel]
             const Icon = meta.icon
@@ -4947,7 +5022,7 @@ export default function EditorClient({ product, options }: Props) {
             )
           })()}
 
-          {/* Your Info 통합 패널 (OMO-2326: Required gate) */}
+          {/* Your Info unified panel (OMO-2326: Required gate) */}
           {activePanel === 'yourinfo' && (() => {
             const missing = getMissingRequired(fieldValues)
             const requiredTotal = allFormFields.filter(f => f.required).length
@@ -4955,7 +5030,7 @@ export default function EditorClient({ product, options }: Props) {
             const applyDisabled = missing.length > 0
             return (
               <div ref={missingInfoPanelRef} className="flex-1 overflow-y-auto p-3 space-y-2">
-                {/* 상단 진행 배너 */}
+                {/* Top progress banner */}
                 {requiredTotal > 0 && (
                   <div className={`rounded-lg px-3 py-2 text-[10px] font-medium ${missing.length === 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
                     {missing.length === 0
@@ -5017,7 +5092,7 @@ export default function EditorClient({ product, options }: Props) {
                   )
                 })}
 
-                {/* ── OMO-2325: 커스텀 필드 목록 ── */}
+                {/* ── OMO-2325: Custom field list ── */}
                 {customFields.map(cf => (
                   <div key={cf.id} className="rounded-lg border border-dashed border-indigo-200 p-2 space-y-1.5 bg-indigo-50/40">
                     <div className="flex items-center gap-1">
@@ -5028,7 +5103,7 @@ export default function EditorClient({ product, options }: Props) {
                           const newLabel = e.target.value
                           const updated = customFields.map(f => f.id === cf.id ? { ...f, label: newLabel } : f)
                           setCustomFields(updated)
-                          // 캔버스 data.name 즉시 갱신
+                          // Update the canvas data.name immediately
                           const canvas = fabricRef.current
                           if (canvas) {
                             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -5065,7 +5140,7 @@ export default function EditorClient({ product, options }: Props) {
                   </div>
                 ))}
 
-                {/* + Add custom field 버튼 */}
+                {/* + Add custom field button */}
                 <button
                   onClick={() => {
                     const newId = `custom_${Math.random().toString(36).slice(2)}`
@@ -5171,7 +5246,7 @@ export default function EditorClient({ product, options }: Props) {
                 <div className="space-y-1">
                   {[...TEMPLATE_CATALOG, ...GENERATED_CARD_TEMPLATES]
                     .filter(t => {
-                      // 템플릿 products 태그는 카테고리명(business_cards) 기준 → product.category 와 비교.
+                      // The template's products tag is by category name (business_cards) → compare against product.category.
                       if (t.products && t.products.length > 0 && !t.products.includes(product.category)) return false
                       if (templateSearch) return t.name.toLowerCase().includes(templateSearch.toLowerCase()) || t.description.toLowerCase().includes(templateSearch.toLowerCase())
                       return templateCategory === 'all' || t.category === templateCategory
@@ -5276,7 +5351,7 @@ export default function EditorClient({ product, options }: Props) {
             </div>
           )}
 
-          {/* OMO-2705: Finishes panel — 요소 단위 후가공(박 MVP) */}
+          {/* OMO-2705: Finishes panel — per-element finish (foil MVP) */}
           {activePanel === 'finishes' && (() => {
             const foilCount = layers.filter(l => l.finish?.kind === 'foil_stamp').length
             return (
@@ -5292,9 +5367,9 @@ export default function EditorClient({ product, options }: Props) {
                         </div>
                         <div className="min-w-0">
                           <div className="font-semibold text-amber-900 flex items-center gap-1">
-                            {def.label_ko} <span className="text-[10px] font-normal text-amber-700">({def.label_en})</span>
+                            {def.label_en}
                           </div>
-                          <div className="text-[10px] text-amber-700 leading-tight">별색 {DEFAULT_FOIL_SPOT_COLOR} · 켜진 요소 {foilCount}개</div>
+                          <div className="text-[10px] text-amber-700 leading-tight">Spot {DEFAULT_FOIL_SPOT_COLOR} · {foilCount} elements on</div>
                         </div>
                       </div>
                       <p className="px-2.5 pb-2 text-[10px] text-amber-700/90 leading-snug">{def.description_en}</p>
@@ -5303,11 +5378,11 @@ export default function EditorClient({ product, options }: Props) {
                 })}
 
                 <div>
-                  <p className="text-[11px] font-medium text-gray-600 mb-1">요소별 박 지정</p>
-                  <p className="text-[10px] text-gray-400 mb-2 leading-snug">박을 입힐 텍스트·도형 요소를 체크하세요. 사진(이미지)에는 박을 적용할 수 없습니다.</p>
+                  <p className="text-[11px] font-medium text-gray-600 mb-1">Per-element foil</p>
+                  <p className="text-[10px] text-gray-400 mb-2 leading-snug">Check the text and shape elements you want foiled. Foil can&apos;t be applied to photos (images).</p>
                   {layers.length === 0 ? (
                     <div className="flex flex-col items-center justify-center h-20 text-gray-400 text-[11px] gap-1">
-                      <Sparkles className="w-5 h-5" /> 요소가 없습니다
+                      <Sparkles className="w-5 h-5" /> No elements
                     </div>
                   ) : (
                     <ul className="space-y-1">
@@ -5333,7 +5408,7 @@ export default function EditorClient({ product, options }: Props) {
                             </span>
                             <span className="truncate flex-1 text-gray-700">{layer.name}</span>
                             {!eligible
-                              ? <span className="shrink-0 text-[9px] text-gray-400 flex items-center gap-0.5"><Lock className="w-2.5 h-2.5" /> 사진</span>
+                              ? <span className="shrink-0 text-[9px] text-gray-400 flex items-center gap-0.5"><Lock className="w-2.5 h-2.5" /> Photo</span>
                               : on && <Sparkles className="w-3 h-3 text-amber-500 shrink-0" />
                             }
                           </li>
@@ -5343,7 +5418,7 @@ export default function EditorClient({ product, options }: Props) {
                   )}
                 </div>
                 <p className="text-[10px] text-gray-400 leading-snug border-t border-gray-100 pt-2">
-                  박은 캔버스에 금박 시머 아웃라인으로 미리보기됩니다. PDF 내보내기 시 디자인판과 정합이 일치하는 M100 별색 후가공판이 같은 파일에 함께 출력됩니다.
+                  Foil is previewed on the canvas as a gold shimmer outline. On PDF export, an M100 spot finish plate that registers with the design plate is included in the same file.
                 </p>
               </div>
             )
@@ -5736,7 +5811,7 @@ export default function EditorClient({ product, options }: Props) {
                     )}
                   </div>
 
-                  {/* AI 배경 제거 */}
+                  {/* AI background removal */}
                   {!cropActive && (
                     <div>
                       <label className="block text-gray-500 mb-1">Background</label>
@@ -5748,7 +5823,7 @@ export default function EditorClient({ product, options }: Props) {
                         {bgRemoving ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                         {bgRemoving ? 'Removing…' : 'Remove Background (AI)'}
                       </button>
-                      <p className="text-[10px] text-gray-400 mt-1">첫 실행 시 AI 모델 다운로드(수 초~수십 초)</p>
+                      <p className="text-[10px] text-gray-400 mt-1">Downloads the AI model on first run (a few to tens of seconds)</p>
                     </div>
                   )}
 
