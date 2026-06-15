@@ -7,7 +7,8 @@ import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { pickCheapestPress, type SwadpiaPaper, type SwadpiaPrintEntry, type SwadpiaSize, type PressKind } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
-import { FINISHING_CATALOG } from '@/config/finishing-catalog'
+import SizePopup from '@/components/SizePopup'
+import { finishingsForCategory } from '@/config/finishing-catalog'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
 interface SwadpiaClientData {
@@ -42,9 +43,6 @@ const OPTION_LABEL: Record<string, string> = {
   pages: 'Pages',
   print_color_type: 'Print',
 }
-
-/** Option types that should show a hover preview popup (paper texture / finishing image). */
-const RICH_PREVIEW_TYPES = new Set(['paper', 'paper_code', 'finish', 'finishing'])
 
 /** Option types that represent quantity (so the selected qty is parsed from this). */
 const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
@@ -105,7 +103,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   // DB option 행이 아니라 카탈로그 기반이라, 후가공이 항상 노출되고 hover 팝업으로
   // 맞는 이미지/설명을 보여준다. 선택은 콤마구분 `finishing` 으로 주문/에디터 URL 에 실린다.
   const finishingOptions = useMemo(
-    () => FINISHING_CATALOG.filter((f) => f.fits.includes(product.category)),
+    () => finishingsForCategory(product.category),
     [product.category],
   )
   const [finishSel, setFinishSel] = useState<Set<string>>(new Set())
@@ -366,7 +364,37 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           )
         }
 
-        const typeHasPreview = RICH_PREVIEW_TYPES.has(type)
+        // OMO-3196: 용지는 칩 나열(지저분) 대신 드롭다운 + 선택 용지 미리보기 카드로 정리.
+        const isPaper = type === 'paper' || type === 'paper_code'
+        if (isPaper) {
+          const selectedOpt = opts.find((o) => o.value === selections[type]) ?? opts[0]
+          return (
+            <div key={type}>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {OPTION_LABEL[type] ?? type}
+              </label>
+              <select
+                value={selections[type] ?? ''}
+                onChange={(e) => setSelections((prev) => ({ ...prev, [type]: e.target.value }))}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-colors"
+              >
+                {opts.map((opt) => (
+                  <option key={opt.value} value={opt.value}>{opt.label_en}</option>
+                ))}
+              </select>
+              {selectedOpt && (
+                <div className="mt-2">
+                  <PaperPopup option={selectedOpt} inline />
+                </div>
+              )}
+            </div>
+          )
+        }
+
+        // 사이즈는 신용카드 비교 팝업, DB 후가공(finish/finishing)은 카탈로그 미리보기 팝업.
+        const isSize = type === 'paper_size' || type === 'size'
+        const isFinishOpt = type === 'finish' || type === 'finishing'
+        const typeHasPreview = isSize || isFinishOpt
         return (
           <div key={type}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -375,23 +403,22 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             <div className="flex flex-wrap gap-2">
               {opts.map((opt) => {
                 const isSelected = selections[type] === opt.value
-                const hasPreview = typeHasPreview
                 const hoverKey = `${type}:${opt.value}`
 
                 return (
                   <div key={opt.value} className="relative">
-                    {hasPreview && hoveredPaper === hoverKey && (
-                      <PaperPopup option={opt} />
+                    {typeHasPreview && hoveredPaper === hoverKey && (
+                      isSize ? <SizePopup option={opt} /> : <PaperPopup option={opt} />
                     )}
 
                     <button
-                      // OMO-3195: tapping also opens the material preview so touch users (no hover) can see it.
+                      // OMO-3195: tapping also opens the preview so touch users (no hover) can see it.
                       onClick={() => {
                         setSelections((prev) => ({ ...prev, [type]: opt.value }))
-                        if (hasPreview) setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
+                        if (typeHasPreview) setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
                       }}
-                      onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
-                      onMouseLeave={() => hasPreview && setHoveredPaper(null)}
+                      onMouseEnter={() => typeHasPreview && setHoveredPaper(hoverKey)}
+                      onMouseLeave={() => typeHasPreview && setHoveredPaper(null)}
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
                         isSelected
                           ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
@@ -399,15 +426,20 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       }`}
                     >
                       {opt.label_en}
-                      {hasPreview && <span className="ml-1.5 text-gray-400">ⓘ</span>}
+                      {typeHasPreview && <span className="ml-1.5 text-gray-400">ⓘ</span>}
                     </button>
                   </div>
                 )
               })}
             </div>
-            {typeHasPreview && (
+            {isSize && (
               <p className="mt-1.5 text-[11px] text-gray-500">
-                💡 Tap or hover ⓘ to preview the texture and material details.
+                💡 Tap or hover ⓘ to compare this size with a credit card.
+              </p>
+            )}
+            {isFinishOpt && (
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                💡 Tap or hover ⓘ to preview the finish.
               </p>
             )}
           </div>
@@ -431,6 +463,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       option={{
                         value: f.value,
                         label_en: f.label_en,
+                        label_ko: f.label_ko,
                         image_url: f.image_url,
                         description_en: f.description_en,
                       }}
