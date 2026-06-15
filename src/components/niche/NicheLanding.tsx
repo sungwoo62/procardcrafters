@@ -7,6 +7,7 @@
 
 import type { CSSProperties } from 'react'
 import type { NicheContent } from '@/lib/niche/content'
+import type { PresetEstimate } from '@/lib/niche/estimate'
 import { getGroupLabel } from '@/lib/niche/content'
 
 const BLUE = '#2563eb'
@@ -34,7 +35,29 @@ function Breadcrumbs({ groupLabel, groupHref, title }: { groupLabel: string; gro
   )
 }
 
-export default function NicheLanding({ content }: { content: NicheContent }) {
+/** "Make it with these options" CTA 아래 실제 예상가 줄 (보드 지시 OMO-3211). */
+function EstimateLine({ estimate }: { estimate: PresetEstimate }) {
+  const price = Math.round(estimate.priceUsd)
+  return (
+    <p style={{ color: '#475569', fontSize: '0.95rem', marginTop: '0.85rem' }}>
+      Estimated from <strong style={{ color: '#0f172a' }}>${price}</strong>
+      {estimate.hasFinishing ? ' with these finishes' : ''} · final price set in the designer
+      <br />
+      <span style={{ color: '#94a3b8', fontSize: '0.8rem' }}>
+        Varies by quantity and options — adjust anything before you order.
+      </span>
+    </p>
+  )
+}
+
+export default function NicheLanding({
+  content,
+  estimate,
+}: {
+  content: NicheContent
+  /** 프리셋 실제 예상가(서버 산정). 산정 불가 시 undefined → 가격줄 생략. */
+  estimate?: PresetEstimate | null
+}) {
   const c = content
   const groupHref = `/${c.productGroup}/for`
   const groupLabel = getGroupLabel(c.productGroup)
@@ -113,9 +136,13 @@ export default function NicheLanding({ content }: { content: NicheContent }) {
               <a href={buildHref} style={{ ...BTN, background: BLUE, color: 'white', fontSize: '1.05rem', padding: '0.9rem 2.5rem', fontWeight: 700 }}>
                 Make it with these options →
               </a>
-              <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.75rem' }}>
-                Opens the designer with these options pre-selected — adjust anything before you order.
-              </p>
+              {estimate ? (
+                <EstimateLine estimate={estimate} />
+              ) : (
+                <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.75rem' }}>
+                  Opens the designer with these options pre-selected — adjust anything before you order.
+                </p>
+              )}
             </div>
           </div>
         </section>
@@ -131,6 +158,7 @@ export default function NicheLanding({ content }: { content: NicheContent }) {
           <a href={buildHref} style={{ ...BTN, background: BLUE, color: 'white', fontSize: '1.1rem', padding: '1rem 2.75rem', fontWeight: 700 }}>
             Design my {c.titleSingular.toLowerCase()}
           </a>
+          {estimate && <EstimateLine estimate={estimate} />}
         </div>
       </section>
 

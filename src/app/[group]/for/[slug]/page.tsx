@@ -5,6 +5,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getNicheGroups, getNicheByGroup, getNicheItem } from '@/lib/niche/content'
+import { estimatePresetPrice } from '@/lib/niche/estimate'
 import { buildNicheJsonLd } from '@/lib/niche/jsonld'
 import { absoluteUrl } from '@/lib/site'
 import NicheLanding from '@/components/niche/NicheLanding'
@@ -59,6 +60,9 @@ export default async function NichePage(
   const c = await getNicheItem(group, slug)
   if (!c) notFound()
 
+  // 프리셋 CTA 의 실제 예상가(서버 산정) — 산정 불가 시 가격줄 생략(비치명적).
+  const estimate = await estimatePresetPrice(c.ctaPresetHref)
+
   const jsonLd = buildNicheJsonLd(c)
 
   return (
@@ -70,7 +74,7 @@ export default async function NichePage(
           dangerouslySetInnerHTML={{ __html: JSON.stringify(block) }}
         />
       ))}
-      <NicheLanding content={c} />
+      <NicheLanding content={c} estimate={estimate} />
       {/* business-cards 완전한 sibling 메시(OMO-2994): 현재 직업 제외한 나머지 직업 전부로 내부링크 */}
       {c.productGroup === 'business-cards' && (
         <NicheProfessionLinks
