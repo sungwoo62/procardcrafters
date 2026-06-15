@@ -3,10 +3,14 @@
 import Image from 'next/image'
 import type { PrintProductOption } from '@/types/database'
 import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
+import { paperDisplay, paperImageKey } from '@/config/paper-display'
+import { paperImageUrl } from '@/config/paper-images'
 
 interface PaperPopupProps {
   // 용지/후가공 옵션 모두 받는다(후가공은 카탈로그에서 합성한 최소 객체 가능).
-  option: Pick<PrintProductOption, 'value' | 'label_en' | 'image_url' | 'description_en'>
+  option: Pick<PrintProductOption, 'value' | 'label_en' | 'label_ko' | 'image_url' | 'description_en'>
+  // OMO-3196: inline=true 면 떠 있는 툴팁이 아니라 정적 카드로 렌더(드롭다운 미리보기용).
+  inline?: boolean
 }
 
 // SVG 질감 패턴 — 용지 계열별 시각적 구분
@@ -51,8 +55,10 @@ const TEXTURE_SVG: Record<string, string> = {
 
 const DEFAULT_SVG = makeSVG('#f0f0f0')
 
-function getTextureSrc(value: string, imageUrl: string | null): string {
+// 우선순위: DB image_url → Gemini 생성 재질 사진(paperPhoto) → 코드별 SVG 질감 → 기본 SVG.
+function getTextureSrc(value: string, imageUrl: string | null, paperPhoto: string | null): string {
   if (imageUrl) return imageUrl
+  if (paperPhoto) return paperPhoto
   const svg = TEXTURE_SVG[value] ?? DEFAULT_SVG
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
@@ -106,21 +112,37 @@ const PAPER_TAGS: Record<string, string[]> = {
   CTN600W00: ['Premium cotton', 'Crane Lettra', 'Letterpress'],
 }
 
-export default function PaperPopup({ option }: PaperPopupProps) {
+export default function PaperPopup({ option, inline = false }: PaperPopupProps) {
   // OMO-3196: 후가공 옵션이면 카탈로그(이미지/설명)로 폴백 — DB 후가공 행은 이미지/설명이
   // 비어 있어도 "맞는 이미지랑 설명"을 보여준다.
   const fin = FINISHING_BY_VALUE[option.value]
-  const textureSrc = getTextureSrc(option.value, option.image_url || fin?.image_url || null)
-  const tags = PAPER_TAGS[option.value] ?? (fin ? [fin.label_ko] : [])
+  // OMO-3195: 용지(후가공 아님)면 라벨→패밀리 사진(Gemini 생성, 업로드된 경우만) 매칭.
+  const paperPhoto = !fin
+    ? paperImageUrl(paperImageKey(`${option.label_en ?? ''} ${option.label_ko ?? ''}`))
+    : null
+  const textureSrc = getTextureSrc(option.value, option.image_url || fin?.image_url || null, paperPhoto)
+  // OMO-3196: 용지(특히 특수지)는 US-친화 표시명/특징/설명을 paper-display 에서 라벨 키워드로 매칭.
+  const disp = !fin ? paperDisplay(`${option.label_en ?? ''} ${option.label_ko ?? ''}`) : null
+  const title = disp?.name || option.label_en
+  // OMO-3196 (보드): 고객용 — 후가공 팝업에서 한글(label_ko) 제거, 영문만.
+  const tags = PAPER_TAGS[option.value] ?? disp?.features ?? []
   // OMO-2314: customer-facing — render English fields only.
   // OMO-3195: fall back to the code-keyed description so options with an empty DB field still explain the stock.
-  const description = option.description_en || PAPER_DESC[option.value] || fin?.description_en || null
+  const description = option.description_en || PAPER_DESC[option.value] || disp?.desc || fin?.description_en || null
 
   return (
-    <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-left">
-      <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 overflow-hidden">
-        <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-45" />
-      </div>
+    <div
+      className={
+        inline
+          ? 'w-full bg-gray-50 border border-gray-200 rounded-xl p-3 text-left'
+          : 'pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-left'
+      }
+    >
+      {!inline && (
+        <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-2 overflow-hidden">
+          <div className="absolute -top-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-white border-r border-b border-gray-200 rotate-45" />
+        </div>
+      )}
 
       <div className="flex gap-3">
         <div className="shrink-0 w-14 h-14 rounded-lg overflow-hidden border border-gray-100 shadow-sm">
@@ -136,7 +158,7 @@ export default function PaperPopup({ option }: PaperPopupProps) {
 
         <div className="min-w-0 flex-1">
           <p className="text-xs font-semibold text-gray-900 leading-tight mb-1.5">
-            {option.label_en}
+            {title}
           </p>
           {description && (
             <p className="text-[11px] text-gray-600 leading-snug mb-1.5">
