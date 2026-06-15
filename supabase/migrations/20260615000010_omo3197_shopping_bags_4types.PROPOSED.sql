@@ -145,4 +145,9 @@ INSERT INTO print_product_options (product_id, option_type, label_ko, label_en, 
 INSERT INTO print_product_options (product_id, option_type, label_ko, label_en, value, extra_price_krw, is_default, sort_order) SELECT id, 'paper_qty', '50매', '50 pcs', '50', 0, TRUE, 1 FROM print_products WHERE slug='small-batch-bags';
 INSERT INTO print_product_options (product_id, option_type, label_ko, label_en, value, extra_price_krw, is_default, sort_order) SELECT id, 'paper_qty', '100매', '100 pcs', '100', 0, FALSE, 2 FROM print_products WHERE slug='small-batch-bags';
 
+-- 기존 활성 2종도 드래프트로 — 옵션은 실측 교체됐으나 수량별 PRICING 미연동(extra=0 flat).
+-- flat 가격으로 라이브 판매 시 대량주문 손실 위험 → OMO-3200 가격연동 후 일괄 활성화.
+UPDATE print_products SET is_active = FALSE
+  WHERE slug IN ('paper-shopping-bags','gift-bags') AND is_active = TRUE;
+
 COMMIT;
