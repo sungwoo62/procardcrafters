@@ -34,6 +34,25 @@ select 변경 후 **networkidle + settle(1.2s)** 강제 — 게이트2 교훈(re
   권장. 보간값 vs 재표집 실측 오차 임계 초과 곡선은 전수표집 승격 = **parity 게이트(자식 C
   OMO-3242 cron)**. 본 이슈(child A)는 표집+보간 적재까지.
 
+## ⚠️ 아키텍처 정정 (2026-06-16) — 전수 enumerate → DB-스코프 크롤
+라이브 옵션 규모 측정 결과 **전수 enumerate 불가** 판명:
+- 성원 노출 paper 수: CLF2000 **269**, CPR4000 144, CPR3000 126, CPR2000 67, CDP3000 74.
+  전수 시 CLF2000 = 269×10size×2면×6qty ≈ 3.2만 표집 ≈ 22시간. 백그라운드 런은
+  하트비트 런 종료 시 kill → 경계 못 넘김(실측).
+- **그러나 우리 사이트는 큐레이션 부분집합만 노출**: posters paper 5(67 아님), brochures
+  paper 4(269 아님). 매트릭스는 **사이트가 요청 가능한 조합만** 커버하면 된다.
+
+→ **`scripts/omo3240-crawl-scoped.mjs`**: `print_swadpia_mapping`(slug→code) +
+  `print_product_options`(option_type별 노출 값)에서 스코프를 읽어 그 조합만 크롤. option_type
+  이 곧 성원 select name. 제품당 수십~수백 표집으로 축소 → 하트비트 내 제품별 완료·증분 적재.
+  소규모 우선 정렬. CDP4000/COD1000 은 사이트 매핑 없음(미노출) → SKIP.
+
+### 수량 드라이버 정정: `order_count` → **`paper_qty`**
+OMO-3238 명함 리뷰 경고대로 **사이트 노출 수량 = `paper_qty`**(예 posters 250/500/1000/1500/2000매).
+초기 enumerate 크롤러가 쓴 `order_count`(주문건수)는 별도 곱·고객 비노출. 스코프 크롤러는
+`paper_qty` 우선(없으면 order_count/quantity). 사이트가 N개 수량만 노출 → 전부 표집(보간 불필요·정확).
+`side` = `print_color_type` 라벨 "양면"→2 else 1.
+
 ## 패리티 게이트 — 크롤 vs 화면 공급가 (OMO-3238 리뷰 권고 반영)
 명함 파일럿 비교(`omo3238-card-compare2.mjs`)에서 **hidden `total_price` == 화면 공급가
 (`#lbl_supply_amt`)** 가 전건 일치 → `total_price` 가 ground truth, 기존 `json_data` unit2 는
