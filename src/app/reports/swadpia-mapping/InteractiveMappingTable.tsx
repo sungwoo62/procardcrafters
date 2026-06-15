@@ -66,8 +66,90 @@ type Detail = {
     marginMultiplier?: number
     sellPriceKrw?: number
     isActive?: boolean
-    optionGroups: { optionType: string; count: number; samples: { value: string; label: string; extra: number }[] }[]
+    optionGroups: { optionType: string; count: number; labels?: string[]; samples: { value: string; label: string; extra: number }[] }[]
   }
+}
+
+// ── OMO-3187: 항목군 누락 비교 ──────────────────────────────
+// 성원 스크랩 ↔ 우리 적용을 "동일 의미 그룹(축)"끼리 정규화 매칭해 누락을 표시한다.
+// 정규화 기준: 공백·대소문자·괄호·구분기호 제거 후 비교(완전 일치 어려우면 한쪽 전용으로 표기).
+type AxisKey = 'paper' | 'color' | 'size' | 'qty' | 'finish'
+const AXES: { key: AxisKey; title: string }[] = [
+  { key: 'paper', title: '용지' },
+  { key: 'color', title: '인쇄색상' },
+  { key: 'size', title: '사이즈' },
+  { key: 'qty', title: '수량' },
+  { key: 'finish', title: '후가공' },
+]
+// 우리 option_type → 비교 축
+const OURS_TYPE_TO_AXIS: Record<string, AxisKey> = {
+  paper_code: 'paper', paper: 'paper',
+  print_color_type: 'color',
+  paper_size: 'size', size: 'size',
+  paper_qty: 'qty', quantity: 'qty',
+  finishing: 'finish', finish: 'finish',
+}
+
+// 정규화: 라벨/코드의 표기 차이를 흡수해 동의어를 같은 키로 매칭.
+//  - 칼라↔컬러, 단위(mm/매), 수식어(표준/기본 등) 제거, 치수기호(×*x) 제거.
+function normItem(s: string | number): string {
+  return String(s ?? '')
+    .toLowerCase()
+    .replace(/칼라/g, '컬러')
+    .replace(/mm|㎜/g, '')
+    .replace(/표준|기본|권장|선택|옵션/g, '')
+    .replace(/[\s()[\]{}·\-_/.,×*x:+]/g, '')
+}
+
+// 누락 목록이 길면(특히 수량 사다리) 잘라서 표기. OMO-3187
+const MISS_CAP = 12
+function capList(xs: string[]): string {
+  if (xs.length <= MISS_CAP) return xs.join(', ')
+  return xs.slice(0, MISS_CAP).join(', ') + ` 외 ${xs.length - MISS_CAP}`
+}
+
+type AxisCompare = {
+  key: AxisKey
+  title: string
+  swadpiaList: string[]
+  oursList: string[]
+  missingFromOurs: string[] // 성원엔 있는데 우리엔 없음 = 우리 누락
+  missingFromSwadpia: string[] // 우리엔 있는데 성원 스크랩엔 없음
+}
+
+function buildAxisCompares(detail: Detail): AxisCompare[] {
+  const { swadpia, applied } = detail
+  // 성원 측 축별 원시 라벨
+  const swadpiaByAxis: Record<AxisKey, string[]> = {
+    paper: swadpia.papers.map((p) => p.name),
+    color: (swadpia.printColors ?? []).map((p) => p.label),
+    size: swadpia.sizes.map((s) => s.name || s.code),
+    qty: swadpia.qtyLadder.map((q) => `${q.toLocaleString('ko-KR')}매`),
+    finish: (swadpia.finishings ?? []).map((f) => f.label),
+  }
+  // 우리 측 축별 원시 라벨(option_type 매핑)
+  const oursByAxis: Record<AxisKey, string[]> = { paper: [], color: [], size: [], qty: [], finish: [] }
+  for (const g of applied.optionGroups) {
+    const axis = OURS_TYPE_TO_AXIS[g.optionType]
+    if (!axis) continue
+    const labels = g.labels ?? g.samples.map((s) => s.label)
+    oursByAxis[axis].push(...labels)
+  }
+
+  return AXES.map(({ key, title }) => {
+    const swadpiaList = swadpiaByAxis[key]
+    const oursList = oursByAxis[key]
+    const sNorm = new Set(swadpiaList.map(normItem))
+    const oNorm = new Set(oursList.map(normItem))
+    return {
+      key,
+      title,
+      swadpiaList,
+      oursList,
+      missingFromOurs: swadpiaList.filter((x) => !oNorm.has(normItem(x))),
+      missingFromSwadpia: oursList.filter((x) => !sNorm.has(normItem(x))),
+    }
+  }).filter((a) => a.swadpiaList.length > 0 || a.oursList.length > 0)
 }
 
 export default function InteractiveMappingTable({ groups }: { groups: GroupWithRows[] }) {
@@ -219,13 +301,15 @@ function DetailPanel({
     )
   }
   const { swadpia, applied } = detail
+  const axes = buildAxisCompares(detail)
   return (
+    <>
     <div className="grid gap-4 border-t border-gray-100 pt-3 md:grid-cols-2">
       {/* 성원 스크랩 */}
       <div>
-        <div className="mb-1.5 text-xs font-semibold text-gray-700">
+        <div className="mb-1.5 flex items-center gap-1.5 border-l-4 border-indigo-400 pl-2 text-sm font-bold text-indigo-900">
           성원에서 스크랩한 항목{' '}
-          <span className="font-normal text-gray-400">{detail.categoryCode ?? '(미연동)'}</span>
+          <span className="font-mono text-xs font-normal text-gray-400">{detail.categoryCode ?? '(미연동)'}</span>
         </div>
         {!detail.categoryCode ? (
           <div className="text-xs text-gray-400">
@@ -236,38 +320,38 @@ function DetailPanel({
         ) : (
           <div className="space-y-1.5 text-xs text-gray-600">
             <div>
-              <span className="font-medium text-gray-700">기준단가</span> {krw(swadpia.basePriceKrw)}{' '}
+              <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">기준단가</span> {krw(swadpia.basePriceKrw)}{' '}
               <span className="text-gray-400">(최소수량 양면)</span>
             </div>
             <div>
-              <span className="font-medium text-gray-700">용지 {swadpia.papers.length}종</span>:{' '}
+              <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">용지 {swadpia.papers.length}종</span>:{' '}
               {swadpia.papers.slice(0, 6).map((p) => p.name).join(', ')}
               {swadpia.papers.length > 6 && ` 외 ${swadpia.papers.length - 6}`}
             </div>
             {swadpia.printMethods.length > 0 && (
-              <div><span className="font-medium text-gray-700">인쇄방식</span>: {swadpia.printMethods.join(', ')}</div>
+              <div><span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">인쇄방식</span>: {swadpia.printMethods.join(', ')}</div>
             )}
             {swadpia.sizes.length > 0 && (
               <div>
-                <span className="font-medium text-gray-700">사이즈 {swadpia.sizes.length}종</span>:{' '}
+                <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">사이즈 {swadpia.sizes.length}종</span>:{' '}
                 {swadpia.sizes.slice(0, 5).map((s) => s.name || s.code).join(', ')}
                 {swadpia.sizes.length > 5 && ' …'}
               </div>
             )}
             {swadpia.qtyLadder.length > 0 && (
-              <div><span className="font-medium text-gray-700">수량단계</span>: {swadpia.qtyLadder.join(' / ')}</div>
+              <div><span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">수량단계</span>: {swadpia.qtyLadder.join(' / ')}</div>
             )}
             {/* OMO-3148: goods_view HTML 에서 별도 스크랩 (json_data 엔 없는 항목) */}
             {swadpia.printColors && swadpia.printColors.length > 0 && (
               <div>
-                <span className="font-medium text-gray-700">인쇄색상 {swadpia.printColors.length}종</span>:{' '}
+                <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">인쇄색상 {swadpia.printColors.length}종</span>:{' '}
                 {swadpia.printColors.map((p) => p.label).join(', ')}
                 <span className="ml-1 text-[10px] text-gray-400">(goods_view)</span>
               </div>
             )}
             {swadpia.finishings && swadpia.finishings.length > 0 && (
               <div>
-                <span className="font-medium text-gray-700">후가공 {swadpia.finishings.length}종</span>:{' '}
+                <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">후가공 {swadpia.finishings.length}종</span>:{' '}
                 {swadpia.finishings.map((f) => f.label).join(', ')}
                 <span className="ml-1 text-[10px] text-gray-400">(goods_view)</span>
               </div>
@@ -277,7 +361,7 @@ function DetailPanel({
       </div>
       {/* 우리 적용 */}
       <div>
-        <div className="mb-1.5 text-xs font-semibold text-gray-700">우리 사이트에 적용된 옵션</div>
+        <div className="mb-1.5 border-l-4 border-emerald-400 pl-2 text-sm font-bold text-emerald-900">우리 사이트에 적용된 옵션</div>
         {!applied.exists ? (
           <div className="text-xs text-gray-400">print_products 에 제품 행 없음(미판매/구성 전).</div>
         ) : (
@@ -294,7 +378,7 @@ function DetailPanel({
             ) : (
               applied.optionGroups.map((g) => (
                 <div key={g.optionType}>
-                  <span className="font-medium text-gray-700">
+                  <span className="mr-1 inline-block rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">
                     {OPTION_TYPE_LABEL[g.optionType] ?? g.optionType} {g.count}개
                   </span>
                   :{' '}
@@ -307,6 +391,66 @@ function DetailPanel({
             )}
           </div>
         )}
+      </div>
+    </div>
+    {axes.length > 0 && <MissingComparison axes={axes} />}
+    </>
+  )
+}
+
+// OMO-3187: 항목군 단위 누락 비교(핵심). 성원 ↔ 우리 정규화 매칭 결과를 표로 표시.
+function MissingComparison({ axes }: { axes: AxisCompare[] }) {
+  return (
+    <div className="mt-4 border-t border-gray-100 pt-3">
+      <div className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-gray-900">
+        <AlertTriangle className="h-4 w-4 text-amber-500" /> 항목군 비교 — 누락 점검
+      </div>
+      <p className="mb-2 text-[11px] text-gray-400">
+        비교 기준: 라벨/코드 정규화(공백·대소문자·괄호·구분기호 무시) 매칭. 완전 일치가 어려운 항목은 한쪽 전용으로 표기됩니다.
+      </p>
+      <div className="space-y-1.5">
+        {axes.map((a) => {
+          const fullMatch =
+            a.swadpiaList.length > 0 &&
+            a.missingFromOurs.length === 0 &&
+            a.missingFromSwadpia.length === 0
+          return (
+            <div key={a.key} className="rounded-md border border-gray-200 px-2.5 py-2 text-xs">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[11px] font-bold text-slate-700">
+                  {a.title}
+                </span>
+                <span className="text-gray-600">
+                  성원 <span className="font-semibold text-indigo-700">{a.swadpiaList.length}종</span>
+                  {' ↔ '}
+                  우리 <span className="font-semibold text-emerald-700">{a.oursList.length}종</span>
+                </span>
+                {fullMatch && (
+                  <span className="inline-flex items-center gap-0.5 text-green-700">
+                    <CheckCircle2 className="h-3.5 w-3.5" /> 정규화 매칭 일치
+                  </span>
+                )}
+              </div>
+              {a.missingFromOurs.length > 0 && (
+                <div className="mt-1 rounded bg-red-50 px-2 py-1 text-red-700">
+                  <span className="font-bold">우리 누락 {a.missingFromOurs.length}종</span>
+                  <span className="text-red-400"> (성원엔 있으나 우리 미적용)</span>:{' '}
+                  <span className="text-red-800">{capList(a.missingFromOurs)}</span>
+                </div>
+              )}
+              {a.missingFromSwadpia.length > 0 && (
+                <div className="mt-1 rounded bg-amber-50 px-2 py-1 text-amber-700">
+                  <span className="font-bold">성원 스크랩 외 {a.missingFromSwadpia.length}종</span>
+                  <span className="text-amber-400"> (우리엔 있으나 성원 스크랩엔 없음)</span>:{' '}
+                  <span className="text-amber-800">{capList(a.missingFromSwadpia)}</span>
+                </div>
+              )}
+              {a.swadpiaList.length === 0 && a.oursList.length > 0 && a.missingFromSwadpia.length === a.oursList.length && (
+                <div className="mt-0.5 text-[11px] text-gray-400">성원 스크랩 데이터 없음 — 비교 불가(우리 전용 표기).</div>
+              )}
+            </div>
+          )
+        })}
       </div>
     </div>
   )
