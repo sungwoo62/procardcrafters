@@ -1,0 +1,15 @@
+{
+  "category": "CNC1000",
+  "loggedIn": true,
+  "amounts": {
+    "foil_stamp": "22300",
+    "deboss_emboss": "21400",
+    "die_cut": "21500",
+    "drilled_hole": "3800",
+    "numbering": "0",
+    "round_corner": "3000",
+    "epoxy": "22500",
+    "score_crease": "7000",
+    "perforation": "7000"
+  }
+}
