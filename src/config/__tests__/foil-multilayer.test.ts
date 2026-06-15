@@ -1,8 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import {
   MAX_FOIL_LAYERS,
-  FOIL_AREA_MIN_MM2,
-  FOIL_AREA_MAX_MM2,
   validateFoilLayers,
   foilLayersToFields,
   parseFoilLayersFromOptions,
@@ -11,22 +9,27 @@ import {
 import { finishingSurchargeKrw, finishingSurchargeKrwFromOptions } from '../finishing-surcharge'
 
 // OMO-3257: 박(foil) 멀티레이어 — 레이어별 가로×세로 입력 + 합산(최대 3).
-// 성원 chk_size_low/high 면적 가드(640~60000mm²) 경계값 + 직렬화 + surcharge 합산 회귀.
+// OMO-3262 라이브 RE: 성원 박 가드는 고정 면적창(640~60000)이 아니라 용지 cut 규격 대비
+//   per-axis 상한(0 < x ≤ cutX && 0 < y ≤ cutY). 면적 하한 없음. → 양수·개수 + paperCut per-axis.
 
-describe('validateFoilLayers — 면적 가드(성원 chk_size_low/high)', () => {
+describe('validateFoilLayers — 양수·개수 + per-axis(용지규격) 가드', () => {
   const layer = (x: number, y: number): FoilLayer => ({ x_size: x, y_size: y })
 
-  it('경계값 639mm² 거부 / 640mm² 허용 (하한)', () => {
-    // 640 = 32×20, 639 ≈ 가로세로로 정확히 만들기 어려우니 면적 직접 비교 케이스 사용
-    expect(validateFoilLayers([layer(32, 19.96875)]).ok).toBe(false) // 638.9..
-    expect(validateFoilLayers([layer(32, 20)]).ok).toBe(true) // 640
-    expect(FOIL_AREA_MIN_MM2).toBe(640)
+  it('면적 하한 없음: 소형 박(2×2=4mm²) 허용 (OMO-3262: 거짓거부 방지)', () => {
+    expect(validateFoilLayers([layer(2, 2)]).ok).toBe(true)
+    expect(validateFoilLayers([layer(10, 10)]).ok).toBe(true)
   })
 
-  it('경계값 60000mm² 허용 / 60001mm² 거부 (상한)', () => {
-    expect(validateFoilLayers([layer(300, 200)]).ok).toBe(true) // 60000
-    expect(validateFoilLayers([layer(300, 200.01)]).ok).toBe(false) // 60003
-    expect(FOIL_AREA_MAX_MM2).toBe(60000)
+  it('paperCut 주면 per-axis 상한 적용 — 8×80(640mm²)도 세로>cutY 면 거부', () => {
+    const cut = { cutX: 90, cutY: 50 }
+    expect(validateFoilLayers([layer(8, 80)], cut).ok).toBe(false) // 세로 80 > cutY 50
+    expect(validateFoilLayers([layer(80, 8)], cut).ok).toBe(true) // 가로 80≤90, 세로 8≤50 → 통과
+    expect(validateFoilLayers([layer(80, 40)], cut).ok).toBe(true) // 둘 다 규격 내
+    expect(validateFoilLayers([layer(95, 40)], cut).ok).toBe(false) // 가로 95 > cutX 90
+  })
+
+  it('paperCut 미지정 시 큰 치수도 양수면 통과(성원 calcuEstimate 가 최종 권위)', () => {
+    expect(validateFoilLayers([layer(8, 80)]).ok).toBe(true)
   })
 
   it('레이어 개수 1~3 허용, 0개·4개 거부', () => {
@@ -47,8 +50,9 @@ describe('validateFoilLayers — 면적 가드(성원 chk_size_low/high)', () =>
     expect(validateFoilLayers([{ x_size: NaN, y_size: 30 }]).ok).toBe(false)
   })
 
-  it('한 레이어라도 범위 밖이면 전체 실패 + 해당 레이어 번호 메시지', () => {
-    const v = validateFoilLayers([layer(50, 30), layer(5, 5)]) // 레이어2 = 25mm² < 640
+  it('한 레이어라도 규격 밖이면 전체 실패 + 해당 레이어 번호 메시지', () => {
+    const cut = { cutX: 90, cutY: 50 }
+    const v = validateFoilLayers([layer(50, 30), layer(50, 99)], cut) // 레이어2 세로 99 > 50
     expect(v.ok).toBe(false)
     expect(v.errors.some((e) => e.includes('레이어 2'))).toBe(true)
   })

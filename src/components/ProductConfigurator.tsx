@@ -13,8 +13,6 @@ import {
 } from '@/config/finishing-surcharge'
 import {
   MAX_FOIL_LAYERS,
-  FOIL_AREA_MIN_MM2,
-  FOIL_AREA_MAX_MM2,
   validateFoilLayers,
   foilLayersToFields,
   type FoilLayer,
@@ -609,9 +607,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                   {selected && isFoil && (
                     <div className="px-3 pb-3 -mt-0.5 space-y-2">
                       {foilLayers.map((l, i) => {
-                        const layerArea = l.w > 0 && l.h > 0 ? l.w * l.h : 0
-                        const outOfRange =
-                          layerArea > 0 && (layerArea < FOIL_AREA_MIN_MM2 || layerArea > FOIL_AREA_MAX_MM2)
+                        // 양수 검사만(거짓거부 방지). 용지규격 대비 per-axis 상한은 OMO-3264 에서
+                        // 용지 cut 치수 배선 후 적용. 최종 사이즈 권위는 성원 calcuEstimate.
+                        const outOfRange = (l.w !== 0 && l.w <= 0) || (l.h !== 0 && l.h <= 0)
                         return (
                           <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
                             <span className="font-medium w-14 shrink-0">Layer {i + 1}</span>
@@ -660,9 +658,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                         </button>
                       )}
                       {!foilValidation.ok && (
-                        <p className="text-[11px] text-red-500">
-                          {foilValidation.errors[0]} (허용 면적 {FOIL_AREA_MIN_MM2}~{FOIL_AREA_MAX_MM2}mm²)
-                        </p>
+                        <p className="text-[11px] text-red-500">{foilValidation.errors[0]}</p>
                       )}
                       <p className="text-[11px] text-gray-400">
                         Foil price = sum of each layer&apos;s area. Final amount is confirmed by our production system.

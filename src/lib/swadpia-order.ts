@@ -805,14 +805,16 @@ export async function selectOrderOptions(
   for (const [k, v] of Object.entries(options)) {
     if (isFinishingKey(k)) finishingOpts[k] = v
   }
-  // OMO-3257 면적 가드: 박 레이어(최대 3)가 있으면 성원 chk_size_low/high 와 동일 기준
-  //   (640 ≤ 가로×세로 ≤ 60000 mm²)을 발주 전에 검증한다. 범위 밖이면 오발주 방지를 위해 중단.
+  // OMO-3257 박 사이즈 가드: 박 레이어(최대 3)의 가로/세로 양수·개수 검증을 발주 전에 수행한다.
+  //   성원 chk_size_high 의 per-axis(용지 cut 규격 대비) 상한은 라이브 RE(OMO-3262)로 확정됐고,
+  //   용지 cut 치수 배선 후 paperCut 인자로 강화한다(OMO-3264). 그 전까지 최종 사이즈 권위는
+  //   activateFinishings → calcuEstimate 가 트리거하는 성원 자체 chk_size_low/high 다.
   const foilLayers = parseFoilLayersFromOptions(finishingOpts)
   if (foilLayers.length > 0) {
     const v = validateFoilLayers(foilLayers)
     if (!v.ok) {
       throw new Error(
-        `[swadpia-order] 박 면적 검증 실패(성원 chk_size 범위 640~60000mm², 최대 ${MAX_FOIL_LAYERS}레이어) — ` +
+        `[swadpia-order] 박 레이어 검증 실패(가로/세로 양수, 최대 ${MAX_FOIL_LAYERS}레이어) — ` +
           `발주 중단: ${v.errors.join(' / ')}`,
       )
     }

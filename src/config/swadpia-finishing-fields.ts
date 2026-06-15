@@ -324,10 +324,6 @@ export function expandFinishingToSwadpiaFields(
 /** 박 레이어 최대 개수(성원 _1/_2/_3 세트). */
 export const MAX_FOIL_LAYERS = 3
 
-/** 성원 chk_size_low / chk_size_high 가드: 레이어 면적(가로×세로 mm²) 허용 범위. */
-export const FOIL_AREA_MIN_MM2 = 640
-export const FOIL_AREA_MAX_MM2 = 60000
-
 /** 박 종류(BKT0x) / 면(BKD10/20/30) 기본값. UI 미선택 시 사용. */
 export const FOIL_DEFAULT_BAK_TYPE = 'BKT02' // 금박(유광)
 export const FOIL_DEFAULT_BAK_SIDE = 'BKD10' // 전면
@@ -350,10 +346,29 @@ export interface FoilLayerValidation {
 }
 
 /**
- * 박 레이어 배열을 성원 면적 가드(chk_size_low/high)와 동일 기준으로 검증한다.
- * 각 레이어 640 ≤ 가로×세로 ≤ 60000 mm², 개수 1..3. 범위 밖이면 주문 전 차단.
+ * 성원 박 사이즈 가드(chk_size_low/high)는 라이브 RE(OMO-3262) 결과 **고정 면적창이
+ * 아니라 용지 cut 규격(가로/세로 mm) 대비 per-axis 상한**으로 확인됐다:
+ *   유효 조건 = 0 < x ≤ cutX && 0 < y ≤ cutY (면적 하한 없음 — 2×2mm 도 정상).
+ * 따라서 검증에 paperCut(용지 재단 규격 mm)을 주면 per-axis 로 차단하고,
+ * 없으면 양수·개수만 본다(거짓거부 방지). 정밀 per-axis 데이터 배선은 OMO-3264.
  */
-export function validateFoilLayers(layers: FoilLayer[]): FoilLayerValidation {
+export interface FoilPaperCut {
+  /** 용지 재단 가로(mm) */
+  cutX: number
+  /** 용지 재단 세로(mm) */
+  cutY: number
+}
+
+/**
+ * 박 레이어 배열을 검증한다.
+ *  - 개수 1..MAX_FOIL_LAYERS, 각 레이어 가로/세로 > 0.
+ *  - paperCut 가 주어지면 성원 chk_size_high 와 동일하게 per-axis 상한(가로/세로 ≤ 용지 cut)
+ *    을 적용한다. paperCut 미지정 시 양수 검사만(면적창 가정 제거 — OMO-3262 RE).
+ */
+export function validateFoilLayers(
+  layers: FoilLayer[],
+  paperCut?: FoilPaperCut,
+): FoilLayerValidation {
   const errors: string[] = []
   if (layers.length < 1) errors.push('박 레이어가 최소 1개 필요합니다.')
   if (layers.length > MAX_FOIL_LAYERS) {
@@ -367,11 +382,13 @@ export function validateFoilLayers(layers: FoilLayer[]): FoilLayerValidation {
       errors.push(`박 레이어 ${n}: 가로·세로(mm)를 0보다 큰 값으로 입력하세요.`)
       return
     }
-    const area = x * y
-    if (area < FOIL_AREA_MIN_MM2) {
-      errors.push(`박 레이어 ${n}: 면적 ${area}mm² 가 최소 ${FOIL_AREA_MIN_MM2}mm² 미만입니다.`)
-    } else if (area > FOIL_AREA_MAX_MM2) {
-      errors.push(`박 레이어 ${n}: 면적 ${area}mm² 가 최대 ${FOIL_AREA_MAX_MM2}mm² 초과입니다.`)
+    if (paperCut) {
+      if (x > paperCut.cutX) {
+        errors.push(`박 레이어 ${n}: 가로 ${x}mm 가 용지 규격(${paperCut.cutX}mm)보다 큽니다.`)
+      }
+      if (y > paperCut.cutY) {
+        errors.push(`박 레이어 ${n}: 세로 ${y}mm 가 용지 규격(${paperCut.cutY}mm)보다 큽니다.`)
+      }
     }
   })
   return { ok: errors.length === 0, errors }
