@@ -50,6 +50,12 @@ async function OrderPageContent({ searchParams }: PageProps) {
       selectedOptions[opt.option_type] = params[opt.option_type]
     }
   }
+  // OMO-3196: 후가공은 DB option_type 행이 아니라 카탈로그 기반 선택이므로 위 루프가
+  // 잡지 못한다. `finishing`(콤마구분 value) 을 그대로 전달해 자동발주 파이프라인
+  // (expandFinishingToSwadpiaFields) 이 성원 폼 필드로 확장하도록 한다.
+  if (params.finishing) {
+    selectedOptions.finishing = params.finishing
+  }
 
   const extraPricesKrw = options
     .filter((o) => selectedOptions[o.option_type] === o.value)
