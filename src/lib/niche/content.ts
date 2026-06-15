@@ -20,6 +20,9 @@ import {
   type InternalLink,
 } from '@/lib/niche/professions'
 import { getFinishes, presetFinishingValues } from '@/lib/niche/finishes'
+import { getStickerNiche } from '@/lib/niche/seeds/stickers'
+import { getFlyerNiche } from '@/lib/niche/seeds/flyers'
+import { getPosterNiche } from '@/lib/niche/seeds/posters'
 
 export type { FaqItem, InternalLink }
 
@@ -165,7 +168,7 @@ const NICHE_GROUPS: Record<string, NicheGroupConfig> = {
     hubMetaDescription:
       'Die-cut, kiss-cut, vinyl and holographic stickers built for your brand, product or event. Find the sticker designed for how you use it.',
     hubSubhead: 'Durable, vivid stickers — tuned for how you actually use them.',
-    loadSeed: async () => [],
+    loadSeed: getStickerNiche,
     mergeDb: true,
   },
   flyers: {
@@ -176,7 +179,7 @@ const NICHE_GROUPS: Record<string, NicheGroupConfig> = {
     hubMetaDescription:
       'Promotional, event and menu flyers on premium stock with finishes that make them worth keeping. Find the flyer built for your campaign.',
     hubSubhead: 'Premium stock and finishes, designed around how you hand a flyer out.',
-    loadSeed: async () => [],
+    loadSeed: getFlyerNiche,
     mergeDb: true,
   },
   posters: {
@@ -187,7 +190,7 @@ const NICHE_GROUPS: Record<string, NicheGroupConfig> = {
     hubMetaDescription:
       'Large-format event, retail and art posters on premium stock with vivid color. Find the poster built for where it hangs.',
     hubSubhead: 'Large-format, vivid color — tuned for where the poster hangs.',
-    loadSeed: async () => [],
+    loadSeed: getPosterNiche,
     mergeDb: true,
   },
   labels: {
