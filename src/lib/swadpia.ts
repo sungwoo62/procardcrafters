@@ -138,10 +138,15 @@ export const CATEGORY_MAP: Record<string, string> = {
   'gift-boxes': 'CHI3000',
   'cake-boxes': 'CHI3000',
   'tube-boxes': 'CHI3000',
-  // 쇼핑백/봉투백
-  'paper-shopping-bags': 'CPK4000',     // 일반쇼핑백
-  'kraft-bags': 'CPK4000',
-  'gift-bags': 'CPK2000',               // 리본&브레이드 쇼핑백
+  // 쇼핑백 — 성원 상단 4버튼 = 4개 독립 category_code (OMO-3197, 라이브 재크롤 검증)
+  //   CPK2000 리본&브레이드 쇼핑백 / CPK4000 종이끈 쇼핑백 /
+  //   CPK3000 끈없는 쇼핑백 / CPK5000 소량 쇼핑백(50·100 전용)
+  // 옵션(용지/사이즈/수량)은 scripts/omo3197-bag-options.json 에 라이브 스냅샷 보관.
+  'paper-shopping-bags': 'CPK4000',     // 종이끈 쇼핑백 (꼬임끈 손잡이)
+  'kraft-bags': 'CPK4000',              // 크라프트지 = CPK4000 용지 변형(동일 카테고리)
+  'gift-bags': 'CPK2000',               // 리본&브레이드 쇼핑백 (리본 손잡이)
+  'handleless-bags': 'CPK3000',         // 끈없는 쇼핑백
+  'small-batch-bags': 'CPK5000',        // 소량 쇼핑백 (50·100매)
 }
 
 // ─── 듀얼 프레스 라우팅 (OMO-3061) ────────────────────────────
