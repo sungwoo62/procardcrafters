@@ -625,10 +625,27 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             </span>
           </div>
         )}
-        {finishingUsd > 0 && (
-          <div className="flex justify-between text-sm text-gray-600">
-            <span>Finishing ({finishSel.size} selected)</span>
-            <span>+ ${finishingUsd.toFixed(2)}</span>
+        {/* OMO-3196: 선택 후가공을 항목별 옵션가로 itemize — 최종 비용에 각 옵션가 확인 */}
+        {finishSel.size > 0 && (
+          <div className="border-t border-gray-200 pt-2 space-y-1">
+            {finishingOptions
+              .filter((f) => finishSel.has(f.value))
+              .map((f) => {
+                const krw = finishingSurchargeKrw(f.value, product.category)
+                const usd = krw ? finishUsd(krw) : null
+                return (
+                  <div key={f.value} className="flex justify-between text-xs text-gray-500">
+                    <span>+ {f.label_en} <span className="text-gray-400">({f.label_ko})</span></span>
+                    <span className={usd ? '' : 'text-gray-400'}>{usd ? `+ $${usd.toFixed(2)}` : 'quote'}</span>
+                  </div>
+                )
+              })}
+            {finishingUsd > 0 && (
+              <div className="flex justify-between text-sm text-gray-700 font-medium">
+                <span>Finishing subtotal</span>
+                <span>+ ${finishingUsd.toFixed(2)}</span>
+              </div>
+            )}
           </div>
         )}
         {rushUsd > 0 && (
