@@ -1,10 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Custom Die-Cut">
-  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#7c3aed"/>
-  </linearGradient></defs>
-  <rect width="800" height="600" fill="url(#g)"/>
-  <rect x="48" y="48" width="704" height="504" rx="28" fill="#ffffff" opacity="0.08"/>
-  <text x="400" y="300" font-size="140" text-anchor="middle" dominant-baseline="central">✂️</text>
-  <text x="400" y="470" font-size="42" font-family="Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="middle">Custom Die-Cut</text>
-  <text x="400" y="525" font-size="24" font-family="Arial, sans-serif" fill="#ffffff" opacity="0.85" text-anchor="middle">ProCardCrafters &#183; sample mockup</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" role="img" aria-label="Custom Die-Cut (sample mockup)"><defs><linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e2e8f0"/><stop offset="1" stop-color="#cbd5e1"/></linearGradient><filter id="sh" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="14" stdDeviation="16" flood-color="#0f172a" flood-opacity="0.28"/></filter></defs><rect width="800" height="600" fill="url(#bg)"/><polygon points="400,108 446,210 558,210 468,278 502,388 400,322 298,388 332,278 242,210 354,210" fill="#fde68a" filter="url(#sh)"/><polygon points="400,108 446,210 558,210 468,278 502,388 400,322 298,388 332,278 242,210 354,210" fill="none" stroke="#ffffff" stroke-width="9" stroke-linejoin="round"/><text x="400" y="268" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="44" font-weight="900" fill="#b45309">LOGO</text><text x="400" y="470" text-anchor="middle" font-family="Helvetica,Arial,sans-serif" font-size="20" fill="#475569">cut to the exact outline — no border</text><rect x="0" y="540" width="800" height="60" fill="#0f172a" opacity="0.82"/><text x="40" y="578" font-family="Helvetica,Arial,sans-serif" font-size="30" font-weight="700" fill="#ffffff">Custom Die-Cut</text><text x="760" y="577" text-anchor="end" font-family="Helvetica,Arial,sans-serif" font-size="19" fill="#cbd5e1">ProCardCrafters &#183; sample mockup</text></svg>
