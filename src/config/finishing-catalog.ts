@@ -297,39 +297,7 @@ export function finishingsForCategory(category: string): FinishingDef[] {
   return FINISHING_CATALOG.filter(f => f.fits.includes(category))
 }
 
-// ── OMO-3196 (보드 재요청): 후가공 클릭 시 금액 반영 ──────────────────────────
-//   성원 calcuEstimate 라이브 probe(scripts/test-artifacts/omo3196/amt-CNC1000.json,
-//   2026-06-15)로 명함(CNC1000) surcharge 추출. 박/형압은 면적 50×30mm 기준.
-//   기존 검증치(귀도리 3000·에폭시 22500·오시/미싱 7000, OMO-2961)와 일치 확인.
-//   비-명함 전용(coating/partial_coating/tape/window/binding/folding/stitching)은
-//   카테고리별 검증치(OMO-3022/3030). 단위 = KRW, 주문당 1회 정액(성원 정책).
-//   ※사이즈/수량/용지에 따라 변동 가능 → UI 에서 "예상가, 제작 전 확정" 명시.
-const FINISHING_SURCHARGE_KRW: Record<string, number> = {
-  foil_stamp: 22300,
-  deboss_emboss: 21400,
-  die_cut: 21500,
-  drilled_hole: 3800,
-  round_corner: 3000,
-  epoxy: 22500,
-  score_crease: 7000,
-  perforation: 7000,
-  binding: 8000,
-  folding: 20000,
-  stitching: 40000,
-  window_patch: 77000,
-  tape: 23000,
-  coating: 38000,
-  partial_coating: 150000,
-}
-
-// 명함류는 코팅/별색이 용지·인쇄에 내장(별도 정액 없음) → 견적 처리.
-const CARD_CATEGORIES = new Set(['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards'])
-
-/** 후가공 surcharge(KRW) — 카테고리 고려. 검증치 없으면 null(견적). */
-export function finishingSurchargeKrw(value: string, category: string): number | null {
-  if ((value === 'coating' || value === 'spot_color') && CARD_CATEGORIES.has(category)) return null
-  return FINISHING_SURCHARGE_KRW[value] ?? null
-}
+// 후가공 surcharge(수량 반영)는 finishing-surcharge.ts 로 이동(OMO-3196 보드 재요청 — quote 제거 + 수량별 실가격).
 
 // ── OMO-2705: 요소(element) 단위 후가공 (Vistaprint식) ─────────────────────────
 // 에디터에서 텍스트/벡터 요소에 직접 켜는 후가공 종류. 카탈로그 value 재사용.

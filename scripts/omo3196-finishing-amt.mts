@@ -59,8 +59,8 @@ async function main() {
 
     await page.goto(`${BASE}/goods/goods_view/${CATEGORY}/1`, { waitUntil: 'networkidle', timeout: 30000 })
 
-    // 용지/사이즈/수량 첫 옵션 선택
-    for (const f of ['paper_code', 'paper_size', 'paper_qty']) {
+    // 용지/사이즈 첫 옵션 선택
+    for (const f of ['paper_code', 'paper_size']) {
       const sel = await page.$(`select[name="${f}"]`)
       if (sel) {
         await sel.evaluate((el: Element) => {
@@ -72,40 +72,70 @@ async function main() {
       }
     }
 
-    for (const f of FIN) {
-      await page.evaluate(({ type, fields }: { type: string; fields: Record<string, string> }) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const w = window as any
-        const chk = document.getElementById(`chk_is_${type}`) as HTMLInputElement | null
-        if (chk) { chk.checked = true; chk.dispatchEvent(new Event('click', { bubbles: true })); chk.dispatchEvent(new Event('change', { bubbles: true })) }
-        for (const fn of [`chg${type[0].toUpperCase()}${type.slice(1)}`, `set${type[0].toUpperCase()}${type.slice(1)}`, 'setIsPostpress']) {
-          try { if (typeof w[fn] === 'function') w[fn](type) } catch { /* */ }
-        }
-        for (const [name, value] of Object.entries(fields)) {
-          const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLSelectElement | null
-          if (el) { (el as HTMLInputElement).value = value; el.dispatchEvent(new Event('change', { bubbles: true })) }
-        }
-        if (type === 'guidori') {
-          for (let i = 1; i <= 4; i++) {
-            const p = document.querySelector(`[name="guidori_position${i}"]`) as HTMLInputElement | null
-            if (p) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })) }
+    // 수량 옵션 목록 추출 → 수량별로 후가공 surcharge 가 변하는지 확인
+    const qtyOptions: string[] = await page.evaluate(() => {
+      const s = document.querySelector('select[name="paper_qty"]') as HTMLSelectElement | null
+      if (!s) return []
+      return Array.from(s.options).map((o) => o.value).filter((v) => v && v !== '')
+    })
+    result.qtyOptions = qtyOptions
+    // 컨피규레이터 수량범위만(MAXQTY 이하 + 바로 위 1개). 기본 14000.
+    const MAXQTY = parseInt(process.env.MAXQTY || '14000', 10)
+    const probeQtys = !qtyOptions.length
+      ? ['']
+      : (() => {
+          const sorted = [...qtyOptions].sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+          const out: string[] = []
+          for (const q of sorted) { out.push(q); if (parseInt(q, 10) > MAXQTY) break }
+          return out
+        })()
+    const byQty: Record<string, Record<string, string | null>> = {}
+
+    for (const qty of probeQtys) {
+      if (qty) {
+        await page.evaluate((q: string) => {
+          const s = document.querySelector('select[name="paper_qty"]') as HTMLSelectElement | null
+          if (s) { s.value = q; s.dispatchEvent(new Event('change', { bubbles: true })) }
+        }, qty)
+        await page.waitForTimeout(700)
+      }
+      const perFin: Record<string, string | null> = {}
+      for (const f of FIN) {
+        await page.evaluate(({ type, fields }: { type: string; fields: Record<string, string> }) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const w = window as any
+          const chk = document.getElementById(`chk_is_${type}`) as HTMLInputElement | null
+          if (chk) { chk.checked = true; chk.dispatchEvent(new Event('click', { bubbles: true })); chk.dispatchEvent(new Event('change', { bubbles: true })) }
+          for (const fn of [`chg${type[0].toUpperCase()}${type.slice(1)}`, `set${type[0].toUpperCase()}${type.slice(1)}`, 'setIsPostpress']) {
+            try { if (typeof w[fn] === 'function') w[fn](type) } catch { /* */ }
           }
-        }
-        try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
-      }, { type: f.type, fields: f.fields })
-      await page.waitForTimeout(900)
-      amounts[f.key] = await readAmt(page, f.type)
-      // 다음 후가공 격리 위해 chk 해제
-      await page.evaluate((type: string) => {
-        const chk = document.getElementById(`chk_is_${type}`) as HTMLInputElement | null
-        if (chk && chk.checked) { chk.checked = false; chk.dispatchEvent(new Event('click', { bubbles: true })); chk.dispatchEvent(new Event('change', { bubbles: true })) }
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const w = window as any
-        try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
-      }, f.type)
-      await page.waitForTimeout(400)
+          for (const [name, value] of Object.entries(fields)) {
+            const el = document.querySelector(`[name="${name}"]`) as HTMLInputElement | HTMLSelectElement | null
+            if (el) { (el as HTMLInputElement).value = value; el.dispatchEvent(new Event('change', { bubbles: true })) }
+          }
+          if (type === 'guidori') {
+            for (let i = 1; i <= 4; i++) {
+              const p = document.querySelector(`[name="guidori_position${i}"]`) as HTMLInputElement | null
+              if (p) { p.checked = true; p.dispatchEvent(new Event('change', { bubbles: true })) }
+            }
+          }
+          try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+        }, { type: f.type, fields: f.fields })
+        await page.waitForTimeout(700)
+        perFin[f.key] = await readAmt(page, f.type)
+        await page.evaluate((type: string) => {
+          const chk = document.getElementById(`chk_is_${type}`) as HTMLInputElement | null
+          if (chk && chk.checked) { chk.checked = false; chk.dispatchEvent(new Event('click', { bubbles: true })); chk.dispatchEvent(new Event('change', { bubbles: true })) }
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const w = window as any
+          try { w.product1 && w.product1.calcuEstimate() } catch { /* */ }
+        }, f.type)
+        await page.waitForTimeout(300)
+      }
+      byQty[qty || 'default'] = perFin
     }
-    result.amounts = amounts
+    result.byQty = byQty
+    result.amounts = byQty[probeQtys[0] || 'default']
   } catch (e) {
     result.error = String(e)
   } finally {
