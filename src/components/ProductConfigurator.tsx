@@ -8,7 +8,8 @@ import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { pickCheapestPress, type SwadpiaPaper, type SwadpiaPrintEntry, type SwadpiaSize, type PressKind } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
 import SizePopup from '@/components/SizePopup'
-import { finishingsForCategory, finishingSurchargeKrw } from '@/config/finishing-catalog'
+import { finishingsForCategory } from '@/config/finishing-catalog'
+import { finishingSurchargeKrw } from '@/config/finishing-surcharge'
 import { paperDisplay } from '@/config/paper-display'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
@@ -103,8 +104,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   // OMO-3196: 후가공 선택 — 카탈로그(제품 카테고리에 맞는 후가공)에서 가져온다.
   // DB option 행이 아니라 카탈로그 기반이라, 후가공이 항상 노출되고 hover 팝업으로
   // 맞는 이미지/설명을 보여준다. 선택은 콤마구분 `finishing` 으로 주문/에디터 URL 에 실린다.
+  // 컨피규레이터에는 실가격(또는 Included)이 잡히는 후가공만 노출 → "quote" 제거(OMO-3196).
   const finishingOptions = useMemo(
-    () => finishingsForCategory(product.category),
+    () => finishingsForCategory(product.category).filter(
+      (f) => finishingSurchargeKrw(f.value, product.category, 1000) !== null,
+    ),
     [product.category],
   )
   const [finishSel, setFinishSel] = useState<Set<string>>(new Set())
@@ -116,14 +120,6 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       calculatePriceFromSwadpia({ swadpiaCostKrw: krw, marginMultiplier: product.margin_multiplier, exchangeRate }),
     [product.margin_multiplier, exchangeRate],
   )
-  const finishingUsd = useMemo(() => {
-    let krw = 0
-    for (const v of finishSel) {
-      const s = finishingSurchargeKrw(v, product.category)
-      if (s) krw += s
-    }
-    return krw > 0 ? finishUsd(krw) : 0
-  }, [finishSel, product.category, finishUsd])
 
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
@@ -173,6 +169,16 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     const parsed = qtyValue ? parseInt(qtyValue, 10) : NaN
     return Number.isFinite(parsed) && parsed > 0 ? parsed : 100
   }, [selections])
+
+  // OMO-3196: 선택 후가공 surcharge 합 → USD. 수량(selectedQty)에 따라 변동(성원 매트릭스).
+  const finishingUsd = useMemo(() => {
+    let krw = 0
+    for (const v of finishSel) {
+      const s = finishingSurchargeKrw(v, product.category, selectedQty)
+      if (s) krw += s
+    }
+    return krw > 0 ? finishUsd(krw) : 0
+  }, [finishSel, product.category, selectedQty, finishUsd])
 
   // Determine paper_code for Swadpia print cost lookup.
   // Prefer the user-selected paper_code (from DB options) if it has entries in the Swadpia matrix.
@@ -480,8 +486,8 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             {finishingOptions.map((f) => {
               const isSelected = finishSel.has(f.value)
               const hoverKey = `finishing:${f.value}`
-              const sKrw = finishingSurchargeKrw(f.value, product.category)
-              const sUsd = sKrw ? finishUsd(sKrw) : null
+              const sKrw = finishingSurchargeKrw(f.value, product.category, selectedQty)
+              const sUsd = sKrw && sKrw > 0 ? finishUsd(sKrw) : null
               return (
                 <div key={f.value} className="relative">
                   {hoveredPaper === hoverKey && (
@@ -516,7 +522,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                   >
                     {f.label_en}
                     <span className={`ml-1.5 text-xs ${isSelected ? 'text-blue-600' : 'text-gray-400'}`}>
-                      {sUsd ? `+$${sUsd.toFixed(2)}` : 'quote'}
+                      {sUsd ? `+$${sUsd.toFixed(2)}` : 'Included'}
                     </span>
                     <span className="ml-1 text-gray-400">ⓘ</span>
                   </button>
@@ -525,7 +531,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             })}
           </div>
           <p className="mt-1.5 text-[11px] text-gray-500">
-            💡 Tap or hover ⓘ to preview each finish. Prices are estimates from our wholesale rates (vary by size/quantity) — confirmed before production. &quot;quote&quot; items are priced individually.
+            💡 Tap or hover ⓘ to preview each finish. Prices update with your quantity. &quot;Included&quot; means it&apos;s built into the paper/print at no extra cost.
           </p>
         </div>
       )}
@@ -631,12 +637,12 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             {finishingOptions
               .filter((f) => finishSel.has(f.value))
               .map((f) => {
-                const krw = finishingSurchargeKrw(f.value, product.category)
-                const usd = krw ? finishUsd(krw) : null
+                const krw = finishingSurchargeKrw(f.value, product.category, selectedQty)
+                const usd = krw && krw > 0 ? finishUsd(krw) : null
                 return (
                   <div key={f.value} className="flex justify-between text-xs text-gray-500">
                     <span>+ {f.label_en} <span className="text-gray-400">({f.label_ko})</span></span>
-                    <span className={usd ? '' : 'text-gray-400'}>{usd ? `+ $${usd.toFixed(2)}` : 'quote'}</span>
+                    <span className={usd ? '' : 'text-gray-400'}>{usd ? `+ $${usd.toFixed(2)}` : 'Included'}</span>
                   </div>
                 )
               })}
