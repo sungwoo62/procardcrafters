@@ -49,7 +49,7 @@ const TEXTURE_SVG: Record<string, string> = {
 
 const DEFAULT_SVG = makeSVG('#f0f0f0')
 
-function getTextureSrc(value: string, imageUrl: string | null): string {
+export function getTextureSrc(value: string, imageUrl: string | null): string {
   if (imageUrl) return imageUrl
   const svg = TEXTURE_SVG[value] ?? DEFAULT_SVG
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
@@ -57,7 +57,7 @@ function getTextureSrc(value: string, imageUrl: string | null): string {
 
 // 용지 설명 (Swadpia 코드 기반) — DB description_en 이 비어있을 때의 폴백.
 // OMO-3195: 코드 단위라 같은 용지를 쓰는 모든 제품에 자동 적용된다.
-const PAPER_DESC: Record<string, string> = {
+export const PAPER_DESC: Record<string, string> = {
   SNW120W00: 'Smooth matte stock with a clean, non-glare surface. Light weight — best for flyers and inserts.',
   SNW150W00: 'Smooth matte paper with a soft, premium feel. Great for flyers and brochures.',
   SNW180W00: 'Sturdy matte stock that feels substantial in hand. Ideal for postcards and menus.',
@@ -81,7 +81,7 @@ const PAPER_DESC: Record<string, string> = {
 }
 
 // 용지 특성 태그 (Swadpia 코드 기반)
-const PAPER_TAGS: Record<string, string[]> = {
+export const PAPER_TAGS: Record<string, string[]> = {
   SNW120W00: ['Light', 'Opaque', 'Bright white'],
   SNW150W00: ['Medium weight', 'Opaque', 'Bright white'],
   SNW180W00: ['Substantial feel', 'Premium', 'Bright white'],

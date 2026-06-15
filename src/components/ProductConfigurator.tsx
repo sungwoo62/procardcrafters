@@ -13,7 +13,7 @@ import {
 } from '@/config/finishing-surcharge'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
-import PaperPopup from '@/components/PaperPopup'
+import PaperDropdown from '@/components/PaperDropdown'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
 interface SwadpiaClientData {
@@ -111,7 +111,6 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   }, [grouped])
 
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
-  const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
   const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
 
   // 후가공 선택 상태(멀티셀렉트) + 박/형압 면적(가로×세로 mm) — OMO-2664
@@ -427,6 +426,26 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         }
 
         const typeHasPreview = RICH_PREVIEW_TYPES.has(type)
+
+        // OMO-3195: 미리보기가 있는 옵션(용지/후가공)은 버튼 그리드 대신
+        // 썸네일·설명·태그를 인라인 노출하는 드롭다운으로 보여준다 —
+        // 버튼이 많아 지저분하던 문제를 없애면서, 고를 때 자료를 함께 보게 한다.
+        if (typeHasPreview) {
+          return (
+            <div key={type}>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {OPTION_LABEL[type] ?? type}
+              </label>
+              <PaperDropdown
+                options={opts}
+                value={selections[type] ?? ''}
+                onChange={(value) => setSelections((prev) => ({ ...prev, [type]: value }))}
+                label={OPTION_LABEL[type] ?? type}
+              />
+            </div>
+          )
+        }
+
         return (
           <div key={type}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -435,41 +454,21 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             <div className="flex flex-wrap gap-2">
               {opts.map((opt) => {
                 const isSelected = selections[type] === opt.value
-                const hasPreview = typeHasPreview
-                const hoverKey = `${type}:${opt.value}`
-
                 return (
-                  <div key={opt.value} className="relative">
-                    {hasPreview && hoveredPaper === hoverKey && (
-                      <PaperPopup option={opt} />
-                    )}
-
-                    <button
-                      // OMO-3195: tapping also opens the material preview so touch users (no hover) can see it.
-                      onClick={() => {
-                        setSelections((prev) => ({ ...prev, [type]: opt.value }))
-                        if (hasPreview) setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
-                      }}
-                      onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
-                      onMouseLeave={() => hasPreview && setHoveredPaper(null)}
-                      className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
-                        isSelected
-                          ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
-                          : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-                      }`}
-                    >
-                      {opt.label_en}
-                      {hasPreview && <span className="ml-1.5 text-gray-400">ⓘ</span>}
-                    </button>
-                  </div>
+                  <button
+                    key={opt.value}
+                    onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {opt.label_en}
+                  </button>
                 )
               })}
             </div>
-            {typeHasPreview && (
-              <p className="mt-1.5 text-[11px] text-gray-500">
-                💡 Tap or hover ⓘ to preview the texture and material details.
-              </p>
-            )}
           </div>
         )
       })}
