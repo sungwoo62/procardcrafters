@@ -366,6 +366,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
 
       {/* Option Selection */}
       {Array.from(grouped.entries()).map(([type, opts]) => {
+        // OMO-3196: DB 의 finish/finishing 옵션은 아래 카탈로그 기반 후가공 섹션이 단일 처리한다(중복 방지).
+        if (type === 'finish' || type === 'finishing') return null
+
         const isQtyType = QUANTITY_TYPES.has(type)
 
         if (isQtyType) {
