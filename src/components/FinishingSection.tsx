@@ -38,8 +38,8 @@ export default function FinishingSection({ productCategory }: Props) {
                 />
               </div>
               <div className="p-3">
-                <div className="font-semibold text-gray-900 text-sm">{f.label_en}</div>
-                <div className="text-xs font-medium text-blue-600 mt-0.5 mb-1.5">{f.label_ko}</div>
+                {/* OMO-3196 (보드): 고객용 — 한글(label_ko) 제거, 영문만 노출. */}
+                <div className="font-semibold text-gray-900 text-sm mb-1.5">{f.label_en}</div>
                 <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{f.description_en}</p>
               </div>
             </div>

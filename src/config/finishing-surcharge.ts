@@ -45,9 +45,27 @@ const CARD_CATEGORIES = new Set([
   'letterpress_cards',
 ])
 
-function nearestTier(tiers: Tier[], qty: number): Tier {
-  for (const t of tiers) if (t.qty >= qty) return t
-  return tiers[tiers.length - 1]
+// OMO-3196 (보드): 수량 드롭다운과 연동해 수량이 늘수록 금액도 증가하도록 보간한다.
+//   성원 매트릭스 tier 사이는 선형 보간, 최소 tier(예: 명함 500매) 미만/최대 초과는
+//   해당 tier 의 매당 단가로 비례(곱) 적용 → 수량 변경 시마다 금액이 바뀐다.
+function interpolatedSurcharge(tiers: Tier[], value: string, qty: number): number | undefined {
+  const pts = tiers.filter((t) => t.krw[value] !== undefined).map((t) => ({ qty: t.qty, krw: t.krw[value] }))
+  if (!pts.length) return undefined
+  pts.sort((a, b) => a.qty - b.qty)
+  if (qty <= pts[0].qty) {
+    // 최소 tier 미만: 매당 단가 × 수량(0 이면 0 유지 = Included)
+    return pts[0].krw === 0 ? 0 : Math.round((pts[0].krw / pts[0].qty) * qty)
+  }
+  for (let i = 0; i < pts.length - 1; i++) {
+    const a = pts[i]
+    const b = pts[i + 1]
+    if (qty <= b.qty) {
+      const f = (qty - a.qty) / (b.qty - a.qty)
+      return Math.round(a.krw + (b.krw - a.krw) * f)
+    }
+  }
+  const last = pts[pts.length - 1]
+  return last.krw === 0 ? 0 : Math.round((last.krw / last.qty) * qty)
 }
 
 /**
@@ -59,8 +77,7 @@ export function finishingSurchargeKrw(value: string, category: string, qty: numb
   if ((value === 'coating' || value === 'spot_color') && CARD_CATEGORIES.has(category)) return 0
   const m = MATRIX[category]
   if (m && m.length) {
-    const tier = nearestTier(m, qty > 0 ? qty : m[0].qty)
-    const v = tier.krw[value]
+    const v = interpolatedSurcharge(m, value, qty > 0 ? qty : m[0].qty)
     return v === undefined ? null : v
   }
   return FLAT_KRW[value] ?? null
