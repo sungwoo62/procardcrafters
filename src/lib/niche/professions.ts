@@ -250,6 +250,350 @@ const SEED_PROFESSIONS: ProfessionContent[] = [
     ],
     priceFrom: 39,
   },
+  {
+    slug: 'dentists',
+    profession: 'Dentists',
+    professionSingular: 'Dentist',
+    h1: 'Premium Business Cards for Dentists & Dental Practices',
+    metaTitle: 'Business Cards for Dentists — Clean, Premium Stock & QR Recall | ProCardCrafters',
+    metaDescription:
+      'Appointment and referral cards for dental practices. Clean heavyweight stock, restrained foil and a QR that opens online booking or recall reminders. Proofed before printing. From $39.',
+    heroSubhead:
+      'A patient keeps your card until their next cleaning. Make it look as clean as your chair-side does.',
+    intro:
+      "A dental practice card lives on a fridge for six months between cleanings, doubles as an appointment reminder, and travels through referral networks to specialists. A flimsy card undercuts the clean, careful impression a practice depends on. ProCardCrafters prints dentists on bright, heavyweight stock with restrained foil and a QR that drops a patient straight into online booking or a recall reminder — so the card that survives the fridge is the one that books the next visit.",
+    useCases: [
+      'Appointment and recall cards that double as a six-month reminder',
+      'Referral cards passed to orthodontists, oral surgeons and specialists',
+      'New-patient welcome kits and front-desk handouts',
+      'A printed QR that opens online booking, insurance info or a recall form',
+    ],
+    recommendedFinishes: ['foil-stamping', 'textured-stock', 'die-cut', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can the card double as an appointment reminder?',
+        answer:
+          'Yes. We can leave a blank line or a printed field for the next appointment date and add a QR to your booking page, so one card handles both the referral and the recall.',
+      },
+      {
+        question: 'Can you match our practice branding and add provider details?',
+        answer:
+          'Yes. We match your palette, place provider names, credentials and location details clearly, and proof every card before printing.',
+      },
+      {
+        question: 'Which finish reads as clean and professional for a practice?',
+        answer:
+          'A bright heavyweight stock with a single restrained foil accent reads as clean and credible without looking flashy — the visual equivalent of a well-kept office.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for lawyers', href: '/business-cards/for/lawyers' },
+      { label: 'Business cards for financial advisors', href: '/business-cards/for/financial-advisors' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'hair-stylists',
+    profession: 'Hair Stylists',
+    professionSingular: 'Hair Stylist',
+    h1: 'Premium Business Cards for Hair Stylists & Salons',
+    metaTitle: 'Business Cards for Hair Stylists — Foil, Die-Cut & QR Rebooking | ProCardCrafters',
+    metaDescription:
+      'Salon and hair stylist business cards that rebook clients. Metallic foil, custom die-cut shapes and a QR straight to your booking app. Doubles as a rebooking card. From $39.',
+    heroSubhead:
+      'Your card rides home in a purse and comes back as a rebooking. Make it impossible to throw away.',
+    intro:
+      "A stylist's business card is a rebooking tool disguised as a contact card. It goes home in a purse, gets stuck on a mirror, and decides whether a client books with you again or scrolls for someone new. A plain card from a chain printer doesn't match the look clients pay you for. ProCardCrafters prints stylists with bright foil, die-cut shapes and a QR that opens your booking app — so the next appointment is one scan away.",
+    useCases: [
+      'Rebooking cards handed at the chair with the next slot written in',
+      'Referral cards — "bring a friend" offers clients actually keep',
+      'Retail and product shelves at the front desk',
+      'A printed QR straight to your booking app, Instagram or price list',
+    ],
+    recommendedFinishes: ['foil-stamping', 'die-cut', 'raised-gloss', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can the card link straight to my booking app?',
+        answer:
+          'Yes. A printed QR opens Vagaro, Square, GlossGenius, your Instagram or any booking link in one scan — so a client can rebook before they leave the chair.',
+      },
+      {
+        question: 'Can you die-cut the card into a custom shape?',
+        answer:
+          'Absolutely. Rounded, angled or logo-shaped cuts make your card stand out on a mirror or in a purse. Send your mark and we proof the cut before printing.',
+      },
+      {
+        question: 'Which finish looks best for a salon brand?',
+        answer:
+          'Metallic foil with a raised-gloss accent reads as polished and on-trend, and pairs well with bold salon branding. For a softer look, foil on a textured stock works beautifully.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for makeup artists', href: '/business-cards/for/makeup-artists' },
+      { label: 'Business cards for tattoo artists', href: '/business-cards/for/tattoo-artists' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'financial-advisors',
+    profession: 'Financial Advisors',
+    professionSingular: 'Financial Advisor',
+    h1: 'Premium Business Cards for Financial Advisors',
+    metaTitle: 'Business Cards for Financial Advisors — Foil, Heavy Stock & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for financial advisors and planners. Heavyweight stock, restrained foil and a QR to your scheduling page that signal the trust your practice runs on. From $39.',
+    heroSubhead:
+      'You ask clients to trust you with their money. Your card should look like it can be trusted.',
+    intro:
+      "A financial advisor sells trust before anything else, and the business card is the first physical proof of it. Handed across a desk or passed in a referral, a thin, generic card quietly undercuts a conversation about someone's retirement. ProCardCrafters prints advisors on heavyweight stock with restrained foil and a QR to your scheduling page — the understated, credible look of someone people trust with the big decisions.",
+    useCases: [
+      'Client meetings and first consultations across a desk',
+      'Referrals from CPAs, attorneys and existing clients',
+      'Seminars, workshops and networking events',
+      'A printed QR that opens your scheduling page, vCard or firm profile',
+    ],
+    recommendedFinishes: ['foil-stamping', 'emboss-deboss', 'textured-stock', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can you add my certifications and required disclosures?',
+        answer:
+          'Yes. We place CFP®, CFA or other credentials, firm details and any compliance disclosures where they need to go, and proof every card before printing.',
+      },
+      {
+        question: 'Which finish looks credible without looking expensive?',
+        answer:
+          'Restraint reads as trust. Heavyweight stock with a single foil or embossed element — your name or firm mark — looks established and careful, never flashy.',
+      },
+      {
+        question: 'Is a QR code appropriate for a finance professional?',
+        answer:
+          'Yes, used sparingly. A small QR to your scheduling page lets a prospect book a review instantly without crowding the card. Your name and firm stay the focus.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for lawyers', href: '/business-cards/for/lawyers' },
+      { label: 'Business cards for consultants', href: '/business-cards/for/consultants' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'consultants',
+    profession: 'Consultants',
+    professionSingular: 'Consultant',
+    h1: 'Premium Business Cards for Consultants',
+    metaTitle: 'Business Cards for Consultants — Foil, Premium Stock & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for independent consultants and advisors. Heavyweight stock, clean foil and a QR to your booking or LinkedIn that make a solo practice look like a firm. From $39.',
+    heroSubhead:
+      'As a consultant, you are the brand. Hand over a card that bills like one.',
+    intro:
+      "For an independent consultant, the business card is the brand — there's no office lobby or letterhead doing the work for you. A thin, template card makes a premium day rate hard to justify. ProCardCrafters prints consultants on heavyweight stock with clean foil and a QR to your booking or LinkedIn, so a one-person practice hands over something that reads like an established firm.",
+    useCases: [
+      'Discovery calls and first client meetings',
+      'Conferences, panels and speaking engagements',
+      'Referral introductions where the card stands in for you',
+      'A printed QR to your booking page, case studies or LinkedIn',
+    ],
+    recommendedFinishes: ['foil-stamping', 'textured-stock', 'emboss-deboss', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can the card link to my booking page or portfolio?',
+        answer:
+          'Yes. A printed QR opens your Calendly, case-study page or LinkedIn in one scan — so a prospect can book a call straight from the card.',
+      },
+      {
+        question: 'How do I make a solo practice look more established?',
+        answer:
+          'Weight and restraint. A heavier stock with a single foil or embossed mark signals permanence and care — the opposite of a disposable template card.',
+      },
+      {
+        question: 'Do you proof before printing the full run?',
+        answer:
+          'Always. Every order is proofed for color and layout before printing, so your foil, stock and details land exactly as designed.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for financial advisors', href: '/business-cards/for/financial-advisors' },
+      { label: 'Business cards for lawyers', href: '/business-cards/for/lawyers' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'interior-designers',
+    profession: 'Interior Designers',
+    professionSingular: 'Interior Designer',
+    h1: 'Premium Business Cards for Interior Designers',
+    metaTitle: 'Business Cards for Interior Designers — Textured Stock, Foil & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for interior designers and decorators. Textured stock, foil and embossing with a QR to your portfolio — a card that proves your taste before you open your book. From $39.',
+    heroSubhead:
+      'Clients hire you for your eye. Your card is the first thing they get to judge it by.',
+    intro:
+      "An interior designer is hired on taste, and the business card is the first object a client holds that you designed. A flat, glossy card sends the wrong signal to someone about to trust you with their home. ProCardCrafters prints designers on textured and specialty stocks with foil and embossing, and a QR to your portfolio — a card that proves your eye before you open your lookbook.",
+    useCases: [
+      'Client consultations and in-home visits',
+      'Showrooms, trade days and design fairs',
+      'Referrals from architects, realtors and contractors',
+      'A printed QR straight to your portfolio or project gallery',
+    ],
+    recommendedFinishes: ['textured-stock', 'foil-stamping', 'emboss-deboss', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can I match the card to my studio palette and materials?',
+        answer:
+          'Yes. We match your brand colors and can pair a textured stock with a foil or embossed mark to echo the materials you work in. Every card is proofed before printing.',
+      },
+      {
+        question: 'Which stock shows the most refined taste?',
+        answer:
+          'A heavyweight cotton or textured stock with a single foil or embossed detail reads as considered and high-end — the tactile equivalent of a well-edited room.',
+      },
+      {
+        question: 'Can the QR open my portfolio?',
+        answer:
+          'Yes. A printed QR can open your portfolio site, an Instagram grid or a specific project gallery in one scan — ideal for showing recent work on the spot.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for realtors', href: '/business-cards/for/realtors' },
+      { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'personal-trainers',
+    profession: 'Personal Trainers',
+    professionSingular: 'Personal Trainer',
+    h1: 'Premium Business Cards for Personal Trainers',
+    metaTitle: 'Business Cards for Personal Trainers — Foil, Durable Stock & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for personal trainers and coaches. Durable foil-stamped cards with a QR to your booking or free-session offer — built to survive a gym bag and book the next client. From $39.',
+    heroSubhead:
+      'You sell results and energy. Hand over a card that looks like both.',
+    intro:
+      "A personal trainer's card gets handed out on the gym floor, tucked into a water-bottle pocket, and passed between members looking for a coach. A limp, smudged card doesn't match the energy you're selling. ProCardCrafters prints trainers on durable, bold foil stock with a QR to your booking page or a free-session offer — a card that survives the gym bag and turns a hallway conversation into a client.",
+    useCases: [
+      'Gym-floor introductions and free-session offers',
+      'Member referrals and "bring a friend" promos',
+      'Bootcamps, classes and fitness expos',
+      'A printed QR to your booking page, free consult or training app',
+    ],
+    recommendedFinishes: ['foil-stamping', 'die-cut', 'textured-stock', 'qr-smart'],
+    faqs: [
+      {
+        question: 'What should the QR code link to?',
+        answer:
+          'The highest-converting target is a free-session or consult booking page, so a prospect can claim it in one scan. Your training app or Instagram are strong second choices.',
+      },
+      {
+        question: 'Will the cards survive a gym bag?',
+        answer:
+          'Yes — that’s what the heavyweight stock and optional protective coating are for. They resist bending and moisture far better than thin standard cardstock.',
+      },
+      {
+        question: 'Can you make the card bold and high-energy?',
+        answer:
+          'Definitely. Bright foil on a dark stock with a die-cut shape reads as bold and athletic — the visual energy that matches what you coach.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for hair stylists', href: '/business-cards/for/hair-stylists' },
+      { label: 'Business cards for makeup artists', href: '/business-cards/for/makeup-artists' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'makeup-artists',
+    profession: 'Makeup Artists',
+    professionSingular: 'Makeup Artist',
+    h1: 'Premium Business Cards for Makeup Artists',
+    metaTitle: 'Business Cards for Makeup Artists — Foil, Raised Gloss & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for makeup artists and MUAs. Metallic foil, raised-gloss accents and a QR straight to your portfolio and booking — a card as polished as your work. From $39.',
+    heroSubhead:
+      'Your work is all about finish. Your card should have one too.',
+    intro:
+      "A makeup artist is booked on portfolio and polish, and the business card is a tiny preview of both. A flat, generic card undersells the finish clients are paying for. ProCardCrafters prints MUAs with metallic foil, raised-gloss accents and a QR to your portfolio or booking — a card that looks as finished as the faces in your feed and turns a bridal trial or shoot into the next booking.",
+    useCases: [
+      'Bridal trials, weddings and events',
+      'Shoots, agencies and collaboration handoffs',
+      'Beauty counters, pop-ups and masterclasses',
+      'A printed QR straight to your portfolio, Instagram or booking calendar',
+    ],
+    recommendedFinishes: ['foil-stamping', 'raised-gloss', 'die-cut', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can the QR link to my Instagram or booking page?',
+        answer:
+          'Yes. A printed QR opens your Instagram, portfolio or booking calendar in one scan — perfect for sending a bride or client straight to your latest looks.',
+      },
+      {
+        question: 'Which finish looks most polished?',
+        answer:
+          'Metallic foil with a raised-gloss accent reads as glossy and high-end, matching beauty branding. On a soft matte stock the contrast makes your logo pop.',
+      },
+      {
+        question: 'Can you die-cut or shape the card?',
+        answer:
+          'Yes. Rounded or custom-shaped cuts make your card stand out in a kit or on a vanity. Send your logo and we proof the cut before printing.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for hair stylists', href: '/business-cards/for/hair-stylists' },
+      { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
+  {
+    slug: 'event-planners',
+    profession: 'Event Planners',
+    professionSingular: 'Event Planner',
+    h1: 'Premium Business Cards for Event Planners',
+    metaTitle: 'Business Cards for Event Planners — Foil, Textured Stock & QR | ProCardCrafters',
+    metaDescription:
+      'Business cards for event and wedding planners. Foil, textured stock and a QR to your portfolio — a card that proves you sweat the details before the first meeting ends. From $39.',
+    heroSubhead:
+      'You’re hired to make everything look flawless. Start with the card in your hand.',
+    intro:
+      "An event planner is hired to make every detail perfect, so a sloppy business card is a contradiction a client notices. Passed to couples, venues and vendors, the card is proof you sweat the small things. ProCardCrafters prints planners on textured stock with foil and a QR to your portfolio — a card that signals taste and precision before the first walkthrough is over.",
+    useCases: [
+      'Consultations with couples and corporate clients',
+      'Vendor and venue referral networks',
+      'Bridal shows, expos and open houses',
+      'A printed QR straight to your portfolio, packages or booking page',
+    ],
+    recommendedFinishes: ['foil-stamping', 'textured-stock', 'raised-gloss', 'qr-smart'],
+    faqs: [
+      {
+        question: 'Can the QR link to my portfolio or packages?',
+        answer:
+          'Yes. A printed QR opens your portfolio, package pricing or booking page in one scan — ideal for handing a couple everything they need at a bridal show.',
+      },
+      {
+        question: 'Which finish signals taste and precision?',
+        answer:
+          'A textured stock with a foil accent reads as refined and detail-oriented — exactly the impression a planner wants to leave. A raised-gloss accent adds a subtle, modern touch.',
+      },
+      {
+        question: 'Can you match my brand and event aesthetic?',
+        answer:
+          'Yes. We match your palette and pair stocks and finishes to your aesthetic, and proof every card before printing so the details are exactly right.',
+      },
+    ],
+    internalLinks: [
+      { label: 'Business cards for photographers', href: '/business-cards/for/photographers' },
+      { label: 'Business cards for interior designers', href: '/business-cards/for/interior-designers' },
+      { label: 'Explore all premium finishes', href: '/business-cards/for' },
+    ],
+    priceFrom: 39,
+  },
 ]
 
 // --- 콘텐츠 로더: SEED + (옵션) procardcrafters Supabase print_niche_pages 병합 ---
