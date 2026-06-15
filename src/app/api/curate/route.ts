@@ -66,6 +66,11 @@ function formatResult(
     .map((r) => toPick(catalog, r))
     .filter((p): p is NonNullable<typeof p> => p !== null)
     .slice(0, 3)
+  // 3개일 때 가운데를 "Most popular" 앵커로 강조(가격 앵커링 → 중간 전환↑).
+  if (picks.length === 3) {
+    picks[1].badge = 'Most popular'
+    picks[1].highlight = true
+  }
   return { summary, heuristic, picks }
 }
 
