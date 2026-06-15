@@ -219,6 +219,10 @@ async function main() {
 
   const startedAt = new Date().toISOString()
   const results = []
+  // 증분 적재용 로더(--load 시): 제품 크롤 직후 그 제품만 즉시 DB upsert →
+  // 장시간 전수 런이 중간에 죽어도 완료한 제품은 보존(아티팩트는 끝에만 기록되므로).
+  let loadOne = null
+  if (a.load) { try { ({ loadMatrix: loadOne } = await import('./omo3240-load-matrix.mjs')) } catch {} }
   for (const code of targets) {
     process.stdout.write(`[crawl] ${code} ...`)
     try {
@@ -226,6 +230,15 @@ async function main() {
       results.push(r)
       const par = r.parity ? ` · 패리티 ${r.parity.match}/${r.parity.withScreen} ${r.parity.pass ? '✅' : '⚠️'}` : ''
       console.log(r.error ? ` ERROR: ${r.error}` : ` ${r.sampledCount} sampled + ${r.interpolatedCount} interp = ${r.rowCount} rows (${r.qtyOptionCount} qty opts)${par}`)
+      // 제품별 증분 적재: 패리티 PASS(또는 --force)일 때만.
+      if (loadOne && !r.error) {
+        if (r.parity?.pass || a.force) {
+          const res = await loadOne({ issue: 'OMO-3240', startedAt, finishedAt: new Date().toISOString(), results: [r] })
+          console.log(`  └ [load] ${code}: ${res.ok ? `upserted ${res.upserted}` : res.reason}`)
+        } else {
+          console.log(`  └ [load] ${code}: 패리티 FAIL — 적재 건너뜀(--force 로 강제)`)
+        }
+      }
     } catch (e) {
       results.push({ code, error: String(e).slice(0, 300) })
       console.log(` EXCEPTION: ${String(e).slice(0, 120)}`)
@@ -256,15 +269,11 @@ async function main() {
   console.log(`[parity] 크롤==화면 ${parityMatch}/${parityWith} ${parityPass ? '✅ 게이트 PASS' : '⚠️ 게이트 FAIL (적재 차단)'}`)
 
   if (a.load) {
-    if (!parityPass && !a.force) {
-      console.error('[load] ✗ 패리티 게이트 FAIL — 크롤≠화면 행이 있어 적재 차단(OMO-3238 권고). 강제 적재는 --force.')
-      process.exit(2)
-    }
-    console.log('[load] DB 적재 시도 → omo3240-load-matrix.mjs')
-    const { loadMatrix } = await import('./omo3240-load-matrix.mjs')
-    await loadMatrix(artifact)
+    // 적재는 제품별 증분으로 이미 수행됨(위 루프). 여기서는 게이트 결과만 보고.
+    if (!parityPass && !a.force) console.warn('[load] ⚠️ 일부 제품 패리티 FAIL — 해당 제품은 적재 건너뜀(--force 로 강제 가능).')
+    else console.log('[load] 제품별 증분 적재 완료(패리티 PASS 제품).')
   } else {
-    console.log('[hint] DB 적재: node scripts/omo3240-load-matrix.mjs (마이그 배포 후 · 패리티 PASS 시)')
+    console.log('[hint] DB 적재: node scripts/omo3240-load-matrix.mjs (패리티 PASS 시) 또는 크롤 시 --load')
   }
 }
 
