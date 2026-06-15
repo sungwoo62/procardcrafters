@@ -1,12 +1,13 @@
 import Image from 'next/image'
-import { FINISHING_CATALOG } from '@/config/finishing-catalog'
+import { finishingsForCategory } from '@/config/finishing-catalog'
 
 interface Props {
   productCategory: string
 }
 
 export default function FinishingSection({ productCategory }: Props) {
-  const relevant = FINISHING_CATALOG.filter(f => f.fits.includes(productCategory))
+  // OMO-3196: 성원 매핑 기반 카테고리별 후가공 목록(명함=9코어+코팅/별색 등).
+  const relevant = finishingsForCategory(productCategory)
   if (relevant.length === 0) return null
 
   return (

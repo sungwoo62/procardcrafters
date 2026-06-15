@@ -258,6 +258,45 @@ export const FINISHING_BY_VALUE: Record<string, FinishingDef> = Object.fromEntri
   FINISHING_CATALOG.map(f => [f.value, f])
 )
 
+// ── OMO-3196 (보드 재요청): 제품별 후가공 목록을 성원(swadpia) 실제 제공분에 맞춘다 ──
+//   기존 per-finishing `fits` 는 너무 좁아 명함에 4~6종만 떠 보드가 "성원엔 더 많은데
+//   안 맞다"고 지적. 성원 카테고리별 후가공 probe(scripts/test-artifacts/omo3022/probe.json)
+//   를 우리 카탈로그 value 로 매핑한 권위 목록으로 교체한다. (성원 dbak/depoxy=박/에폭시
+//   중복, add_cutting=cutting, bonding=gluing(접착), window=window_patch 로 통합.)
+//   여기 없는 카테고리는 기존 `fits` 로 폴백.
+export const CATEGORY_FINISHINGS: Record<string, string[]> = {
+  // CNC1000/CNC2000 명함: 성원 9코어(박/형압/도무송/타공/오시/미싱/넘버링/귀도리/에폭시)
+  //   + 우리가 마케팅하는 코팅·별색.
+  business_cards: ['foil_stamp', 'deboss_emboss', 'coating', 'spot_color', 'round_corner', 'die_cut', 'drilled_hole', 'score_crease', 'perforation', 'numbering', 'epoxy'],
+  premium_business_cards: ['foil_stamp', 'deboss_emboss', 'coating', 'spot_color', 'round_corner', 'die_cut', 'drilled_hole', 'score_crease', 'perforation', 'numbering', 'epoxy'],
+  premium_foil_cards: ['foil_stamp', 'deboss_emboss', 'coating', 'spot_color', 'round_corner', 'die_cut', 'score_crease', 'epoxy'],
+  letterpress_cards: ['foil_stamp', 'deboss_emboss', 'spot_color', 'round_corner', 'score_crease', 'epoxy'],
+  // CST1000/CST2000 스티커
+  stickers: ['coating', 'cutting', 'die_cut', 'round_corner', 'laminex', 'foil_stamp'],
+  die_cut_stickers: ['die_cut', 'cutting', 'coating', 'laminex', 'multi_die', 'foil_stamp'],
+  eco_stickers: ['die_cut', 'cutting', 'coating', 'foil_stamp'],
+  // CLF1000/CLF2000 전단/리플릿/브로슈어
+  flyers: ['coating', 'folding', 'score_crease', 'perforation', 'die_cut', 'drilled_hole', 'numbering', 'cutting', 'binding', 'gluing', 'laminex', 'stitching', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+  brochures: ['coating', 'folding', 'score_crease', 'perforation', 'die_cut', 'drilled_hole', 'numbering', 'cutting', 'binding', 'gluing', 'laminex', 'stitching', 'spot_color', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+  // CDP3000 엽서
+  postcards: ['coating', 'score_crease', 'perforation', 'die_cut', 'drilled_hole', 'folding', 'round_corner', 'numbering', 'gluing', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+  // CPR2000 포스터
+  posters: ['coating', 'folding', 'cutting', 'binding', 'laminex', 'stitching', 'spot_color', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+  // CPR5000 배너/현수막
+  banners: ['coating', 'partial_coating', 'tape', 'gluing', 'die_cut', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+  // CEV1000 봉투
+  envelopes: ['foil_stamp', 'window_patch', 'tape', 'drilled_hole', 'die_cut'],
+  // CPR4000 책자/카탈로그
+  booklets: ['binding', 'coating', 'partial_coating', 'stitching', 'score_crease', 'round_corner', 'die_cut', 'foil_stamp', 'deboss_emboss', 'epoxy'],
+}
+
+/** 제품 카테고리에 노출할 후가공 목록 — 성원 매핑 우선, 없으면 catalog.fits 폴백. */
+export function finishingsForCategory(category: string): FinishingDef[] {
+  const explicit = CATEGORY_FINISHINGS[category]
+  if (explicit) return explicit.map(v => FINISHING_BY_VALUE[v]).filter(Boolean)
+  return FINISHING_CATALOG.filter(f => f.fits.includes(category))
+}
+
 // ── OMO-2705: 요소(element) 단위 후가공 (Vistaprint식) ─────────────────────────
 // 에디터에서 텍스트/벡터 요소에 직접 켜는 후가공 종류. 카탈로그 value 재사용.
 // MVP = 박(foil_stamp) 1종. 새 종류 추가 시 ELEMENT_FINISH_KINDS 에만 더하면 됨.
