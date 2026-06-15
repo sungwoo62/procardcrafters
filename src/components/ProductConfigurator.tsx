@@ -426,6 +426,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           )
         }
 
+        const typeHasPreview = RICH_PREVIEW_TYPES.has(type)
         return (
           <div key={type}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -434,7 +435,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             <div className="flex flex-wrap gap-2">
               {opts.map((opt) => {
                 const isSelected = selections[type] === opt.value
-                const hasPreview = RICH_PREVIEW_TYPES.has(type)
+                const hasPreview = typeHasPreview
                 const hoverKey = `${type}:${opt.value}`
 
                 return (
@@ -444,7 +445,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                     )}
 
                     <button
-                      onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
+                      // OMO-3195: tapping also opens the material preview so touch users (no hover) can see it.
+                      onClick={() => {
+                        setSelections((prev) => ({ ...prev, [type]: opt.value }))
+                        if (hasPreview) setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
+                      }}
                       onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
                       onMouseLeave={() => hasPreview && setHoveredPaper(null)}
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
@@ -454,11 +459,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       }`}
                     >
                       {opt.label_en}
+                      {hasPreview && <span className="ml-1.5 text-gray-400">ⓘ</span>}
                     </button>
                   </div>
                 )
               })}
             </div>
+            {typeHasPreview && (
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                💡 Tap or hover ⓘ to preview the texture and material details.
+              </p>
+            )}
           </div>
         )
       })}
