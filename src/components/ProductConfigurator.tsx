@@ -11,6 +11,14 @@ import {
   FINISHING_DEFAULT_AREA_MM,
   FINISHING_SURCHARGE,
 } from '@/config/finishing-surcharge'
+import {
+  MAX_FOIL_LAYERS,
+  FOIL_AREA_MIN_MM2,
+  FOIL_AREA_MAX_MM2,
+  validateFoilLayers,
+  foilLayersToFields,
+  type FoilLayer,
+} from '@/config/swadpia-finishing-fields'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
@@ -114,9 +122,13 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
   const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
 
-  // 후가공 선택 상태(멀티셀렉트) + 박/형압 면적(가로×세로 mm) — OMO-2664
+  // 후가공 선택 상태(멀티셀렉트) + 형압 면적(가로×세로 mm) — OMO-2664
   const [finishings, setFinishings] = useState<Set<string>>(new Set())
   const [areas, setAreas] = useState<Record<string, { w: number; h: number }>>({})
+  // OMO-3257: 박(foil)은 최대 3 레이어(면적 합산). foil 만 별도 레이어 배열로 관리.
+  const [foilLayers, setFoilLayers] = useState<{ w: number; h: number }[]>([])
+  const FOIL = 'foil_stamp'
+  const defaultFoilLayer = () => ({ w: FINISHING_DEFAULT_AREA_MM.width, h: FINISHING_DEFAULT_AREA_MM.height })
 
   function toggleFinishing(value: string) {
     setFinishings((prev) => {
@@ -125,13 +137,31 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         next.delete(value)
       } else {
         next.add(value)
-        // 면적 비례 후가공은 기본 면적(50×30mm)으로 초기화 — 고객이 조정 가능.
-        if ((AREA_PRICED_FINISHINGS as readonly string[]).includes(value) && !areas[value]) {
+        if (value === FOIL) {
+          // 박은 최소 1 레이어로 초기화(기본 면적 50×30mm). [+] 로 최대 3 레이어.
+          setFoilLayers((ls) => (ls.length === 0 ? [defaultFoilLayer()] : ls))
+        } else if ((AREA_PRICED_FINISHINGS as readonly string[]).includes(value) && !areas[value]) {
+          // 면적 비례 후가공(형압)은 기본 면적(50×30mm)으로 초기화 — 고객이 조정 가능.
           setAreas((a) => ({ ...a, [value]: { w: FINISHING_DEFAULT_AREA_MM.width, h: FINISHING_DEFAULT_AREA_MM.height } }))
         }
       }
       return next
     })
+  }
+
+  // OMO-3257 박 레이어 조작 ([+] 최대 3, 삭제, 가로/세로 입력).
+  function addFoilLayer() {
+    setFoilLayers((ls) => (ls.length >= MAX_FOIL_LAYERS ? ls : [...ls, defaultFoilLayer()]))
+  }
+  function removeFoilLayer(idx: number) {
+    setFoilLayers((ls) => (ls.length <= 1 ? ls : ls.filter((_, i) => i !== idx)))
+  }
+  function setFoilLayerDim(idx: number, dim: 'w' | 'h', raw: string) {
+    const n = parseInt(raw, 10)
+    const fallback = dim === 'w' ? FINISHING_DEFAULT_AREA_MM.width : FINISHING_DEFAULT_AREA_MM.height
+    setFoilLayers((ls) =>
+      ls.map((l, i) => (i === idx ? { ...l, [dim]: Number.isFinite(n) && n > 0 ? n : fallback } : l)),
+    )
   }
 
   function setArea(value: string, dim: 'w' | 'h', raw: string) {
@@ -164,10 +194,13 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       .filter((v) => v && available.has(v))
     if (wanted.length === 0) return
     setFinishings(new Set(wanted))
+    if (wanted.includes(FOIL)) {
+      setFoilLayers((ls) => (ls.length === 0 ? [defaultFoilLayer()] : ls))
+    }
     setAreas((prev) => {
       const next = { ...prev }
       for (const v of wanted) {
-        if ((AREA_PRICED_FINISHINGS as readonly string[]).includes(v) && !next[v]) {
+        if (v !== FOIL && (AREA_PRICED_FINISHINGS as readonly string[]).includes(v) && !next[v]) {
           next[v] = { w: FINISHING_DEFAULT_AREA_MM.width, h: FINISHING_DEFAULT_AREA_MM.height }
         }
       }
@@ -393,21 +426,36 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const finishingSurchargeUsd = useMemo(() => {
     let total = 0
     for (const v of finishings) {
+      if (v === FOIL) {
+        // OMO-3257: 박은 레이어별 면적 단가 합산(최대 3). 성원 setPPBakAmtSum 과 동일 합산.
+        for (const l of foilLayers) {
+          total += finishingUnitUsd(v, l.w > 0 && l.h > 0 ? l.w * l.h : undefined)
+        }
+        continue
+      }
       const area = areas[v]
       total += finishingUnitUsd(v, area ? area.w * area.h : undefined)
     }
     return total
-  }, [finishings, areas, finishingUnitUsd])
+  }, [finishings, areas, foilLayers, finishingUnitUsd])
+
+  // OMO-3257 박 면적 검증(성원 chk_size_low/high: 640~60000mm²/레이어). UI 경고용.
+  const foilValidation = useMemo(
+    () => validateFoilLayers(foilLayers.map((l) => ({ x_size: l.w, y_size: l.h }))),
+    [foilLayers],
+  )
 
   // 선택된 후가공을 성원 자동발주 필드명으로 직렬화(URL 파라미터). expandFinishingToSwadpiaFields 가 소비.
   const finishingParams = useMemo(() => {
     const p: Record<string, string> = {}
     if (finishings.size === 0) return p
     p.finishing = Array.from(finishings).join(',')
-    const fa = areas['foil_stamp']
-    if (finishings.has('foil_stamp') && fa && fa.w > 0 && fa.h > 0) {
-      p.bak_x_size_1 = String(fa.w)
-      p.bak_y_size_1 = String(fa.h)
+    // OMO-3257: 박 레이어(최대 3) → 성원 발주 필드코드(bak_*_N). 유효 면적 레이어만 직렬화.
+    if (finishings.has(FOIL)) {
+      const layers: FoilLayer[] = foilLayers
+        .filter((l) => l.w > 0 && l.h > 0)
+        .map((l) => ({ x_size: l.w, y_size: l.h }))
+      Object.assign(p, foilLayersToFields(layers))
     }
     const ea = areas['deboss_emboss']
     if (finishings.has('deboss_emboss') && ea && ea.w > 0 && ea.h > 0) {
@@ -415,7 +463,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       p.ap_y_size_1 = String(ea.h)
     }
     return p
-  }, [finishings, areas])
+  }, [finishings, areas, foilLayers])
 
   const totalUsd = itemPriceUsd + rushUsd + finishingSurchargeUsd + shippingUsd
   const productionWindow = formatProductionWindow(product, leadTier)
@@ -522,9 +570,15 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           <div className="space-y-2">
             {finishingOptions.map((opt) => {
               const selected = finishings.has(opt.value)
+              const isFoil = opt.value === FOIL
               const isArea = (AREA_PRICED_FINISHINGS as readonly string[]).includes(opt.value)
               const area = areas[opt.value]
-              const usd = finishingUnitUsd(opt.value, isArea && area ? area.w * area.h : undefined)
+              const usd = isFoil
+                ? foilLayers.reduce(
+                    (s, l) => s + finishingUnitUsd(opt.value, l.w > 0 && l.h > 0 ? l.w * l.h : undefined),
+                    0,
+                  )
+                : finishingUnitUsd(opt.value, isArea && area ? area.w * area.h : undefined)
               return (
                 <div
                   key={opt.value}
@@ -551,7 +605,71 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       + ${usd.toFixed(2)}
                     </span>
                   </button>
-                  {selected && isArea && (
+                  {/* OMO-3257: 박(foil)은 레이어별 가로×세로 입력 + [+] 최대 3 레이어 합산 */}
+                  {selected && isFoil && (
+                    <div className="px-3 pb-3 -mt-0.5 space-y-2">
+                      {foilLayers.map((l, i) => {
+                        const layerArea = l.w > 0 && l.h > 0 ? l.w * l.h : 0
+                        const outOfRange =
+                          layerArea > 0 && (layerArea < FOIL_AREA_MIN_MM2 || layerArea > FOIL_AREA_MAX_MM2)
+                        return (
+                          <div key={i} className="flex items-center gap-2 text-xs text-gray-600">
+                            <span className="font-medium w-14 shrink-0">Layer {i + 1}</span>
+                            <input
+                              type="number"
+                              min={1}
+                              value={l.w || ''}
+                              onChange={(e) => setFoilLayerDim(i, 'w', e.target.value)}
+                              className={`w-16 border rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 ${
+                                outOfRange ? 'border-red-400' : 'border-gray-300'
+                              }`}
+                              aria-label={`layer ${i + 1} width mm`}
+                            />
+                            <span className="text-gray-400">×</span>
+                            <input
+                              type="number"
+                              min={1}
+                              value={l.h || ''}
+                              onChange={(e) => setFoilLayerDim(i, 'h', e.target.value)}
+                              className={`w-16 border rounded px-2 py-1 text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-blue-400 ${
+                                outOfRange ? 'border-red-400' : 'border-gray-300'
+                              }`}
+                              aria-label={`layer ${i + 1} height mm`}
+                            />
+                            <span className="text-gray-400">mm</span>
+                            {foilLayers.length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeFoilLayer(i)}
+                                className="ml-1 text-gray-400 hover:text-red-500"
+                                aria-label={`remove layer ${i + 1}`}
+                              >
+                                <X className="w-3.5 h-3.5" />
+                              </button>
+                            )}
+                          </div>
+                        )
+                      })}
+                      {foilLayers.length < MAX_FOIL_LAYERS && (
+                        <button
+                          type="button"
+                          onClick={addFoilLayer}
+                          className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                        >
+                          + Add foil layer (up to {MAX_FOIL_LAYERS})
+                        </button>
+                      )}
+                      {!foilValidation.ok && (
+                        <p className="text-[11px] text-red-500">
+                          {foilValidation.errors[0]} (허용 면적 {FOIL_AREA_MIN_MM2}~{FOIL_AREA_MAX_MM2}mm²)
+                        </p>
+                      )}
+                      <p className="text-[11px] text-gray-400">
+                        Foil price = sum of each layer&apos;s area. Final amount is confirmed by our production system.
+                      </p>
+                    </div>
+                  )}
+                  {selected && isArea && !isFoil && (
                     <div className="px-3 pb-3 -mt-0.5">
                       <div className="flex items-center gap-2 text-xs text-gray-600">
                         <span className="font-medium">Area (mm):</span>

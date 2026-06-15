@@ -1,3 +1,5 @@
+import { parseFoilLayersFromOptions } from './swadpia-finishing-fields'
+
 // OMO-2664: 후가공 도매 surcharge(성원애드피아 wholesale KRW) 단일 소스.
 //
 // 값 출처: OMO-2647 라이브 검증 (CNC1000 명함 GNC1001, 1,000매 기준, 로그인).
@@ -66,8 +68,13 @@ export function finishingSurchargeKrw(value: string, areaMm2?: number): number {
 //   - bak_*/ap_* size: 박/형압 면적(mm). 결제 surcharge 면적비례 + 자동발주 면적단가에 사용.
 export const FINISHING_PASSTHROUGH_KEYS = [
   'finishing',
+  // OMO-3257: 박은 최대 3 레이어(면적 합산). 레이어별 면적 키를 모두 통과·제외 대상에 포함.
   'bak_x_size_1',
   'bak_y_size_1',
+  'bak_x_size_2',
+  'bak_y_size_2',
+  'bak_x_size_3',
+  'bak_y_size_3',
   'ap_x_size_1',
   'ap_y_size_1',
 ] as const
@@ -91,6 +98,21 @@ export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string,
   if (!raw) return 0
   let total = 0
   for (const value of raw.split(',').map((v) => v.trim()).filter(Boolean)) {
+    // OMO-3257: 박(foil)은 최대 3 레이어 면적 합산 — 레이어별 surcharge 를 각각 가산한다.
+    // (성원 setPPBakAmtSum 과 동일하게 레이어 면적 단가를 합산하는 1차 근사. 최종
+    //  금액은 자동발주 모달의 성원 calcuEstimate 응답 bak_amt 가 권위.)
+    if (value === 'foil_stamp') {
+      const layers = parseFoilLayersFromOptions(selectedOptions)
+      if (layers.length === 0) {
+        total += finishingSurchargeKrw(value) // 면적 미지정 → 기본면적 1회
+      } else {
+        for (const l of layers) {
+          const area = l.x_size > 0 && l.y_size > 0 ? l.x_size * l.y_size : undefined
+          total += finishingSurchargeKrw(value, area)
+        }
+      }
+      continue
+    }
     let areaMm2: number | undefined
     const areaKeys = AREA_KEYS_BY_FINISHING[value]
     if (areaKeys) {

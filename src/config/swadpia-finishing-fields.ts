@@ -313,3 +313,106 @@ export function expandFinishingToSwadpiaFields(
   }
   return out
 }
+
+// ─── OMO-3257: 박(foil) 멀티레이어 (최대 3 레이어 면적 합산) ─────────────────
+//
+// 박 금액 = Σ(레이어별 가로×세로 면적 단가). 성원 JS 근거(OMO-3238 확정):
+//   settingExistBakDongpan(2/3) 로 레이어 2/3 행 생성 → 레이어별 calcuBakPrice()
+//   → setPPBakAmtSum() 으로 bak_amt 합산. [+] 로 최대 3 레이어.
+// 결정론: 가격은 성원 응답 bak_amt/pay_amt 에서만 읽고, 치수는 고객 입력값(추론 금지).
+
+/** 박 레이어 최대 개수(성원 _1/_2/_3 세트). */
+export const MAX_FOIL_LAYERS = 3
+
+/** 성원 chk_size_low / chk_size_high 가드: 레이어 면적(가로×세로 mm²) 허용 범위. */
+export const FOIL_AREA_MIN_MM2 = 640
+export const FOIL_AREA_MAX_MM2 = 60000
+
+/** 박 종류(BKT0x) / 면(BKD10/20/30) 기본값. UI 미선택 시 사용. */
+export const FOIL_DEFAULT_BAK_TYPE = 'BKT02' // 금박(유광)
+export const FOIL_DEFAULT_BAK_SIDE = 'BKD10' // 전면
+
+export interface FoilLayer {
+  /** 박 영역 가로(mm) */
+  x_size: number
+  /** 박 영역 세로(mm) */
+  y_size: number
+  /** 박 종류 BKT0x (미지정 시 FOIL_DEFAULT_BAK_TYPE) */
+  bak_type?: string
+  /** 박 면 BKD10(전면)/BKD20(후면)/BKD30(양면) (미지정 시 FOIL_DEFAULT_BAK_SIDE) */
+  bak_side?: string
+}
+
+export interface FoilLayerValidation {
+  ok: boolean
+  /** 사용자 노출용 한국어 오류 메시지(레이어별). ok=true 면 빈 배열. */
+  errors: string[]
+}
+
+/**
+ * 박 레이어 배열을 성원 면적 가드(chk_size_low/high)와 동일 기준으로 검증한다.
+ * 각 레이어 640 ≤ 가로×세로 ≤ 60000 mm², 개수 1..3. 범위 밖이면 주문 전 차단.
+ */
+export function validateFoilLayers(layers: FoilLayer[]): FoilLayerValidation {
+  const errors: string[] = []
+  if (layers.length < 1) errors.push('박 레이어가 최소 1개 필요합니다.')
+  if (layers.length > MAX_FOIL_LAYERS) {
+    errors.push(`박 레이어는 최대 ${MAX_FOIL_LAYERS}개까지 추가할 수 있습니다.`)
+  }
+  layers.forEach((l, i) => {
+    const n = i + 1
+    const x = Number(l.x_size)
+    const y = Number(l.y_size)
+    if (!Number.isFinite(x) || !Number.isFinite(y) || x <= 0 || y <= 0) {
+      errors.push(`박 레이어 ${n}: 가로·세로(mm)를 0보다 큰 값으로 입력하세요.`)
+      return
+    }
+    const area = x * y
+    if (area < FOIL_AREA_MIN_MM2) {
+      errors.push(`박 레이어 ${n}: 면적 ${area}mm² 가 최소 ${FOIL_AREA_MIN_MM2}mm² 미만입니다.`)
+    } else if (area > FOIL_AREA_MAX_MM2) {
+      errors.push(`박 레이어 ${n}: 면적 ${area}mm² 가 최대 ${FOIL_AREA_MAX_MM2}mm² 초과입니다.`)
+    }
+  })
+  return { ok: errors.length === 0, errors }
+}
+
+/**
+ * 박 레이어 배열 → 성원 발주 폼 필드코드(bak_*_N) 평면 맵.
+ * activateFinishings(swadpia-order.ts) 가 이 키들을 폼에 적용한다.
+ * 최대 3 레이어까지만 직렬화(초과분은 무시).
+ */
+export function foilLayersToFields(layers: FoilLayer[]): Record<string, string> {
+  const out: Record<string, string> = {}
+  layers.slice(0, MAX_FOIL_LAYERS).forEach((l, i) => {
+    const idx = i + 1
+    out[`bak_section_${idx}`] = 'BKS10' // 신규
+    out[`bak_side_${idx}`] = l.bak_side || FOIL_DEFAULT_BAK_SIDE
+    out[`bak_type_${idx}`] = l.bak_type || FOIL_DEFAULT_BAK_TYPE
+    out[`bak_compare_${idx}`] = 'BAC10' // 내용같음
+    out[`bak_x_size_${idx}`] = String(l.x_size)
+    out[`bak_y_size_${idx}`] = String(l.y_size)
+  })
+  return out
+}
+
+/**
+ * 평면 옵션맵(bak_*_N)에서 박 레이어 배열을 복원한다.
+ * surcharge 합산·발주 면적 가드에서 공용으로 쓴다. bak_x_size_N 또는 bak_y_size_N
+ * 가 존재하는 인덱스만 레이어로 본다(1..3).
+ */
+export function parseFoilLayersFromOptions(opts: Record<string, string>): FoilLayer[] {
+  const layers: FoilLayer[] = []
+  for (let i = 1; i <= MAX_FOIL_LAYERS; i++) {
+    const x = opts[`bak_x_size_${i}`]
+    const y = opts[`bak_y_size_${i}`]
+    if (x === undefined && y === undefined) continue
+    layers.push({
+      x_size: Number(x),
+      y_size: Number(y),
+      bak_type: opts[`bak_type_${i}`],
+      bak_side: opts[`bak_side_${i}`],
+    })
+  }
+  return layers
+}

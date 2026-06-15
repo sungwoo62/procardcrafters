@@ -17,6 +17,11 @@ import * as fs from 'fs'
 import * as os from 'os'
 import type { Page, Frame, Response, BrowserType } from 'playwright'
 import { CATEGORY_MAP } from './swadpia'
+import {
+  MAX_FOIL_LAYERS,
+  parseFoilLayersFromOptions,
+  validateFoilLayers,
+} from '@/config/swadpia-finishing-fields'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
@@ -616,6 +621,20 @@ async function activateFinishings(
           chk.dispatchEvent(new Event('change', { bubbles: true }))
         }
         try { w.$j && w.$j(`#pnl_${ppType}`).show() } catch { /* */ }
+        // 1-b. OMO-3257 박 멀티레이어: bak_x_size_N(N≥2) 가 fieldMap 에 있으면
+        //   settingExistBakDongpan(i) 로 레이어 행을 먼저 생성해야 bak_*_2/_3 필드가
+        //   폼에 존재한다(성원 JS 근거, OMO-3238 확정). 레이어 2..N 순서로 호출하고,
+        //   가격은 setIsPostpress→calcuEstimate 가 setPPBakAmtSum 으로 bak_amt 합산(결정론).
+        if (ppType === 'bak') {
+          let maxLayer = 1
+          for (const fname of Object.keys(fieldMap)) {
+            const m = fname.match(/^bak_x_size_(\d+)$/)
+            if (m) maxLayer = Math.max(maxLayer, Number(m[1]))
+          }
+          for (let i = 2; i <= maxLayer; i++) {
+            try { w.settingExistBakDongpan && w.settingExistBakDongpan(i) } catch { /* */ }
+          }
+        }
         // 2. section/type/size 설정 (kind 는 populate 후 별도)
         for (const [n, v] of Object.entries(fieldMap)) {
           if (n.endsWith('_kind')) continue
@@ -785,6 +804,18 @@ export async function selectOrderOptions(
   const finishingOpts: Record<string, string> = {}
   for (const [k, v] of Object.entries(options)) {
     if (isFinishingKey(k)) finishingOpts[k] = v
+  }
+  // OMO-3257 면적 가드: 박 레이어(최대 3)가 있으면 성원 chk_size_low/high 와 동일 기준
+  //   (640 ≤ 가로×세로 ≤ 60000 mm²)을 발주 전에 검증한다. 범위 밖이면 오발주 방지를 위해 중단.
+  const foilLayers = parseFoilLayersFromOptions(finishingOpts)
+  if (foilLayers.length > 0) {
+    const v = validateFoilLayers(foilLayers)
+    if (!v.ok) {
+      throw new Error(
+        `[swadpia-order] 박 면적 검증 실패(성원 chk_size 범위 640~60000mm², 최대 ${MAX_FOIL_LAYERS}레이어) — ` +
+          `발주 중단: ${v.errors.join(' / ')}`,
+      )
+    }
   }
   if (Object.keys(finishingOpts).length > 0) {
     await activateFinishings(page, finishingOpts)
