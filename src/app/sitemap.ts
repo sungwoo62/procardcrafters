@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { getAllProfessions } from '@/lib/niche/professions'
+import { NICHE_CATEGORIES } from '@/lib/niche/categories'
 
 // `||`: 빈 문자열 env 도 canonical 도메인으로 폴백 (`??` 는 ""를 통과시켜 상대경로/교차도메인 sitemap 유발).
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.com'
@@ -80,5 +81,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ]
 
-  return [...staticPages, ...productPages, ...templatePages, ...nichePages]
+  // 제품군별 니치 랜딩(OMO-3213) — stickers/flyers/posters 허브 + 스포크. 카테고리 레지스트리 단일 소스.
+  const categoryNichePages: MetadataRoute.Sitemap = NICHE_CATEGORIES.flatMap((c) => [
+    {
+      url: `${SITE_URL}/${c.slug}/for`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    },
+    ...c.entries.map((e) => ({
+      url: `${SITE_URL}/${c.slug}/for/${e.slug}`,
+      lastModified: now,
+      changeFrequency: 'weekly' as const,
+      priority: 0.7,
+    })),
+  ])
+
+  return [...staticPages, ...productPages, ...templatePages, ...nichePages, ...categoryNichePages]
 }
