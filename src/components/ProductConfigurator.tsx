@@ -7,6 +7,7 @@ import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import { pickCheapestPress, type SwadpiaPaper, type SwadpiaPrintEntry, type SwadpiaSize, type PressKind } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
+import { FINISHING_CATALOG } from '@/config/finishing-catalog'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
 interface SwadpiaClientData {
@@ -99,6 +100,16 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const [selections, setSelections] = useState<Record<string, string>>(defaultSelections)
   const [hoveredPaper, setHoveredPaper] = useState<string | null>(null)
   const [leadTier, setLeadTier] = useState<LeadTimeTier>('standard')
+
+  // OMO-3196: 후가공 선택 — 카탈로그(제품 카테고리에 맞는 후가공)에서 가져온다.
+  // DB option 행이 아니라 카탈로그 기반이라, 후가공이 항상 노출되고 hover 팝업으로
+  // 맞는 이미지/설명을 보여준다. 선택은 콤마구분 `finishing` 으로 주문/에디터 URL 에 실린다.
+  const finishingOptions = useMemo(
+    () => FINISHING_CATALOG.filter((f) => f.fits.includes(product.category)),
+    [product.category],
+  )
+  const [finishSel, setFinishSel] = useState<Set<string>>(new Set())
+  const finishingCsv = Array.from(finishSel).join(',')
 
   // Pre-upload state
   const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'done' | 'error'>('idle')
@@ -355,6 +366,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           )
         }
 
+        const typeHasPreview = RICH_PREVIEW_TYPES.has(type)
         return (
           <div key={type}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -363,7 +375,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             <div className="flex flex-wrap gap-2">
               {opts.map((opt) => {
                 const isSelected = selections[type] === opt.value
-                const hasPreview = RICH_PREVIEW_TYPES.has(type)
+                const hasPreview = typeHasPreview
                 const hoverKey = `${type}:${opt.value}`
 
                 return (
@@ -373,7 +385,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                     )}
 
                     <button
-                      onClick={() => setSelections((prev) => ({ ...prev, [type]: opt.value }))}
+                      // OMO-3195: tapping also opens the material preview so touch users (no hover) can see it.
+                      onClick={() => {
+                        setSelections((prev) => ({ ...prev, [type]: opt.value }))
+                        if (hasPreview) setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
+                      }}
                       onMouseEnter={() => hasPreview && setHoveredPaper(hoverKey)}
                       onMouseLeave={() => hasPreview && setHoveredPaper(null)}
                       className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
@@ -383,14 +399,74 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                       }`}
                     >
                       {opt.label_en}
+                      {hasPreview && <span className="ml-1.5 text-gray-400">ⓘ</span>}
                     </button>
                   </div>
                 )
               })}
             </div>
+            {typeHasPreview && (
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                💡 Tap or hover ⓘ to preview the texture and material details.
+              </p>
+            )}
           </div>
         )
       })}
+
+      {/* Finishing options (OMO-3196) — multi-select chips with hover preview popup */}
+      {finishingOptions.length > 0 && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2">
+            Finishing <span className="font-normal text-gray-400">(optional)</span>
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {finishingOptions.map((f) => {
+              const isSelected = finishSel.has(f.value)
+              const hoverKey = `finishing:${f.value}`
+              return (
+                <div key={f.value} className="relative">
+                  {hoveredPaper === hoverKey && (
+                    <PaperPopup
+                      option={{
+                        value: f.value,
+                        label_en: f.label_en,
+                        image_url: f.image_url,
+                        description_en: f.description_en,
+                      }}
+                    />
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setFinishSel((prev) => {
+                        const next = new Set(prev)
+                        if (next.has(f.value)) next.delete(f.value)
+                        else next.add(f.value)
+                        return next
+                      })
+                      setHoveredPaper((prev) => (prev === hoverKey ? null : hoverKey))
+                    }}
+                    onMouseEnter={() => setHoveredPaper(hoverKey)}
+                    onMouseLeave={() => setHoveredPaper(null)}
+                    className={`px-3 py-2 rounded-lg border text-sm font-medium transition-all ${
+                      isSelected
+                        ? 'border-blue-500 bg-blue-50 text-blue-700 shadow-sm'
+                        : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
+                    }`}
+                  >
+                    {f.label_en}
+                    <span className="ml-1.5 text-gray-400">ⓘ</span>
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+          <p className="mt-1.5 text-[11px] text-gray-500">
+            💡 Tap or hover ⓘ to preview each finish. Finishing is quoted separately — we&apos;ll confirm the price before production.
+          </p>
+        </div>
+      )}
 
       {/* Production speed */}
       <div>
@@ -573,7 +649,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       {/* Order / Editor Buttons */}
       <div className="space-y-2">
         <Link
-          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, lead_tier: leadTier }).toString()}`}
+          href={`/design/${product.slug}?${new URLSearchParams({ ...selections, lead_tier: leadTier, ...(finishingCsv ? { finishing: finishingCsv } : {}) }).toString()}`}
           className="block w-full text-center bg-indigo-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-indigo-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">
@@ -582,7 +658,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
           </span>
         </Link>
         <Link
-          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier, ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
+          href={`/order?product=${product.slug}&${new URLSearchParams({ ...selections, lead_tier: leadTier, ...(finishingCsv ? { finishing: finishingCsv } : {}), ...(uploadedFileId ? { fileId: uploadedFileId } : {}) }).toString()}`}
           className="block w-full text-center bg-blue-600 text-white px-6 py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-sm"
         >
           <span className="inline-flex items-center gap-2">

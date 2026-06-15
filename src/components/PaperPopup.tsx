@@ -2,9 +2,11 @@
 
 import Image from 'next/image'
 import type { PrintProductOption } from '@/types/database'
+import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
 
 interface PaperPopupProps {
-  option: PrintProductOption
+  // 용지/후가공 옵션 모두 받는다(후가공은 카탈로그에서 합성한 최소 객체 가능).
+  option: Pick<PrintProductOption, 'value' | 'label_en' | 'image_url' | 'description_en'>
 }
 
 // SVG 질감 패턴 — 용지 계열별 시각적 구분
@@ -55,6 +57,31 @@ function getTextureSrc(value: string, imageUrl: string | null): string {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`
 }
 
+// 용지 설명 (Swadpia 코드 기반) — DB description_en 이 비어있을 때의 폴백.
+// OMO-3195: 코드 단위라 같은 용지를 쓰는 모든 제품에 자동 적용된다.
+const PAPER_DESC: Record<string, string> = {
+  SNW120W00: 'Smooth matte stock with a clean, non-glare surface. Light weight — best for flyers and inserts.',
+  SNW150W00: 'Smooth matte paper with a soft, premium feel. Great for flyers and brochures.',
+  SNW180W00: 'Sturdy matte stock that feels substantial in hand. Ideal for postcards and menus.',
+  SNW200W00: 'Heavy matte stock with a refined, glare-free surface. A popular choice for premium cards.',
+  SNW250W00: 'Thick premium matte card stock — rigid and luxurious. A top pick for business cards.',
+  SNW300W00: 'Our thickest matte stock. Maximum rigidity and a high-end feel for luxury cards.',
+  ART090W00: 'Lightweight glossy stock with sharp, vivid color. Economical for high-volume flyers.',
+  ART100W00: 'Standard glossy paper — bright color on a smooth coated surface at a great price.',
+  ART120W00: 'Semi-gloss coated stock. Versatile, with crisp print and a balanced sheen.',
+  ART150W00: 'Heavy glossy stock with vivid color and a premium coated feel.',
+  ART180W00: 'Thick magazine-grade glossy paper. Rich color for brochures and covers.',
+  ART200W00: 'Premium heavy gloss — poster and catalog grade with bold, saturated color.',
+  STK075AT0: 'Coated art-paper sticker with standard adhesive and a smooth printable surface.',
+  STK075AT1: 'Coated art-paper sticker with strong adhesive for a lasting hold.',
+  STK090AF0: 'Heavier art-paper sticker with heavy-duty adhesive for demanding surfaces.',
+  STK080YP0: 'Waterproof synthetic (yupo) film — tear- and water-resistant, slightly translucent.',
+  BNR440W00: 'Durable 440g PVC banner material for indoor and short-term outdoor use.',
+  BNR510W00: 'Heavy 510g PVC banner for large-format, long-term outdoor display.',
+  CTN400W00: 'Natural cotton stock with a soft tactile texture. Uncoated and writable.',
+  CTN600W00: 'Premium 600g cotton (Crane Lettra) — luxurious texture, ideal for letterpress.',
+}
+
 // 용지 특성 태그 (Swadpia 코드 기반)
 const PAPER_TAGS: Record<string, string[]> = {
   SNW120W00: ['Light', 'Opaque', 'Bright white'],
@@ -80,10 +107,14 @@ const PAPER_TAGS: Record<string, string[]> = {
 }
 
 export default function PaperPopup({ option }: PaperPopupProps) {
-  const textureSrc = getTextureSrc(option.value, option.image_url)
-  const tags = PAPER_TAGS[option.value] ?? []
+  // OMO-3196: 후가공 옵션이면 카탈로그(이미지/설명)로 폴백 — DB 후가공 행은 이미지/설명이
+  // 비어 있어도 "맞는 이미지랑 설명"을 보여준다.
+  const fin = FINISHING_BY_VALUE[option.value]
+  const textureSrc = getTextureSrc(option.value, option.image_url || fin?.image_url || null)
+  const tags = PAPER_TAGS[option.value] ?? (fin ? [fin.label_ko] : [])
   // OMO-2314: customer-facing — render English fields only.
-  const description = option.description_en
+  // OMO-3195: fall back to the code-keyed description so options with an empty DB field still explain the stock.
+  const description = option.description_en || PAPER_DESC[option.value] || fin?.description_en || null
 
   return (
     <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-left">

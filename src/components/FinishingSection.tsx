@@ -32,6 +32,8 @@ export default function FinishingSection({ productCategory }: Props) {
                   fill
                   className="object-cover"
                   sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 200px"
+                  // OMO-3196: 사진 미보유 후가공은 인라인 SVG(data-URI) — 최적화 우회 필요.
+                  unoptimized={f.image_url.startsWith('data:')}
                 />
               </div>
               <div className="p-3">

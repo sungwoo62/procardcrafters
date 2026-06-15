@@ -17,6 +17,59 @@ export interface FinishingDef {
 
 const BASE = 'https://ilcfemvqommqyoohfoxw.supabase.co/storage/v1/object/public/products/finishing'
 
+// OMO-3196: 성원(swadpia)에는 있으나 우리 카탈로그에 없던 후가공을 추가했다
+// (가공재단/접지/라미넥스/중철/양면테이프/부분코팅). 이들은 Gemini 생성 사진이
+// 아직 없으므로(`{value}.jpg` 미존재 → next/image 400), 의미 전달용 인라인 SVG
+// 일러스트를 data-URI 로 넣어 깨진 이미지를 방지한다. 실제 사진이 준비되면
+// image_url 을 `${BASE}/{value}.jpg` 로 교체하면 된다.
+const svg = (inner: string, bg = '#eef2ff'): string =>
+  'data:image/svg+xml;charset=utf-8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 90"><rect width="120" height="90" fill="${bg}"/>${inner}</svg>`,
+  )
+
+const FINISHING_SVG: Record<string, string> = {
+  // 가공재단 — 시트 + 점선 재단선 + 칼날
+  cutting: svg(
+    '<rect x="28" y="20" width="64" height="50" rx="3" fill="#fff" stroke="#c7d2fe"/>' +
+      '<line x1="60" y1="12" x2="60" y2="78" stroke="#6366f1" stroke-width="2" stroke-dasharray="5 3"/>' +
+      '<path d="M53 8 l7 6 l-7 6 z" fill="#6366f1"/>',
+  ),
+  // 접지 — 두 패널 + 접는선
+  folding: svg(
+    '<path d="M30 24 L60 32 L60 70 L30 62 Z" fill="#fff" stroke="#c7d2fe"/>' +
+      '<path d="M60 32 L90 24 L90 62 L60 70 Z" fill="#e0e7ff" stroke="#c7d2fe"/>' +
+      '<line x1="60" y1="32" x2="60" y2="70" stroke="#6366f1" stroke-width="1.5" stroke-dasharray="3 2"/>',
+  ),
+  // 라미넥스 — 시트 위 광택 필름 + 대각 글로스 스트릭
+  laminex: svg(
+    '<defs><linearGradient id="lx" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#a5b4fc" stop-opacity="0.6"/><stop offset="55%" stop-color="#fff" stop-opacity="0.15"/><stop offset="100%" stop-color="#a5b4fc" stop-opacity="0.55"/></linearGradient></defs>' +
+      '<rect x="28" y="22" width="64" height="46" rx="3" fill="#fff" stroke="#c7d2fe"/>' +
+      '<rect x="28" y="22" width="64" height="46" rx="3" fill="url(#lx)"/>' +
+      '<path d="M42 22 L54 22 L38 68 L28 64 L28 60 Z" fill="#fff" opacity="0.55"/>',
+  ),
+  // 중철(스티치) — 책자 스파인 + 스테이플
+  stitching: svg(
+    '<rect x="30" y="20" width="60" height="50" rx="2" fill="#fff" stroke="#c7d2fe"/>' +
+      '<line x1="60" y1="20" x2="60" y2="70" stroke="#c7d2fe"/>' +
+      '<rect x="57" y="30" width="6" height="3" fill="#6366f1"/>' +
+      '<rect x="57" y="44" width="6" height="3" fill="#6366f1"/>' +
+      '<rect x="57" y="58" width="6" height="3" fill="#6366f1"/>',
+  ),
+  // 양면테이프 — 접착 스트립
+  tape: svg(
+    '<rect x="30" y="24" width="60" height="42" rx="3" fill="#fff" stroke="#c7d2fe"/>' +
+      '<rect x="36" y="38" width="48" height="14" rx="2" fill="#fde68a" stroke="#f59e0b"/>' +
+      '<g fill="#f59e0b" opacity="0.5"><circle cx="44" cy="45" r="1.5"/><circle cx="56" cy="45" r="1.5"/><circle cx="68" cy="45" r="1.5"/><circle cx="78" cy="45" r="1.5"/></g>',
+  ),
+  // 부분코팅 — 시트 위 부분 광택 영역
+  partial_coating: svg(
+    '<rect x="28" y="22" width="64" height="46" rx="3" fill="#fff" stroke="#c7d2fe"/>' +
+      '<rect x="46" y="32" width="28" height="26" rx="2" fill="#c7d2fe" opacity="0.75"/>' +
+      '<rect x="50" y="36" width="7" height="18" fill="#fff" opacity="0.65"/>',
+  ),
+}
+
 export const FINISHING_CATALOG: FinishingDef[] = [
   {
     value: 'foil_stamp',
@@ -145,6 +198,59 @@ export const FINISHING_CATALOG: FinishingDef[] = [
     description_en: 'Clear raised resin coating — glossy 3D dome over logo or selected area.',
     image_url: `${BASE}/epoxy.jpg`,
     fits: ['business_cards', 'premium_business_cards', 'premium_foil_cards', 'letterpress_cards', 'labels'],
+  },
+  // ── OMO-3196: 성원(swadpia) 에는 있으나 누락됐던 후가공 6종 추가 ──────────────
+  //   value 는 swadpia-finishing-fields.ts 매핑 키와 동일 → 자동발주 파이프라인이
+  //   이미 인식한다. 사진 미보유 → FINISHING_SVG data-URI 일러스트 사용.
+  //   (성원 bonding/접착 ≈ 기존 gluing, add_cutting/추가재단 ≈ cutting, window ≈
+  //    window_patch 로 이미 커버되어 중복 카드를 만들지 않는다.)
+  {
+    value: 'cutting',
+    label_en: 'Custom Cutting',
+    label_ko: '가공재단',
+    description_en: 'Precision guillotine cutting into multiple custom pieces or non-standard sizes.',
+    image_url: FINISHING_SVG.cutting,
+    fits: ['stickers', 'die_cut_stickers', 'flyers', 'brochures', 'posters', 'labels'],
+  },
+  {
+    value: 'folding',
+    label_en: 'Folding',
+    label_ko: '접지',
+    description_en: 'Machine folding — bi-fold, tri-fold, or gate-fold for leaflets and brochures.',
+    image_url: FINISHING_SVG.folding,
+    fits: ['flyers', 'brochures', 'postcards', 'posters'],
+  },
+  {
+    value: 'laminex',
+    label_en: 'Laminex Film',
+    label_ko: '라미넥스',
+    description_en: 'Specialty protective film lamination for extra durability and a refined surface.',
+    image_url: FINISHING_SVG.laminex,
+    fits: ['stickers', 'die_cut_stickers', 'labels', 'flyers'],
+  },
+  {
+    value: 'stitching',
+    label_en: 'Saddle Stitching',
+    label_ko: '중철',
+    description_en: 'Wire saddle-stitch binding through the spine — clean and economical for booklets.',
+    image_url: FINISHING_SVG.stitching,
+    fits: ['brochures', 'booklets', 'posters'],
+  },
+  {
+    value: 'tape',
+    label_en: 'Double-sided Tape',
+    label_ko: '양면테이프',
+    description_en: 'Pre-applied adhesive strip for self-seal envelopes and easy mounting.',
+    image_url: FINISHING_SVG.tape,
+    fits: ['envelopes', 'banners', 'paper_bags'],
+  },
+  {
+    value: 'partial_coating',
+    label_en: 'Spot Coating',
+    label_ko: '부분코팅',
+    description_en: 'Gloss or matte coating applied only to selected areas for a tactile spot-UV effect.',
+    image_url: FINISHING_SVG.partial_coating,
+    fits: ['booklets', 'brochures', 'banners', 'posters'],
   },
 ]
 
