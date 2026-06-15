@@ -99,14 +99,21 @@ async function buildScopes(sb, targets) {
   return scopes
 }
 
-async function crawlScope(page, scope, helpers, a) {
+// 사이즈별로 크롤하고, 각 사이즈 완료 즉시 적재(loadOne 제공 시) — transient kill 에도 부분 진행 보존.
+// doneSizes: 이미 적재된 size_code 집합(resume) → 해당 사이즈 스킵.
+async function crawlScope(page, scope, helpers, a, ctx) {
   const { snap, settle, setSelect } = helpers
+  const { loadOne, startedAt, doneSizes } = ctx || {}
   await page.goto(`${BASE}/goods/goods_view/${scope.code}`, { waitUntil: 'networkidle', timeout: 60000 })
   await page.waitForTimeout(1500)
-  const rows = []
-  let attempted = 0
+  const meta = { code: scope.code, slug: scope.slugs[0] || null, qtyField: scope.qtyField, sizeField: scope.sizeField, paperField: scope.paperField, sideField: scope.sideField }
+  const allRows = []
+  let attempted = 0, matchAll = 0, withScreenAll = 0, loadedSizes = 0, skippedSizes = 0
   for (const sz of scope.sizes) {
+    const sizeCode = sz.v || ''
+    if (doneSizes && doneSizes.has(sizeCode)) { skippedSizes++; continue }
     if (scope.sizeField && sz.v) { await setSelect(scope.sizeField, sz.v); await settle() }
+    const sizeRows = []
     for (const pp of scope.papers) {
       if (scope.paperField && pp.v) { await setSelect(scope.paperField, pp.v); await settle() }
       for (const sd of scope.sides) {
@@ -116,23 +123,33 @@ async function crawlScope(page, scope, helpers, a) {
           await setSelect(scope.qtyField, q.v); await settle(); await page.waitForTimeout(a.throttle)
           const s = await snap(); attempted++
           const total = toInt(s.total), screen = toInt(s.screen)
-          rows.push({
-            size_code: sz.v || '', size_label: sz.label, paper_code: pp.v || '', paper_label: pp.label,
+          sizeRows.push({
+            size_code: sizeCode, size_label: sz.label, paper_code: pp.v || '', paper_label: pp.label,
             side, side_label: sd.label, qty: q.n, total, paper: toInt(s.paper), plate: toInt(s.plate), print: toInt(s.print),
             screen, parity: screen != null && total != null && screen === total, source: 'sampled',
           })
         }
       }
     }
+    const ws = sizeRows.filter(r => Number.isFinite(r.screen))
+    const mt = ws.filter(r => r.parity).length
+    withScreenAll += ws.length; matchAll += mt
+    const sizePass = ws.length > 0 && mt === ws.length
+    allRows.push(...sizeRows)
+    // 사이즈 단위 즉시 적재(패리티 PASS 또는 --force)
+    if (loadOne && sizeRows.some(r => Number.isFinite(r.total)) && (sizePass || a.force)) {
+      const res = await loadOne({ issue: 'OMO-3240', startedAt, finishedAt: new Date().toISOString(), results: [{ ...meta, rows: sizeRows }] })
+      if (res.ok) loadedSizes++
+      console.log(`    · size ${sizeCode || '(none)'}: ${sizeRows.length}행 패리티 ${mt}/${ws.length} ${sizePass ? '✅' : '⚠️'} ${res.ok ? `적재 ${res.upserted}` : res.reason}`)
+    } else if (loadOne) {
+      console.log(`    · size ${sizeCode || '(none)'}: 패리티 FAIL(${mt}/${ws.length}) — 적재 건너뜀`)
+    }
   }
-  const withScreen = rows.filter(r => Number.isFinite(r.screen))
-  const match = withScreen.filter(r => r.parity).length
-  const priced = rows.filter(r => Number.isFinite(r.total)).length
+  const priced = allRows.filter(r => Number.isFinite(r.total)).length
   return {
-    code: scope.code, slug: scope.slugs[0] || null, qtyField: scope.qtyField,
-    sizeField: scope.sizeField, paperField: scope.paperField, sideField: scope.sideField,
-    parity: { sampled: rows.length, withScreen: withScreen.length, match, pass: withScreen.length > 0 && match === withScreen.length },
-    attempted, priced, rowCount: rows.length, sampledCount: rows.length, interpolatedCount: 0, rows,
+    ...meta,
+    parity: { sampled: allRows.length, withScreen: withScreenAll, match: matchAll, pass: withScreenAll > 0 && matchAll === withScreenAll },
+    attempted, priced, loadedSizes, skippedSizes, rowCount: allRows.length, sampledCount: allRows.length, interpolatedCount: 0, rows: allRows,
   }
 }
 
@@ -144,21 +161,25 @@ async function main() {
 
   const targets = (a.products || TARGETS).filter(c => TARGETS.includes(c))
   const scopes = await buildScopes(sb, targets)
-  // --resume: 이미 paper_qty 기반 표집행이 기대치만큼 적재된 제품은 스킵(heartbeat 경계 복원).
+  // --resume: 이미 적재된 size_code 를 제품별로 수집(사이즈 단위 복원). 완주한 제품은 전체 스킵.
   if (a.resume) {
     for (const s of scopes) {
       if (s.skip) continue
-      const expect = s.comboCount * (s.qtys?.length || 0)
-      const { count } = await sb.from('print_swadpia_price_matrix')
-        .select('id', { count: 'exact', head: true })
+      const expectPerSize = (s.papers.length) * (s.sides.length) * (s.qtys?.length || 0)
+      const { data } = await sb.from('print_swadpia_price_matrix')
+        .select('size_code')
         .eq('category_code', s.code).eq('source', 'sampled').contains('option_combo', { qty_field: s.qtyField })
-      if ((count || 0) >= expect && expect > 0) s.skip = `이미 적재(${count}/${expect}행)`
+      const cnt = {}
+      for (const r of data || []) cnt[r.size_code] = (cnt[r.size_code] || 0) + 1
+      s.doneSizes = new Set(Object.entries(cnt).filter(([, c]) => c >= expectPerSize && expectPerSize > 0).map(([k]) => k))
+      if (s.doneSizes.size >= s.sizes.length) s.skip = `이미 적재(${s.sizes.length} 사이즈 전부)`
     }
   }
   console.log('=== 스코프(사이트 노출 옵션) ===')
   for (const s of scopes) {
     if (s.skip) { console.log(`  ${s.code}: SKIP — ${s.skip}`); continue }
-    console.log(`  ${s.code}: paper ${s.papers.length} × size ${s.sizes.length} × side ${s.sides.length} × qty ${s.qtys.length} = ${s.comboCount * s.qtys.length} 표집 (qtyField=${s.qtyField})`)
+    const done = s.doneSizes?.size ? ` (resume: ${s.doneSizes.size}사이즈 적재됨·스킵)` : ''
+    console.log(`  ${s.code}: paper ${s.papers.length} × size ${s.sizes.length} × side ${s.sides.length} × qty ${s.qtys.length} = ${s.comboCount * s.qtys.length} 표집 (qtyField=${s.qtyField})${done}`)
   }
 
   const browser = await chromium.launch({ headless: !a.headed })
@@ -189,17 +210,12 @@ async function main() {
   const results = []
   for (const scope of scopes) {
     if (scope.skip) { results.push({ code: scope.code, error: scope.skip }); continue }
-    process.stdout.write(`[crawl] ${scope.code} (${scope.comboCount * scope.qtys.length} 표집) ...`)
+    console.log(`[crawl] ${scope.code} (${scope.comboCount * scope.qtys.length} 표집, 사이즈별 증분 적재) ...`)
     try {
-      const r = await crawlScope(page, scope, helpers, a)
+      // 적재는 crawlScope 내부에서 사이즈 단위로 즉시 수행(transient kill 대비 부분 보존).
+      const r = await crawlScope(page, scope, helpers, a, { loadOne, startedAt, doneSizes: scope.doneSizes })
       results.push(r)
-      console.log(` priced ${r.priced}/${r.attempted} · 패리티 ${r.parity.match}/${r.parity.withScreen} ${r.parity.pass ? '✅' : '⚠️'}`)
-      if (loadOne && (r.parity.pass || a.force) && r.priced > 0) {
-        const res = await loadOne({ issue: 'OMO-3240', startedAt, finishedAt: new Date().toISOString(), results: [r] })
-        console.log(`  └ [load] ${scope.code}: ${res.ok ? `upserted ${res.upserted}` : res.reason}`)
-      } else if (loadOne) {
-        console.log(`  └ [load] ${scope.code}: 건너뜀(패리티 ${r.parity.pass} priced ${r.priced})`)
-      }
+      console.log(`  → ${scope.code}: priced ${r.priced}/${r.attempted} · 패리티 ${r.parity.match}/${r.parity.withScreen} ${r.parity.pass ? '✅' : '⚠️'} · 적재 사이즈 ${r.loadedSizes}, 스킵 ${r.skippedSizes}`)
     } catch (e) {
       results.push({ code: scope.code, error: String(e).slice(0, 300) })
       console.log(` EXCEPTION: ${String(e).slice(0, 140)}`)
