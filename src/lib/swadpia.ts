@@ -7,6 +7,8 @@
  * Params: t (timestamp), product=name, category_code
  */
 
+import { synthesizeBagPrintEntries } from '@/config/bag-pricing'
+
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 const FETCH_TIMEOUT_MS = 15_000
 
@@ -469,10 +471,15 @@ export async function fetchSwadpiaCategoryDataByCode(categoryCode: string): Prom
       cut_norm_y_size: String(s.cut_norm_y_size ?? ''),
     }))
 
+    // OMO-3200: 쇼핑백(CPK2000/3000/4000/5000)은 print_info1 의 paper_code 가 비고
+    // unit_key 가 내부 index 라 위 정적 파싱으로는 수량↔단가 매핑이 불가하다.
+    // calcuEstimate 인터랙티브로 추출한 수량별 도매원가 매트릭스로 printEntries 를 대체한다.
+    const bagEntries = synthesizeBagPrintEntries(categoryCode)
+
     const result: SwadpiaCategoryData = {
       categoryCode,
       papers,
-      printEntries,
+      printEntries: bagEntries ?? printEntries,
       sizes,
       fetchedAt: Date.now(),
       fetchSuccess: true,

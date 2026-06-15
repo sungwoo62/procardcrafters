@@ -1,0 +1,2274 @@
+{
+  "fetchedAt": "2026-06-15",
+  "source": "calcuEstimate interactive (supply_amt=부가세전 도매원가)",
+  "codes": {
+    "CPK2000": {
+      "label": "리본&브레이드 쇼핑백",
+      "slug": "gift-bags",
+      "defaults": {
+        "paper_code": "ART180W00",
+        "print_color_type": "CTN10",
+        "paper_size": "PK001"
+      },
+      "monotonic": true,
+      "matrix": [
+        {
+          "quantity": 200,
+          "cost_krw": 385900,
+          "total_price": 385900,
+          "pay_amt": 424490,
+          "breakdown": {
+            "paper": 49700,
+            "print": 41600,
+            "plate": 32000,
+            "make": 142600
+          }
+        },
+        {
+          "quantity": 500,
+          "cost_krw": 516500,
+          "total_price": 516500,
+          "pay_amt": 568150,
+          "breakdown": {
+            "paper": 89500,
+            "print": 41600,
+            "plate": 32000,
+            "make": 233400
+          }
+        },
+        {
+          "quantity": 1000,
+          "cost_krw": 750200,
+          "total_price": 750200,
+          "pay_amt": 825220,
+          "breakdown": {
+            "paper": 154900,
+            "print": 41600,
+            "plate": 32000,
+            "make": 384700
+          }
+        },
+        {
+          "quantity": 1500,
+          "cost_krw": 1068700,
+          "total_price": 1068700,
+          "pay_amt": 1175570,
+          "breakdown": {
+            "paper": 220300,
+            "print": 62400,
+            "plate": 32000,
+            "make": 551000
+          }
+        },
+        {
+          "quantity": 2000,
+          "cost_krw": 1376800,
+          "total_price": 1376800,
+          "pay_amt": 1514480,
+          "breakdown": {
+            "paper": 285700,
+            "print": 72800,
+            "plate": 32000,
+            "make": 717300
+          }
+        },
+        {
+          "quantity": 2500,
+          "cost_krw": 1694200,
+          "total_price": 1694200,
+          "pay_amt": 1863620,
+          "breakdown": {
+            "paper": 352600,
+            "print": 91000,
+            "plate": 32000,
+            "make": 883600
+          }
+        },
+        {
+          "quantity": 3000,
+          "cost_krw": 1999200,
+          "total_price": 1999200,
+          "pay_amt": 2199120,
+          "breakdown": {
+            "paper": 418000,
+            "print": 98300,
+            "plate": 32000,
+            "make": 1049900
+          }
+        },
+        {
+          "quantity": 3500,
+          "cost_krw": 2308400,
+          "total_price": 2308400,
+          "pay_amt": 2539240,
+          "breakdown": {
+            "paper": 483500,
+            "print": 114700,
+            "plate": 32000,
+            "make": 1211200
+          }
+        },
+        {
+          "quantity": 4000,
+          "cost_krw": 2602900,
+          "total_price": 2602900,
+          "pay_amt": 2863190,
+          "breakdown": {
+            "paper": 548900,
+            "print": 116500,
+            "plate": 32000,
+            "make": 1372500
+          }
+        },
+        {
+          "quantity": 4500,
+          "cost_krw": 2910200,
+          "total_price": 2910200,
+          "pay_amt": 3201220,
+          "breakdown": {
+            "paper": 614300,
+            "print": 131100,
+            "plate": 32000,
+            "make": 1533800
+          }
+        },
+        {
+          "quantity": 5000,
+          "cost_krw": 3205900,
+          "total_price": 3205900,
+          "pay_amt": 3526490,
+          "breakdown": {
+            "paper": 681200,
+            "print": 132600,
+            "plate": 32000,
+            "make": 1695100
+          }
+        },
+        {
+          "quantity": 5500,
+          "cost_krw": 3496900,
+          "total_price": 3496900,
+          "pay_amt": 3846590,
+          "breakdown": {
+            "paper": 746600,
+            "print": 145900,
+            "plate": 32000,
+            "make": 1841400
+          }
+        },
+        {
+          "quantity": 6000,
+          "cost_krw": 3778500,
+          "total_price": 3778500,
+          "pay_amt": 4156350,
+          "breakdown": {
+            "paper": 812000,
+            "print": 149800,
+            "plate": 32000,
+            "make": 1987700
+          }
+        },
+        {
+          "quantity": 6500,
+          "cost_krw": 4068700,
+          "total_price": 4068700,
+          "pay_amt": 4475570,
+          "breakdown": {
+            "paper": 877400,
+            "print": 162300,
+            "plate": 32000,
+            "make": 2134000
+          }
+        },
+        {
+          "quantity": 7000,
+          "cost_krw": 4353100,
+          "total_price": 4353100,
+          "pay_amt": 4788410,
+          "breakdown": {
+            "paper": 944300,
+            "print": 167500,
+            "plate": 32000,
+            "make": 2280300
+          }
+        },
+        {
+          "quantity": 7500,
+          "cost_krw": 4642700,
+          "total_price": 4642700,
+          "pay_amt": 5106970,
+          "breakdown": {
+            "paper": 1009700,
+            "print": 179400,
+            "plate": 32000,
+            "make": 2426600
+          }
+        },
+        {
+          "quantity": 8000,
+          "cost_krw": 4924100,
+          "total_price": 4924100,
+          "pay_amt": 5416510,
+          "breakdown": {
+            "paper": 1075100,
+            "print": 183100,
+            "plate": 32000,
+            "make": 2572900
+          }
+        },
+        {
+          "quantity": 8500,
+          "cost_krw": 5213200,
+          "total_price": 5213200,
+          "pay_amt": 5734520,
+          "breakdown": {
+            "paper": 1140500,
+            "print": 194500,
+            "plate": 32000,
+            "make": 2719200
+          }
+        },
+        {
+          "quantity": 9000,
+          "cost_krw": 5497700,
+          "total_price": 5497700,
+          "pay_amt": 6047470,
+          "breakdown": {
+            "paper": 1205900,
+            "print": 201300,
+            "plate": 32000,
+            "make": 2865500
+          }
+        },
+        {
+          "quantity": 9500,
+          "cost_krw": 5788100,
+          "total_price": 5788100,
+          "pay_amt": 6366910,
+          "breakdown": {
+            "paper": 1272800,
+            "print": 212500,
+            "plate": 32000,
+            "make": 3011800
+          }
+        },
+        {
+          "quantity": 10000,
+          "cost_krw": 6071700,
+          "total_price": 6071700,
+          "pay_amt": 6678870,
+          "breakdown": {
+            "paper": 1338200,
+            "print": 218400,
+            "plate": 32000,
+            "make": 3158100
+          }
+        },
+        {
+          "quantity": 11000,
+          "cost_krw": 6643300,
+          "total_price": 6643300,
+          "pay_amt": 7307630,
+          "breakdown": {
+            "paper": 1469000,
+            "print": 234600,
+            "plate": 32000,
+            "make": 3450700
+          }
+        },
+        {
+          "quantity": 12000,
+          "cost_krw": 7215300,
+          "total_price": 7215300,
+          "pay_amt": 7936830,
+          "breakdown": {
+            "paper": 1601400,
+            "print": 249600,
+            "plate": 32000,
+            "make": 3743300
+          }
+        },
+        {
+          "quantity": 13000,
+          "cost_krw": 7791500,
+          "total_price": 7791500,
+          "pay_amt": 8570650,
+          "breakdown": {
+            "paper": 1732200,
+            "print": 270400,
+            "plate": 32000,
+            "make": 4035900
+          }
+        },
+        {
+          "quantity": 14000,
+          "cost_krw": 8362000,
+          "total_price": 8362000,
+          "pay_amt": 9198200,
+          "breakdown": {
+            "paper": 1864500,
+            "print": 284000,
+            "plate": 32000,
+            "make": 4328500
+          }
+        },
+        {
+          "quantity": 15000,
+          "cost_krw": 8937600,
+          "total_price": 8937600,
+          "pay_amt": 9831360,
+          "breakdown": {
+            "paper": 1995300,
+            "print": 304200,
+            "plate": 32000,
+            "make": 4621100
+          }
+        },
+        {
+          "quantity": 16000,
+          "cost_krw": 9506500,
+          "total_price": 9506500,
+          "pay_amt": 10457150,
+          "breakdown": {
+            "paper": 2127600,
+            "print": 316200,
+            "plate": 32000,
+            "make": 4913700
+          }
+        },
+        {
+          "quantity": 17000,
+          "cost_krw": 10081700,
+          "total_price": 10081700,
+          "pay_amt": 11089870,
+          "breakdown": {
+            "paper": 2258400,
+            "print": 336000,
+            "plate": 32000,
+            "make": 5206300
+          }
+        },
+        {
+          "quantity": 18000,
+          "cost_krw": 10656800,
+          "total_price": 10656800,
+          "pay_amt": 11722480,
+          "breakdown": {
+            "paper": 2389200,
+            "print": 355700,
+            "plate": 32000,
+            "make": 5498900
+          }
+        },
+        {
+          "quantity": 19000,
+          "cost_krw": 11223600,
+          "total_price": 11223600,
+          "pay_amt": 12345960,
+          "breakdown": {
+            "paper": 2521500,
+            "print": 365600,
+            "plate": 32000,
+            "make": 5791500
+          }
+        },
+        {
+          "quantity": 20000,
+          "cost_krw": 11798300,
+          "total_price": 11798300,
+          "pay_amt": 12978130,
+          "breakdown": {
+            "paper": 2652400,
+            "print": 384800,
+            "plate": 32000,
+            "make": 6084100
+          }
+        },
+        {
+          "quantity": 21000,
+          "cost_krw": 12374500,
+          "total_price": 12374500,
+          "pay_amt": 13611950,
+          "breakdown": {
+            "paper": 2784700,
+            "print": 404100,
+            "plate": 32000,
+            "make": 6376700
+          }
+        },
+        {
+          "quantity": 22000,
+          "cost_krw": 12937700,
+          "total_price": 12937700,
+          "pay_amt": 14231470,
+          "breakdown": {
+            "paper": 2915500,
+            "print": 411900,
+            "plate": 32000,
+            "make": 6669300
+          }
+        },
+        {
+          "quantity": 23000,
+          "cost_krw": 13513300,
+          "total_price": 13513300,
+          "pay_amt": 14864630,
+          "breakdown": {
+            "paper": 3047800,
+            "print": 430600,
+            "plate": 32000,
+            "make": 6961900
+          }
+        },
+        {
+          "quantity": 24000,
+          "cost_krw": 14087400,
+          "total_price": 14087400,
+          "pay_amt": 15496140,
+          "breakdown": {
+            "paper": 3178600,
+            "print": 449300,
+            "plate": 32000,
+            "make": 7254500
+          }
+        },
+        {
+          "quantity": 25000,
+          "cost_krw": 14650000,
+          "total_price": 14650000,
+          "pay_amt": 16115000,
+          "breakdown": {
+            "paper": 3310900,
+            "print": 455000,
+            "plate": 32000,
+            "make": 7547100
+          }
+        },
+        {
+          "quantity": 26000,
+          "cost_krw": 15223600,
+          "total_price": 15223600,
+          "pay_amt": 16745960,
+          "breakdown": {
+            "paper": 3441700,
+            "print": 473200,
+            "plate": 32000,
+            "make": 7839700
+          }
+        },
+        {
+          "quantity": 27000,
+          "cost_krw": 15797200,
+          "total_price": 15797200,
+          "pay_amt": 17376920,
+          "breakdown": {
+            "paper": 3572500,
+            "print": 491400,
+            "plate": 32000,
+            "make": 8132300
+          }
+        },
+        {
+          "quantity": 28000,
+          "cost_krw": 16372300,
+          "total_price": 16372300,
+          "pay_amt": 18009530,
+          "breakdown": {
+            "paper": 3704800,
+            "print": 509600,
+            "plate": 32000,
+            "make": 8424900
+          }
+        },
+        {
+          "quantity": 29000,
+          "cost_krw": 16946000,
+          "total_price": 16946000,
+          "pay_amt": 18640600,
+          "breakdown": {
+            "paper": 3835700,
+            "print": 527800,
+            "plate": 32000,
+            "make": 8717500
+          }
+        },
+        {
+          "quantity": 30000,
+          "cost_krw": 17505500,
+          "total_price": 17505500,
+          "pay_amt": 19256050,
+          "breakdown": {
+            "paper": 3968000,
+            "print": 530400,
+            "plate": 32000,
+            "make": 9010100
+          }
+        },
+        {
+          "quantity": 31000,
+          "cost_krw": 18077200,
+          "total_price": 18077200,
+          "pay_amt": 19884920,
+          "breakdown": {
+            "paper": 4098800,
+            "print": 546700,
+            "plate": 32000,
+            "make": 9302700
+          }
+        },
+        {
+          "quantity": 32000,
+          "cost_krw": 18647100,
+          "total_price": 18647100,
+          "pay_amt": 20511810,
+          "breakdown": {
+            "paper": 4231100,
+            "print": 559700,
+            "plate": 32000,
+            "make": 9595300
+          }
+        },
+        {
+          "quantity": 33000,
+          "cost_krw": 19215500,
+          "total_price": 19215500,
+          "pay_amt": 21137050,
+          "breakdown": {
+            "paper": 4361900,
+            "print": 572700,
+            "plate": 32000,
+            "make": 9887900
+          }
+        },
+        {
+          "quantity": 34000,
+          "cost_krw": 19785500,
+          "total_price": 19785500,
+          "pay_amt": 21764050,
+          "breakdown": {
+            "paper": 4494200,
+            "print": 585800,
+            "plate": 32000,
+            "make": 10180500
+          }
+        },
+        {
+          "quantity": 35000,
+          "cost_krw": 20353700,
+          "total_price": 20353700,
+          "pay_amt": 22389070,
+          "breakdown": {
+            "paper": 4625000,
+            "print": 598600,
+            "plate": 32000,
+            "make": 10473100
+          }
+        },
+        {
+          "quantity": 36000,
+          "cost_krw": 20922100,
+          "total_price": 20922100,
+          "pay_amt": 23014310,
+          "breakdown": {
+            "paper": 4755800,
+            "print": 611600,
+            "plate": 32000,
+            "make": 10765700
+          }
+        },
+        {
+          "quantity": 37000,
+          "cost_krw": 21492300,
+          "total_price": 21492300,
+          "pay_amt": 23641530,
+          "breakdown": {
+            "paper": 4888200,
+            "print": 624800,
+            "plate": 32000,
+            "make": 11058300
+          }
+        },
+        {
+          "quantity": 38000,
+          "cost_krw": 22060600,
+          "total_price": 22060600,
+          "pay_amt": 24266660,
+          "breakdown": {
+            "paper": 5019000,
+            "print": 637700,
+            "plate": 32000,
+            "make": 11350900
+          }
+        },
+        {
+          "quantity": 39000,
+          "cost_krw": 22630400,
+          "total_price": 22630400,
+          "pay_amt": 24893440,
+          "breakdown": {
+            "paper": 5151300,
+            "print": 650600,
+            "plate": 32000,
+            "make": 11643500
+          }
+        },
+        {
+          "quantity": 40000,
+          "cost_krw": 23199000,
+          "total_price": 23199000,
+          "pay_amt": 25518900,
+          "breakdown": {
+            "paper": 5282100,
+            "print": 663800,
+            "plate": 32000,
+            "make": 11936100
+          }
+        },
+        {
+          "quantity": 41000,
+          "cost_krw": 23768800,
+          "total_price": 23768800,
+          "pay_amt": 26145680,
+          "breakdown": {
+            "paper": 5414400,
+            "print": 676700,
+            "plate": 32000,
+            "make": 12228700
+          }
+        },
+        {
+          "quantity": 42000,
+          "cost_krw": 24337300,
+          "total_price": 24337300,
+          "pay_amt": 26771030,
+          "breakdown": {
+            "paper": 5545200,
+            "print": 689800,
+            "plate": 32000,
+            "make": 12521300
+          }
+        },
+        {
+          "quantity": 43000,
+          "cost_krw": 24907000,
+          "total_price": 24907000,
+          "pay_amt": 27397700,
+          "breakdown": {
+            "paper": 5677500,
+            "print": 702600,
+            "plate": 32000,
+            "make": 12813900
+          }
+        },
+        {
+          "quantity": 44000,
+          "cost_krw": 25475500,
+          "total_price": 25475500,
+          "pay_amt": 28023050,
+          "breakdown": {
+            "paper": 5808300,
+            "print": 715700,
+            "plate": 32000,
+            "make": 13106500
+          }
+        },
+        {
+          "quantity": 45000,
+          "cost_krw": 26044000,
+          "total_price": 26044000,
+          "pay_amt": 28648400,
+          "breakdown": {
+            "paper": 5939200,
+            "print": 728700,
+            "plate": 32000,
+            "make": 13399100
+          }
+        },
+        {
+          "quantity": 46000,
+          "cost_krw": 26614000,
+          "total_price": 26614000,
+          "pay_amt": 29275400,
+          "breakdown": {
+            "paper": 6071500,
+            "print": 741800,
+            "plate": 32000,
+            "make": 13691700
+          }
+        },
+        {
+          "quantity": 47000,
+          "cost_krw": 27182400,
+          "total_price": 27182400,
+          "pay_amt": 29900640,
+          "breakdown": {
+            "paper": 6202300,
+            "print": 754800,
+            "plate": 32000,
+            "make": 13984300
+          }
+        },
+        {
+          "quantity": 48000,
+          "cost_krw": 27752300,
+          "total_price": 27752300,
+          "pay_amt": 30527530,
+          "breakdown": {
+            "paper": 6334600,
+            "print": 767800,
+            "plate": 32000,
+            "make": 14276900
+          }
+        },
+        {
+          "quantity": 49000,
+          "cost_krw": 28320700,
+          "total_price": 28320700,
+          "pay_amt": 31152770,
+          "breakdown": {
+            "paper": 6465400,
+            "print": 780800,
+            "plate": 32000,
+            "make": 14569500
+          }
+        },
+        {
+          "quantity": 50000,
+          "cost_krw": 28890600,
+          "total_price": 28890600,
+          "pay_amt": 31779660,
+          "breakdown": {
+            "paper": 6597700,
+            "print": 793800,
+            "plate": 32000,
+            "make": 14862100
+          }
+        }
+      ]
+    },
+    "CPK4000": {
+      "label": "종이끈 쇼핑백",
+      "slug": "paper-shopping-bags",
+      "defaults": {
+        "paper_code": "ART180W00",
+        "print_color_type": "CTN10",
+        "paper_size": "PK016"
+      },
+      "monotonic": true,
+      "matrix": [
+        {
+          "quantity": 200,
+          "cost_krw": 370200,
+          "total_price": 370200,
+          "pay_amt": 407220,
+          "breakdown": {
+            "paper": 47100,
+            "print": 41600,
+            "plate": 32000,
+            "make": 138000
+          }
+        },
+        {
+          "quantity": 500,
+          "cost_krw": 482200,
+          "total_price": 482200,
+          "pay_amt": 530420,
+          "breakdown": {
+            "paper": 70600,
+            "print": 41600,
+            "plate": 32000,
+            "make": 226500
+          }
+        },
+        {
+          "quantity": 1000,
+          "cost_krw": 691400,
+          "total_price": 691400,
+          "pay_amt": 760540,
+          "breakdown": {
+            "paper": 109800,
+            "print": 41600,
+            "plate": 32000,
+            "make": 374000
+          }
+        },
+        {
+          "quantity": 1500,
+          "cost_krw": 973400,
+          "total_price": 973400,
+          "pay_amt": 1070740,
+          "breakdown": {
+            "paper": 149000,
+            "print": 62400,
+            "plate": 32000,
+            "make": 531500
+          }
+        },
+        {
+          "quantity": 2000,
+          "cost_krw": 1244900,
+          "total_price": 1244900,
+          "pay_amt": 1369390,
+          "breakdown": {
+            "paper": 188100,
+            "print": 72800,
+            "plate": 32000,
+            "make": 689000
+          }
+        },
+        {
+          "quantity": 2500,
+          "cost_krw": 1524300,
+          "total_price": 1524300,
+          "pay_amt": 1676730,
+          "breakdown": {
+            "paper": 227300,
+            "print": 91000,
+            "plate": 32000,
+            "make": 846500
+          }
+        },
+        {
+          "quantity": 3000,
+          "cost_krw": 1788100,
+          "total_price": 1788100,
+          "pay_amt": 1966910,
+          "breakdown": {
+            "paper": 266500,
+            "print": 93600,
+            "plate": 32000,
+            "make": 1004000
+          }
+        },
+        {
+          "quantity": 3500,
+          "cost_krw": 2064900,
+          "total_price": 2064900,
+          "pay_amt": 2271390,
+          "breakdown": {
+            "paper": 305700,
+            "print": 109200,
+            "plate": 32000,
+            "make": 1161500
+          }
+        },
+        {
+          "quantity": 4000,
+          "cost_krw": 2327200,
+          "total_price": 2327200,
+          "pay_amt": 2559920,
+          "breakdown": {
+            "paper": 344900,
+            "print": 110300,
+            "plate": 32000,
+            "make": 1319000
+          }
+        },
+        {
+          "quantity": 4500,
+          "cost_krw": 2602200,
+          "total_price": 2602200,
+          "pay_amt": 2862420,
+          "breakdown": {
+            "paper": 384100,
+            "print": 124100,
+            "plate": 32000,
+            "make": 1476500
+          }
+        },
+        {
+          "quantity": 5000,
+          "cost_krw": 2866700,
+          "total_price": 2866700,
+          "pay_amt": 3153370,
+          "breakdown": {
+            "paper": 423300,
+            "print": 127400,
+            "plate": 32000,
+            "make": 1634000
+          }
+        },
+        {
+          "quantity": 5500,
+          "cost_krw": 3136600,
+          "total_price": 3136600,
+          "pay_amt": 3450260,
+          "breakdown": {
+            "paper": 462400,
+            "print": 140200,
+            "plate": 32000,
+            "make": 1787500
+          }
+        },
+        {
+          "quantity": 6000,
+          "cost_krw": 3397200,
+          "total_price": 3397200,
+          "pay_amt": 3736920,
+          "breakdown": {
+            "paper": 501600,
+            "print": 143600,
+            "plate": 32000,
+            "make": 1941000
+          }
+        },
+        {
+          "quantity": 6500,
+          "cost_krw": 3666300,
+          "total_price": 3666300,
+          "pay_amt": 4032930,
+          "breakdown": {
+            "paper": 540800,
+            "print": 155500,
+            "plate": 32000,
+            "make": 2094500
+          }
+        },
+        {
+          "quantity": 7000,
+          "cost_krw": 3928200,
+          "total_price": 3928200,
+          "pay_amt": 4321020,
+          "breakdown": {
+            "paper": 580000,
+            "print": 160200,
+            "plate": 32000,
+            "make": 2248000
+          }
+        },
+        {
+          "quantity": 7500,
+          "cost_krw": 4196800,
+          "total_price": 4196800,
+          "pay_amt": 4616480,
+          "breakdown": {
+            "paper": 619200,
+            "print": 171600,
+            "plate": 32000,
+            "make": 2401500
+          }
+        },
+        {
+          "quantity": 8000,
+          "cost_krw": 4457200,
+          "total_price": 4457200,
+          "pay_amt": 4902920,
+          "breakdown": {
+            "paper": 658400,
+            "print": 174800,
+            "plate": 32000,
+            "make": 2555000
+          }
+        },
+        {
+          "quantity": 8500,
+          "cost_krw": 4725300,
+          "total_price": 4725300,
+          "pay_amt": 5197830,
+          "breakdown": {
+            "paper": 697600,
+            "print": 185700,
+            "plate": 32000,
+            "make": 2708500
+          }
+        },
+        {
+          "quantity": 9000,
+          "cost_krw": 4983900,
+          "total_price": 4983900,
+          "pay_amt": 5482290,
+          "breakdown": {
+            "paper": 736700,
+            "print": 187200,
+            "plate": 32000,
+            "make": 2862000
+          }
+        },
+        {
+          "quantity": 9500,
+          "cost_krw": 5251500,
+          "total_price": 5251500,
+          "pay_amt": 5776650,
+          "breakdown": {
+            "paper": 775900,
+            "print": 197600,
+            "plate": 32000,
+            "make": 3015500
+          }
+        },
+        {
+          "quantity": 10000,
+          "cost_krw": 5513900,
+          "total_price": 5513900,
+          "pay_amt": 6065290,
+          "breakdown": {
+            "paper": 815100,
+            "print": 202800,
+            "plate": 32000,
+            "make": 3169000
+          }
+        },
+        {
+          "quantity": 11000,
+          "cost_krw": 6042900,
+          "total_price": 6042900,
+          "pay_amt": 6647190,
+          "breakdown": {
+            "paper": 893500,
+            "print": 217400,
+            "plate": 32000,
+            "make": 3476000
+          }
+        },
+        {
+          "quantity": 12000,
+          "cost_krw": 6564600,
+          "total_price": 6564600,
+          "pay_amt": 7221060,
+          "breakdown": {
+            "paper": 971900,
+            "print": 224700,
+            "plate": 32000,
+            "make": 3783000
+          }
+        },
+        {
+          "quantity": 13000,
+          "cost_krw": 7090800,
+          "total_price": 7090800,
+          "pay_amt": 7799880,
+          "breakdown": {
+            "paper": 1050200,
+            "print": 236600,
+            "plate": 32000,
+            "make": 4090000
+          }
+        },
+        {
+          "quantity": 14000,
+          "cost_krw": 7616200,
+          "total_price": 7616200,
+          "pay_amt": 8377820,
+          "breakdown": {
+            "paper": 1128600,
+            "print": 247600,
+            "plate": 32000,
+            "make": 4397000
+          }
+        },
+        {
+          "quantity": 15000,
+          "cost_krw": 8140400,
+          "total_price": 8140400,
+          "pay_amt": 8954440,
+          "breakdown": {
+            "paper": 1207000,
+            "print": 257400,
+            "plate": 32000,
+            "make": 4704000
+          }
+        },
+        {
+          "quantity": 16000,
+          "cost_krw": 8672000,
+          "total_price": 8672000,
+          "pay_amt": 9539200,
+          "breakdown": {
+            "paper": 1285400,
+            "print": 274600,
+            "plate": 32000,
+            "make": 5011000
+          }
+        },
+        {
+          "quantity": 17000,
+          "cost_krw": 9194600,
+          "total_price": 9194600,
+          "pay_amt": 10114060,
+          "breakdown": {
+            "paper": 1363700,
+            "print": 282900,
+            "plate": 32000,
+            "make": 5318000
+          }
+        },
+        {
+          "quantity": 18000,
+          "cost_krw": 9716300,
+          "total_price": 9716300,
+          "pay_amt": 10687930,
+          "breakdown": {
+            "paper": 1442100,
+            "print": 290200,
+            "plate": 32000,
+            "make": 5625000
+          }
+        },
+        {
+          "quantity": 19000,
+          "cost_krw": 10246800,
+          "total_price": 10246800,
+          "pay_amt": 11271480,
+          "breakdown": {
+            "paper": 1520500,
+            "print": 306300,
+            "plate": 32000,
+            "make": 5932000
+          }
+        },
+        {
+          "quantity": 20000,
+          "cost_krw": 10766800,
+          "total_price": 10766800,
+          "pay_amt": 11843480,
+          "breakdown": {
+            "paper": 1598800,
+            "print": 312000,
+            "plate": 32000,
+            "make": 6239000
+          }
+        },
+        {
+          "quantity": 21000,
+          "cost_krw": 11296800,
+          "total_price": 11296800,
+          "pay_amt": 12426480,
+          "breakdown": {
+            "paper": 1677200,
+            "print": 327600,
+            "plate": 32000,
+            "make": 6546000
+          }
+        },
+        {
+          "quantity": 22000,
+          "cost_krw": 11815400,
+          "total_price": 11815400,
+          "pay_amt": 12996940,
+          "breakdown": {
+            "paper": 1755600,
+            "print": 331800,
+            "plate": 32000,
+            "make": 6853000
+          }
+        },
+        {
+          "quantity": 23000,
+          "cost_krw": 12344900,
+          "total_price": 12344900,
+          "pay_amt": 13579390,
+          "breakdown": {
+            "paper": 1834000,
+            "print": 346900,
+            "plate": 32000,
+            "make": 7160000
+          }
+        },
+        {
+          "quantity": 24000,
+          "cost_krw": 12861800,
+          "total_price": 12861800,
+          "pay_amt": 14147980,
+          "breakdown": {
+            "paper": 1912300,
+            "print": 349500,
+            "plate": 32000,
+            "make": 7467000
+          }
+        },
+        {
+          "quantity": 25000,
+          "cost_krw": 13390700,
+          "total_price": 13390700,
+          "pay_amt": 14729770,
+          "breakdown": {
+            "paper": 1990700,
+            "print": 364000,
+            "plate": 32000,
+            "make": 7774000
+          }
+        },
+        {
+          "quantity": 26000,
+          "cost_krw": 13919700,
+          "total_price": 13919700,
+          "pay_amt": 15311670,
+          "breakdown": {
+            "paper": 2069100,
+            "print": 378600,
+            "plate": 32000,
+            "make": 8081000
+          }
+        },
+        {
+          "quantity": 27000,
+          "cost_krw": 14434500,
+          "total_price": 14434500,
+          "pay_amt": 15877950,
+          "breakdown": {
+            "paper": 2147400,
+            "print": 379100,
+            "plate": 32000,
+            "make": 8388000
+          }
+        },
+        {
+          "quantity": 28000,
+          "cost_krw": 14963000,
+          "total_price": 14963000,
+          "pay_amt": 16459300,
+          "breakdown": {
+            "paper": 2225800,
+            "print": 393200,
+            "plate": 32000,
+            "make": 8695000
+          }
+        },
+        {
+          "quantity": 29000,
+          "cost_krw": 15491400,
+          "total_price": 15491400,
+          "pay_amt": 17040540,
+          "breakdown": {
+            "paper": 2304200,
+            "print": 407200,
+            "plate": 32000,
+            "make": 9002000
+          }
+        },
+        {
+          "quantity": 30000,
+          "cost_krw": 16019800,
+          "total_price": 16019800,
+          "pay_amt": 17621780,
+          "breakdown": {
+            "paper": 2382600,
+            "print": 421200,
+            "plate": 32000,
+            "make": 9309000
+          }
+        },
+        {
+          "quantity": 31000,
+          "cost_krw": 16540000,
+          "total_price": 16540000,
+          "pay_amt": 18194000,
+          "breakdown": {
+            "paper": 2460900,
+            "print": 427100,
+            "plate": 32000,
+            "make": 9616000
+          }
+        },
+        {
+          "quantity": 32000,
+          "cost_krw": 17064800,
+          "total_price": 17064800,
+          "pay_amt": 18771280,
+          "breakdown": {
+            "paper": 2539300,
+            "print": 437500,
+            "plate": 32000,
+            "make": 9923000
+          }
+        },
+        {
+          "quantity": 33000,
+          "cost_krw": 17589600,
+          "total_price": 17589600,
+          "pay_amt": 19348560,
+          "breakdown": {
+            "paper": 2617700,
+            "print": 447900,
+            "plate": 32000,
+            "make": 10230000
+          }
+        },
+        {
+          "quantity": 34000,
+          "cost_krw": 18114300,
+          "total_price": 18114300,
+          "pay_amt": 19925730,
+          "breakdown": {
+            "paper": 2696000,
+            "print": 458300,
+            "plate": 32000,
+            "make": 10537000
+          }
+        },
+        {
+          "quantity": 35000,
+          "cost_krw": 18639100,
+          "total_price": 18639100,
+          "pay_amt": 20503010,
+          "breakdown": {
+            "paper": 2774400,
+            "print": 468700,
+            "plate": 32000,
+            "make": 10844000
+          }
+        },
+        {
+          "quantity": 36000,
+          "cost_krw": 19163900,
+          "total_price": 19163900,
+          "pay_amt": 21080290,
+          "breakdown": {
+            "paper": 2852800,
+            "print": 479100,
+            "plate": 32000,
+            "make": 11151000
+          }
+        },
+        {
+          "quantity": 37000,
+          "cost_krw": 19688700,
+          "total_price": 19688700,
+          "pay_amt": 21657570,
+          "breakdown": {
+            "paper": 2931200,
+            "print": 489500,
+            "plate": 32000,
+            "make": 11458000
+          }
+        },
+        {
+          "quantity": 38000,
+          "cost_krw": 20213500,
+          "total_price": 20213500,
+          "pay_amt": 22234850,
+          "breakdown": {
+            "paper": 3009500,
+            "print": 500000,
+            "plate": 32000,
+            "make": 11765000
+          }
+        },
+        {
+          "quantity": 39000,
+          "cost_krw": 20738200,
+          "total_price": 20738200,
+          "pay_amt": 22812020,
+          "breakdown": {
+            "paper": 3087900,
+            "print": 510300,
+            "plate": 32000,
+            "make": 12072000
+          }
+        },
+        {
+          "quantity": 40000,
+          "cost_krw": 21263000,
+          "total_price": 21263000,
+          "pay_amt": 23389300,
+          "breakdown": {
+            "paper": 3166300,
+            "print": 520700,
+            "plate": 32000,
+            "make": 12379000
+          }
+        },
+        {
+          "quantity": 41000,
+          "cost_krw": 21787800,
+          "total_price": 21787800,
+          "pay_amt": 23966580,
+          "breakdown": {
+            "paper": 3244700,
+            "print": 531100,
+            "plate": 32000,
+            "make": 12686000
+          }
+        },
+        {
+          "quantity": 42000,
+          "cost_krw": 22312500,
+          "total_price": 22312500,
+          "pay_amt": 24543750,
+          "breakdown": {
+            "paper": 3323000,
+            "print": 541500,
+            "plate": 32000,
+            "make": 12993000
+          }
+        },
+        {
+          "quantity": 43000,
+          "cost_krw": 22837300,
+          "total_price": 22837300,
+          "pay_amt": 25121030,
+          "breakdown": {
+            "paper": 3401400,
+            "print": 551900,
+            "plate": 32000,
+            "make": 13300000
+          }
+        },
+        {
+          "quantity": 44000,
+          "cost_krw": 23362000,
+          "total_price": 23362000,
+          "pay_amt": 25698200,
+          "breakdown": {
+            "paper": 3479800,
+            "print": 562200,
+            "plate": 32000,
+            "make": 13607000
+          }
+        },
+        {
+          "quantity": 45000,
+          "cost_krw": 23886700,
+          "total_price": 23886700,
+          "pay_amt": 26275370,
+          "breakdown": {
+            "paper": 3558100,
+            "print": 572600,
+            "plate": 32000,
+            "make": 13914000
+          }
+        },
+        {
+          "quantity": 46000,
+          "cost_krw": 24411700,
+          "total_price": 24411700,
+          "pay_amt": 26852870,
+          "breakdown": {
+            "paper": 3636500,
+            "print": 583200,
+            "plate": 32000,
+            "make": 14221000
+          }
+        },
+        {
+          "quantity": 47000,
+          "cost_krw": 24936400,
+          "total_price": 24936400,
+          "pay_amt": 27430040,
+          "breakdown": {
+            "paper": 3714900,
+            "print": 593500,
+            "plate": 32000,
+            "make": 14528000
+          }
+        },
+        {
+          "quantity": 48000,
+          "cost_krw": 25461100,
+          "total_price": 25461100,
+          "pay_amt": 28007210,
+          "breakdown": {
+            "paper": 3793300,
+            "print": 603800,
+            "plate": 32000,
+            "make": 14835000
+          }
+        },
+        {
+          "quantity": 49000,
+          "cost_krw": 25986000,
+          "total_price": 25986000,
+          "pay_amt": 28584600,
+          "breakdown": {
+            "paper": 3871600,
+            "print": 614400,
+            "plate": 32000,
+            "make": 15142000
+          }
+        },
+        {
+          "quantity": 50000,
+          "cost_krw": 26510800,
+          "total_price": 26510800,
+          "pay_amt": 29161880,
+          "breakdown": {
+            "paper": 3950000,
+            "print": 624800,
+            "plate": 32000,
+            "make": 15449000
+          }
+        }
+      ]
+    },
+    "CPK3000": {
+      "label": "끈없는 쇼핑백",
+      "slug": "handleless-bags",
+      "defaults": {
+        "paper_code": "ART180W00",
+        "print_color_type": "CTN10",
+        "paper_size": "PK011"
+      },
+      "monotonic": true,
+      "matrix": [
+        {
+          "quantity": 200,
+          "cost_krw": 367200,
+          "total_price": 367200,
+          "pay_amt": 403920,
+          "breakdown": {
+            "paper": 53100,
+            "print": 41600,
+            "plate": 32000,
+            "make": 129000
+          }
+        },
+        {
+          "quantity": 500,
+          "cost_krw": 468700,
+          "total_price": 468700,
+          "pay_amt": 515570,
+          "breakdown": {
+            "paper": 84100,
+            "print": 41600,
+            "plate": 32000,
+            "make": 199500
+          }
+        },
+        {
+          "quantity": 1000,
+          "cost_krw": 652900,
+          "total_price": 652900,
+          "pay_amt": 718190,
+          "breakdown": {
+            "paper": 135300,
+            "print": 41600,
+            "plate": 32000,
+            "make": 317000
+          }
+        },
+        {
+          "quantity": 1500,
+          "cost_krw": 918400,
+          "total_price": 918400,
+          "pay_amt": 1010240,
+          "breakdown": {
+            "paper": 186500,
+            "print": 62400,
+            "plate": 32000,
+            "make": 449500
+          }
+        },
+        {
+          "quantity": 2000,
+          "cost_krw": 1174900,
+          "total_price": 1174900,
+          "pay_amt": 1292390,
+          "breakdown": {
+            "paper": 239100,
+            "print": 72800,
+            "plate": 32000,
+            "make": 582000
+          }
+        },
+        {
+          "quantity": 2500,
+          "cost_krw": 1437800,
+          "total_price": 1437800,
+          "pay_amt": 1581580,
+          "breakdown": {
+            "paper": 290300,
+            "print": 91000,
+            "plate": 32000,
+            "make": 714500
+          }
+        },
+        {
+          "quantity": 3000,
+          "cost_krw": 1685100,
+          "total_price": 1685100,
+          "pay_amt": 1853610,
+          "breakdown": {
+            "paper": 341500,
+            "print": 93600,
+            "plate": 32000,
+            "make": 847000
+          }
+        },
+        {
+          "quantity": 3500,
+          "cost_krw": 1941900,
+          "total_price": 1941900,
+          "pay_amt": 2136090,
+          "breakdown": {
+            "paper": 394200,
+            "print": 109200,
+            "plate": 32000,
+            "make": 974500
+          }
+        },
+        {
+          "quantity": 4000,
+          "cost_krw": 2182700,
+          "total_price": 2182700,
+          "pay_amt": 2400970,
+          "breakdown": {
+            "paper": 445400,
+            "print": 110300,
+            "plate": 32000,
+            "make": 1102000
+          }
+        },
+        {
+          "quantity": 4500,
+          "cost_krw": 2436200,
+          "total_price": 2436200,
+          "pay_amt": 2679820,
+          "breakdown": {
+            "paper": 496600,
+            "print": 124100,
+            "plate": 32000,
+            "make": 1229500
+          }
+        },
+        {
+          "quantity": 5000,
+          "cost_krw": 2680700,
+          "total_price": 2680700,
+          "pay_amt": 2948770,
+          "breakdown": {
+            "paper": 549300,
+            "print": 127400,
+            "plate": 32000,
+            "make": 1357000
+          }
+        },
+        {
+          "quantity": 5500,
+          "cost_krw": 2918100,
+          "total_price": 2918100,
+          "pay_amt": 3209910,
+          "breakdown": {
+            "paper": 600400,
+            "print": 140200,
+            "plate": 32000,
+            "make": 1469500
+          }
+        },
+        {
+          "quantity": 6000,
+          "cost_krw": 3146200,
+          "total_price": 3146200,
+          "pay_amt": 3460820,
+          "breakdown": {
+            "paper": 651600,
+            "print": 143600,
+            "plate": 32000,
+            "make": 1582000
+          }
+        },
+        {
+          "quantity": 6500,
+          "cost_krw": 3384300,
+          "total_price": 3384300,
+          "pay_amt": 3722730,
+          "breakdown": {
+            "paper": 704300,
+            "print": 155500,
+            "plate": 32000,
+            "make": 1694500
+          }
+        },
+        {
+          "quantity": 7000,
+          "cost_krw": 3613700,
+          "total_price": 3613700,
+          "pay_amt": 3975070,
+          "breakdown": {
+            "paper": 755500,
+            "print": 160200,
+            "plate": 32000,
+            "make": 1807000
+          }
+        },
+        {
+          "quantity": 7500,
+          "cost_krw": 3851300,
+          "total_price": 3851300,
+          "pay_amt": 4236430,
+          "breakdown": {
+            "paper": 808200,
+            "print": 171600,
+            "plate": 32000,
+            "make": 1919500
+          }
+        },
+        {
+          "quantity": 8000,
+          "cost_krw": 4079200,
+          "total_price": 4079200,
+          "pay_amt": 4487120,
+          "breakdown": {
+            "paper": 859400,
+            "print": 174800,
+            "plate": 32000,
+            "make": 2032000
+          }
+        },
+        {
+          "quantity": 8500,
+          "cost_krw": 4314800,
+          "total_price": 4314800,
+          "pay_amt": 4746280,
+          "breakdown": {
+            "paper": 910600,
+            "print": 185700,
+            "plate": 32000,
+            "make": 2144500
+          }
+        },
+        {
+          "quantity": 9000,
+          "cost_krw": 4540900,
+          "total_price": 4540900,
+          "pay_amt": 4994990,
+          "breakdown": {
+            "paper": 961700,
+            "print": 187200,
+            "plate": 32000,
+            "make": 2257000
+          }
+        },
+        {
+          "quantity": 9500,
+          "cost_krw": 4777500,
+          "total_price": 4777500,
+          "pay_amt": 5255250,
+          "breakdown": {
+            "paper": 1014400,
+            "print": 197600,
+            "plate": 32000,
+            "make": 2369500
+          }
+        },
+        {
+          "quantity": 10000,
+          "cost_krw": 5007400,
+          "total_price": 5007400,
+          "pay_amt": 5508140,
+          "breakdown": {
+            "paper": 1065600,
+            "print": 202800,
+            "plate": 32000,
+            "make": 2482000
+          }
+        },
+        {
+          "quantity": 11000,
+          "cost_krw": 5472900,
+          "total_price": 5472900,
+          "pay_amt": 6020190,
+          "breakdown": {
+            "paper": 1169500,
+            "print": 217400,
+            "plate": 32000,
+            "make": 2707000
+          }
+        },
+        {
+          "quantity": 12000,
+          "cost_krw": 5929600,
+          "total_price": 5929600,
+          "pay_amt": 6522560,
+          "breakdown": {
+            "paper": 1271900,
+            "print": 224700,
+            "plate": 32000,
+            "make": 2932000
+          }
+        },
+        {
+          "quantity": 13000,
+          "cost_krw": 6392300,
+          "total_price": 6392300,
+          "pay_amt": 7031530,
+          "breakdown": {
+            "paper": 1375700,
+            "print": 236600,
+            "plate": 32000,
+            "make": 3157000
+          }
+        },
+        {
+          "quantity": 14000,
+          "cost_krw": 6854200,
+          "total_price": 6854200,
+          "pay_amt": 7539620,
+          "breakdown": {
+            "paper": 1479600,
+            "print": 247600,
+            "plate": 32000,
+            "make": 3382000
+          }
+        },
+        {
+          "quantity": 15000,
+          "cost_krw": 7314900,
+          "total_price": 7314900,
+          "pay_amt": 8046390,
+          "breakdown": {
+            "paper": 1583500,
+            "print": 257400,
+            "plate": 32000,
+            "make": 3607000
+          }
+        },
+        {
+          "quantity": 16000,
+          "cost_krw": 7781500,
+          "total_price": 7781500,
+          "pay_amt": 8559650,
+          "breakdown": {
+            "paper": 1685900,
+            "print": 274600,
+            "plate": 32000,
+            "make": 3832000
+          }
+        },
+        {
+          "quantity": 17000,
+          "cost_krw": 8240600,
+          "total_price": 8240600,
+          "pay_amt": 9064660,
+          "breakdown": {
+            "paper": 1789700,
+            "print": 282900,
+            "plate": 32000,
+            "make": 4057000
+          }
+        },
+        {
+          "quantity": 18000,
+          "cost_krw": 8697300,
+          "total_price": 8697300,
+          "pay_amt": 9567030,
+          "breakdown": {
+            "paper": 1892100,
+            "print": 290200,
+            "plate": 32000,
+            "make": 4282000
+          }
+        },
+        {
+          "quantity": 19000,
+          "cost_krw": 9164300,
+          "total_price": 9164300,
+          "pay_amt": 10080730,
+          "breakdown": {
+            "paper": 1996000,
+            "print": 306300,
+            "plate": 32000,
+            "make": 4507000
+          }
+        },
+        {
+          "quantity": 20000,
+          "cost_krw": 9620800,
+          "total_price": 9620800,
+          "pay_amt": 10582880,
+          "breakdown": {
+            "paper": 2099800,
+            "print": 312000,
+            "plate": 32000,
+            "make": 4732000
+          }
+        },
+        {
+          "quantity": 21000,
+          "cost_krw": 10087300,
+          "total_price": 10087300,
+          "pay_amt": 11096030,
+          "breakdown": {
+            "paper": 2203700,
+            "print": 327600,
+            "plate": 32000,
+            "make": 4957000
+          }
+        },
+        {
+          "quantity": 22000,
+          "cost_krw": 10540900,
+          "total_price": 10540900,
+          "pay_amt": 11594990,
+          "breakdown": {
+            "paper": 2306100,
+            "print": 331800,
+            "plate": 32000,
+            "make": 5182000
+          }
+        },
+        {
+          "quantity": 23000,
+          "cost_krw": 11006900,
+          "total_price": 11006900,
+          "pay_amt": 12107590,
+          "breakdown": {
+            "paper": 2410000,
+            "print": 346900,
+            "plate": 32000,
+            "make": 5407000
+          }
+        },
+        {
+          "quantity": 24000,
+          "cost_krw": 11458800,
+          "total_price": 11458800,
+          "pay_amt": 12604680,
+          "breakdown": {
+            "paper": 2512300,
+            "print": 349500,
+            "plate": 32000,
+            "make": 5632000
+          }
+        },
+        {
+          "quantity": 25000,
+          "cost_krw": 11924200,
+          "total_price": 11924200,
+          "pay_amt": 13116620,
+          "breakdown": {
+            "paper": 2616200,
+            "print": 364000,
+            "plate": 32000,
+            "make": 5857000
+          }
+        },
+        {
+          "quantity": 26000,
+          "cost_krw": 12389700,
+          "total_price": 12389700,
+          "pay_amt": 13628670,
+          "breakdown": {
+            "paper": 2720100,
+            "print": 378600,
+            "plate": 32000,
+            "make": 6082000
+          }
+        },
+        {
+          "quantity": 27000,
+          "cost_krw": 12839500,
+          "total_price": 12839500,
+          "pay_amt": 14123450,
+          "breakdown": {
+            "paper": 2822400,
+            "print": 379100,
+            "plate": 32000,
+            "make": 6307000
+          }
+        },
+        {
+          "quantity": 28000,
+          "cost_krw": 13304500,
+          "total_price": 13304500,
+          "pay_amt": 14634950,
+          "breakdown": {
+            "paper": 2926300,
+            "print": 393200,
+            "plate": 32000,
+            "make": 6532000
+          }
+        },
+        {
+          "quantity": 29000,
+          "cost_krw": 13769400,
+          "total_price": 13769400,
+          "pay_amt": 15146340,
+          "breakdown": {
+            "paper": 3030200,
+            "print": 407200,
+            "plate": 32000,
+            "make": 6757000
+          }
+        },
+        {
+          "quantity": 30000,
+          "cost_krw": 14234300,
+          "total_price": 14234300,
+          "pay_amt": 15657730,
+          "breakdown": {
+            "paper": 3134100,
+            "print": 421200,
+            "plate": 32000,
+            "make": 6982000
+          }
+        },
+        {
+          "quantity": 31000,
+          "cost_krw": 14689500,
+          "total_price": 14689500,
+          "pay_amt": 16158450,
+          "breakdown": {
+            "paper": 3236400,
+            "print": 427100,
+            "plate": 32000,
+            "make": 7207000
+          }
+        },
+        {
+          "quantity": 32000,
+          "cost_krw": 15150800,
+          "total_price": 15150800,
+          "pay_amt": 16665880,
+          "breakdown": {
+            "paper": 3340300,
+            "print": 437500,
+            "plate": 32000,
+            "make": 7432000
+          }
+        },
+        {
+          "quantity": 33000,
+          "cost_krw": 15610600,
+          "total_price": 15610600,
+          "pay_amt": 17171660,
+          "breakdown": {
+            "paper": 3442700,
+            "print": 447900,
+            "plate": 32000,
+            "make": 7657000
+          }
+        },
+        {
+          "quantity": 34000,
+          "cost_krw": 16071800,
+          "total_price": 16071800,
+          "pay_amt": 17678980,
+          "breakdown": {
+            "paper": 3546500,
+            "print": 458300,
+            "plate": 32000,
+            "make": 7882000
+          }
+        },
+        {
+          "quantity": 35000,
+          "cost_krw": 16533100,
+          "total_price": 16533100,
+          "pay_amt": 18186410,
+          "breakdown": {
+            "paper": 3650400,
+            "print": 468700,
+            "plate": 32000,
+            "make": 8107000
+          }
+        },
+        {
+          "quantity": 36000,
+          "cost_krw": 16992900,
+          "total_price": 16992900,
+          "pay_amt": 18692190,
+          "breakdown": {
+            "paper": 3752800,
+            "print": 479100,
+            "plate": 32000,
+            "make": 8332000
+          }
+        },
+        {
+          "quantity": 37000,
+          "cost_krw": 17454200,
+          "total_price": 17454200,
+          "pay_amt": 19199620,
+          "breakdown": {
+            "paper": 3856700,
+            "print": 489500,
+            "plate": 32000,
+            "make": 8557000
+          }
+        },
+        {
+          "quantity": 38000,
+          "cost_krw": 17915500,
+          "total_price": 17915500,
+          "pay_amt": 19707050,
+          "breakdown": {
+            "paper": 3960500,
+            "print": 500000,
+            "plate": 32000,
+            "make": 8782000
+          }
+        },
+        {
+          "quantity": 39000,
+          "cost_krw": 18375200,
+          "total_price": 18375200,
+          "pay_amt": 20212720,
+          "breakdown": {
+            "paper": 4062900,
+            "print": 510300,
+            "plate": 32000,
+            "make": 9007000
+          }
+        },
+        {
+          "quantity": 40000,
+          "cost_krw": 18836500,
+          "total_price": 18836500,
+          "pay_amt": 20720150,
+          "breakdown": {
+            "paper": 4166800,
+            "print": 520700,
+            "plate": 32000,
+            "make": 9232000
+          }
+        },
+        {
+          "quantity": 41000,
+          "cost_krw": 19297800,
+          "total_price": 19297800,
+          "pay_amt": 21227580,
+          "breakdown": {
+            "paper": 4270700,
+            "print": 531100,
+            "plate": 32000,
+            "make": 9457000
+          }
+        },
+        {
+          "quantity": 42000,
+          "cost_krw": 19759000,
+          "total_price": 19759000,
+          "pay_amt": 21734900,
+          "breakdown": {
+            "paper": 4374500,
+            "print": 541500,
+            "plate": 32000,
+            "make": 9682000
+          }
+        },
+        {
+          "quantity": 43000,
+          "cost_krw": 20218800,
+          "total_price": 20218800,
+          "pay_amt": 22240680,
+          "breakdown": {
+            "paper": 4476900,
+            "print": 551900,
+            "plate": 32000,
+            "make": 9907000
+          }
+        },
+        {
+          "quantity": 44000,
+          "cost_krw": 20680000,
+          "total_price": 20680000,
+          "pay_amt": 22748000,
+          "breakdown": {
+            "paper": 4580800,
+            "print": 562200,
+            "plate": 32000,
+            "make": 10132000
+          }
+        },
+        {
+          "quantity": 45000,
+          "cost_krw": 21139700,
+          "total_price": 21139700,
+          "pay_amt": 23253670,
+          "breakdown": {
+            "paper": 4683100,
+            "print": 572600,
+            "plate": 32000,
+            "make": 10357000
+          }
+        },
+        {
+          "quantity": 46000,
+          "cost_krw": 21601200,
+          "total_price": 21601200,
+          "pay_amt": 23761320,
+          "breakdown": {
+            "paper": 4787000,
+            "print": 583200,
+            "plate": 32000,
+            "make": 10582000
+          }
+        },
+        {
+          "quantity": 47000,
+          "cost_krw": 22062400,
+          "total_price": 22062400,
+          "pay_amt": 24268640,
+          "breakdown": {
+            "paper": 4890900,
+            "print": 593500,
+            "plate": 32000,
+            "make": 10807000
+          }
+        },
+        {
+          "quantity": 48000,
+          "cost_krw": 22522100,
+          "total_price": 22522100,
+          "pay_amt": 24774310,
+          "breakdown": {
+            "paper": 4993300,
+            "print": 603800,
+            "plate": 32000,
+            "make": 11032000
+          }
+        },
+        {
+          "quantity": 49000,
+          "cost_krw": 22983500,
+          "total_price": 22983500,
+          "pay_amt": 25281850,
+          "breakdown": {
+            "paper": 5097100,
+            "print": 614400,
+            "plate": 32000,
+            "make": 11257000
+          }
+        },
+        {
+          "quantity": 50000,
+          "cost_krw": 23444800,
+          "total_price": 23444800,
+          "pay_amt": 25789280,
+          "breakdown": {
+            "paper": 5201000,
+            "print": 624800,
+            "plate": 32000,
+            "make": 11482000
+          }
+        }
+      ]
+    },
+    "CPK5000": {
+      "label": "소량 쇼핑백",
+      "slug": "small-batch-bags",
+      "defaults": {
+        "paper_code": "WHT160W00",
+        "print_color_type": "CTN10",
+        "paper_size": "PK016"
+      },
+      "monotonic": true,
+      "matrix": [
+        {
+          "quantity": 50,
+          "cost_krw": 187700,
+          "total_price": 187700,
+          "pay_amt": 206470,
+          "breakdown": {
+            "paper": 7000,
+            "print": 31400,
+            "plate": 0,
+            "make": 46000
+          }
+        },
+        {
+          "quantity": 100,
+          "cost_krw": 277000,
+          "total_price": 277000,
+          "pay_amt": 304700,
+          "breakdown": {
+            "paper": 12800,
+            "print": 50500,
+            "plate": 0,
+            "make": 51000
+          }
+        }
+      ]
+    }
+  }
+}
