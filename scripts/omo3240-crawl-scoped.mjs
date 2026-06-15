@@ -41,12 +41,13 @@ const toInt = v => { const n = parseInt(String(v ?? '').replace(/[^0-9-]/g, ''),
 const sideFromLabel = lbl => /양면|double/i.test(lbl || '') ? 2 : 1
 
 function parseArgs(argv) {
-  const a = { products: null, load: false, headed: false, force: false, throttle: 400 }
+  const a = { products: null, load: false, headed: false, force: false, resume: false, throttle: 400 }
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i]
     if (k === '--products') a.products = argv[++i].split(',').map(s => s.trim().toUpperCase())
     else if (k === '--load') a.load = true
     else if (k === '--force') a.force = true
+    else if (k === '--resume') a.resume = true // 이미 적재된 제품 스킵(heartbeat 경계 넘김)
     else if (k === '--headed') a.headed = true
     else if (k === '--throttle') a.throttle = parseInt(argv[++i], 10)
   }
@@ -143,6 +144,17 @@ async function main() {
 
   const targets = (a.products || TARGETS).filter(c => TARGETS.includes(c))
   const scopes = await buildScopes(sb, targets)
+  // --resume: 이미 paper_qty 기반 표집행이 기대치만큼 적재된 제품은 스킵(heartbeat 경계 복원).
+  if (a.resume) {
+    for (const s of scopes) {
+      if (s.skip) continue
+      const expect = s.comboCount * (s.qtys?.length || 0)
+      const { count } = await sb.from('print_swadpia_price_matrix')
+        .select('id', { count: 'exact', head: true })
+        .eq('category_code', s.code).eq('source', 'sampled').contains('option_combo', { qty_field: s.qtyField })
+      if ((count || 0) >= expect && expect > 0) s.skip = `이미 적재(${count}/${expect}행)`
+    }
+  }
   console.log('=== 스코프(사이트 노출 옵션) ===')
   for (const s of scopes) {
     if (s.skip) { console.log(`  ${s.code}: SKIP — ${s.skip}`); continue }
