@@ -117,7 +117,8 @@ export default function PaperPopup({ option, inline = false }: PaperPopupProps) 
   // OMO-3196: 용지(특히 특수지)는 US-친화 표시명/특징/설명을 paper-display 에서 라벨 키워드로 매칭.
   const disp = !fin ? paperDisplay(`${option.label_en ?? ''} ${option.label_ko ?? ''}`) : null
   const title = disp?.name || option.label_en
-  const tags = PAPER_TAGS[option.value] ?? disp?.features ?? (fin ? [fin.label_ko] : [])
+  // OMO-3196 (보드): 고객용 — 후가공 팝업에서 한글(label_ko) 제거, 영문만.
+  const tags = PAPER_TAGS[option.value] ?? disp?.features ?? []
   // OMO-2314: customer-facing — render English fields only.
   // OMO-3195: fall back to the code-keyed description so options with an empty DB field still explain the stock.
   const description = option.description_en || PAPER_DESC[option.value] || disp?.desc || fin?.description_en || null

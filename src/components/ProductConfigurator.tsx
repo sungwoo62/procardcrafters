@@ -49,6 +49,23 @@ const OPTION_LABEL: Record<string, string> = {
 /** Option types that represent quantity (so the selected qty is parsed from this). */
 const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
 
+/** OMO-3196 (보드): 인쇄 옵션(단면/양면) 설명 — hover 툴팁용. */
+function printColorDesc(label: string): string | null {
+  const l = (label ?? '').toLowerCase()
+  const uv = /uv/.test(l)
+  if (/double|양면/.test(l)) {
+    return uv
+      ? 'Full color on both the front and back, plus a protective UV gloss coating.'
+      : 'Full-color printing on both the front and back.'
+  }
+  if (/single|단면/.test(l)) {
+    return uv
+      ? 'Full color on the front only (back left blank), plus a protective UV gloss coating.'
+      : 'Full-color printing on the front only — the back is left blank.'
+  }
+  return null
+}
+
 /**
  * Look up cost from the Swadpia print price matrix.
  * If no exact quantity match, use the nearest higher quantity.
@@ -77,15 +94,22 @@ function lookupSwadpiaCost(
 }
 
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData, digitalData }: Props) {
+  // OMO-3196 (보드): 흑백(Black & White) 인쇄 옵션 제거.
+  const visibleOptions = useMemo(
+    () => options.filter(
+      (o) => !(o.option_type === 'print_color_type' && /black\s*&?\s*white|black_white|흑백|\bb\s*&\s*w\b|mono/i.test(`${o.value} ${o.label_en} ${o.label_ko}`)),
+    ),
+    [options],
+  )
   // Group options by type
   const grouped = useMemo(() => {
     const map = new Map<string, PrintProductOption[]>()
-    for (const opt of options) {
+    for (const opt of visibleOptions) {
       if (!map.has(opt.option_type)) map.set(opt.option_type, [])
       map.get(opt.option_type)!.push(opt)
     }
     return map
-  }, [options])
+  }, [visibleOptions])
 
   // Initialize defaults
   const defaultSelections = useMemo(() => {
@@ -424,7 +448,8 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         // 사이즈는 신용카드 비교 팝업, DB 후가공(finish/finishing)은 카탈로그 미리보기 팝업.
         const isSize = type === 'paper_size' || type === 'size'
         const isFinishOpt = type === 'finish' || type === 'finishing'
-        const typeHasPreview = isSize || isFinishOpt
+        const isPrintColor = type === 'print_color_type'
+        const typeHasPreview = isSize || isFinishOpt || isPrintColor
         return (
           <div key={type}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
@@ -434,11 +459,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
               {opts.map((opt) => {
                 const isSelected = selections[type] === opt.value
                 const hoverKey = `${type}:${opt.value}`
+                const printDesc = isPrintColor ? printColorDesc(opt.label_en) : null
 
                 return (
                   <div key={opt.value} className="relative">
-                    {typeHasPreview && hoveredPaper === hoverKey && (
-                      isSize ? <SizePopup option={opt} /> : <PaperPopup option={opt} />
+                    {isSize && hoveredPaper === hoverKey && <SizePopup option={opt} />}
+                    {isFinishOpt && hoveredPaper === hoverKey && <PaperPopup option={opt} />}
+                    {isPrintColor && hoveredPaper === hoverKey && printDesc && (
+                      <div className="pointer-events-none absolute z-50 bottom-full left-1/2 -translate-x-1/2 mb-2 w-52 bg-white border border-gray-200 rounded-xl shadow-xl p-3 text-left">
+                        <p className="text-xs font-semibold text-gray-900 mb-1">{opt.label_en}</p>
+                        <p className="text-[11px] text-gray-600 leading-snug">{printDesc}</p>
+                      </div>
                     )}
 
                     <button
@@ -470,6 +501,11 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
             {isFinishOpt && (
               <p className="mt-1.5 text-[11px] text-gray-500">
                 💡 Tap or hover ⓘ to preview the finish.
+              </p>
+            )}
+            {isPrintColor && (
+              <p className="mt-1.5 text-[11px] text-gray-500">
+                💡 Tap or hover ⓘ to see what each print option means.
               </p>
             )}
           </div>
@@ -641,7 +677,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
                 const usd = krw && krw > 0 ? finishUsd(krw) : null
                 return (
                   <div key={f.value} className="flex justify-between text-xs text-gray-500">
-                    <span>+ {f.label_en} <span className="text-gray-400">({f.label_ko})</span></span>
+                    <span>+ {f.label_en}</span>
                     <span className={usd ? '' : 'text-gray-400'}>{usd ? `+ $${usd.toFixed(2)}` : 'Included'}</span>
                   </div>
                 )
