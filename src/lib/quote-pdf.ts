@@ -6,9 +6,15 @@
 //        ③ 좌표 기반이라 견적서 같은 정형 1페이지 레이아웃엔 충분.
 //   트레이드오프: 복잡한 자동 레이아웃은 수동 좌표 계산이 필요(여기선 1페이지라 OK).
 //
-// 폰트: 표준 Helvetica(WinAnsi) — 한글 인코딩 불가. PCCF 는 영문/USD 국제 사이트이므로
-//   견적서 본문은 영문으로 작성한다(폰트 임베드 불필요). 비-ASCII 는 asciiSafe 로 방어.
+// 폰트(OMO-3302): 본문 기본은 표준 Helvetica(WinAnsi). 단, 한글 등 비-ASCII 가 한 글자라도
+//   포함되면 — 예: 한글 서명자/고객명, 한글 제품명 — Helvetica(WinAnsi) 코드페이지엔 글리프가
+//   없어 "????" 로 깨진다. 따라서 비-ASCII 가 감지되면 NotoSansKR(Type0/CID) 를 fontkit 으로
+//   임베드(★ subset:false — subset:true 면 Noto/Nanum cmap 손상, 전 서비스 공통 함정)하고
+//   해당 문자열만 한글 폰트로 그린다. 전부 ASCII 인 일반 견적서는 폰트를 임베드하지 않아 가볍다.
 
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
+import fontkit from '@pdf-lib/fontkit'
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib'
 import { PANTONE_QUOTE_THEME, hexToRgb01, type PantoneMix } from './pantone-quote-theme'
 import type { QuoteResult } from './quote-pricing'
@@ -16,9 +22,32 @@ import type { QuoteResult } from './quote-pricing'
 const A4 = { w: 595.28, h: 841.89 }
 const MARGIN = 48
 
+// 한글 등 ASCII 밖의 문자가 하나라도 있는가.
+const NON_ASCII = /[^\x00-\x7F]/
+
+// Helvetica 로 그릴 때만 사용하는 최후의 방어(비-ASCII → '?'). 한글 폰트로 그릴 땐 원문 유지.
 function asciiSafe(s: string): string {
   // eslint-disable-next-line no-control-regex
   return s.replace(/[^\x20-\x7E]/g, '?').replace(/\?+/g, '?').trim() || '-'
+}
+
+interface KoFonts {
+  regular: PDFFont
+  bold: PDFFont
+}
+
+// NotoSansKR(Regular/Bold) 를 subset:false 로 임베드. hardcase/medal 등 한국 서비스와 동일 패턴.
+async function embedKoreanFonts(doc: PDFDocument): Promise<KoFonts> {
+  doc.registerFontkit(fontkit)
+  const dir = path.join(process.cwd(), 'public/fonts')
+  const [regularBytes, boldBytes] = await Promise.all([
+    readFile(path.join(dir, 'NotoSansKR-Regular.otf')),
+    readFile(path.join(dir, 'NotoSansKR-Bold.otf')),
+  ])
+  return {
+    regular: await doc.embedFont(regularBytes, { subset: false }),
+    bold: await doc.embedFont(boldBytes, { subset: false }),
+  }
 }
 
 function color(hex: string) {
@@ -72,6 +101,30 @@ export async function buildQuotePdf(input: QuotePdfInput): Promise<Uint8Array> {
   const font = await doc.embedFont(StandardFonts.Helvetica)
   const bold = await doc.embedFont(StandardFonts.HelveticaBold)
 
+  // 비-ASCII(한글 등) 가 들어갈 수 있는 모든 동적 문자열을 미리 훑어, 한 글자라도 있으면
+  // NotoSansKR 을 임베드한다. (서명자/고객명·한글 제품명·한글 옵션 라벨 등을 모두 포괄)
+  const dynamicStrings: string[] = [
+    quote.product.nameEn,
+    ...quote.selections.flatMap((s) => [s.labelEn, s.optionType]),
+    brand.companyName,
+    brand.website,
+    brand.email,
+    brand.legalNote,
+    quoteNumber,
+    issuedDate,
+    validUntilDate,
+    ...mixes.flatMap((m) => [m.label, m.mood, ...m.swatches.flatMap((sw) => [sw.name, sw.pantone])]),
+  ]
+  const ko: KoFonts | null = dynamicStrings.some((s) => NON_ASCII.test(s ?? ''))
+    ? await embedKoreanFonts(doc)
+    : null
+
+  // 문자열에 비-ASCII 가 있고 한글 폰트가 임베드돼 있으면 한글 폰트(weight 매칭)를, 아니면 원래 폰트를.
+  const resolveFont = (s: string, f: PDFFont): PDFFont =>
+    ko && NON_ASCII.test(s) ? (f === bold ? ko.bold : ko.regular) : f
+  // Helvetica 로 남는 경우에만 asciiSafe 방어; 한글 폰트로 가면 원문 그대로.
+  const renderStr = (s: string, f: PDFFont): string => (resolveFont(s, f) === f ? asciiSafe(s) : s)
+
   const headerColor = color(PANTONE_QUOTE_THEME.header.hex)
   const accentColor = color(PANTONE_QUOTE_THEME.accent.hex)
   const inkColor = color(PANTONE_QUOTE_THEME.ink.hex)
@@ -87,12 +140,14 @@ export async function buildQuotePdf(input: QuotePdfInput): Promise<Uint8Array> {
     size: number,
     f: PDFFont = font,
     c = inkColor,
-  ) => p.drawText(asciiSafe(s), { x, y, size, font: f, color: c })
+  ) => p.drawText(renderStr(s, f), { x, y, size, font: resolveFont(s, f), color: c })
 
-  // 우측 정렬 텍스트
+  // 우측 정렬 텍스트 — 폭 계산도 실제 사용할 폰트로(정렬 어긋남 방지).
   const textRight = (s: string, xRight: number, y: number, size: number, f: PDFFont, c = inkColor) => {
-    const w = f.widthOfTextAtSize(asciiSafe(s), size)
-    page.drawText(asciiSafe(s), { x: xRight - w, y, size, font: f, color: c })
+    const ff = resolveFont(s, f)
+    const str = renderStr(s, f)
+    const w = ff.widthOfTextAtSize(str, size)
+    page.drawText(str, { x: xRight - w, y, size, font: ff, color: c })
   }
 
   const contentRight = A4.w - MARGIN
@@ -259,9 +314,9 @@ function prettyType(t: string): string {
   return map[t] ?? t.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())
 }
 
-/** 폭(문자수 근사) 기준 단순 워드랩. */
+/** 폭(문자수 근사) 기준 단순 워드랩. 인코딩 방어는 그리는 단계(text())에 위임한다. */
 function wrapText(s: string, maxChars: number): string[] {
-  const words = asciiSafe(s).split(/\s+/)
+  const words = s.split(/\s+/)
   const lines: string[] = []
   let cur = ''
   for (const w of words) {
