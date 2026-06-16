@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "service": "procard",
+  "serviceType": "us_pod",
+  "domain": "procardcrafters.com",
+  "capabilities": {
+    "quote_pdf": {
+      "status": "present",
+      "evidence": null
+    },
+    "consent_signature": {
+      "status": "partial",
+      "evidence": null
+    },
+    "phone_removal_cta": {
+      "status": "na",
+      "evidence": null
+    },
+    "ai_chatbot": {
+      "status": "present",
+      "evidence": null
+    },
+    "reviews": {
+      "status": "present",
+      "evidence": null
+    },
+    "reorder": {
+      "status": "present",
+      "evidence": null
+    },
+    "payment_pg": {
+      "status": "present",
+      "evidence": null
+    },
+    "jeju_shipping": {
+      "status": "na",
+      "evidence": null
+    },
+    "north_star_env": {
+      "status": "absent",
+      "evidence": null,
+      "note": "NEXT_PUBLIC_NORTH_STAR 미설정/부분 — .env.local.example + Vercel 주입 필요(전역 North Star 표준)"
+    },
+    "supabase_rls": {
+      "status": "present",
+      "evidence": null
+    },
+    "seo": {
+      "status": "present",
+      "evidence": null
+    },
+    "admin_backend": {
+      "status": "partial",
+      "evidence": null
+    }
+  }
+}
