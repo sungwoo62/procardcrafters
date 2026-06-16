@@ -24,6 +24,53 @@ export function isMatrixRoutedCategory(categoryCode: string | null | undefined):
   return !!categoryCode && MATRIX_ROUTED_CATEGORIES.has(categoryCode)
 }
 
+/**
+ * 카테고리별 매트릭스 축 매핑(라이브 적재 대조로 검증 — OMO-3241).
+ * size_code/paper_code 는 DB 옵션 value 가 성원 코드와 직접 일치(검증 완료)하므로 그대로 쓴다.
+ * 인쇄축만 제품군마다 다르다:
+ *   · leaflets/menus(CPR3000/CLF2000): print_color_type=PTM10/PTM20 → 매트릭스 pct 직접.
+ *   · booklets(CPR4000): print_color_type=BDT4/BDT6 → 매트릭스 pct 직접(BDT2 중철은 DB 미제공).
+ *   · posters(CPR2000): 인쇄축 없음 → 매트릭스 pct='' side=1.
+ *   · postcards(CDP3000): 디지털 단/양면을 DB print_color_type DPD10/DPD20 로 인코딩하나
+ *     매트릭스는 이를 **side**(1/2)로 담는다(pct=''). → side 변환 필요.
+ *   · paper-pop(COD1100): DB 옵션이 generic 플레이스홀더(S1/PP1)라 매트릭스 코드와 불일치 →
+ *     항상 미스 → 폴백(현행 유지). 적재 후 옵션 정규화는 후속.
+ */
+export interface MatrixAxisConfig {
+  /** true 면 selections.print_color_type 를 매트릭스 pct 로 직접 사용. */
+  pctFromPrintColor?: boolean
+  /** 매트릭스 side 를 DB print_color_type 값으로 구동(디지털 단/양면). */
+  sideFromPrintColor?: Record<string, number>
+}
+
+export const MATRIX_AXIS: Record<string, MatrixAxisConfig> = {
+  CPR3000: { pctFromPrintColor: true },                    // leaflets
+  CLF2000: { pctFromPrintColor: true },                    // menus/brochures
+  CPR4000: { pctFromPrintColor: true },                    // booklets/catalogs
+  CPR2000: {},                                             // posters (pct='' side=1)
+  CDP3000: { sideFromPrintColor: { DPD10: 1, DPD20: 2 } }, // postcards (digital 단/양면→side)
+  COD1100: {},                                             // paper-pop (generic opts → fallback)
+}
+
+/**
+ * 고객 선택(selections) + categoryCode → 매트릭스 룩업 키(qty 제외).
+ * 라우팅 비대상이면 null. 인쇄축은 MATRIX_AXIS 로 카테고리별 변환.
+ */
+export function deriveMatrixKey(
+  categoryCode: string,
+  selections: Record<string, string | undefined>,
+): { sizeCode?: string; paperCode?: string; side?: number; printColorType: string } | null {
+  if (!MATRIX_ROUTED_CATEGORIES.has(categoryCode)) return null
+  const axis = MATRIX_AXIS[categoryCode] ?? {}
+  const sizeCode = selections['paper_size'] || selections['size'] || undefined
+  const paperCode = selections['paper_code'] || selections['paper'] || undefined
+  const printColorType = axis.pctFromPrintColor ? selections['print_color_type'] || '' : ''
+  const side = axis.sideFromPrintColor
+    ? axis.sideFromPrintColor[selections['print_color_type'] ?? '']
+    : undefined
+  return { sizeCode, paperCode, side, printColorType }
+}
+
 /** configurator 로 내려보내는 최소 매트릭스 행(클라이언트 직렬화 대상). */
 export interface MatrixCell {
   size_code: string

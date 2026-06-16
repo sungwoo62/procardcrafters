@@ -14,6 +14,7 @@ import {
   interpolateByQty,
   lookupMatrixCell,
   isMatrixRoutedCategory,
+  deriveMatrixKey,
   type MatrixCell,
 } from '@/lib/swadpia-matrix-core'
 
@@ -76,6 +77,24 @@ describe('lookupMatrixCell', () => {
     const hit = lookupMatrixCell(blankPct, { categoryCode: 'CPR2000', sizeCode: 'A2', paperCode: 'MGC120CG0', qty: 150 })
     expect(hit?.totalPriceKrw).toBe(60000) // 100·200 중점
     expect(hit?.source).toBe('interpolated')
+  })
+})
+
+describe('deriveMatrixKey — 카테고리별 인쇄축 매핑', () => {
+  it('leaflets(CPR3000): print_color_type → 매트릭스 pct 직접', () => {
+    expect(deriveMatrixKey('CPR3000', { paper_size: 'A0400', paper_code: 'ART100W00', print_color_type: 'PTM10' }))
+      .toEqual({ sizeCode: 'A0400', paperCode: 'ART100W00', side: undefined, printColorType: 'PTM10' })
+  })
+  it('posters(CPR2000): 인쇄축 없음 → pct=""', () => {
+    expect(deriveMatrixKey('CPR2000', { paper_size: 'A0300', paper_code: 'ART100W00' }))
+      .toEqual({ sizeCode: 'A0300', paperCode: 'ART100W00', side: undefined, printColorType: '' })
+  })
+  it('postcards(CDP3000): DPD10→side1·DPD20→side2, pct=""(매트릭스가 side 로 단/양면 인코딩)', () => {
+    expect(deriveMatrixKey('CDP3000', { paper_size: 'V0500', paper_code: 'SNW120W00', print_color_type: 'DPD20' }))
+      .toEqual({ sizeCode: 'V0500', paperCode: 'SNW120W00', side: 2, printColorType: '' })
+  })
+  it('비라우팅 카테고리(CNC1000 명함) → null', () => {
+    expect(deriveMatrixKey('CNC1000', { paper_size: '90x50' })).toBeNull()
   })
 })
 
