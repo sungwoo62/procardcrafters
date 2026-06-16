@@ -37,9 +37,9 @@
       "evidence": null
     },
     "north_star_env": {
-      "status": "absent",
-      "evidence": null,
-      "note": "NEXT_PUBLIC_NORTH_STAR 미설정/부분 — .env.local.example + Vercel 주입 필요(전역 North Star 표준)"
+      "status": "present",
+      "evidence": ".env.local.example 2종 + Vercel Production/Preview/Development 주입 완료(NEXT_PUBLIC_NORTH_STAR, NEXT_PUBLIC_NORTH_STAR_PILLARS, 표준 절대값)",
+      "note": "전역 North Star 표준값 주입(OMO-3377)"
     },
     "supabase_rls": {
       "status": "present",
