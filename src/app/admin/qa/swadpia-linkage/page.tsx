@@ -29,6 +29,10 @@ import {
   SWADPIA_MAPPED_FINISHING_COUNT,
   SWADPIA_UNMAPPED_FINISHINGS,
 } from '@/config/swadpia-category-audit'
+import {
+  reverseCoverageSummary,
+  reverseMissingSwadpia,
+} from '@/lib/swadpia-coverage'
 
 // ─── 교차검수 로직 (선언 config ↔ 실제 변환) ──────────────────────────────────
 
@@ -120,6 +124,53 @@ export default function SwadpiaLinkageDashboard() {
   )
   const total = SWADPIA_FINISHING_FIELDS.length
 
+  // OMO-3409: 양방향 축별 커버리지 매트릭스 (제품/후가공/사이즈/용지)
+  const reverse = reverseCoverageSummary()
+  const reverseMissing = reverseMissingSwadpia()
+  // 후가공 역방향 누락 = 성원 카테고리가 제공하나 우리가 자동발주 미매핑한 추가 후가공.
+  const finishingReverseMissing = SWADPIA_UNMAPPED_FINISHINGS.length
+  // 핵심옵션(사이즈/용지)은 카테고리별 1:1 패스스루(런타임 json_data) — coreOk 비율로 본다.
+  const coreOkCount = SWADPIA_CATEGORY_AUDIT.filter((c) => c.coreOk).length
+  const coreTotal = SWADPIA_CATEGORY_AUDIT.length
+
+  type AxisRow = {
+    axis: string
+    forward: string
+    reverse: string
+    status: '✅' | '⏳' | '⚠️'
+    note: string
+  }
+  const axisMatrix: AxisRow[] = [
+    {
+      axis: '제품(카테고리)',
+      forward: `${reverse.coveredCount}/${reverse.catalogTotal} 커버 (${reverse.coveragePct}%)`,
+      reverse: `누락 ${reverse.missingCount} (커버후보 ${reverse.gapCount} / 의도적 ${reverse.intentionalCount})`,
+      status: reverse.gapCount === 0 ? '✅' : '⚠️',
+      note: '커버 판정은 CATEGORY_MAP(slug→code) 라이브 파생. 역방향 누락 상세는 /reports/swadpia-mapping.',
+    },
+    {
+      axis: '후가공(옵션코드)',
+      forward: `자동발주 검증 ${counts.mapped} + 런타임추출 ${counts.runtime}`,
+      reverse: `재조사 ${counts.needs_audit} · 추가 후가공 미매핑 ${finishingReverseMissing}종`,
+      status: counts.needs_audit === 0 && finishingReverseMissing === 0 ? '✅' : '⏳',
+      note: '박은 total_price 미포착 → 별색 surcharge 분리 산정(finishing-surcharge).',
+    },
+    {
+      axis: '사이즈(paper_size)',
+      forward: `핵심옵션 ${coreOkCount}/${coreTotal} 카테고리 1:1 패스스루`,
+      reverse: '런타임 json_data 파생 — 정적 열거 대상 아님',
+      status: coreOkCount === coreTotal ? '✅' : '⚠️',
+      note: '멀티사이즈/디지털/토너는 hidden total_price 크롤 적재로 보강(SWADPIA_MATRIX_ROUTING).',
+    },
+    {
+      axis: '용지(paper_code)',
+      forward: `핵심옵션 ${coreOkCount}/${coreTotal} 카테고리 1:1 패스스루`,
+      reverse: '런타임 json_data 파생 — 정적 열거 대상 아님',
+      status: coreOkCount === coreTotal ? '✅' : '⚠️',
+      note: '용지별 유효수량(매수)은 사다리 스냅(OMO-2485)으로 흡수.',
+    },
+  ]
+
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
       <header className="space-y-3">
@@ -148,6 +199,104 @@ export default function SwadpiaLinkageDashboard() {
             </div>
           </div>
         </div>
+      </section>
+
+      {/* OMO-3409: 양방향 축별 커버리지 매트릭스 */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+          양방향 축별 커버리지 매트릭스 — 우리↔성원 (OMO-3409)
+        </h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          보드 지시(OMO-3238): 맵핑은 <strong>상호</strong>로 본다. 제품·후가공·사이즈·용지 축마다
+          <strong> 우리→성원(커버)</strong> 과 <strong>성원→우리(누락)</strong> 를 한 줄로 비교한다.
+          제품 축 역방향 누락 상세는 <code>/reports/swadpia-mapping</code> 의 "상호 커버리지" 섹션을 본다.
+        </p>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+            <div className="text-xs text-indigo-600">성원→우리 제품 커버리지</div>
+            <div className="text-2xl font-bold text-indigo-700">{reverse.coveragePct}%</div>
+            <div className="text-xs text-indigo-500">
+              {reverse.coveredCount}/{reverse.catalogTotal}종
+            </div>
+          </div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div className="text-xs text-amber-600">제품 역방향 누락(커버후보)</div>
+            <div className="text-2xl font-bold text-amber-700">{reverse.gapCount}</div>
+            <div className="text-xs text-amber-500">의도적 미커버 {reverse.intentionalCount}종 별도</div>
+          </div>
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+            <div className="text-xs text-green-600">후가공 자동발주/런타임</div>
+            <div className="text-2xl font-bold text-green-700">
+              {counts.mapped}/{counts.runtime}
+            </div>
+            <div className="text-xs text-green-500">재조사 {counts.needs_audit}종</div>
+          </div>
+          <div className="rounded-lg border border-gray-200 bg-gray-50 p-3">
+            <div className="text-xs text-gray-500">후가공 역방향 미매핑</div>
+            <div className="text-2xl font-bold text-gray-700">{finishingReverseMissing}</div>
+            <div className="text-xs text-gray-400">성원 추가 후가공(OMO-2904)</div>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50 text-left text-gray-600 border-b">
+                <th className="p-2 font-medium">축</th>
+                <th className="p-2 font-medium">우리 → 성원 (커버)</th>
+                <th className="p-2 font-medium">성원 → 우리 (누락)</th>
+                <th className="p-2 font-medium whitespace-nowrap">상태</th>
+                <th className="p-2 font-medium">비고</th>
+              </tr>
+            </thead>
+            <tbody>
+              {axisMatrix.map((a) => (
+                <tr key={a.axis} className="border-b align-top hover:bg-gray-50">
+                  <td className="p-2 font-medium text-gray-800 whitespace-nowrap">{a.axis}</td>
+                  <td className="p-2 text-gray-700">{a.forward}</td>
+                  <td className="p-2 text-gray-700">{a.reverse}</td>
+                  <td className="p-2 text-lg whitespace-nowrap">{a.status}</td>
+                  <td className="p-2 text-xs text-gray-500 max-w-xs">{a.note}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        {/* 제품 역방향 누락 드릴다운 */}
+        <details className="rounded border border-amber-200 bg-amber-50/50">
+          <summary className="cursor-pointer p-3 text-sm font-medium text-amber-900">
+            성원→우리 제품 역방향 누락 {reverse.missingCount}종 펼쳐보기
+          </summary>
+          <div className="overflow-x-auto border-t border-amber-200">
+            <table className="w-full text-sm border-collapse">
+              <thead>
+                <tr className="bg-amber-50 text-left text-amber-800 border-b border-amber-200">
+                  <th className="p-2 font-medium">성원 코드</th>
+                  <th className="p-2 font-medium">성원 제품명</th>
+                  <th className="p-2 font-medium whitespace-nowrap">분류</th>
+                  <th className="p-2 font-medium">미커버 사유</th>
+                </tr>
+              </thead>
+              <tbody>
+                {reverseMissing.map((m) => (
+                  <tr key={m.code} className="border-b border-amber-100 align-top last:border-0">
+                    <td className="p-2">
+                      <code className="text-xs text-amber-900">{m.code}</code>
+                    </td>
+                    <td className="p-2 text-gray-800">{m.label}</td>
+                    <td className="p-2 whitespace-nowrap text-xs">
+                      {m.gapKind === 'gap' ? (
+                        <span className="text-amber-700">⚠️ 커버후보</span>
+                      ) : (
+                        <span className="text-gray-500">▫ 의도적</span>
+                      )}
+                    </td>
+                    <td className="p-2 text-xs text-gray-500">{m.gapNote ?? '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </details>
       </section>
 
       {/* 자동 교차검수 4종 */}

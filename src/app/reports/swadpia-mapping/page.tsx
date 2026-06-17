@@ -1,7 +1,12 @@
 import Link from 'next/link'
-import { ArrowLeft, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, AlertTriangle, ArrowLeftRight } from 'lucide-react'
 import { PRODUCT_GROUPS } from '@/config/product-nav'
 import { CATEGORY_MAP } from '@/lib/swadpia'
+import {
+  SWADPIA_CATALOG,
+  reverseMissingSwadpia,
+  reverseCoverageSummary,
+} from '@/lib/swadpia-coverage'
 import InteractiveMappingTable, { type GroupWithRows } from './InteractiveMappingTable'
 
 // OMO-3058 / OMO-3095 / OMO-3148: 우리 사이트 전체 제품 ↔ 성원(swadpia.co.kr) 제품(category_code) 맵핑 현황 리포트.
@@ -16,55 +21,11 @@ import InteractiveMappingTable, { type GroupWithRows } from './InteractiveMappin
 // CST6000 에만 존재하고, CST5000 은 샤인실버·금은무광·저온유포·PVC 만 보유(홀로그램 없음).
 export const dynamic = 'force-static'
 
-// 성원 category_code → 성원 제품명(한국어). swadpia.ts / swadpia-order.ts 의 라이브
-// 조사 주석을 근거로 정리. (CNCxxxx=명함, CSTxxxx=스티커, CLPxxxx=라벨, CLF/CPR=인쇄물,
-// CEV=봉투, CNR=전표, CCD=캘린더, CDP=엽서)
-const SWADPIA_CATEGORY_LABEL: Record<string, string> = {
-  CNC1000: '일반지명함',
-  CNC2000: '고급지명함(펄지 옵션 포함)', // OMO-3097: 다이니티 골드펄 250g → 펄 명함 라우팅
-  CNC3000: '카드명함(메탈·포일 Luxury)',
-  CNC4000: '하이브리드명함(아트지 300g)',
-  CNC5000: '투명하이브리드명함(PET)',
-  CNC6000: '디지털박/에폭시명함(UV·특수후가공)',
-  CNC8000: '프리미엄 명함(반누보·랑데뷰 등 9종) — 펄지 없음, 현재 미연동', // OMO-3097: 라이브 실재 카테고리지만 펄 용지 부재
-  CST1000: '재단형 스티커(투명데드롱·크라프트·모조 용지옵션)',
-  CST2000: '도무송(다이컷) 스티커',
-  CST3000: '차량 스티커', // OMO-3097 라이브검증
-  CST4000: '디지털 메탈박(포일·백색잉크) 스티커', // OMO-3083 라이브검증, 현재 미연동 slug
-  CST5000: '스페셜 스티커(저온/방수·은지·PVC)', // OMO-3095: 홀로그램 아님(샤인실버/금은무광/저온유포/PVC)
-  CST6000: '팬시롤 스티커(홀로그램·투명 Pet)', // OMO-3095: STR050HN1 홀로그램 용지 보유
-  CST7000: '팬시롤 스티커(투명 PP)',
-  CLP1000: '라벨 스티커(롤)',
-  CLF1000: '전단지',
-  CLF2000: '브로슈어/메뉴',
-  CPR2000: '포스터',
-  CPR3000: '리플렛/팜플렛',
-  CPR4000: '책자(중철·무선제본)',
-  CPR5000: '종이홀더', // OMO-3097: 배너 오매핑 정정으로 더 이상 사용 안 함
-  CRP5100: '현수막(150denier)', // OMO-3097 라이브검증
-  CRP4000: '배너(페트 210µ)', // OMO-3097 라이브검증
-  CRP3000: '배너/메쉬(페트·메쉬 1000denier)', // OMO-3097 라이브검증
-  COD1100: '종이미니배너', // OMO-3097 라이브검증
-  CDP2000: '디지털청첩장/초대장', // OMO-3097 라이브검증
-  CDP3000: '엽서',
-  CVS1000: '초대장/상품권(일반)', // OMO-3097 라이브검증
-  CVS6000: '에폭시초대장', // OMO-3097 라이브검증
-  CCM2000: '디자인연하장', // OMO-3097 라이브검증
-  CCM4000: '연하장', // OMO-3097 라이브검증
-  CEV1000: '봉투',
-  CNR2000: '양식·전표(영수증/견적서/거래명세서/NCR)',
-  CNR3000: '떡메모지', // OMO-3097 라이브검증
-  CPS7000: '사각 포스트잇', // OMO-3097 라이브검증
-  CPS7100: '모양 포스트잇', // OMO-3097 라이브검증
-  CCD1000: '벽걸이 캘린더',
-  CCD2000: '탁상/미니 캘린더',
-  CHI3000: '판지/박스(양면마닐라·메탈팩보드)', // OMO-3097 라이브검증
-  CDP1600: '디지털 판지/박스', // OMO-3097 라이브검증
-  CPK2000: '리본&브레이드 쇼핑백', // OMO-3097 라이브검증
-  CPK3000: '손잡이 쇼핑백', // OMO-3097 라이브검증
-  CPK4000: '일반 쇼핑백', // OMO-3097 라이브검증
-  CPK5000: '소량 쇼핑백', // OMO-3097 라이브검증
-}
+// 성원 category_code → 성원 제품명(한국어). OMO-3409: 단일 진실원천을
+// src/lib/swadpia-coverage.ts(SWADPIA_CATALOG)로 통합 — 양방향 커버리지가 같은 소스에서 파생된다.
+const SWADPIA_CATEGORY_LABEL: Record<string, string> = Object.fromEntries(
+  Object.entries(SWADPIA_CATALOG).map(([code, e]) => [code, e.label]),
+)
 
 // 성원 라우팅이 잘못된(라이브 검증 미반영) 코드 — 표에 경고 표시.
 // OMO-3097: 배너 CPR5000(종이홀더) 오매핑은 CRP5100/4000/3000·COD1100 으로 정정 완료 → 비움.
@@ -125,6 +86,14 @@ export default function SwadpiaMappingReport() {
   const unsupportedCount = allRows.filter((r) => r.unsupported).length
   const unmappedCount = total - mappedCount - unsupportedCount
   const warnCount = allRows.filter((r) => r.warn).length
+
+  // OMO-3409 양방향 커버리지
+  // 우리→성원: 매핑(=자동발주·실시간가격 가능) 비율. unsupported(타공급)는 분모에서 제외.
+  const forwardEligible = total - unsupportedCount
+  const forwardPct = forwardEligible === 0 ? 0 : Math.round((mappedCount / forwardEligible) * 100)
+  // 성원→우리: 성원 카탈로그 중 우리가 커버한 비율 + 역방향 누락 리스트.
+  const reverse = reverseCoverageSummary()
+  const reverseMissing = reverseMissingSwadpia()
 
   return (
     <div className="mx-auto max-w-5xl px-6 py-10">
@@ -209,6 +178,107 @@ export default function SwadpiaMappingReport() {
           <div className="text-xs text-gray-500">성원 미취급(타공급)</div>
         </div>
       </div>
+
+      {/* OMO-3409: 상호(양방향) 커버리지 — 우리→성원 / 성원→우리 */}
+      <section className="mt-8">
+        <div className="flex items-center gap-2 text-lg font-semibold text-gray-900">
+          <ArrowLeftRight className="h-5 w-5 text-indigo-600" /> 상호(양방향) 커버리지
+        </div>
+        <p className="mt-1 text-sm text-gray-500">
+          보드 지시(OMO-3238): 맵핑은 <strong>상호</strong>로 본다 — 우리 제품이 성원에
+          매핑됐는지(자동발주 가능), 그리고 성원 카탈로그 중 <strong>우리가 못 덮은 것(역방향 누락)</strong>.
+        </p>
+
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {/* 우리 → 성원 */}
+          <div className="rounded-lg border border-indigo-200 bg-indigo-50/40 p-4">
+            <div className="flex items-baseline justify-between">
+              <div className="font-semibold text-indigo-900">우리 → 성원</div>
+              <div className="text-2xl font-bold text-indigo-700">{forwardPct}%</div>
+            </div>
+            <div className="mt-1 text-xs text-indigo-700">
+              자동발주·실시간가격 가능 제품 비율 (성원 미취급/타공급 {unsupportedCount}종 제외)
+            </div>
+            <ul className="mt-3 space-y-1 text-sm text-gray-700">
+              <li>
+                <span className="font-semibold text-green-700">✅ 매핑됨(자동발주):</span> {mappedCount}종
+              </li>
+              <li>
+                <span className="font-semibold text-red-600">❌ 미연동(코드 미확인):</span> {unmappedCount}종
+              </li>
+              <li>
+                <span className="font-semibold text-gray-500">▫ 성원 미취급(수동/타공급):</span> {unsupportedCount}종
+              </li>
+            </ul>
+          </div>
+
+          {/* 성원 → 우리 */}
+          <div className="rounded-lg border border-amber-200 bg-amber-50/50 p-4">
+            <div className="flex items-baseline justify-between">
+              <div className="font-semibold text-amber-900">성원 → 우리</div>
+              <div className="text-2xl font-bold text-amber-700">{reverse.coveragePct}%</div>
+            </div>
+            <div className="mt-1 text-xs text-amber-700">
+              성원 카탈로그 {reverse.catalogTotal}종 중 우리 slug 로 커버한 비율
+            </div>
+            <ul className="mt-3 space-y-1 text-sm text-gray-700">
+              <li>
+                <span className="font-semibold text-green-700">✅ 커버됨:</span> {reverse.coveredCount}종
+              </li>
+              <li>
+                <span className="font-semibold text-amber-700">⚠️ 역방향 누락(커버 후보):</span> {reverse.gapCount}종
+              </li>
+              <li>
+                <span className="font-semibold text-gray-500">▫ 의도적 미커버(중복/타공급):</span> {reverse.intentionalCount}종
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* 역방향 누락 드릴다운: 성원에 있는데 우리가 못 덮은 카테고리 */}
+        <div className="mt-4 overflow-x-auto rounded-lg border border-amber-200">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-amber-200 bg-amber-50 text-left text-amber-900">
+                <th className="p-2 font-medium">성원 코드</th>
+                <th className="p-2 font-medium">성원 제품명</th>
+                <th className="p-2 font-medium whitespace-nowrap">분류</th>
+                <th className="p-2 font-medium">미커버 사유 / 메모</th>
+              </tr>
+            </thead>
+            <tbody>
+              {reverseMissing.map((m) => (
+                <tr key={m.code} className="border-b border-amber-100 align-top last:border-0">
+                  <td className="p-2">
+                    <code className="rounded bg-amber-100 px-1 text-amber-900">{m.code}</code>
+                  </td>
+                  <td className="p-2 text-gray-800">{m.label}</td>
+                  <td className="p-2 whitespace-nowrap">
+                    {m.gapKind === 'gap' ? (
+                      <span className="rounded border border-amber-300 bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800">
+                        ⚠️ 커버 후보
+                      </span>
+                    ) : (
+                      <span className="rounded border border-gray-300 bg-gray-100 px-1.5 py-0.5 text-xs text-gray-600">
+                        ▫ 의도적
+                      </span>
+                    )}
+                  </td>
+                  <td className="p-2 text-xs text-gray-500">{m.gapNote ?? '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-gray-400">
+          ※ 커버 여부는 <code className="rounded bg-gray-100 px-1">CATEGORY_MAP</code>(slug→code)에서
+          라이브 파생됩니다. 후가공·사이즈·용지 축의 양방향 상태는{' '}
+          <Link href="/admin/qa/swadpia-linkage" className="text-indigo-600 underline">
+            옵션 연동 소켓 교차검수
+          </Link>{' '}
+          화면을 참조하세요.
+        </p>
+      </section>
 
       {/* 보드 직접 질의 답변 — OMO-3097 라이브검증으로 연동 완료, OMO-3148 갱신 */}
       <div className="mt-6 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm">
