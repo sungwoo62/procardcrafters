@@ -1,0 +1,276 @@
+{
+  "issue": "OMO-3418",
+  "purpose": "명함 printcity↔현행(성원) 고객가 parity — 컷오버(NEXT_PUBLIC_NAMECARD_SUPPLIER) 승인 자료",
+  "capturedAt": "2026-06-17T06:38:42.305Z",
+  "method": "양측 가격 JSON 직독. 고객가 = baseKrw×margin×FX; margin/FX 공통이라 parity%는 baseKrw 비. 라이브 코드 경로(lookupSwadpiaCost/getPrintcityNamecardData) 정확 복제.",
+  "repQtys": [
+    100,
+    200,
+    500,
+    1000
+  ],
+  "sideBasisNote": "라이브 기본 표시 단가는 성원=print_unit2(양면), printcity=print_unit2(=canonical 단면 base). 컷오버 시 기본 표시면이 양면→단면으로 바뀜 → defaultShiftPct 는 이 side-basis 차이를 포함. singleShiftPct/doubleShiftPct 는 동일면 공정 비교.",
+  "foilNote": "박(엣지/에폭엠보)은 total_price 미포함 → census foilTable(수량브래킷) 분리 산정. 박 parity 는 printcity-namecard.ts buildFoilDiff(성원 분리형 surcharge 앵커) 참조.",
+  "slugs": [
+    {
+      "slug": "business-cards",
+      "label": "일반 명함",
+      "swadpiaCode": "CNC1000",
+      "swadpiaPaper": "SNW250CT0",
+      "printcityProductId": "61de7e13a36b0ec358946de3",
+      "printcityProductName": "일반지 명함",
+      "printcityPaper": "MAT:SNW-250",
+      "printcityPaperTitle": "스노우화이트-250g",
+      "rows": [
+        {
+          "qty": 100,
+          "swadpiaSingleKrw": 3000,
+          "swadpiaDoubleKrw": 4000,
+          "printcitySingleKrw": 2100,
+          "printcityDoubleKrw": 2700,
+          "defaultShiftPct": -47.5,
+          "singleShiftPct": -30,
+          "doubleShiftPct": -32.5
+        },
+        {
+          "qty": 200,
+          "swadpiaSingleKrw": 3000,
+          "swadpiaDoubleKrw": 4000,
+          "printcitySingleKrw": 2100,
+          "printcityDoubleKrw": 2700,
+          "defaultShiftPct": -47.5,
+          "singleShiftPct": -30,
+          "doubleShiftPct": -32.5
+        },
+        {
+          "qty": 500,
+          "swadpiaSingleKrw": 3000,
+          "swadpiaDoubleKrw": 4000,
+          "printcitySingleKrw": 2500,
+          "printcityDoubleKrw": 3000,
+          "defaultShiftPct": -37.5,
+          "singleShiftPct": -16.7,
+          "doubleShiftPct": -25
+        },
+        {
+          "qty": 1000,
+          "swadpiaSingleKrw": 6000,
+          "swadpiaDoubleKrw": 8000,
+          "printcitySingleKrw": 5000,
+          "printcityDoubleKrw": 6000,
+          "defaultShiftPct": -37.5,
+          "singleShiftPct": -16.7,
+          "doubleShiftPct": -25
+        }
+      ]
+    },
+    {
+      "slug": "premium-business-cards",
+      "label": "프리미엄 명함",
+      "swadpiaCode": "CNC2000",
+      "swadpiaPaper": "ARE230W00",
+      "printcityProductId": "61d7e6ff4618a211d2069c9a",
+      "printcityProductName": "수입지 명함",
+      "printcityPaper": "MAT:NUV-209",
+      "printcityPaperTitle": "누브지-210g",
+      "rows": [
+        {
+          "qty": 100,
+          "swadpiaSingleKrw": 3500,
+          "swadpiaDoubleKrw": 3500,
+          "printcitySingleKrw": 3500,
+          "printcityDoubleKrw": 4500,
+          "defaultShiftPct": 0,
+          "singleShiftPct": 0,
+          "doubleShiftPct": 28.6
+        },
+        {
+          "qty": 200,
+          "swadpiaSingleKrw": 3500,
+          "swadpiaDoubleKrw": 3500,
+          "printcitySingleKrw": 3500,
+          "printcityDoubleKrw": 4500,
+          "defaultShiftPct": 0,
+          "singleShiftPct": 0,
+          "doubleShiftPct": 28.6
+        },
+        {
+          "qty": 500,
+          "swadpiaSingleKrw": 10500,
+          "swadpiaDoubleKrw": 10500,
+          "printcitySingleKrw": 10500,
+          "printcityDoubleKrw": 13500,
+          "defaultShiftPct": 0,
+          "singleShiftPct": 0,
+          "doubleShiftPct": 28.6
+        },
+        {
+          "qty": 1000,
+          "swadpiaSingleKrw": 14000,
+          "swadpiaDoubleKrw": 14000,
+          "printcitySingleKrw": 17000,
+          "printcityDoubleKrw": 22000,
+          "defaultShiftPct": 21.4,
+          "singleShiftPct": 21.4,
+          "doubleShiftPct": 57.1
+        }
+      ]
+    },
+    {
+      "slug": "premium-foil-cards",
+      "label": "박/포일 카드",
+      "swadpiaCode": "CNC3000",
+      "swadpiaPaper": "LUX200GDU",
+      "printcityProductId": "63db173890953943cfdafc94",
+      "printcityProductName": "엣지명함",
+      "printcityPaper": "MAT:ENV-350",
+      "printcityPaperTitle": "Extra 누브-350g",
+      "rows": [
+        {
+          "qty": 100,
+          "swadpiaSingleKrw": 21000,
+          "swadpiaDoubleKrw": 21000,
+          "printcitySingleKrw": 27000,
+          "printcityDoubleKrw": 29000,
+          "defaultShiftPct": 28.6,
+          "singleShiftPct": 28.6,
+          "doubleShiftPct": 38.1
+        },
+        {
+          "qty": 200,
+          "swadpiaSingleKrw": 21000,
+          "swadpiaDoubleKrw": 21000,
+          "printcitySingleKrw": 43100,
+          "printcityDoubleKrw": 45900,
+          "defaultShiftPct": 105.2,
+          "singleShiftPct": 105.2,
+          "doubleShiftPct": 118.6
+        },
+        {
+          "qty": 500,
+          "swadpiaSingleKrw": 63000,
+          "swadpiaDoubleKrw": 63000,
+          "printcitySingleKrw": 129000,
+          "printcityDoubleKrw": 135000,
+          "defaultShiftPct": 104.8,
+          "singleShiftPct": 104.8,
+          "doubleShiftPct": 114.3
+        },
+        {
+          "qty": 1000,
+          "swadpiaSingleKrw": 105000,
+          "swadpiaDoubleKrw": 105000,
+          "printcitySingleKrw": 215000,
+          "printcityDoubleKrw": 225000,
+          "defaultShiftPct": 104.8,
+          "singleShiftPct": 104.8,
+          "doubleShiftPct": 114.3
+        }
+      ]
+    },
+    {
+      "slug": "uv-business-cards",
+      "label": "UV 명함",
+      "swadpiaCode": "CNC6000",
+      "swadpiaPaper": "AQS256W00",
+      "printcityProductId": "61ef5b679b270074d7f1e369",
+      "printcityProductName": "부분코팅 명함",
+      "printcityPaper": "MAT:SNW-300",
+      "printcityPaperTitle": "스노우화이트-300g",
+      "rows": [
+        {
+          "qty": 100,
+          "swadpiaSingleKrw": 5000,
+          "swadpiaDoubleKrw": 6000,
+          "printcitySingleKrw": 7200,
+          "printcityDoubleKrw": 9000,
+          "defaultShiftPct": 20,
+          "singleShiftPct": 44,
+          "doubleShiftPct": 50
+        },
+        {
+          "qty": 200,
+          "swadpiaSingleKrw": 5000,
+          "swadpiaDoubleKrw": 6000,
+          "printcitySingleKrw": 7200,
+          "printcityDoubleKrw": 9000,
+          "defaultShiftPct": 20,
+          "singleShiftPct": 44,
+          "doubleShiftPct": 50
+        },
+        {
+          "qty": 500,
+          "swadpiaSingleKrw": 13000,
+          "swadpiaDoubleKrw": 16000,
+          "printcitySingleKrw": 10900,
+          "printcityDoubleKrw": 12700,
+          "defaultShiftPct": -31.9,
+          "singleShiftPct": -16.2,
+          "doubleShiftPct": -20.6
+        },
+        {
+          "qty": 1000,
+          "swadpiaSingleKrw": 17000,
+          "swadpiaDoubleKrw": 21000,
+          "printcitySingleKrw": 13600,
+          "printcityDoubleKrw": 15400,
+          "defaultShiftPct": -35.2,
+          "singleShiftPct": -20,
+          "doubleShiftPct": -26.7
+        }
+      ]
+    },
+    {
+      "slug": "transparent-business-cards",
+      "label": "투명 명함",
+      "swadpiaCode": "CNC5000",
+      "swadpiaPaper": "PET200TRU",
+      "printcityProductId": "61de9be4241774a67e601af8",
+      "printcityProductName": "PET카드 명함",
+      "printcityPaper": "MAT:PET-200",
+      "printcityPaperTitle": "PET카드-200g",
+      "rows": [
+        {
+          "qty": 100,
+          "swadpiaSingleKrw": 9000,
+          "swadpiaDoubleKrw": 9000,
+          "printcitySingleKrw": 11000,
+          "printcityDoubleKrw": 11000,
+          "defaultShiftPct": 22.2,
+          "singleShiftPct": 22.2,
+          "doubleShiftPct": 22.2
+        },
+        {
+          "qty": 200,
+          "swadpiaSingleKrw": 15000,
+          "swadpiaDoubleKrw": 15000,
+          "printcitySingleKrw": 11000,
+          "printcityDoubleKrw": 11000,
+          "defaultShiftPct": -26.7,
+          "singleShiftPct": -26.7,
+          "doubleShiftPct": -26.7
+        },
+        {
+          "qty": 500,
+          "swadpiaSingleKrw": 40000,
+          "swadpiaDoubleKrw": 40000,
+          "printcitySingleKrw": 33000,
+          "printcityDoubleKrw": 33000,
+          "defaultShiftPct": -17.5,
+          "singleShiftPct": -17.5,
+          "doubleShiftPct": -17.5
+        },
+        {
+          "qty": 1000,
+          "swadpiaSingleKrw": 64000,
+          "swadpiaDoubleKrw": 64000,
+          "printcitySingleKrw": 55000,
+          "printcityDoubleKrw": 55000,
+          "defaultShiftPct": -14.1,
+          "singleShiftPct": -14.1,
+          "doubleShiftPct": -14.1
+        }
+      ]
+    }
+  ]
+}

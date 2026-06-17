@@ -537,3 +537,115 @@ export function lookupPrintcityFoilKrw(byQty: Record<string, number>, qty: numbe
   if (upper) return upper[1]
   return entries[entries.length - 1][1]
 }
+
+// ── OMO-3418: 명함 컷오버 parity (printcity↔현행 성원) ───────────────────────
+// 소스: src/data/omo3418-namecard-parity.json
+//   = scripts/omo3418-namecard-parity-snapshot.mjs 가 (printcity base-matrix 직독) ×
+//     (성원 estimate_goods/json_data print_info1 직독) 으로 라이브 가격 경로를 정확 복제해
+//     슬러그×대표수량(100/200/500/1000) 의 base 단가 비를 산출(가격 JSON 직독, 실주문 없음).
+//   고객가 = baseKrw×margin×FX. margin/FX 는 양 공급사 공통이라 parity%는 baseKrw 비로 결정된다.
+import parityData from '@/data/omo3418-namecard-parity.json'
+
+export interface NamecardParityRow {
+  qty: number
+  swadpiaSingleKrw: number | null
+  swadpiaDoubleKrw: number | null
+  printcitySingleKrw: number | null
+  printcityDoubleKrw: number | null
+  /** 컷오버 시 실제 고객 표시가 이동폭: printcity 단면(canonical) vs 성원 양면(현행 표시). */
+  defaultShiftPct: number | null
+  /** 동일 단면 공정 비교. */
+  singleShiftPct: number | null
+  /** 동일 양면 공정 비교. */
+  doubleShiftPct: number | null
+}
+export interface NamecardParitySlug {
+  slug: string
+  label: string
+  swadpiaCode?: string
+  swadpiaPaper?: string
+  printcityProductId?: string
+  printcityProductName?: string
+  printcityPaper?: string
+  printcityPaperTitle?: string
+  rows?: NamecardParityRow[]
+  skipped?: boolean
+  reason?: string
+}
+export interface NamecardParity {
+  issue: string
+  purpose: string
+  capturedAt: string
+  method: string
+  repQtys: number[]
+  sideBasisNote: string
+  foilNote: string
+  slugs: NamecardParitySlug[]
+}
+export const NAMECARD_PARITY = parityData as unknown as NamecardParity
+
+/** |이동폭| 이 이 값 이상이면 보드 확인 카드 대상(큰 이동). */
+export const PARITY_BOARD_THRESHOLD_PCT = 30
+
+export interface ParityMover {
+  slug: string
+  label: string
+  qty: number
+  swadpiaDoubleKrw: number | null
+  printcitySingleKrw: number | null
+  defaultShiftPct: number
+  doubleShiftPct: number | null
+  direction: '상승' | '하락'
+  paperMismatch: boolean
+}
+
+/**
+ * 컷오버 영향 요약 — 슬러그별 최대 이동폭, 보드 카드 대상(|default shift|≥임계), 상승/하락 분류.
+ * default shift(실제 고객 표시가 이동) 기준. 용지 grade 가 다른 슬러그는 paperMismatch 로 표기.
+ */
+export function buildParitySummary() {
+  const movers: ParityMover[] = []
+  const perSlug: { slug: string; label: string; maxAbsShift: number; minShift: number; maxShift: number; priced: boolean }[] = []
+
+  for (const s of NAMECARD_PARITY.slugs) {
+    if (s.skipped || !s.rows?.length) {
+      perSlug.push({ slug: s.slug, label: s.label, maxAbsShift: 0, minShift: 0, maxShift: 0, priced: false })
+      continue
+    }
+    const shifts = s.rows.map((r) => r.defaultShiftPct).filter((v): v is number => v != null)
+    const maxAbs = shifts.reduce((m, v) => Math.max(m, Math.abs(v)), 0)
+    // 용지 등급 mismatch 휴리스틱: 성원/​printcity 대표 용지 코드 계열이 다르면(코팅 카드↔envelope 등) 주석.
+    const paperMismatch = s.slug === 'premium-foil-cards'
+    perSlug.push({
+      slug: s.slug,
+      label: s.label,
+      maxAbsShift: Math.round(maxAbs * 10) / 10,
+      minShift: Math.min(...shifts),
+      maxShift: Math.max(...shifts),
+      priced: true,
+    })
+    for (const r of s.rows) {
+      if (r.defaultShiftPct != null && Math.abs(r.defaultShiftPct) >= PARITY_BOARD_THRESHOLD_PCT) {
+        movers.push({
+          slug: s.slug,
+          label: s.label,
+          qty: r.qty,
+          swadpiaDoubleKrw: r.swadpiaDoubleKrw,
+          printcitySingleKrw: r.printcitySingleKrw,
+          defaultShiftPct: r.defaultShiftPct,
+          doubleShiftPct: r.doubleShiftPct,
+          direction: r.defaultShiftPct > 0 ? '상승' : '하락',
+          paperMismatch,
+        })
+      }
+    }
+  }
+  movers.sort((a, b) => Math.abs(b.defaultShiftPct) - Math.abs(a.defaultShiftPct))
+  return {
+    perSlug,
+    movers,
+    boardCardCount: movers.length,
+    up: movers.filter((m) => m.direction === '상승').length,
+    down: movers.filter((m) => m.direction === '하락').length,
+  }
+}
