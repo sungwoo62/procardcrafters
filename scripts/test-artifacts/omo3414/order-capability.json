@@ -1,0 +1,38 @@
+{
+  "issue": "OMO-3414 (board ③) — printcity 로그인/테스트주문/파일업로드 capability 검증",
+  "account": "apm0801 (멤버명: 올팩마이스터)",
+  "method": "Playwright headless, .env.local 자격 직독. 공개 storefront(www.printcity.co.kr) 실세션. 결제 직전(파일첨부)까지만 dry-run — 실주문/결제 절대 없음.",
+  "verifiedAt": "2026-06-17",
+  "results": {
+    "login": {
+      "status": "가능(✅)",
+      "evidence": "auth 엔드포인트 admin.printdeal.co.kr/api/OAuth/GetAuthorization -> HTTP 200 + JWT(refreshToken, sub=apm0801:PC, iss=admin.printdeal.co.kr). 헤더 '로그아웃' 노출, 멤버명 '올팩마이스터님' 표시.",
+      "loginTrigger": "div.highlight:has-text('로그인') 클릭 -> input[name=id]/input[name=pwd] 폼 노출 -> 로그인 버튼 제출",
+      "note": "/login 경로는 404(PAGE NOT FOUND). 실제 로그인은 헤더 .highlight 트리거의 인라인 폼."
+    },
+    "testOrder": {
+      "status": "가능(✅)",
+      "evidence": "제품 주문페이지 /product/NameCard 도달 -> '주문하기' 버튼 동작 -> 주문 단계 패널 렌더(파일첨부 UI 6개 요소). 결제 게이트 노출되나 클릭 안함.",
+      "productRoutes": "명함=/product/NameCard, 통합명함=/product/NameCardUnited, PET=/product/NameCardPet, 점자=/product/NameCardBraille, 카드명함=/product/NameCardMC 등 (RSC 라우트)"
+    },
+    "fileUpload": {
+      "status": "가능(✅)",
+      "evidence": "주문 단계에서 input[type=file] 1개 확인 -> 테스트 파일(upload-test.pdf) setInputFiles 첨부 성공. 파일첨부/시안업로드/웹하드 UI 존재."
+    },
+    "payment": {
+      "status": "미실행(의도적, 결제 금지)",
+      "evidence": "결제하기/주문완료 게이트 2개 노출 확인했으나 클릭하지 않음. 거버넌스: 실발주/결제 금지, 결제 직전까지만 dry-run."
+    }
+  },
+  "vatFinding": {
+    "cartReached": true,
+    "cartUrl": "https://www.printcity.co.kr/order/cart",
+    "note": "장바구니 비어있어(장바구니0) VAT/합계 라인 미표출. 가격은 price-api 직독가=공급가(부가세 별도) 가정 유지. 실제 장바구니에 1건 담아 부가세/합계 라인 확인은 추가 dry-run 대상(가능, 결제 전 정지)."
+  },
+  "screenshots": [
+    "cap-1-home.png", "cap-2-login-form.png", "cap-3-filled.png", "cap-4-after-login.png",
+    "cap-namecard-order.png", "cap-order-step.png", "cap-cart.png"
+  ],
+  "harness": "scripts/omo3414-printcity-order-capability-check.mjs",
+  "governance": "읽기/dry-run 전용. 자격은 .env.local(gitignored). 실주문/결제/자동발주 컷오버는 보드 게이트."
+}

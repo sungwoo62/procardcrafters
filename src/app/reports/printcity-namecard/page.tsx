@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, Layers, ListTree } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, ListTree } from 'lucide-react'
 import {
   CENSUS,
   buildProductMappingRows,
@@ -23,6 +23,14 @@ const fmt = (n: number | undefined | null) =>
 const won = (n: number | undefined | null) =>
   n == null || Number.isNaN(n) ? '—' : `${n.toLocaleString('ko-KR')}원`
 const pct = (n: number) => (Number.isNaN(n) ? '—' : `${n > 0 ? '+' : ''}${n}%`)
+
+// board ③ capability 검증 결과 (scripts/test-artifacts/omo3414/order-capability.json 요약)
+const ORDER_CAPABILITY: { step: string; ok: string; evidence: string }[] = [
+  { step: '로그인', ok: '✅ 가능', evidence: 'OAuth/GetAuthorization HTTP 200 + JWT 발급, 멤버명 "올팩마이스터님" 노출, 헤더 로그아웃 표시.' },
+  { step: '테스트 주문 진입', ok: '✅ 가능', evidence: '/product/NameCard "주문하기" 동작 → 주문 단계 패널 렌더(파일첨부 UI 6요소).' },
+  { step: '파일 업로드', ok: '✅ 가능', evidence: '주문 단계 input[type=file] 확인 → 테스트 PDF 첨부 성공.' },
+  { step: '결제', ok: '⛔ 미실행', evidence: '결제 게이트 노출되나 클릭 안함(실발주/결제 금지 — 보드 게이트).' },
+]
 
 export default function PrintcityNamecardReport() {
   const products = CENSUS.products
@@ -271,6 +279,34 @@ export default function PrintcityNamecardReport() {
           ⚠️ 성원 base 곡선은 q200=4,000원 단일 앵커만 라이브 검증됨 → 100/1000매 성원 총액은 <b>미표집(gap)</b>으로 비워둠.
           printcity 엣지박은 프리미엄 용지(Extra 350g)에 박 번들이라, 박 단독 단가가 아니라 <b>용지+박 묶음 완성가</b>임을 감안.
           정확 성원 박단가는 자동발주 모달의 성원 재계산(calcuEstimate)이 최종 권위.
+        </p>
+      </Section>
+
+      {/* 6. 로그인/테스트주문/파일업로드 capability (board ③) */}
+      <Section title="⑥ 발주 계정 capability — 로그인 · 테스트주문 · 파일업로드 (dry-run)" desc="printcity 발주 계정(apm0801)으로 로그인→주문진입→파일첨부까지 실세션 dry-run 검증. 결제는 금지(결제 직전 정지). 자격은 .env.local(gitignored).">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
+                <Th>단계</Th><Th>가능여부</Th><Th>증거</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {ORDER_CAPABILITY.map((c) => (
+                <tr key={c.step} className="border-b border-gray-100 align-top hover:bg-gray-50">
+                  <td className="py-2 font-medium text-gray-900">{c.step}</td>
+                  <td className="px-2 whitespace-nowrap">{c.ok}</td>
+                  <td className="px-2 text-xs text-gray-500">{c.evidence}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          멤버명 <b>올팩마이스터</b> 확인. 로그인은 <code className="rounded bg-gray-100 px-1">admin.printdeal.co.kr/api/OAuth/GetAuthorization</code> → JWT(sub=apm0801:PC) 발급.
+          하니스: <code className="rounded bg-gray-100 px-1">scripts/omo3414-printcity-order-capability-check.mjs</code>,
+          증거: <code className="rounded bg-gray-100 px-1">scripts/test-artifacts/omo3414/order-capability.json</code> + 스크린샷.
+          ⛔ 결제/실발주 없음(보드 게이트).
         </p>
       </Section>
 
