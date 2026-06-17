@@ -111,15 +111,17 @@ function capList(xs: string[]): string {
 type AxisCompare = {
   key: AxisKey
   title: string
-  swadpiaList: string[]
+  swadpiaList: string[] // 성원 = 베이스(기준)
   oursList: string[]
-  missingFromOurs: string[] // 성원엔 있는데 우리엔 없음 = 우리 누락
-  missingFromSwadpia: string[] // 우리엔 있는데 성원 스크랩엔 없음
+  baseMissing: string[] // 성원 베이스에 있는데 우리 미적용 = 메꿔야 할 누락(주 신호)
+  baseDeviation: string[] // 우리엔 있으나 성원 베이스엔 없음 = 임의 항목(정합 필요)
+  matchedCount: number // 성원 베이스 중 우리가 적용한 수
+  coveragePct: number // 성원 베이스 대비 우리 적용률
 }
 
 function buildAxisCompares(detail: Detail): AxisCompare[] {
   const { swadpia, applied } = detail
-  // 성원 측 축별 원시 라벨
+  // 성원 측 축별 원시 라벨 (= 베이스)
   const swadpiaByAxis: Record<AxisKey, string[]> = {
     paper: swadpia.papers.map((p) => p.name),
     color: (swadpia.printColors ?? []).map((p) => p.label),
@@ -141,13 +143,18 @@ function buildAxisCompares(detail: Detail): AxisCompare[] {
     const oursList = oursByAxis[key]
     const sNorm = new Set(swadpiaList.map(normItem))
     const oNorm = new Set(oursList.map(normItem))
+    const baseMissing = swadpiaList.filter((x) => !oNorm.has(normItem(x)))
+    const baseDeviation = oursList.filter((x) => !sNorm.has(normItem(x)))
+    const matchedCount = swadpiaList.length - baseMissing.length
     return {
       key,
       title,
       swadpiaList,
       oursList,
-      missingFromOurs: swadpiaList.filter((x) => !oNorm.has(normItem(x))),
-      missingFromSwadpia: oursList.filter((x) => !sNorm.has(normItem(x))),
+      baseMissing,
+      baseDeviation,
+      matchedCount,
+      coveragePct: swadpiaList.length === 0 ? 0 : Math.round((matchedCount / swadpiaList.length) * 100),
     }
   }).filter((a) => a.swadpiaList.length > 0 || a.oursList.length > 0)
 }
@@ -309,6 +316,7 @@ function DetailPanel({
       <div>
         <div className="mb-1.5 flex items-center gap-1.5 border-l-4 border-indigo-400 pl-2 text-sm font-bold text-indigo-900">
           성원에서 스크랩한 항목{' '}
+          <span className="rounded bg-indigo-100 px-1 py-0.5 text-[10px] font-semibold text-indigo-700">베이스/기준</span>
           <span className="font-mono text-xs font-normal text-gray-400">{detail.categoryCode ?? '(미연동)'}</span>
         </div>
         {!detail.categoryCode ? (
@@ -398,22 +406,39 @@ function DetailPanel({
   )
 }
 
-// OMO-3187: 항목군 단위 누락 비교(핵심). 성원 ↔ 우리 정규화 매칭 결과를 표로 표시.
+// OMO-3187 / OMO-3409: 항목군 단위 비교(핵심). **성원을 베이스(기준)로** 우리 적용률을 본다.
+// 보드 지시(OMO-3409): "성원이 메인 — 성원꺼를 베이스로 우리 옵션/제품을 세팅한다. 우리가 주도하면 안 된다."
+//   → 성원 베이스 대비 우리 적용률을 주 지표로, 미반영(메꿀 누락)을 주 신호로, 우리 임의항목(성원
+//     베이스에 없음)을 '이탈 — 정합 필요'로 표시한다.
 function MissingComparison({ axes }: { axes: AxisCompare[] }) {
+  // 전체 성원 베이스 대비 우리 적용률(축 가중합)
+  const baseTotal = axes.reduce((n, a) => n + a.swadpiaList.length, 0)
+  const matchedTotal = axes.reduce((n, a) => n + a.matchedCount, 0)
+  const overallPct = baseTotal === 0 ? 0 : Math.round((matchedTotal / baseTotal) * 100)
+  const deviationTotal = axes.reduce((n, a) => n + a.baseDeviation.length, 0)
   return (
     <div className="mt-4 border-t border-gray-100 pt-3">
-      <div className="mb-1.5 flex items-center gap-1.5 text-sm font-bold text-gray-900">
-        <AlertTriangle className="h-4 w-4 text-amber-500" /> 항목군 비교 — 누락 점검
+      <div className="mb-1.5 flex flex-wrap items-center gap-1.5 text-sm font-bold text-gray-900">
+        <AlertTriangle className="h-4 w-4 text-amber-500" /> 항목군 비교 — 성원 베이스 기준
+        <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[11px] font-semibold text-indigo-800">
+          성원 베이스 적용률 {matchedTotal}/{baseTotal} ({overallPct}%)
+        </span>
+        {deviationTotal > 0 && (
+          <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[11px] font-semibold text-amber-800">
+            성원 베이스 이탈 {deviationTotal}종
+          </span>
+        )}
       </div>
       <p className="mb-2 text-[11px] text-gray-400">
-        비교 기준: 라벨/코드 정규화(공백·대소문자·괄호·구분기호 무시) 매칭. 완전 일치가 어려운 항목은 한쪽 전용으로 표기됩니다.
+        기준 = <span className="font-semibold text-indigo-700">성원(메인)</span>. 성원 항목을 베이스로 우리가 얼마나
+        반영했는지 본다(우리가 주도 아님). 매칭: 라벨/코드 정규화(공백·대소문자·괄호·구분기호 무시).
       </p>
       <div className="space-y-1.5">
         {axes.map((a) => {
           const fullMatch =
             a.swadpiaList.length > 0 &&
-            a.missingFromOurs.length === 0 &&
-            a.missingFromSwadpia.length === 0
+            a.baseMissing.length === 0 &&
+            a.baseDeviation.length === 0
           return (
             <div key={a.key} className="rounded-md border border-gray-200 px-2.5 py-2 text-xs">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
@@ -421,32 +446,42 @@ function MissingComparison({ axes }: { axes: AxisCompare[] }) {
                   {a.title}
                 </span>
                 <span className="text-gray-600">
-                  성원 <span className="font-semibold text-indigo-700">{a.swadpiaList.length}종</span>
-                  {' ↔ '}
-                  우리 <span className="font-semibold text-emerald-700">{a.oursList.length}종</span>
+                  성원 베이스{' '}
+                  <span className="font-semibold text-indigo-700">{a.swadpiaList.length}종</span>
+                  {a.swadpiaList.length > 0 && (
+                    <>
+                      {' → 우리 적용 '}
+                      <span className="font-semibold text-emerald-700">
+                        {a.matchedCount}/{a.swadpiaList.length}
+                      </span>
+                      <span className="text-gray-400"> ({a.coveragePct}%)</span>
+                    </>
+                  )}
                 </span>
                 {fullMatch && (
                   <span className="inline-flex items-center gap-0.5 text-green-700">
-                    <CheckCircle2 className="h-3.5 w-3.5" /> 정규화 매칭 일치
+                    <CheckCircle2 className="h-3.5 w-3.5" /> 베이스 전부 반영
                   </span>
                 )}
               </div>
-              {a.missingFromOurs.length > 0 && (
+              {a.baseMissing.length > 0 && (
                 <div className="mt-1 rounded bg-red-50 px-2 py-1 text-red-700">
-                  <span className="font-bold">우리 누락 {a.missingFromOurs.length}종</span>
-                  <span className="text-red-400"> (성원엔 있으나 우리 미적용)</span>:{' '}
-                  <span className="text-red-800">{capList(a.missingFromOurs)}</span>
+                  <span className="font-bold">성원 베이스 미반영 {a.baseMissing.length}종</span>
+                  <span className="text-red-400"> (성원엔 있으나 우리 미적용 — 메꿔야 함)</span>:{' '}
+                  <span className="text-red-800">{capList(a.baseMissing)}</span>
                 </div>
               )}
-              {a.missingFromSwadpia.length > 0 && (
+              {a.baseDeviation.length > 0 && (
                 <div className="mt-1 rounded bg-amber-50 px-2 py-1 text-amber-700">
-                  <span className="font-bold">성원 스크랩 외 {a.missingFromSwadpia.length}종</span>
-                  <span className="text-amber-400"> (우리엔 있으나 성원 스크랩엔 없음)</span>:{' '}
-                  <span className="text-amber-800">{capList(a.missingFromSwadpia)}</span>
+                  <span className="font-bold">성원 베이스 이탈 {a.baseDeviation.length}종</span>
+                  <span className="text-amber-400"> (우리 임의 항목 — 성원 베이스에 없음, 정합 필요)</span>:{' '}
+                  <span className="text-amber-800">{capList(a.baseDeviation)}</span>
                 </div>
               )}
-              {a.swadpiaList.length === 0 && a.oursList.length > 0 && a.missingFromSwadpia.length === a.oursList.length && (
-                <div className="mt-0.5 text-[11px] text-gray-400">성원 스크랩 데이터 없음 — 비교 불가(우리 전용 표기).</div>
+              {a.swadpiaList.length === 0 && a.oursList.length > 0 && (
+                <div className="mt-0.5 text-[11px] text-gray-400">
+                  성원 베이스 스크랩 데이터 없음 — 적용률 산정 불가(우리 항목만 존재).
+                </div>
               )}
             </div>
           )

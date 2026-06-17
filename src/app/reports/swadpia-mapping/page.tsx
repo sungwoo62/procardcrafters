@@ -296,7 +296,19 @@ export default function SwadpiaMappingReport() {
         </div>
       </div>
 
-      {/* 그룹별 표 (행 클릭 → 성원↔우리 비교 펼침, OMO-3148) */}
+      {/* OMO-3409 보드 지시: 성원이 베이스(메인) — 우리가 주도 아님 */}
+      <div className="mt-8 rounded-lg border border-indigo-200 bg-indigo-50 p-4 text-sm">
+        <div className="font-semibold text-indigo-900">기준은 성원(메인) — 우리는 성원 베이스를 미러링</div>
+        <div className="mt-1 text-indigo-800">
+          맵핑/세팅의 <strong>작업 베이스는 성원</strong>입니다(성원 카탈로그를 그대로 가져와 우리 옵션·제품을 맞춤).
+          아래 행을 펼치면 각 축(용지·인쇄색상·사이즈·수량·후가공)에서 <strong>성원 베이스 대비 우리 적용률</strong>과
+          <strong className="text-red-700"> 성원 베이스 미반영(메꿀 누락)</strong>,
+          <strong className="text-amber-700"> 성원 베이스 이탈(우리 임의 항목 — 정합 필요)</strong>을 봅니다.
+          우리가 임의로 만든 옵션(예: 흑백·스노우지·100매)은 성원 베이스로 정합해야 할 대상입니다.
+        </div>
+      </div>
+
+      {/* 그룹별 표 (행 클릭 → 성원(베이스)↔우리 비교 펼침, OMO-3148/OMO-3409) */}
       <InteractiveMappingTable groups={groups} />
 
       {/* 코드 오류 경고 */}
