@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, Layers, ListTree } from 'lucide-react'
 import {
   CENSUS,
   buildProductMappingRows,
@@ -8,6 +8,9 @@ import {
   SWADPIA_ANCHORS,
   buildBaseDiff,
   buildFoilDiff,
+  buildOptionMappability,
+  CATALOG,
+  VAT_RATE,
 } from '@/lib/printcity-namecard'
 
 // OMO-3414 (보드 지시 2026-06-17, OMO-3411 파생): printcity 명함 전수 census +
@@ -27,6 +30,7 @@ export default function PrintcityNamecardReport() {
   const mapRows = buildProductMappingRows()
   const baseDiff = buildBaseDiff()
   const foilDiff = buildFoilDiff()
+  const optMap = buildOptionMappability()
   const pricedCount = products.filter((p) => p.counts.combos > 0).length
   const foilProduct = products.find((p) => p.hasFoil)
 
@@ -80,6 +84,18 @@ export default function PrintcityNamecardReport() {
           </li>
         </ul>
       </div>
+
+      {/* 전체 카탈로그 링크 배너 (board ④) */}
+      <Link
+        href="/reports/printcity-catalog"
+        className="mt-4 flex items-center justify-between rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900 hover:bg-emerald-100"
+      >
+        <span className="flex items-center gap-2">
+          <ListTree className="h-4 w-4" />
+          <b>printcity 전체 제품군 전수 크롤링</b> — {CATALOG.productCount}제품 / {CATALOG.categoryCount}개 1차 카테고리 리스트업 보기
+        </span>
+        <span className="text-emerald-600">→</span>
+      </Link>
 
       {/* 1. census 테이블 */}
       <Section title="① printcity 명함 전수 census" desc="제품별 옵션축·수량범위·대표 base 단가(우리가 printcity 공급 시 원가).">
@@ -140,6 +156,39 @@ export default function PrintcityNamecardReport() {
         )}
       </Section>
 
+      {/* 2-B. 옵션 맵핑 가능 상태 (board ①) */}
+      <Section title="②-B 옵션 맵핑 가능 상태 (용지·사이즈·도수·코팅·박)" desc="명함 전 제품의 옵션축을 전수 수집 → 우리 카탈로그 대응 가능여부 판정. ✅1:1 / ⚠️큐레이션·검토 / ❌미보유. 큐레이션 규칙 기반, 미검증은 ⚠️로 정직 표기.">
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse text-sm">
+            <thead>
+              <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
+                <Th>옵션축</Th><Th right>고유옵션</Th><Th right>✅맵핑</Th><Th right>⚠️검토</Th><Th right>❌갭</Th><Th>상태</Th><Th>예시(printcity → 우리)</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {optMap.map((a) => (
+                <tr key={a.axis} className="border-b border-gray-100 align-top hover:bg-gray-50">
+                  <td className="py-2 font-medium text-gray-900">{a.axis}</td>
+                  <Td right>{a.distinctOptions}</Td>
+                  <Td right>{a.mappable}</Td>
+                  <Td right>{a.partial}</Td>
+                  <Td right>{a.gap}</Td>
+                  <td className="px-2">{a.status === '✅' ? <span className="text-green-700">✅ 맵핑</span> : a.status === '⚠️' ? <span className="text-amber-600">⚠️ 부분</span> : <span className="text-red-600">❌ 갭</span>}</td>
+                  <td className="px-2 text-xs text-gray-500">
+                    {a.examples.slice(0, 4).map((e) => (
+                      <div key={e.title}>{e.verdict} <b>{e.title}</b> → {e.ours}</div>
+                    ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-2 text-xs text-gray-500">
+          요약: 도수(단/양면)·표준 사이즈·기본 코팅(무광/유광)은 <b>1:1 맵핑 가능</b>. 수입지 용지 등급과 특수코팅(홀로그램/벨벳)은 <b>개별 큐레이션 필요</b>(⚠️). 박/엣지박은 색상 맵핑표(③) 보유.
+        </p>
+      </Section>
+
       {/* 3. 박 색상 맵핑 */}
       <Section title="③ 박(엣지박) 색상 맵핑 · printcity ↔ 우리 ↔ 성원" desc="printcity 엣지박 12색 ↔ 우리 finishing(foil_stamp/별색) ↔ 성원 박종류. ✅검증 / ⏳추정 / ⚠️재조사.">
         <div className="overflow-x-auto">
@@ -164,13 +213,13 @@ export default function PrintcityNamecardReport() {
         </div>
       </Section>
 
-      {/* 4. 가격차 — base */}
-      <Section title="④ 가격차 분석 — base 명함 (printcity vs 성원)" desc={`동일 200매 base 비교. 성원 앵커: ${SWADPIA_ANCHORS.baseNamecardWholesaleKrw.source}.`}>
+      {/* 4. 가격차 — base + 총액/부가세 (board ①) */}
+      <Section title="④ 가격차 분석 — base 명함 + 총액·부가세 (printcity vs 성원)" desc={`동일 200매 base 비교. printcity 직독가=공급가(부가세 별도) → 부가세 ${VAT_RATE * 100}% 별산 → 합계(총액). 성원 앵커: ${SWADPIA_ANCHORS.baseNamecardWholesaleKrw.source}.`}>
         <div className="overflow-x-auto">
           <table className="w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
-                <Th>printcity 제품</Th><Th right>수량</Th><Th right>printcity</Th><Th right>성원(앵커)</Th><Th right>차액</Th><Th right>차이%</Th><Th>비고</Th>
+                <Th>printcity 제품</Th><Th right>수량</Th><Th right>공급가</Th><Th right>부가세(10%)</Th><Th right>합계(총액)</Th><Th right>성원(앵커)</Th><Th right>차액</Th><Th right>차이%</Th>
               </tr>
             </thead>
             <tbody>
@@ -179,15 +228,19 @@ export default function PrintcityNamecardReport() {
                   <td className="py-2 font-medium text-gray-900">{r.printcityName}</td>
                   <Td right>{r.qty}매</Td>
                   <Td right>{won(r.printcityKrw)}</Td>
+                  <Td right>{won(r.printcityVat)}</Td>
+                  <td className="px-2 text-right font-semibold text-gray-900">{won(r.printcityTotal)}</td>
                   <Td right>{won(r.swadpiaKrw)}</Td>
                   <td className={`px-2 text-right ${r.diffKrw < 0 ? 'text-green-700' : 'text-red-600'}`}>{r.diffKrw > 0 ? '+' : ''}{fmt(r.diffKrw)}원</td>
                   <td className={`px-2 text-right font-semibold ${r.diffPct < 0 ? 'text-green-700' : 'text-red-600'}`}>{pct(r.diffPct)}</td>
-                  <td className="text-xs text-gray-500">{r.note}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
+        <p className="mt-2 text-xs text-gray-500">
+          차액/차이%는 <b>공급가 기준</b>(성원 앵커도 공급가/도매가). 부가세 별도 가정은 <code className="rounded bg-gray-100 px-1">price-api</code>에 vat 필드 부재(전수 확인)에 근거하며, 아래 ⑥ 로그인 dry-run의 장바구니 합계 라인에서 최종 확인 대상.
+        </p>
       </Section>
 
       {/* 5. 가격차 — 박 */}

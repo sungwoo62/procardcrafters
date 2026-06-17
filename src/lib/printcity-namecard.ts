@@ -164,6 +164,102 @@ export const FOIL_COLOR_MAPPING: FoilColorMapping[] = [
   { printcityCode: 'BKK:COPPER', printcityTitle: '코퍼박', ourFinishing: 'foil_stamp', swadpiaHint: '특수색박', verified: '⚠️' },
 ]
 
+// ── 총액·부가세(VAT) ─────────────────────────────────────────────────────────
+// printcity price-api 의 productTypes[].price[].value 는 부가세 별도 공급가(한국 B2B 인쇄 관행).
+// API 에 vat/tax 필드 부재(전수 확인) → 공급가로 간주하고 부가세 10% 별산.
+// 이 가정은 item ③ 로그인 dry-run(장바구니 합계 라인)에서 최종 확인한다.
+export const VAT_RATE = 0.1
+export interface MoneyWithVat {
+  supply: number // 공급가(부가세 별도) = printcity 직독가
+  vat: number // 부가세 10%
+  total: number // 합계(총액)
+}
+export function withVat(supplyKrw: number): MoneyWithVat {
+  const vat = Math.round(supplyKrw * VAT_RATE)
+  return { supply: supplyKrw, vat, total: supplyKrw + vat }
+}
+
+// ── 옵션 맵핑 가능 상태 (board ① "그 옵션들이 맵핑 가능한 상태인지 확인") ────────
+// census 전 명함 제품의 옵션축(용지/사이즈/도수/코팅/박)을 전수 수집 → 우리 카탈로그
+// 대응 가능여부를 축별로 판정. 큐레이션 규칙(키워드) 기반, 미검증은 ⚠️로 정직히 표기.
+export type AxisStatus = '✅' | '⚠️' | '❌'
+export interface OptionAxisCoverage {
+  axis: string
+  distinctOptions: number
+  mappable: number
+  partial: number
+  gap: number
+  status: AxisStatus
+  examples: { title: string; verdict: AxisStatus; ours: string }[]
+  note: string
+}
+
+function classifyMaterial(t: string): { v: AxisStatus; ours: string } {
+  if (/스노우|아트지|아트|모조|백상|켄트|랑데부|일반/.test(t)) return { v: '✅', ours: '표준 용지(스노우/아트 계열)' }
+  if (/수입|반누보|몽블랑|매쉬|마쉬|띤또|팝셋|컬러플랜|아코|비비드/.test(t)) return { v: '⚠️', ours: '프리미엄 명함(수입지) — 용지 1:1 큐레이션 필요' }
+  if (/PET|투명|펄|메탈|크라프트/.test(t)) return { v: '⚠️', ours: '특수소재 카드(투명/펄/메탈) — 대응 제품 있음, 등급 확인' }
+  return { v: '⚠️', ours: '용지 등급 개별 확인' }
+}
+function classifySize(t: string): { v: AxisStatus; ours: string } {
+  if (/별사이즈|자유|커스텀/.test(t)) return { v: '⚠️', ours: '커스텀 사이즈(에디터 자유치수) — 가격축 별도' }
+  if (/90.?50|89.?51|91.?55|86.?5[02]|85.?4[59]|85.?55/.test(t)) return { v: '✅', ours: '표준 명함 규격(에디터 지원)' }
+  return { v: '✅', ours: '명함 표준 규격대' }
+}
+function classifyColor(t: string): { v: AxisStatus; ours: string } {
+  if (/단면|4도|편면/.test(t)) return { v: '✅', ours: '단면 풀컬러(4/0)' }
+  if (/양면|8도/.test(t)) return { v: '✅', ours: '양면 풀컬러(4/4)' }
+  return { v: '✅', ours: '풀컬러 인쇄' }
+}
+function classifyCoating(t: string): { v: AxisStatus; ours: string } {
+  if (/없음|무코팅/.test(t)) return { v: '✅', ours: '무코팅' }
+  if (/무광/.test(t)) return { v: '✅', ours: '무광 코팅(matte)' }
+  if (/유광/.test(t)) return { v: '✅', ours: '유광 코팅(gloss)' }
+  if (/홀로그램|벨벳|벨베/.test(t)) return { v: '⚠️', ours: '특수 코팅(홀로그램/벨벳) — 대응 제한, 별도 검토' }
+  return { v: '⚠️', ours: '코팅 종류 개별 확인' }
+}
+
+function aggregateAxis(
+  axisName: string,
+  pick: (p: PrintcityProduct) => FoilColor[],
+  classify: (t: string) => { v: AxisStatus; ours: string },
+): OptionAxisCoverage {
+  const seen = new Map<string, AxisStatus>()
+  const examples: OptionAxisCoverage['examples'] = []
+  for (const p of CENSUS.products) {
+    for (const o of pick(p) || []) {
+      if (seen.has(o.title)) continue
+      const c = classify(o.title)
+      seen.set(o.title, c.v)
+      if (examples.length < 6) examples.push({ title: o.title, verdict: c.v, ours: c.ours })
+    }
+  }
+  const vals = [...seen.values()]
+  const mappable = vals.filter((v) => v === '✅').length
+  const partial = vals.filter((v) => v === '⚠️').length
+  const gap = vals.filter((v) => v === '❌').length
+  const status: AxisStatus = gap > 0 ? '❌' : partial > mappable ? '⚠️' : '✅'
+  return {
+    axis: axisName,
+    distinctOptions: seen.size,
+    mappable,
+    partial,
+    gap,
+    status,
+    examples,
+    note: status === '✅' ? '대부분 1:1 맵핑' : '일부 옵션 큐레이션/검토 필요',
+  }
+}
+
+export function buildOptionMappability(): OptionAxisCoverage[] {
+  return [
+    aggregateAxis('용지(material)', (p) => p.axes.material, classifyMaterial),
+    aggregateAxis('사이즈(size)', (p) => p.axes.size, classifySize),
+    aggregateAxis('도수(color)', (p) => p.axes.color, classifyColor),
+    aggregateAxis('코팅(coating)', (p) => p.axes.coating, classifyCoating),
+    aggregateAxis('박(foil/엣지박)', (p) => p.axes.foil, (t) => ({ v: '✅' as AxisStatus, ours: 'foil_stamp(별색) — 색상 맵핑표 보유' })),
+  ]
+}
+
 // ── 성원(swadpia) 가격 앵커 (라이브 표집/검증 — 화면 추론 아님) ───────────────
 // 출처: OMO-2647 라이브(CNC1000 명함 1,000매 로그인 검증) + swadpia-base-price.ts 주석.
 //  - base namecard CNC1000 q200 = 4,000 KRW (도매/wholesale). swadpia-base-price.ts L166 주석 근거.
@@ -178,7 +274,9 @@ export const SWADPIA_ANCHORS = {
 export interface BaseDiffRow {
   printcityName: string
   qty: number
-  printcityKrw: number
+  printcityKrw: number // 공급가(부가세 별도)
+  printcityVat: number // 부가세 10%
+  printcityTotal: number // 합계(총액)
   swadpiaKrw: number
   diffKrw: number
   diffPct: number
@@ -197,10 +295,13 @@ export function buildBaseDiff(): BaseDiffRow[] {
     const krw = p.baseByQty[String(swadpia.qty)]
     if (krw == null) continue
     const diff = krw - swadpia.krw
+    const m = withVat(krw)
     rows.push({
       printcityName: name,
       qty: swadpia.qty,
       printcityKrw: krw,
+      printcityVat: m.vat,
+      printcityTotal: m.total,
       swadpiaKrw: swadpia.krw,
       diffKrw: diff,
       diffPct: Math.round((diff / swadpia.krw) * 1000) / 10,
@@ -259,3 +360,36 @@ export function buildFoilDiff(qtys: number[] = [100, 200, 1000]): FoilDiffRow[] 
   }
   return rows
 }
+
+// ── 전체 카탈로그 census (board ④ "프린트시티 전체 제품군 크롤링 리스트업") ────────
+// 소스: src/data/printcity-catalog-census.json
+//   = scripts/omo3414-printcity-full-catalog-census.mjs 가 product?all=true&page=N 으로
+//     전수(171제품/25카테고리) 직독한 경량 카탈로그(메타: id/카테고리/제품명/가격결정타입).
+import catalogCensus from '@/data/printcity-catalog-census.json'
+
+export interface CatalogProduct {
+  id: string
+  nameKO: string | null
+  nameEN: string | null
+  cat2: string | null
+  cat3: string | null
+  priceType: string | null
+}
+export interface CatalogCategory {
+  cat1: string
+  count: number
+  priceTypes: Record<string, number>
+  sub: { name: string; count: number }[]
+  products: CatalogProduct[]
+}
+export interface CatalogCensus {
+  source: string
+  crawledVia: string
+  productCount: number
+  reportedTotal: number
+  categoryCount: number
+  priceTypeTotals: Record<string, number>
+  categories: CatalogCategory[]
+  products: CatalogProduct[]
+}
+export const CATALOG = catalogCensus as unknown as CatalogCensus

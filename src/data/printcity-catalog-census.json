@@ -1,0 +1,3527 @@
+{
+  "source": "price-api.dtp21.com/v2 (printcity 공개 GET, 읽기전용)",
+  "crawledVia": "product?all=true&page=N (20/page)",
+  "productCount": 171,
+  "reportedTotal": 171,
+  "categoryCount": 25,
+  "priceTypeTotals": {
+    "priceCalculation": 35,
+    "priceComplete": 136
+  },
+  "categories": [
+    {
+      "cat1": "디지털명함",
+      "count": 23,
+      "priceTypes": {
+        "priceComplete": 23
+      },
+      "sub": [
+        {
+          "name": "Digital",
+          "count": 20
+        },
+        {
+          "name": "None",
+          "count": 3
+        }
+      ],
+      "products": [
+        {
+          "id": "69803127a87f772b19f5c863",
+          "nameKO": "페이지포토카드",
+          "nameEN": "PagePhotocard",
+          "cat2": "Digital",
+          "cat3": "MP_PPT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "677cc73a41dc242b286ee30b",
+          "nameKO": "디지털 피켓",
+          "nameEN": "DigitalPicket",
+          "cat2": "Digital",
+          "cat3": "MP_DPK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67173c1b138db2a572ca2377",
+          "nameKO": "디지털 카드명함",
+          "nameEN": "DigitalCardNameCardMS_V2",
+          "cat2": "Digital",
+          "cat3": "MP_DCC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6641b8dcdbfb79b2d034a18b",
+          "nameKO": "형광명함",
+          "nameEN": "DigitalNameCardNeon",
+          "cat2": "Digital",
+          "cat3": "MP_HHC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6630a84f33e6bc5113c4f010",
+          "nameKO": "3D금박명함",
+          "nameEN": "NameCardGold3D",
+          "cat2": "Digital",
+          "cat3": "MP_TGC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6630a15833e6bc5113c4eba9",
+          "nameKO": "부분에폭명함",
+          "nameEN": "NameCardPartialEpoxy",
+          "cat2": "Digital",
+          "cat3": "MP_EPC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "659f508abea19b90dab15b8b",
+          "nameKO": "이벤트 포토카드",
+          "nameEN": "DigitalPhotoCard_Event",
+          "cat2": "Digital",
+          "cat3": "MP_DPD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "64a792f2386e6b6e74cbcfd5",
+          "nameKO": "포토엽서",
+          "nameEN": "DigitalPhotoPostcard",
+          "cat2": "Digital",
+          "cat3": "MP_DPP",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "648fda79386e6b6e74aa983b",
+          "nameKO": "홀로그램 명함",
+          "nameEN": "DigitalNameCardHologram",
+          "cat2": "Digital",
+          "cat3": "MP_DHC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6434efc992bff7407b401c81",
+          "nameKO": "디지털 명함",
+          "nameEN": "DigitalNameCardGroup1",
+          "cat2": "None",
+          "cat3": "MP_UDN",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62906c8e0d5cab5166cffed7",
+          "nameKO": "디지털카드명함",
+          "nameEN": "DigitalCardNameCard",
+          "cat2": "Digital",
+          "cat3": "MP_DCC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62905c080d5cab5166cfa5c6",
+          "nameKO": "디지털 탁상POP",
+          "nameEN": "DigitalDeskPop",
+          "cat2": "None",
+          "cat3": "MP_DJP",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "628deba19af4f3c17c7de5d8",
+          "nameKO": "디지털 포스터",
+          "nameEN": "DigitalPoster",
+          "cat2": "Digital",
+          "cat3": "MP_DPT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6285e8c6200c09839a1d3ab0",
+          "nameKO": "디지털 레이저 컷팅 명함",
+          "nameEN": "DigitalLaserCuttingNameCard",
+          "cat2": "Digital",
+          "cat3": "MP_DLC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ee648c044fbaf05fa9863",
+          "nameKO": "디지털 긴급 명함",
+          "nameEN": "DigitalNameCardQuick",
+          "cat2": "Digital",
+          "cat3": "MP_DEG",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ee4fbcf4496fdf61dc9ce",
+          "nameKO": "디지털 접지메뉴판",
+          "nameEN": "DigitalMenuPan",
+          "cat2": "None",
+          "cat3": "MP_DJM",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ecb0dcf4496fdf61dc81c",
+          "nameKO": "디지털 상품권",
+          "nameEN": "DigitalGiftCard",
+          "cat2": "Digital",
+          "cat3": "MP_DIT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ec75dc229ad6711610192",
+          "nameKO": "디지털 초대장",
+          "nameEN": "DigitalInvitation",
+          "cat2": "Digital",
+          "cat3": "MP_DPI",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ec2becf4496fdf61d9a75",
+          "nameKO": "디지털 엽서",
+          "nameEN": "DigitalPostCard",
+          "cat2": "Digital",
+          "cat3": "MP_DPO",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627e0a70c044fbaf05fa1cff",
+          "nameKO": "디지털 일반 전단지",
+          "nameEN": "DigitalLeaflet",
+          "cat2": "Digital",
+          "cat3": "MP_DGL",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6270cb852ba0d4f250d46f88",
+          "nameKO": "디지털 화이트 명함",
+          "nameEN": "DigitalNameCardWhite",
+          "cat2": "Digital",
+          "cat3": "MP_DWH",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61dfc621e6134b0132af1712",
+          "nameKO": "디지털 포토카드",
+          "nameEN": "DigitalPhotoCard",
+          "cat2": "Digital",
+          "cat3": "MP_DPD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61de9851a36b0ec3589588db",
+          "nameKO": "샌드컬러명함",
+          "nameEN": "SandColorNameCard",
+          "cat2": "Digital",
+          "cat3": "MP_SNC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "디지털인쇄물",
+      "count": 20,
+      "priceTypes": {
+        "priceCalculation": 6,
+        "priceComplete": 14
+      },
+      "sub": [
+        {
+          "name": "Digital",
+          "count": 18
+        },
+        {
+          "name": "None",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "6a0eb3b988de4c7a1dead77c",
+          "nameKO": "디지털대형포스터",
+          "nameEN": "DigitalWallPoster",
+          "cat2": "Digital",
+          "cat3": "MP_DPT_AJ",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6a017aae53f2253d0a6c76a0",
+          "nameKO": "30000이벤트엽서",
+          "nameEN": "30000EventPostCard",
+          "cat2": "Digital",
+          "cat3": "MP_DPO_30000",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6a017707ff71b9514afa42ff",
+          "nameKO": "30000이벤트포스터",
+          "nameEN": "30000EventPoster",
+          "cat2": "Digital",
+          "cat3": "MP_DPT_30000",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6a014144ff71b9514af7ecb4",
+          "nameKO": "30000이벤트포토카드",
+          "nameEN": "30000EventPhotoCard",
+          "cat2": "Digital",
+          "cat3": "MP_DPD_30000",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6a01403aff71b9514af7e17d",
+          "nameKO": "30000이벤트명함",
+          "nameEN": "30000EventNameCard",
+          "cat2": "Digital",
+          "cat3": "MP_DIC_30000",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "69c5cf295e5850d999544959",
+          "nameKO": "디지털 완칼스티커",
+          "nameEN": "DigitalWankalSticker",
+          "cat2": "None",
+          "cat3": "MP_WST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "69b7910b1758ee9b3e5b745b",
+          "nameKO": "주차(배면)스티커",
+          "nameEN": "ParkingSticker",
+          "cat2": "Digital",
+          "cat3": "MP_PKS",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "699d4d02aa5c539b2cea408f",
+          "nameKO": "카드 키홀더",
+          "nameEN": "CardKeyholder",
+          "cat2": "Digital",
+          "cat3": "MP_CKH",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "69842481f54e08498c1a138b",
+          "nameKO": "레터링(모양) 스티커",
+          "nameEN": "LetteringSticker",
+          "cat2": "Digital",
+          "cat3": "MP_LST",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68f7138dfb2a17f1ac387107",
+          "nameKO": "보안스티커",
+          "nameEN": "SecuritySticker",
+          "cat2": "Digital",
+          "cat3": "MP_SCS",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68d6167899b10428aaa94995",
+          "nameKO": "포토퍼즐",
+          "nameEN": "PhotoPuzzle",
+          "cat2": "None",
+          "cat3": "MP_DPZ",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "66cfdf42aace71088d8b6189",
+          "nameKO": "세라믹 포토 코스터",
+          "nameEN": "CeramicPhotoCoster",
+          "cat2": "Digital",
+          "cat3": "MP_CCT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6614a0af42943417f97a3b84",
+          "nameKO": "디지털 스티커",
+          "nameEN": "DigitalSticker",
+          "cat2": "Digital",
+          "cat3": "MP_DSK",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "66149da15790eb02c99fa088",
+          "nameKO": "세라믹 코스터",
+          "nameEN": "CeramicCoster",
+          "cat2": "Digital",
+          "cat3": "MP_CCT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "65a0c7298aeab055fafd4c8c",
+          "nameKO": "이벤트 포토코스터",
+          "nameEN": "PhotoCoster_Event",
+          "cat2": "Digital",
+          "cat3": "MP_PCT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "65a0c5d1bea19b90dab8cb66",
+          "nameKO": "이벤트 디자인포토판스티커",
+          "nameEN": "PanStickerDesign_Event",
+          "cat2": "Digital",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "654b1a326ab8b7c9126e7a27",
+          "nameKO": "디자인포토판스티커",
+          "nameEN": "PanSticker_designphoto",
+          "cat2": "Digital",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "654b19106ab8b7c9126e759a",
+          "nameKO": "포토판스티커",
+          "nameEN": "PanSticker_photo",
+          "cat2": "Digital",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "64abb2c7973d6fc34c2d4f64",
+          "nameKO": "포토 코스터",
+          "nameEN": "PhotoCoster",
+          "cat2": "Digital",
+          "cat3": "MP_PCT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62708f16385d5b6af04e0b8f",
+          "nameKO": "디지털 코스터",
+          "nameEN": "DigitalCoaster",
+          "cat2": "Digital",
+          "cat3": "MP_CTT",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "스티커",
+      "count": 18,
+      "priceTypes": {
+        "priceComplete": 6,
+        "priceCalculation": 12
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 13
+        },
+        {
+          "name": "None",
+          "count": 5
+        }
+      ],
+      "products": [
+        {
+          "id": "681c103a71a9e577cf25d0f1",
+          "nameKO": "종이자석 스티커 (양면)",
+          "nameEN": "StickerMagneticPaperDoubleSided",
+          "cat2": "Offset",
+          "cat3": "MP_MPT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "66baec6b7e34776c64d27391",
+          "nameKO": "도무송 스티커_N2",
+          "nameEN": "StickerDomusongNew2",
+          "cat2": "Offset",
+          "cat3": "MP_ADT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "66556179e11fdc7a5881835f",
+          "nameKO": "컬러스티커(계산식)_New",
+          "nameEN": "StickerRectangleNew",
+          "cat2": "Offset",
+          "cat3": "MP_AST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "665560f0e11fdc7a58818332",
+          "nameKO": "도무송 스티커(계산식)_New",
+          "nameEN": "StickerDomusongNew",
+          "cat2": "Offset",
+          "cat3": "MP_ADT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "659f5134bea19b90dab16942",
+          "nameKO": "이벤트 판스티커",
+          "nameEN": "PanSticker_Event",
+          "cat2": "None",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "646b0d0736fe61e51db644eb",
+          "nameKO": "판모양스티커",
+          "nameEN": "PanSticker_halfcut",
+          "cat2": "None",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6465d6db36fe61e51db4aa72",
+          "nameKO": "컬러스티커-정사각형",
+          "nameEN": "AllStickerSquare",
+          "cat2": "Offset",
+          "cat3": "MP_AST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6464774e36fe61e51db39ed3",
+          "nameKO": "종이네임스티커",
+          "nameEN": "PaperNameSticker",
+          "cat2": "None",
+          "cat3": "MP_PNS",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6464667c36fe61e51db394d3",
+          "nameKO": "방수네임스티커",
+          "nameEN": "WaterProofNameSticker",
+          "cat2": "None",
+          "cat3": "MP_WNS",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "642e3f2de7580787b61b9aa7",
+          "nameKO": "판스티커",
+          "nameEN": "PanSticker",
+          "cat2": "None",
+          "cat3": "MP_PNST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "636c7ba7d71acbafe4d4fdb2",
+          "nameKO": "도무송 스티커(개선테스트)",
+          "nameEN": "AllStickerDomusong(test)",
+          "cat2": "Offset",
+          "cat3": "MP_ADT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "632bc55ca5e3b27cb5dab251",
+          "nameKO": "롤(로타리)스티커",
+          "nameEN": "RollSticker",
+          "cat2": "Offset",
+          "cat3": "MP_RST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "632ababd37997c8c6255bd66",
+          "nameKO": "도무송 스티커(계산식)",
+          "nameEN": "AllStickerDomusongTest",
+          "cat2": "Offset",
+          "cat3": "MP_ADT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "632022e002bc54776829be7b",
+          "nameKO": "컬러스티커(계산식)",
+          "nameEN": "AllStickerRectangle",
+          "cat2": "Offset",
+          "cat3": "MP_AST",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6294814a7a43432d01a4251f",
+          "nameKO": "도무송 스티커",
+          "nameEN": "AllStickerDomusong",
+          "cat2": "Offset",
+          "cat3": "MP_ADT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6278c5ed4da16386fa1917a3",
+          "nameKO": "종이자석 스티커",
+          "nameEN": "StickerMagneticPaper",
+          "cat2": "Offset",
+          "cat3": "MP_MPT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6278bc12a2fe41efe82326f2",
+          "nameKO": "자석 스티커",
+          "nameEN": "StickerMagnet",
+          "cat2": "Offset",
+          "cat3": "MP_MST",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61ef85a290d40e2792b1b99a",
+          "nameKO": "컬러스티커",
+          "nameEN": "AllSticker",
+          "cat2": "Offset",
+          "cat3": "MP_AST",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "명함",
+      "count": 17,
+      "priceTypes": {
+        "priceComplete": 17
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 15
+        },
+        {
+          "name": "None",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "6a05875bd6dd07b8536a14f8",
+          "nameKO": "수입지 명함",
+          "nameEN": "NameCardIncome_pond",
+          "cat2": "Offset",
+          "cat3": "MP_INC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "690d5723122978358a481644",
+          "nameKO": "일반지 명함",
+          "nameEN": "NameCard_good2",
+          "cat2": "Offset",
+          "cat3": "MP_GNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68d384a31b09594495f4c1b9",
+          "nameKO": "통합 명함",
+          "nameEN": "NameCardGroup_test2",
+          "cat2": "None",
+          "cat3": "MP_UNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68ba716b4f93d8608081affd",
+          "nameKO": "수입지 명함",
+          "nameEN": "NameCardIncome_2",
+          "cat2": "Offset",
+          "cat3": "MP_INC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6879cc61a67a79397627ad3c",
+          "nameKO": "특가 수입지 명함",
+          "nameEN": "NameCardIncome_sale2",
+          "cat2": "Offset",
+          "cat3": "MP_INC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "677cf067604e619a80edfa32",
+          "nameKO": "옵셋 피켓",
+          "nameEN": "OffsetPicket",
+          "cat2": "Offset",
+          "cat3": "MP_OPK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "63e4abde3374d8d1dc54458d",
+          "nameKO": "통합 명함",
+          "nameEN": "NameCardUnited",
+          "cat2": "None",
+          "cat3": "MP_UNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "63db173890953943cfdafc94",
+          "nameKO": "엣지명함",
+          "nameEN": "NameCardEdge",
+          "cat2": "Offset",
+          "cat3": "MP_EDG",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61ef5b679b270074d7f1e369",
+          "nameKO": "부분코팅 명함",
+          "nameEN": "NameCardPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61e52abfabaed95eaaf08cb0",
+          "nameKO": "에폭엠보 명함",
+          "nameEN": "NameCardEpoxyemboss",
+          "cat2": "Offset",
+          "cat3": "MP_ENC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61dfda7fc03d48fd50efdc83",
+          "nameKO": "포토카드",
+          "nameEN": "PotoCard",
+          "cat2": "Offset",
+          "cat3": "MP_PCD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61dfcbbe542d106e1224f76f",
+          "nameKO": "점자명함",
+          "nameEN": "NameCardBraille",
+          "cat2": "Offset",
+          "cat3": "MP_ZNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61de9be4241774a67e601af8",
+          "nameKO": "PET카드 명함",
+          "nameEN": "NameCardPet",
+          "cat2": "Offset",
+          "cat3": "MP_PEC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61de95b8241774a67e60074f",
+          "nameKO": "옵셋 카드명함",
+          "nameEN": "NameCardMC",
+          "cat2": "Offset",
+          "cat3": "MP_MNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61de7e13a36b0ec358946de3",
+          "nameKO": "일반지 명함",
+          "nameEN": "NameCard",
+          "cat2": "Offset",
+          "cat3": "MP_GNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61db8d7fb2fd4166089fa04d",
+          "nameKO": "VIP 명함",
+          "nameEN": "NameCardVip",
+          "cat2": "Offset",
+          "cat3": "MP_VNC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61d7e6ff4618a211d2069c9a",
+          "nameKO": "수입지 명함",
+          "nameEN": "NameCardIncome",
+          "cat2": "Offset",
+          "cat3": "MP_INC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "전단지",
+      "count": 12,
+      "priceTypes": {
+        "priceComplete": 8,
+        "priceCalculation": 4
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 12
+        }
+      ],
+      "products": [
+        {
+          "id": "690c4f1a122978358a45967b",
+          "nameKO": "합판 전단지",
+          "nameEN": "LeafletJoin_good",
+          "cat2": "Offset",
+          "cat3": "MP_HLF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67e223ffc56b3d4a0a9ebedc",
+          "nameKO": "소량독판전단지",
+          "nameEN": "LeafletMin",
+          "cat2": "Offset",
+          "cat3": "MP_NLF_2",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "660e6638553bea6670f4c92d",
+          "nameKO": "리플렛/팜플렛",
+          "nameEN": "LeafletPamphletV2",
+          "cat2": "Offset",
+          "cat3": "MP_NLP_2",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "660e3d1dd086f11f63c2c40f",
+          "nameKO": "포스터",
+          "nameEN": "LeafletPosterV2",
+          "cat2": "Offset",
+          "cat3": "MP_NST_2",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6361ca3846cfc0d4f424bb7f",
+          "nameKO": "독판전단지",
+          "nameEN": "LeafletNew",
+          "cat2": "Offset",
+          "cat3": "MP_NLF_2",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "62f1b3406151df9d65ba9944",
+          "nameKO": "문고리 전단지",
+          "nameEN": "LeafletDoor",
+          "cat2": "Offset",
+          "cat3": "MP_GLF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62f06ea8eb32c1c6e6f62120",
+          "nameKO": "문어발 전단지",
+          "nameEN": "LeafletOctopus",
+          "cat2": "Offset",
+          "cat3": "MP_OLF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62b17282e859b328bf236c8d",
+          "nameKO": "부분코팅 전단지",
+          "nameEN": "LeafletPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PLF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6290516b0d5cab5166cf9a88",
+          "nameKO": "당일판 합판 전단지",
+          "nameEN": "LeafletJoinToday",
+          "cat2": "Offset",
+          "cat3": "MP_HLT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "623a8541525875852a42e3a2",
+          "nameKO": "에폭엠보 전단지",
+          "nameEN": "LeafletEpoxyemboss",
+          "cat2": "Offset",
+          "cat3": "MP_ELF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "623978b0b3b971e02386f6c3",
+          "nameKO": "에코 합판전단지",
+          "nameEN": "LeafletPremiumEco",
+          "cat2": "Offset",
+          "cat3": "MP_PEL",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6230398cc7d7199e8afb357f",
+          "nameKO": "합판 전단지",
+          "nameEN": "LeafletJoin",
+          "cat2": "Offset",
+          "cat3": "MP_HLF",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "배너",
+      "count": 11,
+      "priceTypes": {
+        "priceComplete": 9,
+        "priceCalculation": 2
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 11
+        }
+      ],
+      "products": [
+        {
+          "id": "67f715ccc2daf440238bbe24",
+          "nameKO": "실사출력 보드부착_포맥스",
+          "nameEN": "RealOutPutBoard_max",
+          "cat2": "None",
+          "cat3": "MP_DSD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67f7138ac2daf440238bb794",
+          "nameKO": "실사출력 보드부착_폼보드",
+          "nameEN": "RealOutPutBoard_board",
+          "cat2": "None",
+          "cat3": "MP_DSD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67f609fb1efb7f9fb6fd38b3",
+          "nameKO": "족자봉",
+          "nameEN": "Scroll",
+          "cat2": "None",
+          "cat3": "MP_SCR",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67f603a01efb7f9fb6fd1f81",
+          "nameKO": "차량용 자석",
+          "nameEN": "CarMagnet",
+          "cat2": "None",
+          "cat3": "MP_CMG",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6633272433e6bc5113c5089c",
+          "nameKO": "거치대",
+          "nameEN": "PetBannerFrame",
+          "cat2": "None",
+          "cat3": "MP_BTT",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "660b9a8c42d26450172ba913",
+          "nameKO": "현수막",
+          "nameEN": "LongBanner",
+          "cat2": "None",
+          "cat3": "MP_LBA",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "65e82d83f93dea295dda985c",
+          "nameKO": "실사출력",
+          "nameEN": "RealOutPut",
+          "cat2": "None",
+          "cat3": "MP_REO",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6486d0d526e9268ca0b0b156",
+          "nameKO": "미니페트배너",
+          "nameEN": "PetBanner_mini",
+          "cat2": "None",
+          "cat3": "MP_BAN",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6486cf01c9132820cf0c52df",
+          "nameKO": "실내페트배너",
+          "nameEN": "PetBanner_indoor",
+          "cat2": "None",
+          "cat3": "MP_BAN",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6486cd25580a90e9f16e2c17",
+          "nameKO": "실외페트배너",
+          "nameEN": "PetBanner_outdoor",
+          "cat2": "None",
+          "cat3": "MP_BAN",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6285e1e92fd40fd3aae71df3",
+          "nameKO": "어깨띠",
+          "nameEN": "ShoulderBelt",
+          "cat2": "None",
+          "cat3": "MP_SHO",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "컵",
+      "count": 9,
+      "priceTypes": {
+        "priceComplete": 9
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 7
+        },
+        {
+          "name": "Offset",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "667cee38f8cd53920869f4aa",
+          "nameKO": "PET 투명컵",
+          "nameEN": "ClearPetCup",
+          "cat2": "None",
+          "cat3": "MP_CPCP",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667cce1ef8cd53920869f35d",
+          "nameKO": "별색 컵홀더",
+          "nameEN": "SpotColorSleeve",
+          "cat2": "None",
+          "cat3": "MP_SCSL",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667ccd2ef0beac2a8d21e7ac",
+          "nameKO": "옵셋 컵홀더",
+          "nameEN": "OffsetSleeve",
+          "cat2": "Offset",
+          "cat3": "MP_OFSL",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667ccb1ef8cd53920869f2c2",
+          "nameKO": "캐리어",
+          "nameEN": "CupCarrier",
+          "cat2": "None",
+          "cat3": "MP_CPCA",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667cc9a1f0beac2a8d21e75c",
+          "nameKO": "이중컵",
+          "nameEN": "DoubleCup",
+          "cat2": "None",
+          "cat3": "MP_DCP",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667cc88cf0beac2a8d21e6fe",
+          "nameKO": "에어홀더",
+          "nameEN": "AirSleeve1",
+          "cat2": "None",
+          "cat3": "MP_ASL",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667cc61ff8cd53920869f191",
+          "nameKO": "PET컵 뚜껑",
+          "nameEN": "PetCupLid",
+          "cat2": "None",
+          "cat3": "MP_PTLD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667cc3b5f0beac2a8d21e698",
+          "nameKO": "종이컵 뚜껑",
+          "nameEN": "PaperCupLid",
+          "cat2": "None",
+          "cat3": "MP_PLD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "66713608471769f30b897084",
+          "nameKO": "종이컵",
+          "nameEN": "PaperCup",
+          "cat2": "Offset",
+          "cat3": "MP_PCP",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "기타비용",
+      "count": 6,
+      "priceTypes": {
+        "priceComplete": 4,
+        "priceCalculation": 2
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 6
+        }
+      ],
+      "products": [
+        {
+          "id": "690c004a78afe5407b00a538",
+          "nameKO": "사이즈테스트",
+          "nameEN": "CustomPrintingInHouse",
+          "cat2": "None",
+          "cat3": "MP_ETC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68e8aba9bf5ead702054ca7e",
+          "nameKO": "특수인쇄111",
+          "nameEN": "CustomPrintingOutSourcing1",
+          "cat2": "None",
+          "cat3": "MP_SPP",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "68d9e9f242a329d22ee3548a",
+          "nameKO": "특수인쇄",
+          "nameEN": "CustomPrintingOutSourcing",
+          "cat2": "None",
+          "cat3": "MP_SPP",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "67a2ffbb1f1287e8efdde99a",
+          "nameKO": "색상불량",
+          "nameEN": "EtcDefaultOrderDummy",
+          "cat2": "None",
+          "cat3": "MP_COE",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "66e115fcd2a123b938ef3635",
+          "nameKO": "CJ택배사고",
+          "nameEN": "EtcDefaultOrder2323",
+          "cat2": "None",
+          "cat3": "MP_CJE",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "669a1d73ac92a67988cf4c8a",
+          "nameKO": "배송비",
+          "nameEN": "EtcDefaultOrder",
+          "cat2": "None",
+          "cat3": "MP_DVF",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "초대장",
+      "count": 6,
+      "priceTypes": {
+        "priceComplete": 6
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 5
+        },
+        {
+          "name": "Master",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "641a91d90937b7c2bd8131fa",
+          "nameKO": "초대장",
+          "nameEN": "InvitationGroup1",
+          "cat2": "Offset",
+          "cat3": "MP_UIC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "628de4f89c728c51a4893644",
+          "nameKO": "초대장봉투",
+          "nameEN": "InvitationEnvelope",
+          "cat2": "Master",
+          "cat3": "MP_EIC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6221cb6d2d182dd21bf92867",
+          "nameKO": "부분코팅 초대장",
+          "nameEN": "InvitationPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PIC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62219fb07d53fe5487edf73f",
+          "nameKO": "일반지 초대장",
+          "nameEN": "Invitation",
+          "cat2": "Offset",
+          "cat3": "MP_GIC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "622176b54928eeea30a2a44b",
+          "nameKO": "Vip 초대장",
+          "nameEN": "InvitationVip",
+          "cat2": "Offset",
+          "cat3": "MP_VIC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "621f24a8c4b5afc2ec8d476d",
+          "nameKO": "수입지 초대장",
+          "nameEN": "InvitationIncome",
+          "cat2": "Offset",
+          "cat3": "MP_IIC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "캘린더",
+      "count": 5,
+      "priceTypes": {
+        "priceComplete": 5
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 3
+        },
+        {
+          "name": "Digital",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "68fec5e6ea71151b0119ac32",
+          "nameKO": "친환경 미니 캘린더",
+          "nameEN": "EcoMiniCalendar",
+          "cat2": "Digital",
+          "cat3": "MP_EMC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62b16f64e859b328bf236a67",
+          "nameKO": "디지탈탁상캘린더",
+          "nameEN": "CalendarDeskDigital",
+          "cat2": "Digital",
+          "cat3": "MP_CDD",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627eecf0cf4496fdf61dce51",
+          "nameKO": "벽걸이형캘린더",
+          "nameEN": "CalendarWall",
+          "cat2": "None",
+          "cat3": "MP_CWA",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627eebc0c229ad6711612a1d",
+          "nameKO": "데스크형일반캘린더",
+          "nameEN": "CalendarDeskGeneral",
+          "cat2": "None",
+          "cat3": "MP_CDG",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ee903cf4496fdf61dca42",
+          "nameKO": "맞춤 탁상용 캘린더",
+          "nameEN": "CalendarCustomized",
+          "cat2": "None",
+          "cat3": "MP_CCD",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "NCR",
+      "count": 5,
+      "priceTypes": {
+        "priceCalculation": 1,
+        "priceComplete": 4
+      },
+      "sub": [
+        {
+          "name": "Digital",
+          "count": 2
+        },
+        {
+          "name": "Master",
+          "count": 2
+        },
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "68d6161e3bb77b0703d6a019",
+          "nameKO": "옵셋 NCR",
+          "nameEN": "NcrOffset_new4",
+          "cat2": "Offset",
+          "cat3": "MP_OCR",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "68a3c05bf8e8b0800902e754",
+          "nameKO": "컬러 NCR지",
+          "nameEN": "NcrDigitalColor_new2",
+          "cat2": "Digital",
+          "cat3": "MP_DCR",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "67354184e2a06b42593e1d7f",
+          "nameKO": "마스터 NCR",
+          "nameEN": "NcrMaster_new2",
+          "cat2": "Master",
+          "cat3": "MP_MCR",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6632f0c2dbfb79b2d0331930",
+          "nameKO": "컬러 NCR지",
+          "nameEN": "NcrDigitalColor",
+          "cat2": "Digital",
+          "cat3": "MP_DCR",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62ac399d252184b6771e2e26",
+          "nameKO": "마스터 NCR(안씀)",
+          "nameEN": "NcrMaster",
+          "cat2": "Master",
+          "cat3": "MP_MCR",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "봉투",
+      "count": 5,
+      "priceTypes": {
+        "priceComplete": 5
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 4
+        },
+        {
+          "name": "Master",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "686e14a1a6e440f6dbba2da7",
+          "nameKO": "종교봉투",
+          "nameEN": "EnvelopeReligion",
+          "cat2": "Offset",
+          "cat3": "MP_REV",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "672e6dabb618f599cc72b6c2",
+          "nameKO": "옵셋 봉투",
+          "nameEN": "EnvelopeOffset_ver2",
+          "cat2": "Offset",
+          "cat3": "MP_OEV",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "628effde9af4f3c17c7f0718",
+          "nameKO": "별사이즈봉투",
+          "nameEN": "EnvelopeOffsetCustomSize",
+          "cat2": "Offset",
+          "cat3": "MP_OEC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "621c5999b8c512ad37daf680",
+          "nameKO": "마스터 봉투",
+          "nameEN": "EnvelopeMaster",
+          "cat2": "Master",
+          "cat3": "MP_MEV",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "61f0de87d82131fd15f4108f",
+          "nameKO": "옵셋 봉투",
+          "nameEN": "EnvelopeOffset",
+          "cat2": "Offset",
+          "cat3": "MP_OEV",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "샵카드",
+      "count": 5,
+      "priceTypes": {
+        "priceComplete": 5
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 4
+        },
+        {
+          "name": "None",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "65e7cc066e89f1cf726eebcc",
+          "nameKO": "샵카드",
+          "nameEN": "ShopCardGroup1",
+          "cat2": "None",
+          "cat3": "MP_USC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627db36f49baec7a0ebab1a3",
+          "nameKO": "부분코팅 샵카드",
+          "nameEN": "ShopCardPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PSC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6279c28c49baec7a0eb88927",
+          "nameKO": "일반지 샵카드",
+          "nameEN": "ShopCard",
+          "cat2": "Offset",
+          "cat3": "MP_GSC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6279bb861dbcb6d01fc3c666",
+          "nameKO": "Vip 샵카드",
+          "nameEN": "ShopCardVip",
+          "cat2": "Offset",
+          "cat3": "MP_VSC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6270d3324915cb7f8b1010ef",
+          "nameKO": "수입지 샵카드",
+          "nameEN": "ShopCardIncome",
+          "cat2": "Offset",
+          "cat3": "MP_ISC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "티켓",
+      "count": 5,
+      "priceTypes": {
+        "priceComplete": 5
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 5
+        }
+      ],
+      "products": [
+        {
+          "id": "641d1ee4c3ef3ac4959f9d91",
+          "nameKO": "티켓",
+          "nameEN": "TicketGroup1",
+          "cat2": "Offset",
+          "cat3": "MP_UTK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627da3a21dbcb6d01fc50abe",
+          "nameKO": "부분코팅 티켓",
+          "nameEN": "TicketPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PTK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627cb16ba49d5f7ee4441d63",
+          "nameKO": "일반지 티켓",
+          "nameEN": "Ticket",
+          "cat2": "Offset",
+          "cat3": "MP_GTK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627caa991dbcb6d01fc4c22c",
+          "nameKO": "Vip 티켓",
+          "nameEN": "TicketVip",
+          "cat2": "Offset",
+          "cat3": "MP_VTK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6279cdd449baec7a0eb8a9f0",
+          "nameKO": "수입지 티켓",
+          "nameEN": "TicketIncome",
+          "cat2": "Offset",
+          "cat3": "MP_ITK",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "엽서",
+      "count": 5,
+      "priceTypes": {
+        "priceComplete": 5
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 5
+        }
+      ],
+      "products": [
+        {
+          "id": "641c03b441d6a3f63cb6c03f",
+          "nameKO": "엽서",
+          "nameEN": "PostcardGroup1",
+          "cat2": "Offset",
+          "cat3": "MP_UPC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627daaff1dbcb6d01fc51133",
+          "nameKO": "부분코팅 엽서",
+          "nameEN": "PostcardPartialCoating",
+          "cat2": "Offset",
+          "cat3": "MP_PPC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "622adcabbee2b76557e70afc",
+          "nameKO": "일반지 엽서",
+          "nameEN": "Postcard",
+          "cat2": "Offset",
+          "cat3": "MP_GPC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "622987049f036b3ef7e39d4f",
+          "nameKO": "Vip 엽서",
+          "nameEN": "PostcardVip",
+          "cat2": "Offset",
+          "cat3": "MP_VPC",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "6229632cbee2b76557e51294",
+          "nameKO": "수입지 엽서",
+          "nameEN": "PostcardIncome",
+          "cat2": "Offset",
+          "cat3": "MP_IPC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "카다로그",
+      "count": 4,
+      "priceTypes": {
+        "priceCalculation": 4
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 3
+        },
+        {
+          "name": "Digital",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "65cef3edc1a8949cec38374c",
+          "nameKO": "카달로그",
+          "nameEN": "Catalog",
+          "cat2": "Offset",
+          "cat3": "MP_ACT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6524e28cdb92eb9f554ce6e9",
+          "nameKO": "디지털 카달로그",
+          "nameEN": "DigitalCatalog",
+          "cat2": "Digital",
+          "cat3": "MP_DCT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "6218a8a347b29132fab96a47",
+          "nameKO": "중철 카다로그",
+          "nameEN": "CatalogSaddleStitch",
+          "cat2": "Offset",
+          "cat3": "MP_SCT",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "620f2937f38fac5438304ebf",
+          "nameKO": "무선 카다로그",
+          "nameEN": "CatalogWireless",
+          "cat2": "Offset",
+          "cat3": "MP_WCT",
+          "priceType": "priceCalculation"
+        }
+      ]
+    },
+    {
+      "cat1": "양식지",
+      "count": 3,
+      "priceTypes": {
+        "priceCalculation": 1,
+        "priceComplete": 2
+      },
+      "sub": [
+        {
+          "name": "Master",
+          "count": 3
+        }
+      ],
+      "products": [
+        {
+          "id": "685cfa5673a5ceb981fa79cb",
+          "nameKO": "마스터 양식지",
+          "nameEN": "LetterMaster_new3",
+          "cat2": "Master",
+          "cat3": "MP_MFM",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "673444d1440052a449ed401c",
+          "nameKO": "마스터 양식지",
+          "nameEN": "LetterMaster_new2",
+          "cat2": "Master",
+          "cat3": "MP_MFM",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62a98d5d3b66ca4403b9bb06",
+          "nameKO": "마스터 양식지(안씀)",
+          "nameEN": "LetterMaster",
+          "cat2": "Master",
+          "cat3": "MP_MFM",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "냅킨",
+      "count": 2,
+      "priceTypes": {
+        "priceComplete": 2
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "667a7a54f0beac2a8d21200e",
+          "nameKO": "디너냅킨",
+          "nameEN": "DinnerNapkin",
+          "cat2": "None",
+          "cat3": "MP_DNK",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "667a77d5f0beac2a8d211f5a",
+          "nameKO": "칵테일냅킨",
+          "nameEN": "CocktailNapkin",
+          "cat2": "None",
+          "cat3": "MP_CNK",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "케이스",
+      "count": 2,
+      "priceTypes": {
+        "priceComplete": 2
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "6671337e471769f30b896f57",
+          "nameKO": "명함케이스",
+          "nameEN": "NameCardCaseV2",
+          "cat2": "None",
+          "cat3": "MP_NCC_2",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "62b162493b66ca4403c4903b",
+          "nameKO": "명함케이스",
+          "nameEN": "NameCardCase",
+          "cat2": "None",
+          "cat3": "MP_NCC",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "쇼핑백",
+      "count": 2,
+      "priceTypes": {
+        "priceCalculation": 2
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 2
+        }
+      ],
+      "products": [
+        {
+          "id": "659b532c8a1af46046d591d6",
+          "nameKO": "친환경쇼핑백",
+          "nameEN": "ShoppingBagEco",
+          "cat2": "Offset",
+          "cat3": "MP_ESB",
+          "priceType": "priceCalculation"
+        },
+        {
+          "id": "655ee76154b3add9e98d3ada",
+          "nameKO": "쇼핑백",
+          "nameEN": "ShoppingBag",
+          "cat2": "Offset",
+          "cat3": "MP_SPB",
+          "priceType": "priceCalculation"
+        }
+      ]
+    },
+    {
+      "cat1": "계절상품",
+      "count": 2,
+      "priceTypes": {
+        "priceComplete": 2
+      },
+      "sub": [
+        {
+          "name": "None",
+          "count": 1
+        },
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "629067393e4536564498d5ae",
+          "nameKO": "PP부채",
+          "nameEN": "PPFan",
+          "cat2": "None",
+          "cat3": "MP_PPF",
+          "priceType": "priceComplete"
+        },
+        {
+          "id": "627ef3d3cf4496fdf61dce62",
+          "nameKO": "종이부채",
+          "nameEN": "PaperFan",
+          "cat2": "Offset",
+          "cat3": "MP_PAF",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "폴더",
+      "count": 1,
+      "priceTypes": {
+        "priceCalculation": 1
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "65b9ab572b1d9539c329851d",
+          "nameKO": "홀더",
+          "nameEN": "AllFolder",
+          "cat2": "Offset",
+          "cat3": "MP_GFD",
+          "priceType": "priceCalculation"
+        }
+      ]
+    },
+    {
+      "cat1": "이벤트",
+      "count": 1,
+      "priceTypes": {
+        "priceComplete": 1
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "62bcfe810a90b36487274994",
+          "nameKO": "특선명함",
+          "nameEN": "SpecialBauhaus",
+          "cat2": "Offset",
+          "cat3": "MP_SBH",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "복권",
+      "count": 1,
+      "priceTypes": {
+        "priceComplete": 1
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "6285e665200c09839a1d3a9a",
+          "nameKO": "복권",
+          "nameEN": "LotteryTicket",
+          "cat2": "Offset",
+          "cat3": "MP_LTY",
+          "priceType": "priceComplete"
+        }
+      ]
+    },
+    {
+      "cat1": "메모지",
+      "count": 1,
+      "priceTypes": {
+        "priceComplete": 1
+      },
+      "sub": [
+        {
+          "name": "Offset",
+          "count": 1
+        }
+      ],
+      "products": [
+        {
+          "id": "62663964b8636eb24e82e381",
+          "nameKO": "옵셋메모지",
+          "nameEN": "MemoOffset",
+          "cat2": "Offset",
+          "cat3": "MP_OME",
+          "priceType": "priceComplete"
+        }
+      ]
+    }
+  ],
+  "products": [
+    {
+      "id": "6a0eb3b988de4c7a1dead77c",
+      "nameKO": "디지털대형포스터",
+      "nameEN": "DigitalWallPoster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DPT_AJ",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2026-05-21T07:36:31.029Z"
+    },
+    {
+      "id": "6a05875bd6dd07b8536a14f8",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome_pond",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_INC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-14T08:28:20.589Z"
+    },
+    {
+      "id": "6a017aae53f2253d0a6c76a0",
+      "nameKO": "30000이벤트엽서",
+      "nameEN": "30000EventPostCard",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DPO_30000",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-11T07:25:51.902Z"
+    },
+    {
+      "id": "6a017707ff71b9514afa42ff",
+      "nameKO": "30000이벤트포스터",
+      "nameEN": "30000EventPoster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DPT_30000",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-06-15T05:08:05.381Z"
+    },
+    {
+      "id": "6a014144ff71b9514af7ecb4",
+      "nameKO": "30000이벤트포토카드",
+      "nameEN": "30000EventPhotoCard",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DPD_30000",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-11T07:07:46.603Z"
+    },
+    {
+      "id": "6a01403aff71b9514af7e17d",
+      "nameKO": "30000이벤트명함",
+      "nameEN": "30000EventNameCard",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DIC_30000",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-11T07:05:31.020Z"
+    },
+    {
+      "id": "69c5cf295e5850d999544959",
+      "nameKO": "디지털 완칼스티커",
+      "nameEN": "DigitalWankalSticker",
+      "cat1": "디지털인쇄물",
+      "cat2": "None",
+      "cat3": "MP_WST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2026-03-27T00:28:26.054Z"
+    },
+    {
+      "id": "69b7910b1758ee9b3e5b745b",
+      "nameKO": "주차(배면)스티커",
+      "nameEN": "ParkingSticker",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PKS",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-06-04T01:25:19.933Z"
+    },
+    {
+      "id": "699d4d02aa5c539b2cea408f",
+      "nameKO": "카드 키홀더",
+      "nameEN": "CardKeyholder",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_CKH",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-03-24T04:09:55.583Z"
+    },
+    {
+      "id": "69842481f54e08498c1a138b",
+      "nameKO": "레터링(모양) 스티커",
+      "nameEN": "LetteringSticker",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_LST",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-02-09T06:57:32.568Z"
+    },
+    {
+      "id": "69803127a87f772b19f5c863",
+      "nameKO": "페이지포토카드",
+      "nameEN": "PagePhotocard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_PPT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-02-27T04:45:40.898Z"
+    },
+    {
+      "id": "690d5723122978358a481644",
+      "nameKO": "일반지 명함",
+      "nameEN": "NameCard_good2",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_GNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-11-07T02:21:55.171Z"
+    },
+    {
+      "id": "690c4f1a122978358a45967b",
+      "nameKO": "합판 전단지",
+      "nameEN": "LeafletJoin_good",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_HLF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-06-02T05:51:54.996Z"
+    },
+    {
+      "id": "690c004a78afe5407b00a538",
+      "nameKO": "사이즈테스트",
+      "nameEN": "CustomPrintingInHouse",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_ETC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-11-06T01:56:49.492Z"
+    },
+    {
+      "id": "68fec5e6ea71151b0119ac32",
+      "nameKO": "친환경 미니 캘린더",
+      "nameEN": "EcoMiniCalendar",
+      "cat1": "캘린더",
+      "cat2": "Digital",
+      "cat3": "MP_EMC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-12-09T06:28:26.044Z"
+    },
+    {
+      "id": "68f7138dfb2a17f1ac387107",
+      "nameKO": "보안스티커",
+      "nameEN": "SecuritySticker",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_SCS",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-11-12T05:58:36.900Z"
+    },
+    {
+      "id": "68e8aba9bf5ead702054ca7e",
+      "nameKO": "특수인쇄111",
+      "nameEN": "CustomPrintingOutSourcing1",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_SPP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-10-10T06:46:01.752Z"
+    },
+    {
+      "id": "68d9e9f242a329d22ee3548a",
+      "nameKO": "특수인쇄",
+      "nameEN": "CustomPrintingOutSourcing",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_SPP",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2025-09-29T02:07:46.456Z"
+    },
+    {
+      "id": "68d6167899b10428aaa94995",
+      "nameKO": "포토퍼즐",
+      "nameEN": "PhotoPuzzle",
+      "cat1": "디지털인쇄물",
+      "cat2": "None",
+      "cat3": "MP_DPZ",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-09-29T02:18:23.055Z"
+    },
+    {
+      "id": "68d6161e3bb77b0703d6a019",
+      "nameKO": "옵셋 NCR",
+      "nameEN": "NcrOffset_new4",
+      "cat1": "NCR",
+      "cat2": "Offset",
+      "cat3": "MP_OCR",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2025-10-14T06:50:17.324Z"
+    },
+    {
+      "id": "68d384a31b09594495f4c1b9",
+      "nameKO": "통합 명함",
+      "nameEN": "NameCardGroup_test2",
+      "cat1": "명함",
+      "cat2": "None",
+      "cat3": "MP_UNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-11-18T03:51:50.808Z"
+    },
+    {
+      "id": "68ba716b4f93d8608081affd",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome_2",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_INC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-09-05T05:13:55.727Z"
+    },
+    {
+      "id": "68a3c05bf8e8b0800902e754",
+      "nameKO": "컬러 NCR지",
+      "nameEN": "NcrDigitalColor_new2",
+      "cat1": "NCR",
+      "cat2": "Digital",
+      "cat3": "MP_DCR",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-08-19T01:23:41.322Z"
+    },
+    {
+      "id": "6879cc61a67a79397627ad3c",
+      "nameKO": "특가 수입지 명함",
+      "nameEN": "NameCardIncome_sale2",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_INC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-07-18T04:34:46.793Z"
+    },
+    {
+      "id": "686e14a1a6e440f6dbba2da7",
+      "nameKO": "종교봉투",
+      "nameEN": "EnvelopeReligion",
+      "cat1": "봉투",
+      "cat2": "Offset",
+      "cat3": "MP_REV",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-07-09T07:09:02.245Z"
+    },
+    {
+      "id": "685cfa5673a5ceb981fa79cb",
+      "nameKO": "마스터 양식지",
+      "nameEN": "LetterMaster_new3",
+      "cat1": "양식지",
+      "cat2": "Master",
+      "cat3": "MP_MFM",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2025-08-11T01:11:22.771Z"
+    },
+    {
+      "id": "681c103a71a9e577cf25d0f1",
+      "nameKO": "종이자석 스티커 (양면)",
+      "nameEN": "StickerMagneticPaperDoubleSided",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_MPT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-08T02:01:54.891Z"
+    },
+    {
+      "id": "67f715ccc2daf440238bbe24",
+      "nameKO": "실사출력 보드부착_포맥스",
+      "nameEN": "RealOutPutBoard_max",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_DSD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-22T02:22:43.644Z"
+    },
+    {
+      "id": "67f7138ac2daf440238bb794",
+      "nameKO": "실사출력 보드부착_폼보드",
+      "nameEN": "RealOutPutBoard_board",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_DSD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-22T02:00:35.834Z"
+    },
+    {
+      "id": "67f609fb1efb7f9fb6fd38b3",
+      "nameKO": "족자봉",
+      "nameEN": "Scroll",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_SCR",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-10T00:24:44.257Z"
+    },
+    {
+      "id": "67f603a01efb7f9fb6fd1f81",
+      "nameKO": "차량용 자석",
+      "nameEN": "CarMagnet",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_CMG",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-09T05:34:57.231Z"
+    },
+    {
+      "id": "67e223ffc56b3d4a0a9ebedc",
+      "nameKO": "소량독판전단지",
+      "nameEN": "LeafletMin",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_NLF_2",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-04-08T01:52:34.786Z"
+    },
+    {
+      "id": "67a2ffbb1f1287e8efdde99a",
+      "nameKO": "색상불량",
+      "nameEN": "EtcDefaultOrderDummy",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_COE",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-02-25T07:13:43.807Z"
+    },
+    {
+      "id": "677cf067604e619a80edfa32",
+      "nameKO": "옵셋 피켓",
+      "nameEN": "OffsetPicket",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_OPK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-01-08T06:52:56.863Z"
+    },
+    {
+      "id": "677cc73a41dc242b286ee30b",
+      "nameKO": "디지털 피켓",
+      "nameEN": "DigitalPicket",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-01-07T06:31:09.502Z"
+    },
+    {
+      "id": "67354184e2a06b42593e1d7f",
+      "nameKO": "마스터 NCR",
+      "nameEN": "NcrMaster_new2",
+      "cat1": "NCR",
+      "cat2": "Master",
+      "cat3": "MP_MCR",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-03-05T05:19:29.424Z"
+    },
+    {
+      "id": "673444d1440052a449ed401c",
+      "nameKO": "마스터 양식지",
+      "nameEN": "LetterMaster_new2",
+      "cat1": "양식지",
+      "cat2": "Master",
+      "cat3": "MP_MFM",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-02-27T06:53:40.856Z"
+    },
+    {
+      "id": "672e6dabb618f599cc72b6c2",
+      "nameKO": "옵셋 봉투",
+      "nameEN": "EnvelopeOffset_ver2",
+      "cat1": "봉투",
+      "cat2": "Offset",
+      "cat3": "MP_OEV",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-11T01:10:42.635Z"
+    },
+    {
+      "id": "67173c1b138db2a572ca2377",
+      "nameKO": "디지털 카드명함",
+      "nameEN": "DigitalCardNameCardMS_V2",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DCC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-11-04T05:03:19.799Z"
+    },
+    {
+      "id": "66e115fcd2a123b938ef3635",
+      "nameKO": "CJ택배사고",
+      "nameEN": "EtcDefaultOrder2323",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_CJE",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-09-11T04:01:00.164Z"
+    },
+    {
+      "id": "66cfdf42aace71088d8b6189",
+      "nameKO": "세라믹 포토 코스터",
+      "nameEN": "CeramicPhotoCoster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_CCT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-09T01:48:53.515Z"
+    },
+    {
+      "id": "66baec6b7e34776c64d27391",
+      "nameKO": "도무송 스티커_N2",
+      "nameEN": "StickerDomusongNew2",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_ADT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-11-11T01:42:41.548Z"
+    },
+    {
+      "id": "669a1d73ac92a67988cf4c8a",
+      "nameKO": "배송비",
+      "nameEN": "EtcDefaultOrder",
+      "cat1": "기타비용",
+      "cat2": "None",
+      "cat3": "MP_DVF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-08-12T06:13:19.525Z"
+    },
+    {
+      "id": "667cee38f8cd53920869f4aa",
+      "nameKO": "PET 투명컵",
+      "nameEN": "ClearPetCup",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_CPCP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:32:12.392Z"
+    },
+    {
+      "id": "667cce1ef8cd53920869f35d",
+      "nameKO": "별색 컵홀더",
+      "nameEN": "SpotColorSleeve",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_SCSL",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:31:57.894Z"
+    },
+    {
+      "id": "667ccd2ef0beac2a8d21e7ac",
+      "nameKO": "옵셋 컵홀더",
+      "nameEN": "OffsetSleeve",
+      "cat1": "컵",
+      "cat2": "Offset",
+      "cat3": "MP_OFSL",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:31:41.612Z"
+    },
+    {
+      "id": "667ccb1ef8cd53920869f2c2",
+      "nameKO": "캐리어",
+      "nameEN": "CupCarrier",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_CPCA",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:31:17.457Z"
+    },
+    {
+      "id": "667cc9a1f0beac2a8d21e75c",
+      "nameKO": "이중컵",
+      "nameEN": "DoubleCup",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_DCP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-03-25T08:29:52.854Z"
+    },
+    {
+      "id": "667cc88cf0beac2a8d21e6fe",
+      "nameKO": "에어홀더",
+      "nameEN": "AirSleeve1",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_ASL",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:30:38.388Z"
+    },
+    {
+      "id": "667cc61ff8cd53920869f191",
+      "nameKO": "PET컵 뚜껑",
+      "nameEN": "PetCupLid",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_PTLD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:30:18.917Z"
+    },
+    {
+      "id": "667cc3b5f0beac2a8d21e698",
+      "nameKO": "종이컵 뚜껑",
+      "nameEN": "PaperCupLid",
+      "cat1": "컵",
+      "cat2": "None",
+      "cat3": "MP_PLD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:29:59.724Z"
+    },
+    {
+      "id": "667a7a54f0beac2a8d21200e",
+      "nameKO": "디너냅킨",
+      "nameEN": "DinnerNapkin",
+      "cat1": "냅킨",
+      "cat2": "None",
+      "cat3": "MP_DNK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:29:36.367Z"
+    },
+    {
+      "id": "667a77d5f0beac2a8d211f5a",
+      "nameKO": "칵테일냅킨",
+      "nameEN": "CocktailNapkin",
+      "cat1": "냅킨",
+      "cat2": "None",
+      "cat3": "MP_CNK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:29:17.052Z"
+    },
+    {
+      "id": "66713608471769f30b897084",
+      "nameKO": "종이컵",
+      "nameEN": "PaperCup",
+      "cat1": "컵",
+      "cat2": "Offset",
+      "cat3": "MP_PCP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T05:28:50.883Z"
+    },
+    {
+      "id": "6671337e471769f30b896f57",
+      "nameKO": "명함케이스",
+      "nameEN": "NameCardCaseV2",
+      "cat1": "케이스",
+      "cat2": "None",
+      "cat3": "MP_NCC_2",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-18T07:17:17.109Z"
+    },
+    {
+      "id": "66556179e11fdc7a5881835f",
+      "nameKO": "컬러스티커(계산식)_New",
+      "nameEN": "StickerRectangleNew",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_AST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-11-11T01:40:45.743Z"
+    },
+    {
+      "id": "665560f0e11fdc7a58818332",
+      "nameKO": "도무송 스티커(계산식)_New",
+      "nameEN": "StickerDomusongNew",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_ADT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-06-28T06:03:16.767Z"
+    },
+    {
+      "id": "6641b8dcdbfb79b2d034a18b",
+      "nameKO": "형광명함",
+      "nameEN": "DigitalNameCardNeon",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_HHC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-05-13T07:03:12.484Z"
+    },
+    {
+      "id": "6633272433e6bc5113c5089c",
+      "nameKO": "거치대",
+      "nameEN": "PetBannerFrame",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_BTT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-04-24T06:11:21.833Z"
+    },
+    {
+      "id": "6632f0c2dbfb79b2d0331930",
+      "nameKO": "컬러 NCR지",
+      "nameEN": "NcrDigitalColor",
+      "cat1": "NCR",
+      "cat2": "Digital",
+      "cat3": "MP_DCR",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-21T08:14:45.908Z"
+    },
+    {
+      "id": "6630a84f33e6bc5113c4f010",
+      "nameKO": "3D금박명함",
+      "nameEN": "NameCardGold3D",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_TGC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-30T08:29:06.849Z"
+    },
+    {
+      "id": "6630a15833e6bc5113c4eba9",
+      "nameKO": "부분에폭명함",
+      "nameEN": "NameCardPartialEpoxy",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_EPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-30T08:04:15.422Z"
+    },
+    {
+      "id": "6614a0af42943417f97a3b84",
+      "nameKO": "디지털 스티커",
+      "nameEN": "DigitalSticker",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_DSK",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-06-17T05:33:39.563Z"
+    },
+    {
+      "id": "66149da15790eb02c99fa088",
+      "nameKO": "세라믹 코스터",
+      "nameEN": "CeramicCoster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_CCT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-09T01:48:53.515Z"
+    },
+    {
+      "id": "660e6638553bea6670f4c92d",
+      "nameKO": "리플렛/팜플렛",
+      "nameEN": "LeafletPamphletV2",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_NLP_2",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-04-08T02:10:21.313Z"
+    },
+    {
+      "id": "660e3d1dd086f11f63c2c40f",
+      "nameKO": "포스터",
+      "nameEN": "LeafletPosterV2",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_NST_2",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-04-08T02:07:28.740Z"
+    },
+    {
+      "id": "660b9a8c42d26450172ba913",
+      "nameKO": "현수막",
+      "nameEN": "LongBanner",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_LBA",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-04-02T08:14:56.568Z"
+    },
+    {
+      "id": "65e82d83f93dea295dda985c",
+      "nameKO": "실사출력",
+      "nameEN": "RealOutPut",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_REO",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-03-06T08:46:59.207Z"
+    },
+    {
+      "id": "65e7cc066e89f1cf726eebcc",
+      "nameKO": "샵카드",
+      "nameEN": "ShopCardGroup1",
+      "cat1": "샵카드",
+      "cat2": "None",
+      "cat3": "MP_USC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-30T02:16:51.137Z"
+    },
+    {
+      "id": "65cef3edc1a8949cec38374c",
+      "nameKO": "카달로그",
+      "nameEN": "Catalog",
+      "cat1": "카다로그",
+      "cat2": "Offset",
+      "cat3": "MP_ACT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2026-03-03T04:35:26.801Z"
+    },
+    {
+      "id": "65b9ab572b1d9539c329851d",
+      "nameKO": "홀더",
+      "nameEN": "AllFolder",
+      "cat1": "폴더",
+      "cat2": "Offset",
+      "cat3": "MP_GFD",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2026-01-08T07:22:54.895Z"
+    },
+    {
+      "id": "65a0c7298aeab055fafd4c8c",
+      "nameKO": "이벤트 포토코스터",
+      "nameEN": "PhotoCoster_Event",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PCT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-01-12T05:01:59.089Z"
+    },
+    {
+      "id": "65a0c5d1bea19b90dab8cb66",
+      "nameKO": "이벤트 디자인포토판스티커",
+      "nameEN": "PanStickerDesign_Event",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:49:14.537Z"
+    },
+    {
+      "id": "659f5134bea19b90dab16942",
+      "nameKO": "이벤트 판스티커",
+      "nameEN": "PanSticker_Event",
+      "cat1": "스티커",
+      "cat2": "None",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:46:33.890Z"
+    },
+    {
+      "id": "659f508abea19b90dab15b8b",
+      "nameKO": "이벤트 포토카드",
+      "nameEN": "DigitalPhotoCard_Event",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-01-12T02:10:14.277Z"
+    },
+    {
+      "id": "659b532c8a1af46046d591d6",
+      "nameKO": "친환경쇼핑백",
+      "nameEN": "ShoppingBagEco",
+      "cat1": "쇼핑백",
+      "cat2": "Offset",
+      "cat3": "MP_ESB",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-06-27T06:04:29.969Z"
+    },
+    {
+      "id": "655ee76154b3add9e98d3ada",
+      "nameKO": "쇼핑백",
+      "nameEN": "ShoppingBag",
+      "cat1": "쇼핑백",
+      "cat2": "Offset",
+      "cat3": "MP_SPB",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-06-27T06:03:31.605Z"
+    },
+    {
+      "id": "654b1a326ab8b7c9126e7a27",
+      "nameKO": "디자인포토판스티커",
+      "nameEN": "PanSticker_designphoto",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:49:32.065Z"
+    },
+    {
+      "id": "654b19106ab8b7c9126e759a",
+      "nameKO": "포토판스티커",
+      "nameEN": "PanSticker_photo",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:49:48.677Z"
+    },
+    {
+      "id": "6524e28cdb92eb9f554ce6e9",
+      "nameKO": "디지털 카달로그",
+      "nameEN": "DigitalCatalog",
+      "cat1": "카다로그",
+      "cat2": "Digital",
+      "cat3": "MP_DCT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-04-05T09:40:42.609Z"
+    },
+    {
+      "id": "64abb2c7973d6fc34c2d4f64",
+      "nameKO": "포토 코스터",
+      "nameEN": "PhotoCoster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_PCT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-07-10T07:29:31.563Z"
+    },
+    {
+      "id": "64a792f2386e6b6e74cbcfd5",
+      "nameKO": "포토엽서",
+      "nameEN": "DigitalPhotoPostcard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-07-10T02:05:08.612Z"
+    },
+    {
+      "id": "648fda79386e6b6e74aa983b",
+      "nameKO": "홀로그램 명함",
+      "nameEN": "DigitalNameCardHologram",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DHC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-17T02:05:43.176Z"
+    },
+    {
+      "id": "6486d0d526e9268ca0b0b156",
+      "nameKO": "미니페트배너",
+      "nameEN": "PetBanner_mini",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_BAN",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-06-15T07:21:52.244Z"
+    },
+    {
+      "id": "6486cf01c9132820cf0c52df",
+      "nameKO": "실내페트배너",
+      "nameEN": "PetBanner_indoor",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_BAN",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-09T05:15:16.516Z"
+    },
+    {
+      "id": "6486cd25580a90e9f16e2c17",
+      "nameKO": "실외페트배너",
+      "nameEN": "PetBanner_outdoor",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_BAN",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-08T08:57:44.419Z"
+    },
+    {
+      "id": "646b0d0736fe61e51db644eb",
+      "nameKO": "판모양스티커",
+      "nameEN": "PanSticker_halfcut",
+      "cat1": "스티커",
+      "cat2": "None",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:46:59.567Z"
+    },
+    {
+      "id": "6465d6db36fe61e51db4aa72",
+      "nameKO": "컬러스티커-정사각형",
+      "nameEN": "AllStickerSquare",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_AST",
+      "priceType": "priceCalculation",
+      "modifiedAt": null
+    },
+    {
+      "id": "6464774e36fe61e51db39ed3",
+      "nameKO": "종이네임스티커",
+      "nameEN": "PaperNameSticker",
+      "cat1": "스티커",
+      "cat2": "None",
+      "cat3": "MP_PNS",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:47:20.322Z"
+    },
+    {
+      "id": "6464667c36fe61e51db394d3",
+      "nameKO": "방수네임스티커",
+      "nameEN": "WaterProofNameSticker",
+      "cat1": "스티커",
+      "cat2": "None",
+      "cat3": "MP_WNS",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:47:51.494Z"
+    },
+    {
+      "id": "6434efc992bff7407b401c81",
+      "nameKO": "디지털 명함",
+      "nameEN": "DigitalNameCardGroup1",
+      "cat1": "디지털명함",
+      "cat2": "None",
+      "cat3": "MP_UDN",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-06-19T07:41:32.726Z"
+    },
+    {
+      "id": "642e3f2de7580787b61b9aa7",
+      "nameKO": "판스티커",
+      "nameEN": "PanSticker",
+      "cat1": "스티커",
+      "cat2": "None",
+      "cat3": "MP_PNST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-07-08T03:48:06.870Z"
+    },
+    {
+      "id": "641d1ee4c3ef3ac4959f9d91",
+      "nameKO": "티켓",
+      "nameEN": "TicketGroup1",
+      "cat1": "티켓",
+      "cat2": "Offset",
+      "cat3": "MP_UTK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T01:27:15.918Z"
+    },
+    {
+      "id": "641c03b441d6a3f63cb6c03f",
+      "nameKO": "엽서",
+      "nameEN": "PostcardGroup1",
+      "cat1": "엽서",
+      "cat2": "Offset",
+      "cat3": "MP_UPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T05:11:56.628Z"
+    },
+    {
+      "id": "641a91d90937b7c2bd8131fa",
+      "nameKO": "초대장",
+      "nameEN": "InvitationGroup1",
+      "cat1": "초대장",
+      "cat2": "Offset",
+      "cat3": "MP_UIC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-30T00:52:21.049Z"
+    },
+    {
+      "id": "63e4abde3374d8d1dc54458d",
+      "nameKO": "통합 명함",
+      "nameEN": "NameCardUnited",
+      "cat1": "명함",
+      "cat2": "None",
+      "cat3": "MP_UNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-19T07:20:00.778Z"
+    },
+    {
+      "id": "63db173890953943cfdafc94",
+      "nameKO": "엣지명함",
+      "nameEN": "NameCardEdge",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_EDG",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-04-28T01:52:13.642Z"
+    },
+    {
+      "id": "636c7ba7d71acbafe4d4fdb2",
+      "nameKO": "도무송 스티커(개선테스트)",
+      "nameEN": "AllStickerDomusong(test)",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_ADT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-01-04T05:03:51.611Z"
+    },
+    {
+      "id": "6361ca3846cfc0d4f424bb7f",
+      "nameKO": "독판전단지",
+      "nameEN": "LeafletNew",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_NLF_2",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2025-07-14T07:53:49.375Z"
+    },
+    {
+      "id": "632bc55ca5e3b27cb5dab251",
+      "nameKO": "롤(로타리)스티커",
+      "nameEN": "RollSticker",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_RST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2022-09-22T05:13:57.051Z"
+    },
+    {
+      "id": "632ababd37997c8c6255bd66",
+      "nameKO": "도무송 스티커(계산식)",
+      "nameEN": "AllStickerDomusongTest",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_ADT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-05-21T07:51:08.681Z"
+    },
+    {
+      "id": "632022e002bc54776829be7b",
+      "nameKO": "컬러스티커(계산식)",
+      "nameEN": "AllStickerRectangle",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_AST",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2024-05-21T07:49:35.095Z"
+    },
+    {
+      "id": "62f1b3406151df9d65ba9944",
+      "nameKO": "문고리 전단지",
+      "nameEN": "LeafletDoor",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_GLF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-21T07:27:26.264Z"
+    },
+    {
+      "id": "62f06ea8eb32c1c6e6f62120",
+      "nameKO": "문어발 전단지",
+      "nameEN": "LeafletOctopus",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_OLF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-21T07:37:36.055Z"
+    },
+    {
+      "id": "62bcfe810a90b36487274994",
+      "nameKO": "특선명함",
+      "nameEN": "SpecialBauhaus",
+      "cat1": "이벤트",
+      "cat2": "Offset",
+      "cat3": "MP_SBH",
+      "priceType": "priceComplete",
+      "modifiedAt": null
+    },
+    {
+      "id": "62b17282e859b328bf236c8d",
+      "nameKO": "부분코팅 전단지",
+      "nameEN": "LeafletPartialCoating",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_PLF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-20T09:06:45.610Z"
+    },
+    {
+      "id": "62b16f64e859b328bf236a67",
+      "nameKO": "디지탈탁상캘린더",
+      "nameEN": "CalendarDeskDigital",
+      "cat1": "캘린더",
+      "cat2": "Digital",
+      "cat3": "MP_CDD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-06-21T07:16:59.174Z"
+    },
+    {
+      "id": "62b162493b66ca4403c4903b",
+      "nameKO": "명함케이스",
+      "nameEN": "NameCardCase",
+      "cat1": "케이스",
+      "cat2": "None",
+      "cat3": "MP_NCC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-14T08:00:14.395Z"
+    },
+    {
+      "id": "62ac399d252184b6771e2e26",
+      "nameKO": "마스터 NCR(안씀)",
+      "nameEN": "NcrMaster",
+      "cat1": "NCR",
+      "cat2": "Master",
+      "cat3": "MP_MCR",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-02-24T03:19:39.663Z"
+    },
+    {
+      "id": "62a98d5d3b66ca4403b9bb06",
+      "nameKO": "마스터 양식지(안씀)",
+      "nameEN": "LetterMaster",
+      "cat1": "양식지",
+      "cat2": "Master",
+      "cat3": "MP_MFM",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-02-24T03:20:11.095Z"
+    },
+    {
+      "id": "6294814a7a43432d01a4251f",
+      "nameKO": "도무송 스티커",
+      "nameEN": "AllStickerDomusong",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_ADT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-06-14T04:55:07.571Z"
+    },
+    {
+      "id": "62906c8e0d5cab5166cffed7",
+      "nameKO": "디지털카드명함",
+      "nameEN": "DigitalCardNameCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DCC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T06:14:50.287Z"
+    },
+    {
+      "id": "629067393e4536564498d5ae",
+      "nameKO": "PP부채",
+      "nameEN": "PPFan",
+      "cat1": "계절상품",
+      "cat2": "None",
+      "cat3": "MP_PPF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-27T06:53:42.449Z"
+    },
+    {
+      "id": "62905c080d5cab5166cfa5c6",
+      "nameKO": "디지털 탁상POP",
+      "nameEN": "DigitalDeskPop",
+      "cat1": "디지털명함",
+      "cat2": "None",
+      "cat3": "MP_DJP",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-14T06:03:34.315Z"
+    },
+    {
+      "id": "6290516b0d5cab5166cf9a88",
+      "nameKO": "당일판 합판 전단지",
+      "nameEN": "LeafletJoinToday",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_HLT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-04-29T04:55:18.685Z"
+    },
+    {
+      "id": "628effde9af4f3c17c7f0718",
+      "nameKO": "별사이즈봉투",
+      "nameEN": "EnvelopeOffsetCustomSize",
+      "cat1": "봉투",
+      "cat2": "Offset",
+      "cat3": "MP_OEC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-01-19T07:12:24.696Z"
+    },
+    {
+      "id": "628deba19af4f3c17c7de5d8",
+      "nameKO": "디지털 포스터",
+      "nameEN": "DigitalPoster",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T06:11:30.823Z"
+    },
+    {
+      "id": "628de4f89c728c51a4893644",
+      "nameKO": "초대장봉투",
+      "nameEN": "InvitationEnvelope",
+      "cat1": "초대장",
+      "cat2": "Master",
+      "cat3": "MP_EIC",
+      "priceType": "priceComplete",
+      "modifiedAt": null
+    },
+    {
+      "id": "6285e8c6200c09839a1d3ab0",
+      "nameKO": "디지털 레이저 컷팅 명함",
+      "nameEN": "DigitalLaserCuttingNameCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DLC",
+      "priceType": "priceComplete",
+      "modifiedAt": null
+    },
+    {
+      "id": "6285e665200c09839a1d3a9a",
+      "nameKO": "복권",
+      "nameEN": "LotteryTicket",
+      "cat1": "복권",
+      "cat2": "Offset",
+      "cat3": "MP_LTY",
+      "priceType": "priceComplete",
+      "modifiedAt": null
+    },
+    {
+      "id": "6285e1e92fd40fd3aae71df3",
+      "nameKO": "어깨띠",
+      "nameEN": "ShoulderBelt",
+      "cat1": "배너",
+      "cat2": "None",
+      "cat3": "MP_SHO",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-29T05:54:51.114Z"
+    },
+    {
+      "id": "627ef3d3cf4496fdf61dce62",
+      "nameKO": "종이부채",
+      "nameEN": "PaperFan",
+      "cat1": "계절상품",
+      "cat2": "Offset",
+      "cat3": "MP_PAF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-03T02:34:20.546Z"
+    },
+    {
+      "id": "627eecf0cf4496fdf61dce51",
+      "nameKO": "벽걸이형캘린더",
+      "nameEN": "CalendarWall",
+      "cat1": "캘린더",
+      "cat2": "None",
+      "cat3": "MP_CWA",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-09-24T06:38:55.950Z"
+    },
+    {
+      "id": "627eebc0c229ad6711612a1d",
+      "nameKO": "데스크형일반캘린더",
+      "nameEN": "CalendarDeskGeneral",
+      "cat1": "캘린더",
+      "cat2": "None",
+      "cat3": "MP_CDG",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-05-17T03:57:19.917Z"
+    },
+    {
+      "id": "627ee903cf4496fdf61dca42",
+      "nameKO": "맞춤 탁상용 캘린더",
+      "nameEN": "CalendarCustomized",
+      "cat1": "캘린더",
+      "cat2": "None",
+      "cat3": "MP_CCD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-10-17T07:06:39.038Z"
+    },
+    {
+      "id": "627ee648c044fbaf05fa9863",
+      "nameKO": "디지털 긴급 명함",
+      "nameEN": "DigitalNameCardQuick",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DEG",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-05-17T03:50:00.796Z"
+    },
+    {
+      "id": "627ee4fbcf4496fdf61dc9ce",
+      "nameKO": "디지털 접지메뉴판",
+      "nameEN": "DigitalMenuPan",
+      "cat1": "디지털명함",
+      "cat2": "None",
+      "cat3": "MP_DJM",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T06:08:03.033Z"
+    },
+    {
+      "id": "627ecb0dcf4496fdf61dc81c",
+      "nameKO": "디지털 상품권",
+      "nameEN": "DigitalGiftCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DIT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-05-17T03:49:23.759Z"
+    },
+    {
+      "id": "627ec75dc229ad6711610192",
+      "nameKO": "디지털 초대장",
+      "nameEN": "DigitalInvitation",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPI",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T06:09:44.261Z"
+    },
+    {
+      "id": "627ec2becf4496fdf61d9a75",
+      "nameKO": "디지털 엽서",
+      "nameEN": "DigitalPostCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPO",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T05:46:03.224Z"
+    },
+    {
+      "id": "627e0a70c044fbaf05fa1cff",
+      "nameKO": "디지털 일반 전단지",
+      "nameEN": "DigitalLeaflet",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DGL",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-23T06:06:56.148Z"
+    },
+    {
+      "id": "627db36f49baec7a0ebab1a3",
+      "nameKO": "부분코팅 샵카드",
+      "nameEN": "ShopCardPartialCoating",
+      "cat1": "샵카드",
+      "cat2": "Offset",
+      "cat3": "MP_PSC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-30T02:09:36.352Z"
+    },
+    {
+      "id": "627daaff1dbcb6d01fc51133",
+      "nameKO": "부분코팅 엽서",
+      "nameEN": "PostcardPartialCoating",
+      "cat1": "엽서",
+      "cat2": "Offset",
+      "cat3": "MP_PPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T05:15:06.705Z"
+    },
+    {
+      "id": "627da3a21dbcb6d01fc50abe",
+      "nameKO": "부분코팅 티켓",
+      "nameEN": "TicketPartialCoating",
+      "cat1": "티켓",
+      "cat2": "Offset",
+      "cat3": "MP_PTK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T01:53:21.332Z"
+    },
+    {
+      "id": "627cb16ba49d5f7ee4441d63",
+      "nameKO": "일반지 티켓",
+      "nameEN": "Ticket",
+      "cat1": "티켓",
+      "cat2": "Offset",
+      "cat3": "MP_GTK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T01:19:52.307Z"
+    },
+    {
+      "id": "627caa991dbcb6d01fc4c22c",
+      "nameKO": "Vip 티켓",
+      "nameEN": "TicketVip",
+      "cat1": "티켓",
+      "cat2": "Offset",
+      "cat3": "MP_VTK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T01:25:22.331Z"
+    },
+    {
+      "id": "6279cdd449baec7a0eb8a9f0",
+      "nameKO": "수입지 티켓",
+      "nameEN": "TicketIncome",
+      "cat1": "티켓",
+      "cat2": "Offset",
+      "cat3": "MP_ITK",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-03-04T07:43:55.674Z"
+    },
+    {
+      "id": "6279c28c49baec7a0eb88927",
+      "nameKO": "일반지 샵카드",
+      "nameEN": "ShopCard",
+      "cat1": "샵카드",
+      "cat2": "Offset",
+      "cat3": "MP_GSC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T05:24:21.870Z"
+    },
+    {
+      "id": "6279bb861dbcb6d01fc3c666",
+      "nameKO": "Vip 샵카드",
+      "nameEN": "ShopCardVip",
+      "cat1": "샵카드",
+      "cat2": "Offset",
+      "cat3": "MP_VSC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-30T02:00:03.522Z"
+    },
+    {
+      "id": "6278c5ed4da16386fa1917a3",
+      "nameKO": "종이자석 스티커",
+      "nameEN": "StickerMagneticPaper",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_MPT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-02-03T07:57:16.809Z"
+    },
+    {
+      "id": "6278bc12a2fe41efe82326f2",
+      "nameKO": "자석 스티커",
+      "nameEN": "StickerMagnet",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_MST",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-02-03T05:57:09.845Z"
+    },
+    {
+      "id": "6270d3324915cb7f8b1010ef",
+      "nameKO": "수입지 샵카드",
+      "nameEN": "ShopCardIncome",
+      "cat1": "샵카드",
+      "cat2": "Offset",
+      "cat3": "MP_ISC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-03-04T07:18:16.911Z"
+    },
+    {
+      "id": "6270cb852ba0d4f250d46f88",
+      "nameKO": "디지털 화이트 명함",
+      "nameEN": "DigitalNameCardWhite",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DWH",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-11-20T00:36:51.443Z"
+    },
+    {
+      "id": "62708f16385d5b6af04e0b8f",
+      "nameKO": "디지털 코스터",
+      "nameEN": "DigitalCoaster",
+      "cat1": "디지털인쇄물",
+      "cat2": "Digital",
+      "cat3": "MP_CTT",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-05-17T03:31:02.500Z"
+    },
+    {
+      "id": "62663964b8636eb24e82e381",
+      "nameKO": "옵셋메모지",
+      "nameEN": "MemoOffset",
+      "cat1": "메모지",
+      "cat2": "Offset",
+      "cat3": "MP_OME",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-02T04:39:40.374Z"
+    },
+    {
+      "id": "623a8541525875852a42e3a2",
+      "nameKO": "에폭엠보 전단지",
+      "nameEN": "LeafletEpoxyemboss",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_ELF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-06-20T08:55:52.975Z"
+    },
+    {
+      "id": "623978b0b3b971e02386f6c3",
+      "nameKO": "에코 합판전단지",
+      "nameEN": "LeafletPremiumEco",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_PEL",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-04-08T01:46:42.762Z"
+    },
+    {
+      "id": "6230398cc7d7199e8afb357f",
+      "nameKO": "합판 전단지",
+      "nameEN": "LeafletJoin",
+      "cat1": "전단지",
+      "cat2": "Offset",
+      "cat3": "MP_HLF",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-05-07T04:57:26.852Z"
+    },
+    {
+      "id": "622adcabbee2b76557e70afc",
+      "nameKO": "일반지 엽서",
+      "nameEN": "Postcard",
+      "cat1": "엽서",
+      "cat2": "Offset",
+      "cat3": "MP_GPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T02:21:52.939Z"
+    },
+    {
+      "id": "622987049f036b3ef7e39d4f",
+      "nameKO": "Vip 엽서",
+      "nameEN": "PostcardVip",
+      "cat1": "엽서",
+      "cat2": "Offset",
+      "cat3": "MP_VPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-23T04:26:54.914Z"
+    },
+    {
+      "id": "6229632cbee2b76557e51294",
+      "nameKO": "수입지 엽서",
+      "nameEN": "PostcardIncome",
+      "cat1": "엽서",
+      "cat2": "Offset",
+      "cat3": "MP_IPC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-03-04T07:09:12.802Z"
+    },
+    {
+      "id": "6221cb6d2d182dd21bf92867",
+      "nameKO": "부분코팅 초대장",
+      "nameEN": "InvitationPartialCoating",
+      "cat1": "초대장",
+      "cat2": "Offset",
+      "cat3": "MP_PIC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-27T04:41:18.042Z"
+    },
+    {
+      "id": "62219fb07d53fe5487edf73f",
+      "nameKO": "일반지 초대장",
+      "nameEN": "Invitation",
+      "cat1": "초대장",
+      "cat2": "Offset",
+      "cat3": "MP_GIC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-27T04:57:07.267Z"
+    },
+    {
+      "id": "622176b54928eeea30a2a44b",
+      "nameKO": "Vip 초대장",
+      "nameEN": "InvitationVip",
+      "cat1": "초대장",
+      "cat2": "Offset",
+      "cat3": "MP_VIC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-27T06:01:53.574Z"
+    },
+    {
+      "id": "621f24a8c4b5afc2ec8d476d",
+      "nameKO": "수입지 초대장",
+      "nameEN": "InvitationIncome",
+      "cat1": "초대장",
+      "cat2": "Offset",
+      "cat3": "MP_IIC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-03-04T06:52:17.026Z"
+    },
+    {
+      "id": "621c5999b8c512ad37daf680",
+      "nameKO": "마스터 봉투",
+      "nameEN": "EnvelopeMaster",
+      "cat1": "봉투",
+      "cat2": "Master",
+      "cat3": "MP_MEV",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-03-19T04:30:01.284Z"
+    },
+    {
+      "id": "6218a8a347b29132fab96a47",
+      "nameKO": "중철 카다로그",
+      "nameEN": "CatalogSaddleStitch",
+      "cat1": "카다로그",
+      "cat2": "Offset",
+      "cat3": "MP_SCT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2022-05-17T01:56:08.736Z"
+    },
+    {
+      "id": "620f2937f38fac5438304ebf",
+      "nameKO": "무선 카다로그",
+      "nameEN": "CatalogWireless",
+      "cat1": "카다로그",
+      "cat2": "Offset",
+      "cat3": "MP_WCT",
+      "priceType": "priceCalculation",
+      "modifiedAt": "2022-05-17T01:55:47.180Z"
+    },
+    {
+      "id": "61f0de87d82131fd15f4108f",
+      "nameKO": "옵셋 봉투",
+      "nameEN": "EnvelopeOffset",
+      "cat1": "봉투",
+      "cat2": "Offset",
+      "cat3": "MP_OEV",
+      "priceType": "priceComplete",
+      "modifiedAt": "2024-07-05T02:20:22.506Z"
+    },
+    {
+      "id": "61ef85a290d40e2792b1b99a",
+      "nameKO": "컬러스티커",
+      "nameEN": "AllSticker",
+      "cat1": "스티커",
+      "cat2": "Offset",
+      "cat3": "MP_AST",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-02-28T08:57:08.324Z"
+    },
+    {
+      "id": "61ef5b679b270074d7f1e369",
+      "nameKO": "부분코팅 명함",
+      "nameEN": "NameCardPartialCoating",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_PNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-21T05:10:20.455Z"
+    },
+    {
+      "id": "61e52abfabaed95eaaf08cb0",
+      "nameKO": "에폭엠보 명함",
+      "nameEN": "NameCardEpoxyemboss",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_ENC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-05-17T02:31:41.586Z"
+    },
+    {
+      "id": "61dfda7fc03d48fd50efdc83",
+      "nameKO": "포토카드",
+      "nameEN": "PotoCard",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_PCD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-21T05:07:49.528Z"
+    },
+    {
+      "id": "61dfcbbe542d106e1224f76f",
+      "nameKO": "점자명함",
+      "nameEN": "NameCardBraille",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_ZNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-04-21T01:36:34.474Z"
+    },
+    {
+      "id": "61dfc621e6134b0132af1712",
+      "nameKO": "디지털 포토카드",
+      "nameEN": "DigitalPhotoCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_DPD",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-07-15T00:55:07.937Z"
+    },
+    {
+      "id": "61de9be4241774a67e601af8",
+      "nameKO": "PET카드 명함",
+      "nameEN": "NameCardPet",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_PEC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-04-28T05:28:07.916Z"
+    },
+    {
+      "id": "61de9851a36b0ec3589588db",
+      "nameKO": "샌드컬러명함",
+      "nameEN": "SandColorNameCard",
+      "cat1": "디지털명함",
+      "cat2": "Digital",
+      "cat3": "MP_SNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2022-06-20T07:22:38.538Z"
+    },
+    {
+      "id": "61de95b8241774a67e60074f",
+      "nameKO": "옵셋 카드명함",
+      "nameEN": "NameCardMC",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_MNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2023-01-05T05:27:59.438Z"
+    },
+    {
+      "id": "61de7e13a36b0ec358946de3",
+      "nameKO": "일반지 명함",
+      "nameEN": "NameCard",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_GNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-30T04:07:02.497Z"
+    },
+    {
+      "id": "61db8d7fb2fd4166089fa04d",
+      "nameKO": "VIP 명함",
+      "nameEN": "NameCardVip",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_VNC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2025-05-19T07:18:25.826Z"
+    },
+    {
+      "id": "61d7e6ff4618a211d2069c9a",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome",
+      "cat1": "명함",
+      "cat2": "Offset",
+      "cat3": "MP_INC",
+      "priceType": "priceComplete",
+      "modifiedAt": "2026-04-22T00:30:01.079Z"
+    }
+  ]
+}
