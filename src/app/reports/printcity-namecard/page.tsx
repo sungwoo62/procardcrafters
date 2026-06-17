@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, ListTree } from 'lucide-react'
+import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, ListTree, GitCompareArrows } from 'lucide-react'
 import {
   CENSUS,
   buildProductMappingRows,
@@ -11,6 +11,9 @@ import {
   buildOptionMappability,
   CATALOG,
   VAT_RATE,
+  NAMECARD_PARITY,
+  buildParitySummary,
+  PARITY_BOARD_THRESHOLD_PCT,
 } from '@/lib/printcity-namecard'
 
 // OMO-3414 (보드 지시 2026-06-17, OMO-3411 파생): printcity 명함 전수 census +
@@ -23,6 +26,9 @@ const fmt = (n: number | undefined | null) =>
 const won = (n: number | undefined | null) =>
   n == null || Number.isNaN(n) ? '—' : `${n.toLocaleString('ko-KR')}원`
 const pct = (n: number) => (Number.isNaN(n) ? '—' : `${n > 0 ? '+' : ''}${n}%`)
+// 이동폭 색상: 상승(고객가↑)=빨강, 하락(↓)=초록, 무변동=회색.
+const shiftClass = (n: number | null | undefined) =>
+  n == null || Number.isNaN(n) ? 'text-gray-400' : n > 0 ? 'text-rose-600' : n < 0 ? 'text-emerald-600' : 'text-gray-500'
 
 // board ③ capability 검증 결과 (scripts/test-artifacts/omo3414/order-capability.json 요약)
 const ORDER_CAPABILITY: { step: string; ok: string; evidence: string }[] = [
@@ -41,6 +47,9 @@ export default function PrintcityNamecardReport() {
   const optMap = buildOptionMappability()
   const pricedCount = products.filter((p) => p.counts.combos > 0).length
   const foilProduct = products.find((p) => p.hasFoil)
+  const parity = NAMECARD_PARITY
+  const paritySummary = buildParitySummary()
+  const paritySlugs = parity.slugs.filter((s) => !s.skipped && s.rows?.length)
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-10">
@@ -92,6 +101,88 @@ export default function PrintcityNamecardReport() {
           </li>
         </ul>
       </div>
+
+      {/* ★ OMO-3418: 명함 컷오버 parity (printcity↔현행 성원) — 보드 승인 자료 */}
+      <Section
+        title="★ 명함 컷오버 parity — printcity ↔ 현행(성원)"
+        desc="명함 공급사 컷오버(NEXT_PUBLIC_NAMECARD_SUPPLIER=printcity) 승인 자료. 슬러그×대표수량(100/200/500/1000)에서 printcity 고객가 vs 현행 성원 고객가의 이동폭(±%). 고객가=baseKrw×margin×환율 → margin/환율은 양 공급사 공통이라 parity%는 base 단가 비로 결정된다."
+      >
+        {/* 컷오버 영향 요약 카드 */}
+        <div className="mb-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          <SummaryCard icon={<GitCompareArrows className="h-4 w-4" />} label="parity 산정 슬러그" value={`${paritySlugs.length}건`} sub="printcity base 보유 명함" />
+          <SummaryCard icon={<AlertTriangle className="h-4 w-4" />} label={`보드 카드(|이동|≥${PARITY_BOARD_THRESHOLD_PCT}%)`} value={`${paritySummary.boardCardCount}건`} sub={`상승 ${paritySummary.up} · 하락 ${paritySummary.down}`} />
+          <SummaryCard icon={<ArrowLeftRight className="h-4 w-4" />} label="최대 상승" value={pct(Math.max(0, ...paritySummary.movers.map((m) => m.defaultShiftPct)))} sub="컷오버 시 고객가 ↑" />
+          <SummaryCard icon={<ArrowLeftRight className="h-4 w-4" />} label="최대 하락" value={pct(Math.min(0, ...paritySummary.movers.map((m) => m.defaultShiftPct)))} sub="컷오버 시 고객가 ↓" />
+        </div>
+
+        {/* side-basis 경고 */}
+        <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
+          <div className="font-semibold">⚠️ side-basis 주의 (보드 확인 필요)</div>
+          <p className="mt-1">{parity.sideBasisNote}</p>
+          <p className="mt-1">
+            <b>defaultShift</b> = 실제 고객 표시가 이동(현행 성원 양면 ↔ printcity 단면 canonical). <b>양면/단면 shift</b> = 동일면 공정 비교.
+            <b> premium-foil-cards</b> 는 성원(Luxury 카드명함)↔printcity(엣지/에폭 envelope계) 용지 등급이 달라 큰 이동에 grade 차가 섞임 → 컷오버 전 용지 1:1 재맵핑 필요.
+          </p>
+        </div>
+
+        {/* 슬러그별 parity 표 */}
+        {paritySlugs.map((s) => (
+          <div key={s.slug} className="mb-5">
+            <div className="mb-1 flex flex-wrap items-baseline gap-2 text-sm">
+              <span className="font-semibold text-gray-900">{s.label}</span>
+              <code className="rounded bg-gray-100 px-1 text-xs text-gray-500">{s.slug}</code>
+              <span className="text-xs text-gray-400">
+                성원 {s.swadpiaCode}·{s.swadpiaPaper} ↔ printcity {s.printcityProductName}·{s.printcityPaperTitle}
+              </span>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-left text-xs text-gray-500">
+                    <Th>수량</Th>
+                    <Th right>성원 양면(현행)</Th>
+                    <Th right>printcity 단면(기본)</Th>
+                    <Th right>default 이동</Th>
+                    <Th right>단면 이동</Th>
+                    <Th right>양면 이동</Th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {s.rows!.map((r) => (
+                    <tr key={r.qty} className="border-b border-gray-100">
+                      <Td>{fmt(r.qty)}매</Td>
+                      <Td right>{won(r.swadpiaDoubleKrw)}</Td>
+                      <Td right>{won(r.printcitySingleKrw)}</Td>
+                      <td className={`px-2 text-right font-semibold ${shiftClass(r.defaultShiftPct)}`}>{pct(r.defaultShiftPct ?? NaN)}</td>
+                      <td className={`px-2 text-right ${shiftClass(r.singleShiftPct)}`}>{pct(r.singleShiftPct ?? NaN)}</td>
+                      <td className={`px-2 text-right ${shiftClass(r.doubleShiftPct)}`}>{pct(r.doubleShiftPct ?? NaN)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
+
+        {/* 보드 확인 카드 */}
+        <div className="rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-900">
+          <div className="font-semibold">보드 컷오버 확인 카드 — 큰 이동(|default|≥{PARITY_BOARD_THRESHOLD_PCT}%) {paritySummary.boardCardCount}건</div>
+          <ul className="mt-2 list-disc space-y-1 pl-5 text-xs">
+            {paritySummary.movers.map((m, i) => (
+              <li key={i}>
+                <b>{m.label}</b> {fmt(m.qty)}매: 성원 {won(m.swadpiaDoubleKrw)} → printcity {won(m.printcitySingleKrw)}{' '}
+                (<b>{pct(m.defaultShiftPct)} {m.direction}</b>{m.doubleShiftPct != null ? `, 양면 ${pct(m.doubleShiftPct)}` : ''})
+                {m.paperMismatch ? ' — ⚠️용지 등급차 포함(재맵핑 필요)' : ''}
+              </li>
+            ))}
+          </ul>
+          <p className="mt-2 text-xs">
+            ⛔ 컷오버(flag ON)는 <b>보드 전용 승인 게이트</b>(OMO-3417). 본 표는 읽기전용 승인 자료이며, CEO/에이전트가 대리 수락하지 않는다.
+            스냅샷: {new Date(parity.capturedAt).toLocaleString('ko-KR')} · 생성:{' '}
+            <code className="rounded bg-rose-100 px-1">scripts/omo3418-namecard-parity-snapshot.mjs</code>.
+          </p>
+        </div>
+      </Section>
 
       {/* 전체 카탈로그 링크 배너 (board ④) */}
       <Link

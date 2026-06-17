@@ -20,6 +20,8 @@ import {
 } from '@/config/swadpia-finishing-fields'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
+import { lookupPrintcityFoilKrw } from '@/lib/printcity-namecard'
+import type { NamecardSupplier } from '@/config/namecard-supplier'
 import PaperPopup from '@/components/PaperPopup'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
@@ -35,6 +37,10 @@ interface Props {
   exchangeRate: number
   shippingUsd: number
   swadpiaData?: SwadpiaClientData
+  // OMO-3417: 명함 섹션 공급사(기본 swadpia). printcity 면 박 단가를 수량브래킷으로 산정.
+  namecardSupplier?: NamecardSupplier
+  // printcity 박(foil) 수량브래킷 단가(KRW): { [quantity]: krw }. 대표색 기준.
+  printcityFoilByQty?: Record<string, number>
 }
 
 const OPTION_LABEL: Record<string, string> = {
@@ -89,7 +95,7 @@ function lookupSwadpiaCost(
   return { costKrw: last.print_unit2, effectiveQty: last.quantity }
 }
 
-export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
+export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData, namecardSupplier = 'swadpia', printcityFoilByQty }: Props) {
   // Group options by type. 후가공(finishing)은 별도 멀티셀렉트 섹션으로 분리 — 기본 단가에
   // 포함하지 않고 surcharge 를 따로 계산(OMO-2664).
   const { grouped, finishingOptions } = useMemo(() => {
@@ -422,11 +428,25 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     [product.margin_multiplier, exchangeRate],
   )
 
+  // OMO-3417: printcity 명함은 박 단가를 수량브래킷으로 산정(면적모델 아님). 레이어/면적과 무관하게
+  // 주문수량 기준 단일 surcharge. printcity 공급사 + byQty 존재 + 박 선택 시에만 활성.
+  const usePrintcityFoil = namecardSupplier === 'printcity' && !!printcityFoilByQty
   const finishingSurchargeUsd = useMemo(() => {
     let total = 0
     for (const v of finishings) {
       if (v === FOIL) {
-        // OMO-3257: 박은 레이어별 면적 단가 합산(최대 3). 성원 setPPBakAmtSum 과 동일 합산.
+        if (usePrintcityFoil && printcityFoilByQty) {
+          const krw = lookupPrintcityFoilKrw(printcityFoilByQty, selectedQty)
+          if (krw > 0) {
+            total += calculatePriceFromSwadpia({
+              swadpiaCostKrw: krw,
+              marginMultiplier: product.margin_multiplier,
+              exchangeRate,
+            })
+          }
+          continue
+        }
+        // OMO-3257: (성원) 박은 레이어별 면적 단가 합산(최대 3). 성원 setPPBakAmtSum 과 동일 합산.
         for (const l of foilLayers) {
           total += finishingUnitUsd(v, l.w > 0 && l.h > 0 ? l.w * l.h : undefined)
         }
@@ -436,7 +456,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       total += finishingUnitUsd(v, area ? area.w * area.h : undefined)
     }
     return total
-  }, [finishings, areas, foilLayers, finishingUnitUsd])
+  }, [finishings, areas, foilLayers, finishingUnitUsd, usePrintcityFoil, printcityFoilByQty, selectedQty, product.margin_multiplier, exchangeRate])
 
   // OMO-3264 박 사이즈 가드: 선택된 용지 규격(size_info)의 cut 치수(mm)를 해석.
   //   성원 ppBak.getCutXSize/getCutYSize 와 동일한 cut_norm_x/y_size 권위 소스.
