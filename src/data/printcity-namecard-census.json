@@ -1,0 +1,2496 @@
+{
+  "issue": "OMO-3414",
+  "source": "printcity (dtp21/iamdesign/printdeal 공용 SaaS) — price-api.dtp21.com/v2 공개 GET",
+  "method": "API JSON 직독 (product 마스터 doc: selecters + productTypes[].price). OCR/LLM 미사용, 읽기전용, 실주문 없음.",
+  "note": "printcity 명함=priceComplete(완성형 룩업): 박/엣지박이 selecter 축으로 productTypes 가격에 번들. 가격=우리가 printcity 공급 시 원가(retail).",
+  "capturedAt": "2026-06-17T04:43:12.118Z",
+  "category": "명함 (categoryName1st=명함)",
+  "productCount": 17,
+  "products": [
+    {
+      "id": "6a05875bd6dd07b8536a14f8",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome_pond",
+      "category2nd": "Offset",
+      "category3rd": "MP_INC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 1,
+        "size": 1,
+        "color": 2,
+        "coating": 1,
+        "combos": 2
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:VNV-250",
+            "title": "반누보화이트-250g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X54",
+            "title": "명함 90×54"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        200
+      ],
+      "baseByQty": {
+        "200": 20000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "690d5723122978358a481644",
+      "nameKO": "일반지 명함",
+      "nameEN": "NameCard_good2",
+      "category2nd": "Offset",
+      "category3rd": "MP_GNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 4,
+        "size": 8,
+        "color": 2,
+        "coating": 6,
+        "combos": 1
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          },
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          },
+          {
+            "code": "COT:HD-4",
+            "title": "홀로그램코팅 도트-양면"
+          },
+          {
+            "code": "COT:HS-4",
+            "title": "홀로그램코팅 심플-양면"
+          },
+          {
+            "code": "COT:VT",
+            "title": "양면벨벳코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-216",
+            "title": "스노우화이트-216g"
+          },
+          {
+            "code": "MAT:SNW-250",
+            "title": "스노우화이트-250g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          },
+          {
+            "code": "MAT:SNW-400",
+            "title": "스노우화이트-400g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85×49"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85×55"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86×50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89×51"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91×55"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        500,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000,
+        3500,
+        4000,
+        4500,
+        5000,
+        5500,
+        6000,
+        6500,
+        7000,
+        7500,
+        8000,
+        8500,
+        9000,
+        9500,
+        10000,
+        20000,
+        30000,
+        40000,
+        50000,
+        100000,
+        200000,
+        300000
+      ],
+      "baseByQty": {
+        "100": 0,
+        "200": 0,
+        "500": 0,
+        "1000": 0,
+        "1500": 0,
+        "2000": 0,
+        "2500": 0,
+        "3000": 0,
+        "3500": 0,
+        "4000": 0,
+        "4500": 0,
+        "5000": 0,
+        "5500": 0,
+        "6000": 0,
+        "6500": 0,
+        "7000": 0,
+        "7500": 0,
+        "8000": 0,
+        "8500": 0,
+        "9000": 0,
+        "9500": 0,
+        "10000": 0,
+        "20000": 0,
+        "30000": 0,
+        "40000": 0,
+        "50000": 0,
+        "100000": 0,
+        "200000": 0,
+        "300000": 0
+      },
+      "foilTable": null
+    },
+    {
+      "id": "68d384a31b09594495f4c1b9",
+      "nameKO": "통합 명함",
+      "nameEN": "NameCardGroup_test2",
+      "category2nd": "None",
+      "category3rd": "MP_UNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 3,
+        "size": 2,
+        "color": 2,
+        "coating": 0,
+        "combos": 0
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [],
+      "baseByQty": {},
+      "foilTable": null
+    },
+    {
+      "id": "68ba716b4f93d8608081affd",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome_2",
+      "category2nd": "Offset",
+      "category3rd": "MP_INC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 4,
+        "size": 3,
+        "color": 2,
+        "coating": 0,
+        "combos": 0
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:KEM-200",
+            "title": "키칼라메탈릭-200g"
+          },
+          {
+            "code": "MAT:SNW-216",
+            "title": "스노우화이트-216g"
+          },
+          {
+            "code": "MAT:SCO-220",
+            "title": "스코틀랜드-220g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:NC-86X54",
+            "title": "MC카드 86×54"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [],
+      "baseByQty": {},
+      "foilTable": null
+    },
+    {
+      "id": "6879cc61a67a79397627ad3c",
+      "nameKO": "특가 수입지 명함",
+      "nameEN": "NameCardIncome_sale2",
+      "category2nd": "Offset",
+      "category3rd": "MP_INC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 4,
+        "size": 8,
+        "color": 2,
+        "coating": 0,
+        "combos": 56
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          },
+          {
+            "code": "MAT:MAS-209",
+            "title": "머쉬멜로우-209g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85×49"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86×50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89×51"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85×55"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91×55"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        200,
+        400,
+        600,
+        800,
+        1000
+      ],
+      "baseByQty": {
+        "200": 3400,
+        "400": 6000,
+        "600": 8600,
+        "800": 11200,
+        "1000": 13700
+      },
+      "foilTable": null
+    },
+    {
+      "id": "677cf067604e619a80edfa32",
+      "nameKO": "옵셋 피켓",
+      "nameEN": "OffsetPicket",
+      "category2nd": "Offset",
+      "category3rd": "MP_OPK",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": true,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 29,
+        "size": 6,
+        "color": 2,
+        "coating": 3,
+        "combos": 372
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          },
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-216",
+            "title": "스노우화이트-216g"
+          },
+          {
+            "code": "MAT:SNW-250",
+            "title": "스노우화이트-250g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          },
+          {
+            "code": "MAT:SNW-400",
+            "title": "스노우화이트-400g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          },
+          {
+            "code": "MAT:KEM-200",
+            "title": "키칼라메탈릭-200g"
+          },
+          {
+            "code": "MAT:POS-240",
+            "title": "팝셋-240g"
+          },
+          {
+            "code": "MAT:SCO-220",
+            "title": "스코틀랜드-220g"
+          },
+          {
+            "code": "MAT:MAS-209",
+            "title": "머쉬멜로우-209g"
+          },
+          {
+            "code": "MAT:GRA-256",
+            "title": "그레이스-256g"
+          },
+          {
+            "code": "MAT:BIL-200",
+            "title": "빌리지-200g"
+          },
+          {
+            "code": "MAT:YUP-200",
+            "title": "유포지-250g"
+          },
+          {
+            "code": "MAT:KEG-200",
+            "title": "키칼라골드-200g"
+          },
+          {
+            "code": "MAT:STG-200",
+            "title": "스타골드-250g"
+          },
+          {
+            "code": "MAT:CON-285",
+            "title": "컨셉(블루펄)-285g"
+          },
+          {
+            "code": "MAT:CAM-200",
+            "title": "카멜레온-200g"
+          },
+          {
+            "code": "MAT:ARDUW-310",
+            "title": "아르떼 울트라화이트-310g"
+          },
+          {
+            "code": "MAT:VNV-250",
+            "title": "반누보화이트-250g"
+          },
+          {
+            "code": "MAT:CRA-250",
+            "title": "크라프트-250g"
+          },
+          {
+            "code": "MAT:EMS-350",
+            "title": "Extra 머쉬-350g"
+          },
+          {
+            "code": "MAT:ENV-350",
+            "title": "Extra 누브-350g"
+          },
+          {
+            "code": "MAT:ERN-350",
+            "title": "Extra 휘라레(린넨)-350g"
+          },
+          {
+            "code": "MAT:EST-340",
+            "title": "Extra 스타-340g"
+          },
+          {
+            "code": "MAT:EWN-400",
+            "title": "Extra 에그화이트-400g"
+          },
+          {
+            "code": "MAT:ETI-350",
+            "title": "Extra 띤또레또-350g"
+          },
+          {
+            "code": "MAT:EUW-330",
+            "title": "Extra 매트화이트-350g"
+          },
+          {
+            "code": "MAT:CTP-235",
+            "title": "크리스탈 펄(팝셋)-235g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:PK-297X210",
+            "title": "피켓 297×210"
+          },
+          {
+            "code": "SIZ:PK-350X100",
+            "title": "피켓 350×100"
+          },
+          {
+            "code": "SIZ:PK-420X297",
+            "title": "피켓 420×297"
+          },
+          {
+            "code": "SIZ:PK-440X150",
+            "title": "피켓 440×150"
+          },
+          {
+            "code": "SIZ:PK-440X300",
+            "title": "피켓 440×300"
+          },
+          {
+            "code": "SIZ:PK-500X200",
+            "title": "피켓 500×200"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        500,
+        600,
+        800,
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000,
+        20000,
+        30000,
+        40000,
+        50000,
+        100000,
+        200000,
+        300000
+      ],
+      "baseByQty": {
+        "100": 16800,
+        "200": 16800,
+        "400": 56000,
+        "500": 20000,
+        "600": 80000,
+        "800": 101600,
+        "1000": 40000,
+        "2000": 76000,
+        "3000": 104000,
+        "4000": 132000,
+        "5000": 160000,
+        "6000": 184000,
+        "7000": 208000,
+        "8000": 232000,
+        "9000": 256000,
+        "10000": 280000,
+        "20000": 544000,
+        "30000": 824000,
+        "40000": 1104000,
+        "50000": 1384000,
+        "100000": 2648000,
+        "200000": 5240000,
+        "300000": 7824000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "63e4abde3374d8d1dc54458d",
+      "nameKO": "통합 명함",
+      "nameEN": "NameCardUnited",
+      "category2nd": "None",
+      "category3rd": "MP_UNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 29,
+        "size": 8,
+        "color": 2,
+        "coating": 3,
+        "combos": 434
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          },
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-216",
+            "title": "스노우화이트-216g"
+          },
+          {
+            "code": "MAT:SNW-250",
+            "title": "스노우화이트-250g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          },
+          {
+            "code": "MAT:SNW-400",
+            "title": "스노우화이트-400g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          },
+          {
+            "code": "MAT:KEM-200",
+            "title": "키칼라메탈릭-200g"
+          },
+          {
+            "code": "MAT:POS-240",
+            "title": "팝셋-240g"
+          },
+          {
+            "code": "MAT:SCO-220",
+            "title": "스코틀랜드-220g"
+          },
+          {
+            "code": "MAT:MAS-209",
+            "title": "머쉬멜로우-209g"
+          },
+          {
+            "code": "MAT:GRA-256",
+            "title": "그레이스-256g"
+          },
+          {
+            "code": "MAT:BIL-200",
+            "title": "빌리지-200g"
+          },
+          {
+            "code": "MAT:YUP-200",
+            "title": "유포지-250g"
+          },
+          {
+            "code": "MAT:KEG-200",
+            "title": "키칼라골드-200g"
+          },
+          {
+            "code": "MAT:STG-200",
+            "title": "스타골드-250g"
+          },
+          {
+            "code": "MAT:CON-285",
+            "title": "컨셉(블루펄)-285g"
+          },
+          {
+            "code": "MAT:CAM-200",
+            "title": "카멜레온-200g"
+          },
+          {
+            "code": "MAT:ARDUW-310",
+            "title": "아르떼 울트라화이트-310g"
+          },
+          {
+            "code": "MAT:VNV-250",
+            "title": "반누보화이트-250g"
+          },
+          {
+            "code": "MAT:CRA-250",
+            "title": "크라프트-250g"
+          },
+          {
+            "code": "MAT:EMS-350",
+            "title": "Extra 머쉬-350g"
+          },
+          {
+            "code": "MAT:ENV-350",
+            "title": "Extra 누브-350g"
+          },
+          {
+            "code": "MAT:ERN-350",
+            "title": "Extra 휘라레(린넨)-350g"
+          },
+          {
+            "code": "MAT:EST-340",
+            "title": "Extra 스타-340g"
+          },
+          {
+            "code": "MAT:EWN-400",
+            "title": "Extra 에그화이트-400g"
+          },
+          {
+            "code": "MAT:ETI-350",
+            "title": "Extra 띤또레또-350g"
+          },
+          {
+            "code": "MAT:EUW-330",
+            "title": "Extra 매트화이트-350g"
+          },
+          {
+            "code": "MAT:CTP-235",
+            "title": "크리스탈 펄(팝셋)-235g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90x50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86x52"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85x49"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85x55"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86x50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89x51"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91x55"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        500,
+        600,
+        800,
+        1000,
+        1200,
+        1400,
+        1500,
+        1600,
+        1800,
+        2000,
+        2200,
+        2400,
+        2500,
+        2600,
+        2800,
+        3000,
+        3200,
+        3400,
+        3500,
+        3600,
+        3800,
+        4000,
+        4200,
+        4400,
+        4500,
+        4600,
+        4800,
+        5000,
+        5500,
+        6000,
+        6500,
+        7000,
+        7500,
+        8000,
+        8500,
+        9000,
+        9500,
+        10000,
+        20000,
+        30000,
+        40000,
+        50000,
+        100000,
+        200000,
+        300000
+      ],
+      "baseByQty": {
+        "100": 2100,
+        "200": 2100,
+        "400": 0,
+        "500": 0,
+        "600": 0,
+        "800": 0,
+        "1000": 5000,
+        "1200": 0,
+        "1400": 0,
+        "1500": 0,
+        "1600": 0,
+        "1800": 0,
+        "2000": 9500,
+        "2200": 0,
+        "2400": 0,
+        "2500": 0,
+        "2600": 0,
+        "2800": 0,
+        "3000": 13000,
+        "3200": 0,
+        "3400": 0,
+        "3500": 0,
+        "3600": 0,
+        "3800": 0,
+        "4000": 16500,
+        "4200": 0,
+        "4400": 0,
+        "4500": 0,
+        "4600": 0,
+        "4800": 0,
+        "5000": 20000,
+        "5500": 0,
+        "6000": 23000,
+        "6500": 0,
+        "7000": 26000,
+        "7500": 0,
+        "8000": 29000,
+        "8500": 0,
+        "9000": 32000,
+        "9500": 0,
+        "10000": 35000,
+        "20000": 0,
+        "30000": 0,
+        "40000": 0,
+        "50000": 0,
+        "100000": 0,
+        "200000": 0,
+        "300000": 0
+      },
+      "foilTable": null
+    },
+    {
+      "id": "63db173890953943cfdafc94",
+      "nameKO": "엣지명함",
+      "nameEN": "NameCardEdge",
+      "category2nd": "Offset",
+      "category3rd": "MP_EDG",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": true,
+      "foilKind": "bakKindCode",
+      "foilColors": [
+        {
+          "code": "BKK:GOLD-GS",
+          "title": "금박-유광"
+        },
+        {
+          "code": "BKK:GOLD-MT",
+          "title": "금박-무광"
+        },
+        {
+          "code": "BKK:SILVER-GS",
+          "title": "은박-유광"
+        },
+        {
+          "code": "BKK:SILVER-MT",
+          "title": "은박-무광"
+        },
+        {
+          "code": "BKK:REDGOLD",
+          "title": "로즈골드박-유광"
+        },
+        {
+          "code": "BKK:STARHOLOGRAM",
+          "title": "스타홀로그램박"
+        },
+        {
+          "code": "BKK:HOLOGRAM1",
+          "title": "홀로그램박"
+        },
+        {
+          "code": "BKK:BLACK-MT",
+          "title": "먹박-무광"
+        },
+        {
+          "code": "BKK:RED",
+          "title": "적박-유광"
+        },
+        {
+          "code": "BKK:BLUE",
+          "title": "청박-유광"
+        },
+        {
+          "code": "BKK:ORANGE",
+          "title": "오렌지박"
+        },
+        {
+          "code": "BKK:COPPER",
+          "title": "코퍼박"
+        }
+      ],
+      "counts": {
+        "material": 6,
+        "size": 1,
+        "color": 2,
+        "coating": 0,
+        "combos": 144
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:ENV-350",
+            "title": "Extra 누브-350g"
+          },
+          {
+            "code": "MAT:ERN-350",
+            "title": "Extra 휘라레(린넨)-350g"
+          },
+          {
+            "code": "MAT:EMS-350",
+            "title": "Extra 머쉬-350g"
+          },
+          {
+            "code": "MAT:EST-340",
+            "title": "Extra 스타-340g"
+          },
+          {
+            "code": "MAT:EUW-330",
+            "title": "Extra 매트화이트-350g"
+          },
+          {
+            "code": "MAT:ARDUW-310",
+            "title": "아르떼 울트라화이트-310g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          }
+        ],
+        "foil": [
+          {
+            "code": "BKK:GOLD-GS",
+            "title": "금박-유광"
+          },
+          {
+            "code": "BKK:GOLD-MT",
+            "title": "금박-무광"
+          },
+          {
+            "code": "BKK:SILVER-GS",
+            "title": "은박-유광"
+          },
+          {
+            "code": "BKK:SILVER-MT",
+            "title": "은박-무광"
+          },
+          {
+            "code": "BKK:REDGOLD",
+            "title": "로즈골드박-유광"
+          },
+          {
+            "code": "BKK:STARHOLOGRAM",
+            "title": "스타홀로그램박"
+          },
+          {
+            "code": "BKK:HOLOGRAM1",
+            "title": "홀로그램박"
+          },
+          {
+            "code": "BKK:BLACK-MT",
+            "title": "먹박-무광"
+          },
+          {
+            "code": "BKK:RED",
+            "title": "적박-유광"
+          },
+          {
+            "code": "BKK:BLUE",
+            "title": "청박-유광"
+          },
+          {
+            "code": "BKK:ORANGE",
+            "title": "오렌지박"
+          },
+          {
+            "code": "BKK:COPPER",
+            "title": "코퍼박"
+          }
+        ],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        600,
+        800,
+        1000,
+        2000,
+        3000,
+        4000,
+        5000
+      ],
+      "baseByQty": {
+        "100": 0,
+        "200": 40000,
+        "400": 80000,
+        "600": 120000,
+        "800": 160000,
+        "1000": 199000,
+        "2000": 394000,
+        "3000": 589000,
+        "4000": 784000,
+        "5000": 979000
+      },
+      "foilTable": {
+        "repPaper": "MAT:ENV-350",
+        "repPrint": "COL:40",
+        "byColor": {
+          "BKK:GOLD-GS": {
+            "100": 27000,
+            "200": 43100,
+            "400": 86000,
+            "600": 129000,
+            "800": 172000,
+            "1000": 215000,
+            "2000": 430000,
+            "3000": 645000,
+            "4000": 860000,
+            "5000": 1075000
+          },
+          "BKK:GOLD-MT": {
+            "100": 27000,
+            "200": 43100,
+            "400": 86000,
+            "600": 129000,
+            "800": 172000,
+            "1000": 215000,
+            "2000": 430000,
+            "3000": 645000,
+            "4000": 860000,
+            "5000": 1075000
+          },
+          "BKK:SILVER-GS": {
+            "100": 27000,
+            "200": 43100,
+            "400": 86000,
+            "600": 129000,
+            "800": 172000,
+            "1000": 215000,
+            "2000": 430000,
+            "3000": 645000,
+            "4000": 860000,
+            "5000": 1075000
+          },
+          "BKK:SILVER-MT": {
+            "100": 27000,
+            "200": 43100,
+            "400": 86000,
+            "600": 129000,
+            "800": 172000,
+            "1000": 215000,
+            "2000": 430000,
+            "3000": 645000,
+            "4000": 860000,
+            "5000": 1075000
+          },
+          "BKK:REDGOLD": {
+            "100": 32000,
+            "200": 49100,
+            "400": 98000,
+            "600": 147000,
+            "800": 196000,
+            "1000": 245000,
+            "2000": 490000,
+            "3000": 735000,
+            "4000": 980000,
+            "5000": 1225000
+          },
+          "BKK:STARHOLOGRAM": {
+            "100": 32000,
+            "200": 49100,
+            "400": 98000,
+            "600": 147000,
+            "800": 196000,
+            "1000": 245000,
+            "2000": 490000,
+            "3000": 735000,
+            "4000": 980000,
+            "5000": 1225000
+          },
+          "BKK:HOLOGRAM1": {
+            "100": 33000,
+            "200": 50100,
+            "400": 99000,
+            "600": 148000,
+            "800": 197000,
+            "1000": 246000,
+            "2000": 491000,
+            "3000": 736000,
+            "4000": 981000,
+            "5000": 1226000
+          },
+          "BKK:BLACK-MT": {
+            "100": 32000,
+            "200": 49100,
+            "400": 98000,
+            "600": 147000,
+            "800": 196000,
+            "1000": 245000,
+            "2000": 490000,
+            "3000": 735000,
+            "4000": 980000,
+            "5000": 1225000
+          },
+          "BKK:RED": {
+            "100": 33000,
+            "200": 50100,
+            "400": 99000,
+            "600": 148000,
+            "800": 197000,
+            "1000": 246000,
+            "2000": 491000,
+            "3000": 736000,
+            "4000": 981000,
+            "5000": 1226000
+          },
+          "BKK:BLUE": {
+            "100": 33000,
+            "200": 50100,
+            "400": 99000,
+            "600": 148000,
+            "800": 197000,
+            "1000": 246000,
+            "2000": 491000,
+            "3000": 736000,
+            "4000": 981000,
+            "5000": 1226000
+          },
+          "BKK:ORANGE": {
+            "100": 33000,
+            "200": 50100,
+            "400": 99000,
+            "600": 148000,
+            "800": 197000,
+            "1000": 246000,
+            "2000": 491000,
+            "3000": 736000,
+            "4000": 981000,
+            "5000": 1226000
+          },
+          "BKK:COPPER": {
+            "100": 0,
+            "200": 50100,
+            "400": 99000,
+            "600": 148000,
+            "800": 197000,
+            "1000": 246000,
+            "2000": 491000,
+            "3000": 736000,
+            "4000": 981000,
+            "5000": 1226000
+          }
+        }
+      }
+    },
+    {
+      "id": "61ef5b679b270074d7f1e369",
+      "nameKO": "부분코팅 명함",
+      "nameEN": "NameCardPartialCoating",
+      "category2nd": "Offset",
+      "category3rd": "MP_PNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 1,
+        "size": 2,
+        "color": 2,
+        "coating": 0,
+        "combos": 4
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": [
+          {
+            "name": "부분코팅",
+            "kindCode": "partialCoatingSideCode",
+            "options": [
+              {
+                "code": "PCS:1F",
+                "title": "부분UV코팅-앞면"
+              },
+              {
+                "code": "PCS:1B",
+                "title": "부분UV코팅-뒷면"
+              },
+              {
+                "code": "PCS:2",
+                "title": "부분UV코팅-양면"
+              }
+            ]
+          }
+        ]
+      },
+      "quantities": [
+        200,
+        500,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000,
+        3500,
+        4000,
+        4500,
+        5000
+      ],
+      "baseByQty": {
+        "200": 7200,
+        "500": 10900,
+        "1000": 13600,
+        "1500": 0,
+        "2000": 0,
+        "2500": 0,
+        "3000": 0,
+        "3500": 0,
+        "4000": 0,
+        "4500": 0,
+        "5000": 0
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61e52abfabaed95eaaf08cb0",
+      "nameKO": "에폭엠보 명함",
+      "nameEN": "NameCardEpoxyemboss",
+      "category2nd": "Offset",
+      "category3rd": "MP_ENC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 1,
+        "size": 1,
+        "color": 2,
+        "coating": 0,
+        "combos": 6
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:ENC-90X50",
+            "title": "에폭명함 90×50"
+          }
+        ],
+        "foil": [],
+        "other": [
+          {
+            "name": "에폭코팅",
+            "kindCode": "epoxyEmbossSideCode",
+            "options": [
+              {
+                "code": "EPS:1F",
+                "title": "에폭엠보-앞면"
+              },
+              {
+                "code": "EPS:1B",
+                "title": "에폭엠보-뒷면"
+              },
+              {
+                "code": "EPS:2",
+                "title": "에폭엠보-양면"
+              }
+            ]
+          }
+        ]
+      },
+      "quantities": [
+        200,
+        400,
+        600,
+        800,
+        1000
+      ],
+      "baseByQty": {
+        "200": 0,
+        "400": 0,
+        "600": 0,
+        "800": 0,
+        "1000": 0
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61dfda7fc03d48fd50efdc83",
+      "nameKO": "포토카드",
+      "nameEN": "PotoCard",
+      "category2nd": "Offset",
+      "category3rd": "MP_PCD",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 1,
+        "size": 1,
+        "color": 2,
+        "coating": 2,
+        "combos": 4
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          },
+          {
+            "code": "COT:HD-4",
+            "title": "홀로그램코팅 도트-양면"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:PC-86X54",
+            "title": "포토카드 86×54"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        500,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000,
+        3500,
+        4000,
+        4500,
+        5000,
+        5500,
+        6000,
+        6500,
+        7000,
+        7500,
+        8000,
+        8500,
+        9000,
+        9500,
+        10000
+      ],
+      "baseByQty": {
+        "100": 6500,
+        "200": 6500,
+        "500": 11500,
+        "1000": 20000,
+        "1500": 0,
+        "2000": 39000,
+        "2500": 0,
+        "3000": 58500,
+        "3500": 0,
+        "4000": 78000,
+        "4500": 0,
+        "5000": 97500,
+        "5500": 0,
+        "6000": 108000,
+        "6500": 0,
+        "7000": 126000,
+        "7500": 0,
+        "8000": 144000,
+        "8500": 0,
+        "9000": 162000,
+        "9500": 0,
+        "10000": 170000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61dfcbbe542d106e1224f76f",
+      "nameKO": "점자명함",
+      "nameEN": "NameCardBraille",
+      "category2nd": "Offset",
+      "category3rd": "MP_ZNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 15,
+        "size": 2,
+        "color": 2,
+        "coating": 2,
+        "combos": 60
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-250",
+            "title": "스노우화이트-250g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          },
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          },
+          {
+            "code": "MAT:KEM-200",
+            "title": "키칼라메탈릭-200g"
+          },
+          {
+            "code": "MAT:POS-240",
+            "title": "팝셋-240g"
+          },
+          {
+            "code": "MAT:SCO-220",
+            "title": "스코틀랜드-220g"
+          },
+          {
+            "code": "MAT:MAS-209",
+            "title": "머쉬멜로우-209g"
+          },
+          {
+            "code": "MAT:KEG-200",
+            "title": "키칼라골드-200g"
+          },
+          {
+            "code": "MAT:STG-200",
+            "title": "스타골드-250g"
+          },
+          {
+            "code": "MAT:GRA-256",
+            "title": "그레이스-256g"
+          },
+          {
+            "code": "MAT:ARDUW-310",
+            "title": "아르떼 울트라화이트-310g"
+          },
+          {
+            "code": "MAT:CON-285",
+            "title": "컨셉(블루펄)-285g"
+          },
+          {
+            "code": "MAT:VNV-250",
+            "title": "반누보화이트-250g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        500,
+        600,
+        800,
+        1000,
+        2000,
+        3000,
+        4000,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000
+      ],
+      "baseByQty": {
+        "100": 0,
+        "200": 2100,
+        "400": 0,
+        "500": 0,
+        "600": 0,
+        "800": 0,
+        "1000": 5000,
+        "2000": 9500,
+        "3000": 13000,
+        "4000": 16500,
+        "5000": 20000,
+        "6000": 23000,
+        "7000": 26000,
+        "8000": 29000,
+        "9000": 32000,
+        "10000": 35000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61de9be4241774a67e601af8",
+      "nameKO": "PET카드 명함",
+      "nameEN": "NameCardPet",
+      "category2nd": "Offset",
+      "category3rd": "MP_PEC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 2,
+        "size": 1,
+        "color": 2,
+        "coating": 3,
+        "combos": 8
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:PET-200",
+            "title": "PET카드-200g"
+          },
+          {
+            "code": "MAT:PET-300",
+            "title": "PET카드-300g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NCT-86X54",
+            "title": "PET카드 86x54"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        200,
+        400,
+        600,
+        800,
+        1000
+      ],
+      "baseByQty": {
+        "200": 11000,
+        "400": 22000,
+        "600": 33000,
+        "800": 44000,
+        "1000": 55000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61de95b8241774a67e60074f",
+      "nameKO": "옵셋 카드명함",
+      "nameEN": "NameCardMC",
+      "category2nd": "Offset",
+      "category3rd": "MP_MNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 1,
+        "size": 1,
+        "color": 2,
+        "coating": 0,
+        "combos": 2
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:PET-0.12",
+            "title": "MC카드-0.12g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-86X54",
+            "title": "MC카드 86×54"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        200,
+        400,
+        600,
+        800,
+        1000
+      ],
+      "baseByQty": {
+        "200": 13600,
+        "400": 26300,
+        "600": 39000,
+        "800": 51800,
+        "1000": 63600
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61de7e13a36b0ec358946de3",
+      "nameKO": "일반지 명함",
+      "nameEN": "NameCard",
+      "category2nd": "Offset",
+      "category3rd": "MP_GNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 4,
+        "size": 8,
+        "color": 2,
+        "coating": 6,
+        "combos": 126
+      },
+      "axes": {
+        "coating": [
+          {
+            "code": "COT:NO",
+            "title": "코팅없음"
+          },
+          {
+            "code": "COT:MT",
+            "title": "양면무광코팅"
+          },
+          {
+            "code": "COT:LT",
+            "title": "양면유광코팅"
+          },
+          {
+            "code": "COT:HD-4",
+            "title": "홀로그램코팅 도트-양면"
+          },
+          {
+            "code": "COT:HS-4",
+            "title": "홀로그램코팅 심플-양면"
+          },
+          {
+            "code": "COT:VT",
+            "title": "양면벨벳코팅"
+          }
+        ],
+        "material": [
+          {
+            "code": "MAT:SNW-216",
+            "title": "스노우화이트-216g"
+          },
+          {
+            "code": "MAT:SNW-250",
+            "title": "스노우화이트-250g"
+          },
+          {
+            "code": "MAT:SNW-300",
+            "title": "스노우화이트-300g"
+          },
+          {
+            "code": "MAT:SNW-400",
+            "title": "스노우화이트-400g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85×49"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85×55"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86×50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89×51"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91×55"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        500,
+        600,
+        800,
+        1000,
+        1500,
+        2000,
+        2500,
+        3000,
+        3500,
+        4000,
+        4500,
+        5000,
+        5500,
+        6000,
+        6500,
+        7000,
+        7500,
+        8000,
+        8500,
+        9000,
+        9500,
+        10000,
+        20000,
+        30000,
+        40000,
+        50000,
+        100000,
+        200000,
+        300000
+      ],
+      "baseByQty": {
+        "100": 2100,
+        "200": 2100,
+        "400": 23600,
+        "500": 2500,
+        "600": 35500,
+        "800": 47300,
+        "1000": 5000,
+        "1500": 0,
+        "2000": 9500,
+        "2500": 0,
+        "3000": 13000,
+        "3500": 0,
+        "4000": 16500,
+        "4500": 0,
+        "5000": 20000,
+        "5500": 0,
+        "6000": 0,
+        "6500": 0,
+        "7000": 0,
+        "7500": 0,
+        "8000": 0,
+        "8500": 0,
+        "9000": 0,
+        "9500": 0,
+        "10000": 0,
+        "20000": 0,
+        "30000": 0,
+        "40000": 0,
+        "50000": 0,
+        "100000": 0,
+        "200000": 0,
+        "300000": 0
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61db8d7fb2fd4166089fa04d",
+      "nameKO": "VIP 명함",
+      "nameEN": "NameCardVip",
+      "category2nd": "Offset",
+      "category3rd": "MP_VNC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 7,
+        "size": 8,
+        "color": 2,
+        "coating": 0,
+        "combos": 98
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:EMS-350",
+            "title": "Extra 머쉬-350g"
+          },
+          {
+            "code": "MAT:ENV-350",
+            "title": "Extra 누브-350g"
+          },
+          {
+            "code": "MAT:ERN-350",
+            "title": "Extra 휘라레(린넨)-350g"
+          },
+          {
+            "code": "MAT:EST-340",
+            "title": "Extra 스타-340g"
+          },
+          {
+            "code": "MAT:ETI-350",
+            "title": "Extra 띤또레또-350g"
+          },
+          {
+            "code": "MAT:EUW-330",
+            "title": "Extra 매트화이트-350g"
+          },
+          {
+            "code": "MAT:EWN-400",
+            "title": "Extra 에그화이트-400g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85×49"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85×55"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86×50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89×51"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91×55"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        600,
+        800,
+        1000,
+        1200,
+        1400,
+        1600,
+        1800,
+        2000,
+        2200,
+        2400,
+        2600,
+        2800,
+        3000,
+        3200,
+        3400,
+        3600,
+        3800,
+        4000,
+        4200,
+        4400,
+        4600,
+        4800,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000
+      ],
+      "baseByQty": {
+        "100": 5500,
+        "200": 5500,
+        "400": 11000,
+        "600": 16500,
+        "800": 22000,
+        "1000": 27500,
+        "1200": 0,
+        "1400": 0,
+        "1600": 0,
+        "1800": 0,
+        "2000": 55000,
+        "2200": 0,
+        "2400": 0,
+        "2600": 0,
+        "2800": 0,
+        "3000": 82500,
+        "3200": 0,
+        "3400": 0,
+        "3600": 0,
+        "3800": 0,
+        "4000": 110000,
+        "4200": 0,
+        "4400": 0,
+        "4600": 0,
+        "4800": 0,
+        "5000": 137500,
+        "6000": 165000,
+        "7000": 192500,
+        "8000": 220000,
+        "9000": 247500,
+        "10000": 275000
+      },
+      "foilTable": null
+    },
+    {
+      "id": "61d7e6ff4618a211d2069c9a",
+      "nameKO": "수입지 명함",
+      "nameEN": "NameCardIncome",
+      "category2nd": "Offset",
+      "category3rd": "MP_INC",
+      "categoryCode": "CA_NC",
+      "priceType": "priceComplete",
+      "saleStatus": false,
+      "hasFoil": false,
+      "foilKind": null,
+      "foilColors": [],
+      "counts": {
+        "material": 18,
+        "size": 8,
+        "color": 2,
+        "coating": 0,
+        "combos": 252
+      },
+      "axes": {
+        "coating": [],
+        "material": [
+          {
+            "code": "MAT:NUV-209",
+            "title": "누브지-210g"
+          },
+          {
+            "code": "MAT:FIR-216",
+            "title": "휘라레-216g"
+          },
+          {
+            "code": "MAT:STD-240",
+            "title": "스타드림-240g"
+          },
+          {
+            "code": "MAT:KEM-200",
+            "title": "키칼라메탈릭-200g"
+          },
+          {
+            "code": "MAT:POS-240",
+            "title": "팝셋-240g"
+          },
+          {
+            "code": "MAT:SCO-220",
+            "title": "스코틀랜드-220g"
+          },
+          {
+            "code": "MAT:MAS-209",
+            "title": "머쉬멜로우-209g"
+          },
+          {
+            "code": "MAT:GRA-256",
+            "title": "그레이스-256g"
+          },
+          {
+            "code": "MAT:BIL-200",
+            "title": "빌리지-200g"
+          },
+          {
+            "code": "MAT:YUP-200",
+            "title": "유포지-250g"
+          },
+          {
+            "code": "MAT:KEG-200",
+            "title": "키칼라골드-200g"
+          },
+          {
+            "code": "MAT:STG-200",
+            "title": "스타골드-250g"
+          },
+          {
+            "code": "MAT:CAM-200",
+            "title": "카멜레온-200g"
+          },
+          {
+            "code": "MAT:ARDUW-310",
+            "title": "아르떼 울트라화이트-310g"
+          },
+          {
+            "code": "MAT:CON-285",
+            "title": "컨셉(블루펄)-285g"
+          },
+          {
+            "code": "MAT:VNV-250",
+            "title": "반누보화이트-250g"
+          },
+          {
+            "code": "MAT:CRA-250",
+            "title": "크라프트-250g"
+          },
+          {
+            "code": "MAT:CTP-235",
+            "title": "크리스탈 펄(팝셋)-235g"
+          }
+        ],
+        "color": [
+          {
+            "code": "COL:40",
+            "title": "단면4도"
+          },
+          {
+            "code": "COL:44",
+            "title": "양면8도"
+          }
+        ],
+        "size": [
+          {
+            "code": "SIZ:NC-90X50",
+            "title": "명함 90×50"
+          },
+          {
+            "code": "SIZ:NC-86X52",
+            "title": "명함 86×52"
+          },
+          {
+            "code": "SIZ:NC-85X49",
+            "title": "명함 85×49"
+          },
+          {
+            "code": "SIZ:NC-85X55",
+            "title": "명함 85×55"
+          },
+          {
+            "code": "SIZ:NC-86X50",
+            "title": "명함 86×50"
+          },
+          {
+            "code": "SIZ:NC-89X51",
+            "title": "명함 89×51"
+          },
+          {
+            "code": "SIZ:NC-91X55",
+            "title": "명함 91×55"
+          },
+          {
+            "code": "SIZ:CUSTOM",
+            "title": "별사이즈"
+          }
+        ],
+        "foil": [],
+        "other": []
+      },
+      "quantities": [
+        100,
+        200,
+        400,
+        600,
+        800,
+        1000,
+        1200,
+        1400,
+        1600,
+        1800,
+        2000,
+        2200,
+        2400,
+        2600,
+        2800,
+        3000,
+        3200,
+        3400,
+        3600,
+        3800,
+        4000,
+        4200,
+        4400,
+        4600,
+        4800,
+        5000,
+        6000,
+        7000,
+        8000,
+        9000,
+        10000
+      ],
+      "baseByQty": {
+        "100": 3500,
+        "200": 3500,
+        "400": 7000,
+        "600": 10000,
+        "800": 12700,
+        "1000": 15400,
+        "1200": 0,
+        "1400": 0,
+        "1600": 0,
+        "1800": 0,
+        "2000": 30900,
+        "2200": 0,
+        "2400": 0,
+        "2600": 0,
+        "2800": 0,
+        "3000": 45400,
+        "3200": 0,
+        "3400": 0,
+        "3600": 0,
+        "3800": 0,
+        "4000": 46000,
+        "4200": 0,
+        "4400": 0,
+        "4600": 0,
+        "4800": 0,
+        "5000": 76000,
+        "6000": 90000,
+        "7000": 104500,
+        "8000": 120000,
+        "9000": 134500,
+        "10000": 150000
+      },
+      "foilTable": null
+    }
+  ]
+}
