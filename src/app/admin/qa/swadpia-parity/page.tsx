@@ -13,7 +13,11 @@
 export const dynamic = 'force-dynamic'
 
 import { useEffect, useState } from 'react'
-import { expandFinishingToSwadpiaFields } from '@/config/swadpia-finishing-fields'
+import {
+  expandFinishingToSwadpiaFields,
+  SWADPIA_FINISHING_FIELDS,
+} from '@/config/swadpia-finishing-fields'
+import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
 import { OrderVerificationPanel } from '@/components/OrderVerificationPanel'
 
 const RATE = 1300 // KRW per USD (패널 폴백과 동일)
@@ -323,11 +327,123 @@ function MatrixParitySection() {
   )
 }
 
+// ─── 원 요청 #7: 우리 옵션명 ↔ 성원 옵션 코드 매핑 검수 ────────────────────
+//   SWADPIA_FINISHING_FIELDS(라이브 조사 추출)를 그대로 표로 보여준다.
+//   status 로 검수 결과를 색구분: mapped=자동발주 검증됨 / runtime=런타임 추출 필요 /
+//   needs_audit=카테고리별 재조사 필요. 정적 config라 API 불필요(무비용).
+const STATUS_META: Record<string, { label: string; cls: string }> = {
+  mapped: { label: '✅ 자동발주 검증', cls: 'bg-green-50 text-green-700 border-green-200' },
+  runtime: { label: '⏳ 런타임 추출', cls: 'bg-amber-50 text-amber-700 border-amber-200' },
+  needs_audit: { label: '⚠️ 재조사 필요', cls: 'bg-red-50 text-red-700 border-red-200' },
+}
+
+function MappingVerificationSection() {
+  const total = SWADPIA_FINISHING_FIELDS.length
+  const counts = SWADPIA_FINISHING_FIELDS.reduce<Record<string, number>>((acc, m) => {
+    acc[m.status] = (acc[m.status] ?? 0) + 1
+    return acc
+  }, {})
+
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+        ⑤ 옵션명 ↔ 성원 코드 매핑 검수 (원 요청 #7)
+      </h2>
+      <div className="text-xs text-gray-600 bg-gray-50 border border-gray-200 rounded p-3 leading-relaxed">
+        우리 사이트 후가공 옵션명(<code className="px-1 bg-white rounded">finishingValue</code>)을 성원 발주 폼의
+        실제 필드명(<code className="px-1 bg-white rounded">select[name]</code>)·코드값에 1:1 대응시킨 표다. 성원 CNC1000
+        명함 폼을 라이브 조사(2026-06-08, OMO-2633)·런타임 추출(2026-06-12, OMO-2961)해 추출했으며, 화면 OCR/LLM 추론이
+        아니라 <strong>폼 필드 직독</strong> 결과다. 발주 시{' '}
+        <code className="px-1 bg-white rounded">expandFinishingToSwadpiaFields</code>가 이 표대로 변환해 성원 폼을 채운다.
+      </div>
+
+      <div className="flex flex-wrap gap-2 text-xs">
+        <span className="px-2 py-1 rounded border bg-white text-gray-600">전체 {total}종</span>
+        <span className="px-2 py-1 rounded border bg-green-50 text-green-700 border-green-200">
+          ✅ 자동발주 검증 {counts.mapped ?? 0}
+        </span>
+        <span className="px-2 py-1 rounded border bg-amber-50 text-amber-700 border-amber-200">
+          ⏳ 런타임 추출 {counts.runtime ?? 0}
+        </span>
+        <span className="px-2 py-1 rounded border bg-red-50 text-red-700 border-red-200">
+          ⚠️ 재조사 필요 {counts.needs_audit ?? 0}
+        </span>
+      </div>
+
+      <div className="overflow-x-auto border rounded-lg">
+        <table className="w-full text-xs">
+          <thead className="bg-gray-50 text-gray-600">
+            <tr>
+              <th className="px-2 py-2 text-left">우리 옵션 (value)</th>
+              <th className="px-2 py-2 text-left">영문 라벨</th>
+              <th className="px-2 py-2 text-left">성원 명칭</th>
+              <th className="px-2 py-2 text-left">성원 필드 · 코드값</th>
+              <th className="px-2 py-2 text-left">검수</th>
+            </tr>
+          </thead>
+          <tbody>
+            {SWADPIA_FINISHING_FIELDS.map((m) => {
+              const def = FINISHING_BY_VALUE[m.finishingValue]
+              const meta = STATUS_META[m.status] ?? STATUS_META.needs_audit
+              return (
+                <tr key={m.finishingValue} className="border-t align-top">
+                  <td className="px-2 py-2 font-mono text-gray-800">{m.finishingValue}</td>
+                  <td className="px-2 py-2 text-gray-600">{def?.label_en ?? '—'}</td>
+                  <td className="px-2 py-2 text-gray-600">{m.label_ko}</td>
+                  <td className="px-2 py-2">
+                    <div className="space-y-1">
+                      {m.fields.map((f) => (
+                        <div key={f.name} className="leading-tight">
+                          <span className="font-mono text-gray-700">{f.name}</span>
+                          {f.runtimeOnly ? (
+                            <span className="ml-1 text-amber-600">· 런타임 동적</span>
+                          ) : f.options ? (
+                            <span className="ml-1 text-gray-400">
+                              · {Object.keys(f.options).length}개 (
+                              {Object.entries(f.options)
+                                .slice(0, 3)
+                                .map(([code, ko]) => `${code} ${ko}`)
+                                .join(' / ')}
+                              {Object.keys(f.options).length > 3 ? ' …' : ''})
+                            </span>
+                          ) : null}
+                        </div>
+                      ))}
+                      {m.note && <div className="text-gray-400 italic">{m.note}</div>}
+                    </div>
+                  </td>
+                  <td className="px-2 py-2">
+                    <span className={`inline-block px-2 py-0.5 rounded border whitespace-nowrap ${meta.cls}`}>
+                      {meta.label}
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+
+      <div className="text-xs text-gray-500 leading-relaxed">
+        <strong>판정:</strong> ✅ <span className="text-green-700">자동발주 검증</span> = 성원 폼 필드·코드 직독으로 확인,
+        무인 자동발주 가능. ⏳ <span className="text-amber-700">런타임 추출</span> = 사이즈/용지 선택에 따라 JS로 채워지는
+        필드(동판 보유여부 등) → Playwright 런타임 추출 필요. ⚠️ <span className="text-red-700">재조사 필요</span> = 명함(CNC1000)
+        폼에 단일 select가 없거나 다른 카테고리(봉투/책자/스티커) 전용 → 카테고리별 재조사 대상. 가격축(용지·사이즈·수량)
+        매핑 검수는 위 ④ 매트릭스 대조 참조.
+      </div>
+    </section>
+  )
+}
+
 export default function SwadpiaParityQaPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
       <header className="space-y-2">
-        <h1 className="text-2xl font-bold text-gray-900">런칭점검 — 고객주문 ↔ 성원발주 비교 (OMO-2903)</h1>
+        <h1 className="text-2xl font-bold text-gray-900">성원 맵핑·가격 검수 — 고객주문 ↔ 성원발주 (OMO-2903 / 3238)</h1>
+        <p className="text-xs text-gray-500">
+          구성: ①②③ 주문 옵션·수량·마진 대조 · ④ 매트릭스 vs 현행가 가격 parity(멀티사이즈/디지털/토너) ·
+          <strong> ⑤ 옵션명 ↔ 성원 코드 매핑 검수</strong>(원 요청 #7)
+        </p>
         <p className="text-sm text-gray-600">
           대표 카테고리 3종의 테스트 스펙에 대해 고객 에디터 선택과 우리 성원 발주 폼 필드를 좌우 대조한다.
           발주 옵션 스냅샷은 큐 등록과 동일한 <code className="px-1 bg-gray-100 rounded">expandFinishingToSwadpiaFields</code> 변환으로
@@ -381,6 +497,8 @@ export default function SwadpiaParityQaPage() {
       })}
 
       <MatrixParitySection />
+
+      <MappingVerificationSection />
 
       <footer className="text-xs text-gray-400 border-t pt-4">
         증거 아티팩트: scripts/test-artifacts/omo2903/ (option-linkage / finishing-transform / db-option-linkage).
