@@ -393,3 +393,147 @@ export interface CatalogCensus {
   products: CatalogProduct[]
 }
 export const CATALOG = catalogCensus as unknown as CatalogCensus
+
+// ── OMO-3417: 명함 주문/구성 플로우 결선 어댑터 ──────────────────────────────
+// 공급사 플래그(config/namecard-supplier.ts)가 printcity 일 때, 우리 slug 의 명함 가격/옵션을
+// printcity 공개 GET JSON 직독 데이터에서 ProductConfigurator 가 소비하는 SwadpiaClientData
+// 호환 형태로 변환한다. 성원 경로는 삭제하지 않고 플래그로 hide 만 한다.
+//
+// base 가격: src/data/printcity-namecard-base-matrix.json
+//   = scripts/omo3417-printcity-namecard-base-matrix.mjs 가 product/{id}.productTypes[] 의
+//     combo별 클린 price 사다리에서 canonical(기준 사이즈×코팅)별 용지×단/양면을 추출.
+//   (OMO-3414 census 의 baseByQty 는 combo 병합 잡음으로 라이브 가격에 부적합 → 본 매트릭스로 대체.)
+// 박(foil) 가격: census foilTable(수량브래킷, 면적모델 아님) 재사용.
+import baseMatrix from '@/data/printcity-namecard-base-matrix.json'
+import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
+
+interface BaseMatrixPaper {
+  code: string
+  title: string
+  single: Record<string, number>
+  double: Record<string, number>
+}
+interface BaseMatrixProduct {
+  id: string
+  ourSlug: string
+  name: string
+  defaultSize?: string
+  defaultCoating?: string
+  sizes?: { code: string; title: string }[]
+  papers?: BaseMatrixPaper[]
+}
+interface BaseMatrix {
+  issue: string
+  source: string
+  capturedAt: string
+  products: BaseMatrixProduct[]
+}
+export const BASE_MATRIX = baseMatrix as unknown as BaseMatrix
+
+/** slug → 대표 printcity 명함 제품(base-matrix). TARGETS 순서상 첫 매칭 = canonical 표준 제품. */
+function representativeBaseProduct(slug: string): BaseMatrixProduct | null {
+  return BASE_MATRIX.products.find((p) => p.ourSlug === slug && (p.papers?.length ?? 0) > 0) ?? null
+}
+
+/** "명함 90×50" 류 title 에서 cut 치수(mm) 파싱. (foil guard resolveFoilPaperCut 호환용) */
+function parseSizeDims(title: string): { x: string; y: string } {
+  const m = title.match(/(\d{2,3})\s*[x×*]\s*(\d{2,3})/)
+  return { x: m?.[1] ?? '', y: m?.[2] ?? '' }
+}
+
+export interface PrintcityClientData {
+  papers: SwadpiaPaper[]
+  printEntries: SwadpiaPrintEntry[]
+  sizes: SwadpiaSize[]
+}
+
+/**
+ * printcity 명함 slug → ProductConfigurator 용 SwadpiaClientData 호환 데이터.
+ * printEntries.print_unit2 = 단면(canonical 기본) base 단가(KRW). add_unit2 = 양면 추가분.
+ * 매핑 제품/가격 미존재(letterpress·pearl·metallic 등 갭) 시 null → 호출측은 DB 기본가로 폴백.
+ */
+export function getPrintcityNamecardData(slug: string): PrintcityClientData | null {
+  const prod = representativeBaseProduct(slug)
+  if (!prod || !prod.papers || prod.papers.length === 0) return null
+
+  const papers: SwadpiaPaper[] = prod.papers.map((p) => ({
+    paper_code: p.code,
+    paper_type_code: p.code,
+    paper_weight: '',
+    paper_weight_txt: p.title,
+    paper_summary: p.title,
+    paper_side_type: Object.keys(p.double).length > 0 ? '2' : '1',
+    price_unit1: 0,
+    price_unit2: 0,
+    price_sale_rate: 1,
+    print_extra_rate: 0,
+    print_method_list: '',
+  }))
+
+  const printEntries: SwadpiaPrintEntry[] = []
+  for (const p of prod.papers) {
+    const qtys = new Set<number>([
+      ...Object.keys(p.single).map(Number),
+      ...Object.keys(p.double).map(Number),
+    ])
+    for (const q of [...qtys].sort((a, b) => a - b)) {
+      const single = p.single[String(q)] ?? 0
+      const double = p.double[String(q)] ?? 0
+      const base = single > 0 ? single : double // canonical 기본 = 단면, 없으면 양면
+      if (base <= 0) continue
+      printEntries.push({
+        quantity: q,
+        paper_code: p.code,
+        print_method: 'PC',
+        print_unit1: single || base,
+        print_unit2: base,
+        add_unit2: double > 0 && single > 0 ? double - single : 0,
+      })
+    }
+  }
+
+  const sizes: SwadpiaSize[] = (prod.sizes ?? []).map((s) => {
+    const d = parseSizeDims(s.title)
+    return {
+      size_type_code: s.code,
+      size_type_name: s.title,
+      cut_norm_x_size: d.x,
+      cut_norm_y_size: d.y,
+    }
+  })
+
+  return { papers, printEntries, sizes }
+}
+
+/**
+ * printcity 명함 박(foil) 수량브래킷 단가(KRW) — census foilTable 직독.
+ * 박은 total_price/base 매트릭스에 안 잡히므로 별도 수량브래킷으로 산정(면적모델 아님).
+ * 대표색(첫 색) 기준 byQty 맵 반환. 박 미보유 slug 는 null.
+ */
+export function getPrintcityFoilByQty(slug: string): { byQty: Record<string, number>; repColor: string } | null {
+  const ids = PRODUCT_MAPPING.filter((m) => m.ourSlug === slug).map((m) => m.printcityId)
+  for (const id of ids) {
+    const p = CENSUS.products.find((x) => x.id === id)
+    if (p?.hasFoil && p.foilTable && p.foilTable.byColor) {
+      const colors = Object.keys(p.foilTable.byColor)
+      if (colors.length === 0) continue
+      const repColor = colors[0]
+      return { byQty: p.foilTable.byColor[repColor], repColor }
+    }
+  }
+  return null
+}
+
+/** byQty 수량브래킷에서 주문수량 → 박 단가(KRW). 정확 매치 없으면 상위 브래킷, 없으면 최대. */
+export function lookupPrintcityFoilKrw(byQty: Record<string, number>, qty: number): number {
+  const entries = Object.entries(byQty)
+    .map(([q, v]) => [Number(q), v] as [number, number])
+    .filter(([, v]) => v > 0)
+    .sort((a, b) => a[0] - b[0])
+  if (entries.length === 0) return 0
+  const exact = entries.find(([q]) => q === qty)
+  if (exact) return exact[1]
+  const upper = entries.find(([q]) => q >= qty)
+  if (upper) return upper[1]
+  return entries[entries.length - 1][1]
+}

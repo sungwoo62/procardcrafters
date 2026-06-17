@@ -9,6 +9,8 @@ import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { calculateItemPriceUsd } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { supplierForSlug } from '@/config/namecard-supplier'
+import { getPrintcityNamecardData, getPrintcityFoilByQty } from '@/lib/printcity-namecard'
 import { isPccfSlug } from '@/config/pccf-catalog'
 import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
@@ -177,6 +179,21 @@ export default async function ProductDetailPage({ params }: Props) {
   ])
 
   const options = (optionsData as PrintProductOption[] | null) ?? []
+
+  // OMO-3417: 명함 섹션 공급사 분기. 플래그=printcity & 명함 slug 일 때만 printcity 데이터로 전환,
+  // 그 외(타 카테고리·플래그 OFF)는 성원(swadpia) 유지. 성원 코드는 보존(hide만).
+  const supplier = supplierForSlug(slug)
+  const printcityData = supplier === 'printcity' ? getPrintcityNamecardData(slug) : null
+  const printcityFoil = supplier === 'printcity' ? getPrintcityFoilByQty(slug) : null
+  // 공급사=printcity 면 성원 데이터를 configurator 에 넘기지 않는다(hide). printcity base 매핑이
+  // 없는 명함 갭(letterpress/pearl/metallic)은 printcityData=null → DB 기본가로 폴백.
+  const configuratorSwadpiaData =
+    supplier === 'printcity'
+      ? printcityData ?? undefined
+      : swadpiaData.fetchSuccess
+        ? { papers: swadpiaData.papers, printEntries: swadpiaData.printEntries, sizes: swadpiaData.sizes }
+        : undefined
+
   const initialStats = reviewStats as ReviewStats | null
   const initialReviews = (reviewsData ?? []) as Review[]
   const initialPagination: ReviewPagination = {
@@ -402,11 +419,9 @@ export default async function ProductDetailPage({ params }: Props) {
                 options={options}
                 exchangeRate={exchangeRate}
                 shippingUsd={shippingUsd}
-                swadpiaData={swadpiaData.fetchSuccess ? {
-                  papers: swadpiaData.papers,
-                  printEntries: swadpiaData.printEntries,
-                  sizes: swadpiaData.sizes,
-                } : undefined}
+                swadpiaData={configuratorSwadpiaData}
+                namecardSupplier={supplier}
+                printcityFoilByQty={printcityFoil?.byQty}
               />
             ) : (
               <div className="text-center py-10">
