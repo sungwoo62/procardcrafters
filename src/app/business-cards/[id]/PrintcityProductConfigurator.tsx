@@ -115,7 +115,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
                           : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
                       }`}
                     >
-                      {o.ko}
+                      {o.en ?? o.ko}
                     </button>
                   )
                 })}
@@ -128,7 +128,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
               >
                 {opts.map((o) => (
                   <option key={o.code} value={o.code}>
-                    {o.ko}
+                    {o.en ?? o.ko}
                   </option>
                 ))}
               </select>

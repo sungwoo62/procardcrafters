@@ -54,8 +54,72 @@ const OUR_SLUG = {
   '에폭시 명함': 'premium-foil-cards',
 }
 
-function axisOptions(items = []) {
-  return items.map((t) => ({ code: t.code, ko: t.title }))
+// ── 옵션값 영문화 (보드: "용지 이름들도 다 영어로") ─────────────────────────
+// 용지 한글 base명 → 영문 (특수지 브랜드명 로마자/영문). gsm 은 별도 파싱해 접미.
+const PAPER_EN = {
+  '휘라레': 'Frelle', '누브지': 'Nouvelle', '누브': 'Nouvelle', '스타드림': 'Stardream',
+  '스타드림 다이아': 'Stardream Diamond', '키칼라메탈릭': 'Curious Metallic', '키칼라골드': 'Curious Gold',
+  '스코틀랜드': 'Scotland', '머쉬멜로우': 'Marshmallow', '머쉬': 'Marshmallow', '그레이스': 'Grace',
+  '빌리지': 'Village', '유포지': 'Yupo', '스타골드': 'Star Gold', '컨셉(블루펄)': 'Concept Blue Pearl',
+  '카멜레온': 'Chameleon', '아르떼 울트라화이트': 'Arte Ultra White', '반누보화이트': 'Vent Nouveau White',
+  '반누보': 'Vent Nouveau', '크라프트': 'Kraft', '에그화이트': 'Egg White', '띤또레또': 'Tintoretto',
+  '매트화이트': 'Matte White', '크리스탈 펄(팝셋)': 'Crystal Pearl (Popset)', '스노우화이트': 'Snow White',
+  'PET카드': 'PET Card', 'MC카드': 'MC Card', '팝셋': 'Popset', '화이트모조': 'White Woodfree',
+  '몽블랑': 'Mont Blanc', '친환경용지': 'Eco Paper', '랑데뷰 내츄럴': 'Rendezvous Natural',
+  '린넨': 'Linen', '휘라레(린넨)': 'Frelle (Linen)', '엠보': 'Emboss', '스타': 'Stardream',
+  '화이트린넨펄': 'White Linen Pearl', '네추럴린넨펄': 'Natural Linen Pearl', '골드린넨펄': 'Gold Linen Pearl',
+  '바우하우스 블랙': 'Bauhaus Black', '뱅가드 레드': 'Vanguard Red', '뱅가드 블루': 'Vanguard Blue',
+  '사파이어펄': 'Sapphire Pearl', '라텍스 라피스': 'Latex Lapis', '라텍스 블랙': 'Latex Black',
+  '라텍스 스칼렛': 'Latex Scarlet', '엔틱골드펄': 'Antique Gold Pearl', '포레스트그린': 'Forest Green',
+  '레드': 'Red', '모조': 'Woodfree', '엔틱골드': 'Antique Gold Pearl',
+  // 엣지/박 카드·특수소재
+  '금펄': 'Gold Pearl', '은펄': 'Silver Pearl', '금펄 금테(금금라)': 'Gold Pearl, Gold edge',
+  '은펄 은테(은펄테)': 'Silver Pearl, Silver edge', '금펄 은테(금펄테)': 'Gold Pearl, Silver edge',
+  '반투명 금펄': 'Semi-clear Gold Pearl', '반투명 은펄': 'Semi-clear Silver Pearl',
+  '골드(금지)': 'Gold', '실버(은지)': 'Silver', '플래티늄 골드(프리미엄골드)': 'Platinum Gold',
+  '플레티늄 실버(프리미엄실버)': 'Platinum Silver', '투명': 'Clear', '반투명(투명플러스)': 'Semi-clear (Clear Plus)',
+  '화이트': 'White', '아트': 'Art', '랑데뷰': 'Rendezvous',
+}
+function paperEn(ko) {
+  let lead = ''
+  let s = ko
+  const ev = s.match(/^\[(이벤트|event)\]\s*/i)
+  if (ev) { lead = '[Event] '; s = s.slice(ev[0].length) }
+  const m = s.match(/[-\s](\d+(?:\.\d+)?)\s*g$/)
+  const gsm = m ? m[1] : null
+  let base = (m ? s.slice(0, m.index) : s).trim()
+  let prefix = ''
+  if (base.startsWith('Extra ')) { prefix = 'Extra '; base = base.slice(6).trim() }
+  const en = PAPER_EN[base] || base // 미매핑은 한글 유지(안전망)
+  const name = lead + prefix + en
+  return gsm ? `${name} ${gsm}gsm` : name
+}
+const COATING_EN = {
+  '코팅없음': 'No coating', '양면무광코팅': 'Matte lamination (both sides)', '양면유광코팅': 'Gloss lamination (both sides)',
+  '홀로그램코팅 도트-양면': 'Hologram dot (both sides)', '홀로그램코팅 심플-양면': 'Hologram plain (both sides)',
+  '양면벨벳코팅': 'Velvet lamination (both sides)',
+}
+const COLOR_EN = {
+  '단면4도': 'Single-side, full color', '양면8도': 'Double-side, full color',
+  '단면1도': 'Single-side, 1 color', '양면2도': 'Double-side, 1 color',
+  '단면4도(형광CMY+K)': 'Single-side, neon CMYK', '양면8도(형광CMY+K)': 'Double-side, neon CMYK',
+}
+function sizeEn(ko) {
+  const m = ko.match(/(\d+)\s*[x×]\s*(\d+)/)
+  if (m) return `${m[1]} × ${m[2]} mm`
+  if (/별사이즈|custom/i.test(ko)) return 'Custom size'
+  return ko
+}
+function optEn(axisKey, ko) {
+  if (axisKey === 'material') return paperEn(ko)
+  if (axisKey === 'coating') return COATING_EN[ko] || ko
+  if (axisKey === 'color') return COLOR_EN[ko] || ko
+  if (axisKey === 'size') return sizeEn(ko)
+  return ko
+}
+
+function axisOptions(items = [], axisKey) {
+  return items.map((t) => ({ code: t.code, ko: t.title, en: optEn(axisKey, t.title) }))
 }
 
 function main() {
@@ -89,7 +153,7 @@ function main() {
     ]
     for (const [key, prefix, items] of AXMAP) {
       if (!usedPrefixes.has(prefix)) continue
-      const opts = axisOptions(items).filter((o) => o.code.startsWith(prefix + ':') && usedCodes.has(o.code))
+      const opts = axisOptions(items, key).filter((o) => o.code.startsWith(prefix + ':') && usedCodes.has(o.code))
       if (opts.length) axes[key] = { label: ENGLISH_AXIS[key], options: opts }
     }
     for (const o of p.axes.other || []) {
@@ -97,7 +161,7 @@ function main() {
         if (!usedCodes.has(t.code)) continue
         const pref = (t.code || '').split(':')[0]
         axes[pref] = axes[pref] || { label: o.name || pref, options: [] }
-        if (!axes[pref].options.some((x) => x.code === t.code)) axes[pref].options.push({ code: t.code, ko: t.title })
+        if (!axes[pref].options.some((x) => x.code === t.code)) axes[pref].options.push({ code: t.code, ko: t.title, en: t.title })
       }
     }
 
