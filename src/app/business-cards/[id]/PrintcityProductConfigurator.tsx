@@ -20,6 +20,10 @@ import {
   getProductFinishing,
   finishingTotalKrw,
   finishingSurchargeKrw,
+  defaultSelecterCodes,
+  enWorkName,
+  enCategory,
+  enOption,
 } from '@/lib/printcity-finishing'
 
 // 축 표시 순서(가격영향 큰 순). 알 수 없는 키는 뒤에 자동 추가.
@@ -47,26 +51,47 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
   const qtys = useMemo(() => availableQuantities(product, codes), [product, codes])
   const effectiveQty = qtys.includes(qty) ? qty : qtys[0] ?? qty
 
-  // ── 후가공(addwork): printcity 직접 링크 work 만. selections[workType] = 선택된 옵션 codes ──
+  // ── 후가공(addwork): printcity 직접 링크 work 만. 후가공별 selecter(codeCategory→code) 다축 선택 ──
+  //   finishing[workType] 존재 = 선택됨. 값 = { codeCategory: code }(전 selecter). foilSizes = 박 사이즈 생산스펙.
   const works = useMemo(() => getProductFinishing(product.id), [product.id])
-  const [finishing, setFinishing] = useState<Record<string, string[]>>({})
+  const [finishing, setFinishing] = useState<Record<string, Record<string, string>>>({})
+  const [foilSizes, setFoilSizes] = useState<Record<string, { w: string; h: string }>>({})
 
-  const toggleWork = (workType: string, firstCodes: string[]) => {
+  // 가격함수에 넘길 flat 코드 배열(전 selecter 선택 코드).
+  const flatCodes = (m: Record<string, string>) => Object.values(m)
+
+  const toggleWork = (workType: string, defaults: Record<string, string>) => {
     setFinishing((prev) => {
       const next = { ...prev }
       if (next[workType]) delete next[workType]
-      else next[workType] = firstCodes
+      else next[workType] = defaults
       return next
     })
   }
-  const pickWorkOption = (workType: string, optCodes: string[]) => {
-    setFinishing((prev) => ({ ...prev, [workType]: optCodes }))
+  const pickSelecter = (workType: string, codeCategory: string, code: string) => {
+    setFinishing((prev) => ({
+      ...prev,
+      [workType]: { ...(prev[workType] ?? {}), [codeCategory]: code },
+    }))
   }
+  const setFoil = (workType: string, dim: 'w' | 'h', value: string) => {
+    setFoilSizes((prev) => {
+      const cur = prev[workType] ?? { w: '', h: '' }
+      return { ...prev, [workType]: { ...cur, [dim]: value.replace(/[^\d.]/g, '') } }
+    })
+  }
+
+  // finishingTotalKrw 는 workType→flat codes 를 받는다.
+  const finishingFlat = useMemo(() => {
+    const out: Record<string, string[]> = {}
+    for (const [wt, m] of Object.entries(finishing)) out[wt] = flatCodes(m)
+    return out
+  }, [finishing])
 
   const baseSupply = resolveSupplyKrw(product, { codes, qty: effectiveQty })
   const finish = useMemo(
-    () => finishingTotalKrw(works, finishing, effectiveQty),
-    [works, finishing, effectiveQty],
+    () => finishingTotalKrw(works, finishingFlat, effectiveQty),
+    [works, finishingFlat, effectiveQty],
   )
   const supply = baseSupply != null ? baseSupply + finish.total : null
   const money = supply != null ? withVat(supply) : null
@@ -163,7 +188,8 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
             {works.map((work) => {
               const sel = finishing[work.workType]
               const on = !!sel
-              const surcharge = on ? finishingSurchargeKrw(work, sel, effectiveQty) : null
+              const surcharge = on ? finishingSurchargeKrw(work, flatCodes(sel), effectiveQty) : null
+              const foil = foilSizes[work.workType] ?? { w: '', h: '' }
               return (
                 <div
                   key={work.workType}
@@ -176,10 +202,10 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
                       <input
                         type="checkbox"
                         checked={on}
-                        onChange={() => toggleWork(work.workType, work.options[0]?.codes ?? [])}
+                        onChange={() => toggleWork(work.workType, defaultSelecterCodes(work))}
                         className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-400"
                       />
-                      <span className="text-sm font-medium text-gray-800">{work.name}</span>
+                      <span className="text-sm font-medium text-gray-800">{enWorkName(work)}</span>
                       <span className="text-[11px] text-gray-400">
                         {work.pricing === 'per_unit' ? 'per unit' : 'per order'}
                       </span>
@@ -190,23 +216,79 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
                       </span>
                     )}
                   </div>
-                  {on && work.options.length > 1 && (
-                    <select
-                      value={sel.join('+')}
-                      onChange={(e) =>
-                        pickWorkOption(
-                          work.workType,
-                          e.target.value ? e.target.value.split('+') : [],
+
+                  {/* 하단 상세 패널 — printcity 동일. 후가공별 전 selecter(면수/종류/사이즈/카운트…)를 축마다 칩으로 노출. */}
+                  {on && (
+                    <div className="mt-3 space-y-3 border-t border-amber-200/70 pt-3">
+                      {work.selecters.map((s) => {
+                        // priceKeying=false 인 단일옵션(예 numbering 종류)은 고정 표시.
+                        const fixed = s.select.length === 1
+                        return (
+                          <div key={s.codeCategory}>
+                            <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-700/80 mb-1.5">
+                              {enCategory(s)}
+                              {!s.priceKeying && (
+                                <span className="ml-1.5 normal-case font-normal text-amber-600/60">
+                                  (spec)
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                              {s.select.map((o) => {
+                                const active = sel[s.codeCategory] === o.code
+                                return (
+                                  <button
+                                    key={o.code}
+                                    type="button"
+                                    disabled={fixed}
+                                    onClick={() => pickSelecter(work.workType, s.codeCategory, o.code)}
+                                    className={`px-2.5 py-1 rounded-md border text-xs transition-all ${
+                                      active
+                                        ? 'border-amber-500 bg-amber-100 text-amber-900 font-medium'
+                                        : 'border-amber-200 bg-white text-gray-600 hover:border-amber-300'
+                                    } ${fixed ? 'cursor-default' : ''}`}
+                                  >
+                                    {enOption(o.code)}
+                                  </button>
+                                )
+                              })}
+                            </div>
+                          </div>
                         )
-                      }
-                      className="mt-2.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
-                    >
-                      {work.options.map((o) => (
-                        <option key={o.codes.join('+')} value={o.codes.join('+')}>
-                          {o.label}
-                        </option>
-                      ))}
-                    </select>
+                      })}
+
+                      {/* 박 사이즈 — printcity 박/형압/엠보 도안 사이즈 생산스펙 입력. 명함=가격 무영향(calcValue=0). */}
+                      {work.foilSizeSpec && (
+                        <div>
+                          <div className="text-[11px] font-semibold uppercase tracking-wide text-amber-700/80 mb-1.5">
+                            Artwork size (mm)
+                            <span className="ml-1.5 normal-case font-normal text-amber-600/60">
+                              (production spec · no price impact)
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Width"
+                              value={foil.w}
+                              onChange={(e) => setFoil(work.workType, 'w', e.target.value)}
+                              className="w-24 border border-amber-200 rounded-md px-2.5 py-1.5 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
+                            <span className="text-amber-500 text-xs">×</span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              placeholder="Height"
+                              value={foil.h}
+                              onChange={(e) => setFoil(work.workType, 'h', e.target.value)}
+                              className="w-24 border border-amber-200 rounded-md px-2.5 py-1.5 text-xs text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                            />
+                            <span className="text-amber-500 text-xs">mm</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )
