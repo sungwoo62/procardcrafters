@@ -1,5 +1,7 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { ArrowLeft, ArrowLeftRight, Database, AlertTriangle, BadgeCheck, ListTree } from 'lucide-react'
+import { isPrintcityHidden } from '@/lib/printcity-hidden'
 import {
   CENSUS,
   buildProductMappingRows,
@@ -33,6 +35,7 @@ const ORDER_CAPABILITY: { step: string; ok: string; evidence: string }[] = [
 ]
 
 export default function PrintcityNamecardReport() {
+  if (isPrintcityHidden()) notFound() // OMO-3482: printcity UI 숨김(데이터 보존)
   const products = CENSUS.products
   const cov = productCoverage()
   const mapRows = buildProductMappingRows()

@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { ArrowLeft, ListTree, Database, Layers } from 'lucide-react'
 import { CATALOG } from '@/lib/printcity-namecard'
+import { isPrintcityHidden } from '@/lib/printcity-hidden'
 
 // OMO-3454 (board 2026-06-18): printcity 전체 제품군 리스트업을 실제 스토어프론트로 교정.
 // 데이터: src/data/printcity-catalog-census.json
@@ -12,6 +14,7 @@ const priceTypeLabel = (t: string | null) =>
   t === 'priceComplete' ? '룩업(완성형)' : t === 'priceCalculation' ? '계산형' : (t ?? '—')
 
 export default function PrintcityCatalogReport() {
+  if (isPrintcityHidden()) notFound() // OMO-3482: printcity UI 숨김(데이터 보존)
   const cats = CATALOG.categories
 
   return (

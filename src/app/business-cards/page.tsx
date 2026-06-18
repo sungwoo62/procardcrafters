@@ -1,6 +1,8 @@
 import Link from 'next/link'
+import { notFound } from 'next/navigation'
 import { ArrowLeft, BadgeCheck, Layers, Sparkles, ArrowRight } from 'lucide-react'
 import { PRINTCITY_PRODUCTS, startingSupplyKrw, withVat } from '@/lib/printcity-product'
+import { isPrintcityHidden } from '@/lib/printcity-hidden'
 
 // OMO-3452 (board 2026-06-18): real product pages for namecards, English site, supplier hidden from URL.
 //   Each card → /business-cards/[id] with full option configurator + per-combo live pricing + finishing.
@@ -14,6 +16,7 @@ export const metadata = {
 const won = (n: number) => `₩${Math.round(n).toLocaleString('en-US')}`
 
 export default function NamecardIndexPage() {
+  if (isPrintcityHidden()) notFound() // OMO-3482: printcity UI 숨김(데이터 보존)
   const products = PRINTCITY_PRODUCTS
   const totalCombos = products.reduce((s, p) => s + p.table.length, 0)
 
