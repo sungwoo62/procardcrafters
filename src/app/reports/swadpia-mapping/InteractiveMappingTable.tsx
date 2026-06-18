@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   AlertTriangle,
   CheckCircle2,
@@ -9,12 +9,17 @@ import {
   ChevronDown,
   Loader2,
   ExternalLink,
+  Link2,
+  ShieldCheck,
 } from 'lucide-react'
 
 // OMO-3148: 보드 요청 — "기존버전처럼 클릭하면 뭐가 되어있고 표시되는" 인터랙티브 뷰.
 // 정적 현황표(server page)에 행 클릭 → 펼침 상세(성원 라이브 vs 우리 적용 비교)를 추가한다.
-// 읽기 전용(쓰기 엔드포인트 없음) — prod 공개 페이지에 안전. 상세는 read-only
-// /api/swadpia-mapping/detail 만 호출한다.
+// 읽기/비교는 공개(read-only /api/swadpia-mapping/detail).
+//
+// OMO-3156: 구버전 에디터의 "성원 링크 부착 → 라이브 검증" 복원. 단 이 페이지는 공개 prod 이므로
+// 편집 UI(링크 입력·저장·검증)는 인증된 어드민에게만 노출/동작한다. 실제 쓰기 보호는
+// POST /api/swadpia-mapping 의 requireAdmin(401) 이 담당하고, 클라이언트 게이트는 UX 일 뿐이다.
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
 
@@ -162,6 +167,19 @@ function buildAxisCompares(detail: Detail): AxisCompare[] {
 export default function InteractiveMappingTable({ groups }: { groups: GroupWithRows[] }) {
   const [expanded, setExpanded] = useState<Set<string>>(new Set())
   const [details, setDetails] = useState<Record<string, Detail | 'loading' | 'error'>>({})
+  // OMO-3156: 어드민 여부(편집 UI 노출 게이트). 비로그인/일반 사용자는 false → 읽기 전용.
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    let alive = true
+    fetch('/api/swadpia-mapping/auth')
+      .then((r) => (r.ok ? r.json() : { admin: false }))
+      .then((j) => alive && setIsAdmin(Boolean(j.admin)))
+      .catch(() => {})
+    return () => {
+      alive = false
+    }
+  }, [])
 
   async function toggle(slug: string) {
     setExpanded((prev) => {
@@ -180,6 +198,19 @@ export default function InteractiveMappingTable({ groups }: { groups: GroupWithR
       } catch {
         setDetails((d) => ({ ...d, [slug]: 'error' }))
       }
+    }
+  }
+
+  // OMO-3156: 어드민이 링크 저장·검증 후 좌측 "성원 스크랩" 패널을 새 카테고리로 갱신.
+  async function reloadDetail(slug: string) {
+    setDetails((d) => ({ ...d, [slug]: 'loading' }))
+    try {
+      const res = await fetch(`/api/swadpia-mapping/detail?slug=${encodeURIComponent(slug)}`)
+      if (!res.ok) throw new Error(String(res.status))
+      const json = (await res.json()) as Detail
+      setDetails((d) => ({ ...d, [slug]: json }))
+    } catch {
+      setDetails((d) => ({ ...d, [slug]: 'error' }))
     }
   }
 
@@ -272,6 +303,13 @@ export default function InteractiveMappingTable({ groups }: { groups: GroupWithR
                             )}
                           </div>
                           <DetailPanel detail={details[r.slug]} unsupported={r.unsupported} />
+                          {isAdmin && (
+                            <AdminLinkEditor
+                              slug={r.slug}
+                              defaultCode={r.code}
+                              onSaved={() => reloadDetail(r.slug)}
+                            />
+                          )}
                         </div>
                       )}
                     </div>
@@ -487,6 +525,122 @@ function MissingComparison({ axes }: { axes: AxisCompare[] }) {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+// OMO-3156: 어드민 전용 — 성원 상품 링크 부착 → 라이브 검증 → print_swadpia_mapping 저장.
+// POST /api/swadpia-mapping 가 requireAdmin 으로 보호되므로, 비인증 호출은 401 로 거부된다.
+type VerifyState =
+  | { kind: 'idle' }
+  | { kind: 'saving' }
+  | { kind: 'ok'; categoryCode: string | null; paperCount: number; sizeCount: number }
+  | { kind: 'fail'; message: string }
+
+function AdminLinkEditor({
+  slug,
+  defaultCode,
+  onSaved,
+}: {
+  slug: string
+  defaultCode: string | null
+  onSaved: () => void
+}) {
+  const [url, setUrl] = useState('')
+  const [state, setState] = useState<VerifyState>({ kind: 'idle' })
+
+  async function save(clear: boolean) {
+    setState({ kind: 'saving' })
+    try {
+      const res = await fetch('/api/swadpia-mapping', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ slug, swadpiaUrl: clear ? '' : url.trim() }),
+      })
+      const json = await res.json().catch(() => ({}))
+      if (res.status === 401) {
+        setState({ kind: 'fail', message: '인증 필요 — 어드민 로그인 후 다시 시도하세요.' })
+        return
+      }
+      if (!res.ok) {
+        setState({ kind: 'fail', message: json?.error ?? `저장 실패 (${res.status})` })
+        return
+      }
+      if (clear) {
+        setState({ kind: 'idle' })
+        setUrl('')
+        onSaved()
+        return
+      }
+      const v = json?.verify
+      if (v?.ok) {
+        setState({
+          kind: 'ok',
+          categoryCode: v.categoryCode ?? null,
+          paperCount: v.paperCount ?? 0,
+          sizeCount: v.sizeCount ?? 0,
+        })
+        onSaved()
+      } else {
+        setState({ kind: 'fail', message: v?.error ?? json?.error ?? '검증 실패' })
+      }
+    } catch (e) {
+      setState({ kind: 'fail', message: e instanceof Error ? e.message : '요청 실패' })
+    }
+  }
+
+  return (
+    <div className="mt-3 rounded-lg border border-indigo-200 bg-indigo-50/60 p-3">
+      <div className="mb-1.5 flex items-center gap-1.5 text-xs font-semibold text-indigo-900">
+        <ShieldCheck className="h-3.5 w-3.5" /> 관리자 — 성원 링크 부착 · 라이브 검증
+      </div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+        <div className="flex flex-1 items-center gap-1.5 rounded border border-indigo-200 bg-white px-2 py-1">
+          <Link2 className="h-3.5 w-3.5 shrink-0 text-indigo-400" />
+          <input
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            placeholder={`성원 상품 링크 또는 코드 (예: ${defaultCode ?? 'CNC1000'})`}
+            className="w-full bg-transparent text-xs text-gray-800 outline-none placeholder:text-gray-400"
+          />
+        </div>
+        <div className="flex gap-1.5">
+          <button
+            onClick={() => save(false)}
+            disabled={state.kind === 'saving' || !url.trim()}
+            className="inline-flex items-center gap-1 rounded bg-indigo-600 px-2.5 py-1 text-xs font-medium text-white hover:bg-indigo-700 disabled:opacity-50"
+          >
+            {state.kind === 'saving' ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <CheckCircle2 className="h-3.5 w-3.5" />
+            )}
+            저장·검증
+          </button>
+          <button
+            onClick={() => save(true)}
+            disabled={state.kind === 'saving'}
+            className="rounded border border-gray-300 bg-white px-2.5 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50 disabled:opacity-50"
+          >
+            해제
+          </button>
+        </div>
+      </div>
+      {state.kind === 'ok' && (
+        <div className="mt-1.5 flex items-center gap-1 text-xs text-green-700">
+          <CheckCircle2 className="h-3.5 w-3.5" /> 검증 통과 — {state.categoryCode} (용지{' '}
+          {state.paperCount}종 · 사이즈 {state.sizeCount}종). 이 링크가 비교의 권위 소스로 적용됩니다.
+        </div>
+      )}
+      {state.kind === 'fail' && (
+        <div className="mt-1.5 flex items-center gap-1 text-xs text-red-600">
+          <AlertTriangle className="h-3.5 w-3.5" /> {state.message}
+        </div>
+      )}
+      <p className="mt-1.5 text-[11px] text-gray-400">
+        링크에서 성원 category_code 를 추출해 라이브로 용지·가격이 실재하는지 검증한 뒤 저장합니다.
+        &lsquo;해제&rsquo;는 수동 링크를 지우고 기본 자동맵(CATEGORY_MAP)으로 되돌립니다.
+      </p>
     </div>
   )
 }

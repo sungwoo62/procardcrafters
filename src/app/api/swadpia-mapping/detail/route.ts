@@ -1,23 +1,50 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
-import { fetchSwadpiaCategoryData, fetchSwadpiaGoodsViewOptions, CATEGORY_MAP } from '@/lib/swadpia'
+import { fetchSwadpiaCategoryDataByCode, fetchSwadpiaGoodsViewOptions, CATEGORY_MAP } from '@/lib/swadpia'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
 
-// OMO-3058 / OMO-3148: 제품 행 확장 시 보여줄 상세 (read-only).
+// OMO-3058 / OMO-3148 / OMO-3156: 제품 행 확장 시 보여줄 상세 (read-only).
 // 좌측 = 성원에서 스크랩한 항목(라이브), 우측 = 우리 사이트에 적용된 옵션.
 // ?slug=business-cards
 //
-// 권위 소스는 CATEGORY_MAP(라이브 전수검증 완료, OMO-3097). print_swadpia_mapping
-// 테이블은 참조하지 않는다 — 과거 시드의 stale category_code(예: 배너 CPR5000)가
-// 비교 데이터를 오염시키지 않도록. 쓰기 없음(공개 prod 안전).
+// category_code 권위 소스 우선순위(OMO-3156 정책 결정):
+//   1순위) 보드가 맵핑 리포트에서 링크를 직접 붙여 라이브 검증을 통과한 경우
+//          (print_swadpia_mapping.swadpia_url != null AND status='verified') → 그 코드를 채택.
+//          보드의 명시적 수동 오버라이드는 자동맵보다 우선한다.
+//   2순위) CATEGORY_MAP[slug] (라이브 전수검증 완료, OMO-3097).
+// 자동 시드 행(swadpia_url null)의 category_code 는 절대 참조하지 않는다 — 과거 시드의
+// stale 코드(예: 배너 CPR5000)가 비교 데이터를 오염시키지 않도록. 이 API 는 쓰기 없음(공개 prod 안전).
 
 export async function GET(req: NextRequest) {
   const slug = req.nextUrl.searchParams.get('slug')?.trim()
   if (!slug) return NextResponse.json({ error: 'slug 필요' }, { status: 400 })
 
-  const categoryCode = CATEGORY_MAP[slug] ?? null
+  const supabase = createServerClient()
+
+  // 보드 링크 오버라이드 조회(검증 통과한 수동 링크만). 실패해도 CATEGORY_MAP 로 폴백.
+  let categoryCode = CATEGORY_MAP[slug] ?? null
+  let categoryCodeSource: 'board-link' | 'category-map' | null = categoryCode
+    ? 'category-map'
+    : null
+  try {
+    const { data: override } = await supabase
+      .from('print_swadpia_mapping')
+      .select('category_code, swadpia_url, status')
+      .eq('slug', slug)
+      .maybeSingle()
+    if (
+      override?.swadpia_url &&
+      override.status === 'verified' &&
+      override.category_code
+    ) {
+      categoryCode = override.category_code
+      categoryCodeSource = 'board-link'
+    }
+  } catch {
+    // 테이블 미존재/조회 실패 → CATEGORY_MAP 폴백 유지(공개 읽기 무손상)
+  }
 
   // ── 성원 스크랩(라이브) ──────────────────────────────
   let swadpia: {
@@ -45,8 +72,10 @@ export async function GET(req: NextRequest) {
   }
   if (categoryCode) {
     // 가격 매트릭스(json_data)와 옵션폼(goods_view HTML)을 병렬로 긁는다.
+    // 보드 오버라이드 시 categoryCode 가 CATEGORY_MAP[slug] 와 다를 수 있으므로
+    // 슬러그가 아닌 해석된 코드로 직접 라이브 조회한다(OMO-3156).
     const [data, gv] = await Promise.all([
-      fetchSwadpiaCategoryData(slug),
+      fetchSwadpiaCategoryDataByCode(categoryCode),
       fetchSwadpiaGoodsViewOptions(categoryCode),
     ])
     swadpia.printColors = gv.printColors
@@ -88,7 +117,6 @@ export async function GET(req: NextRequest) {
   }
 
   // ── 우리 사이트 적용 ────────────────────────────────
-  const supabase = createServerClient()
   const { data: product } = await supabase
     .from('print_products')
     .select('id, name_ko, name_en, base_price_krw, margin_multiplier, is_active')
@@ -132,5 +160,5 @@ export async function GET(req: NextRequest) {
     }))
   }
 
-  return NextResponse.json({ slug, categoryCode, swadpia, applied })
+  return NextResponse.json({ slug, categoryCode, categoryCodeSource, swadpia, applied })
 }
