@@ -26,6 +26,10 @@ export interface PrintcityProductData {
   id: string
   nameKO: string
   label: string
+  /** printcity 명함 하위분류명 (예 일반명함/카드명함/스페셜명함/디지털일반명함…) */
+  sub?: string
+  subCode?: string
+  subType?: string
   ourSlug: string | null
   category3rd: string
   hasFoil: boolean

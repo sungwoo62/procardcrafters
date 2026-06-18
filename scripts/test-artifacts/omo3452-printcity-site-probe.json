@@ -1,0 +1,38 @@
+{
+  "siteId": null,
+  "apiHits": [
+    {
+      "url": "site/seller/printcity",
+      "status": 200
+    },
+    {
+      "url": "popup",
+      "status": 200
+    },
+    {
+      "url": "notification",
+      "status": 200
+    },
+    {
+      "url": "site/seller/printcity",
+      "status": 200
+    },
+    {
+      "url": "site/seller/printcity",
+      "status": 200
+    },
+    {
+      "url": "popup",
+      "status": 200
+    },
+    {
+      "url": "notification",
+      "status": 200
+    },
+    {
+      "url": "site/seller/printcity",
+      "status": 200
+    }
+  ],
+  "productNames": []
+}
