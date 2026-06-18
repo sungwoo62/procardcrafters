@@ -6,7 +6,7 @@
 //   고객가(USD·마진)·체크아웃 컷오버는 보드 게이트 — 본 구성기는 printcity 공급가+VAT 견적까지.
 
 import { useMemo, useState } from 'react'
-import { Database, ShieldCheck, Info } from 'lucide-react'
+import { Database, ShieldCheck, Info, Sparkles } from 'lucide-react'
 import {
   resolveSupplyKrw,
   defaultSelection,
@@ -17,6 +17,11 @@ import {
   wonKR,
   type PrintcityProductData,
 } from '@/lib/printcity-product'
+import {
+  getProductFinishing,
+  finishingTotalKrw,
+  finishingSurchargeKrw,
+} from '@/lib/printcity-finishing'
 
 // 축 표시 순서(가격영향 큰 순). 알 수 없는 키는 뒤에 자동 추가.
 const AXIS_ORDER = ['material', 'size', 'coating', 'color', 'foil', 'PCS', 'EPS']
@@ -40,9 +45,30 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
   const qtys = useMemo(() => availableQuantities(product, codes), [product, codes])
   const effectiveQty = qtys.includes(qty) ? qty : qtys[0] ?? qty
 
-  const supply = resolveSupplyKrw(product, { codes, qty: effectiveQty })
+  // ── 후가공(addwork): printcity 직접 링크 work 만. selections[workType] = 선택된 옵션 codes ──
+  const works = useMemo(() => getProductFinishing(product.id), [product.id])
+  const [finishing, setFinishing] = useState<Record<string, string[]>>({})
+
+  const toggleWork = (workType: string, firstCodes: string[]) => {
+    setFinishing((prev) => {
+      const next = { ...prev }
+      if (next[workType]) delete next[workType]
+      else next[workType] = firstCodes
+      return next
+    })
+  }
+  const pickWorkOption = (workType: string, optCodes: string[]) => {
+    setFinishing((prev) => ({ ...prev, [workType]: optCodes }))
+  }
+
+  const baseSupply = resolveSupplyKrw(product, { codes, qty: effectiveQty })
+  const finish = useMemo(
+    () => finishingTotalKrw(works, finishing, effectiveQty),
+    [works, finishing, effectiveQty],
+  )
+  const supply = baseSupply != null ? baseSupply + finish.total : null
   const money = supply != null ? withVat(supply) : null
-  const unit = supply != null && effectiveQty > 0 ? supply / effectiveQty : null
+  const unit = baseSupply != null && effectiveQty > 0 ? supply! / effectiveQty : null
 
   // 옵션 변경: 의존 축을 가능한 값으로 정합화(printcity 조건부 옵션 재현) + 수량 보정
   const pick = (axisKey: string, code: string) => {
@@ -125,14 +151,90 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
         </select>
       </div>
 
+      {/* 후가공(addwork) — printcity 직접 링크 work 만 노출. 선택 시 견적에 surcharge 합산 */}
+      {works.length > 0 && (
+        <div>
+          <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
+            <Sparkles className="h-4 w-4 text-amber-500" /> 후가공 옵션 <span className="font-normal text-gray-400 text-xs">(선택 · printcity 직독)</span>
+          </label>
+          <div className="space-y-2.5">
+            {works.map((work) => {
+              const sel = finishing[work.workType]
+              const on = !!sel
+              const surcharge = on ? finishingSurchargeKrw(work, sel, effectiveQty) : null
+              return (
+                <div
+                  key={work.workType}
+                  className={`rounded-xl border p-3 transition-colors ${
+                    on ? 'border-amber-300 bg-amber-50/60' : 'border-gray-200 bg-white'
+                  }`}
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={on}
+                        onChange={() => toggleWork(work.workType, work.options[0]?.codes ?? [])}
+                        className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-400"
+                      />
+                      <span className="text-sm font-medium text-gray-800">{work.name}</span>
+                      <span className="text-[11px] text-gray-400">
+                        {work.pricing === 'per_unit' ? '매당' : '주문당'}
+                      </span>
+                    </label>
+                    {on && surcharge != null && (
+                      <span className="text-sm font-semibold text-amber-700 whitespace-nowrap">
+                        + {wonKR(surcharge)}
+                      </span>
+                    )}
+                  </div>
+                  {on && work.options.length > 1 && (
+                    <select
+                      value={sel.join('+')}
+                      onChange={(e) =>
+                        pickWorkOption(
+                          work.workType,
+                          e.target.value ? e.target.value.split('+') : [],
+                        )
+                      }
+                      className="mt-2.5 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-amber-400"
+                    >
+                      {work.options.map((o) => (
+                        <option key={o.codes.join('+')} value={o.codes.join('+')}>
+                          {o.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
       {/* 견적 — printcity 공개 GET JSON 직독 */}
       <div className="border border-gray-200 rounded-xl p-5 bg-gray-50 space-y-2.5">
         {money ? (
           <>
             <div className="flex justify-between text-sm text-gray-600">
-              <span>printcity 공급가 ({effectiveQty.toLocaleString('ko-KR')}매)</span>
-              <span>{wonKR(money.supply)}</span>
+              <span>
+                {finish.lines.length > 0 ? '기본 인쇄' : 'printcity 공급가'} ({effectiveQty.toLocaleString('ko-KR')}매)
+              </span>
+              <span>{wonKR(baseSupply ?? 0)}</span>
             </div>
+            {finish.lines.map((l) => (
+              <div key={l.workType} className="flex justify-between text-sm text-amber-700">
+                <span>+ {l.name} <span className="text-amber-500/80 text-xs">({l.optionLabel})</span></span>
+                <span>{wonKR(l.krw)}</span>
+              </div>
+            ))}
+            {finish.lines.length > 0 && (
+              <div className="flex justify-between text-sm text-gray-600 border-t border-gray-200 pt-2.5">
+                <span>공급가 합계</span>
+                <span>{wonKR(money.supply)}</span>
+              </div>
+            )}
             <div className="flex justify-between text-sm text-gray-600">
               <span>부가세 (10%)</span>
               <span>{wonKR(money.vat)}</span>
