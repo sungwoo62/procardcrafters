@@ -1198,6 +1198,132 @@ export default function EditorClient({ product, options }: Props) {
     canvas.sendObjectToBack(pasteboard)
   }
 
+  // ── 후가공 레이어 초기화 (OMO-3484) ─────────────────────────────────────────
+  // 구성기에서 선택한 후가공(finishing) 값을 URL 파라미터로 받아
+  // 에디터 캔버스에 시각적 레이어로 표현한다.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function addFinishingLayers(canvas: any, fabric: typeof import('fabric'), finishingStr: string) {
+    if (!finishingStr) return
+    const types = finishingStr.split(',').map(s => s.trim()).filter(Boolean)
+    if (types.length === 0) return
+
+    const trimX = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimY = mmToPx(dims.bleedMm + PASTEBOARD_MM, scale)
+    const trimW = mmToPx(dims.widthMm, scale)
+    const trimH = mmToPx(dims.heightMm, scale)
+
+    // 박(foil_stamp): 금색 반투명 Rect — 위치/크기 조절 가능, 주문 시 자동 감지
+    if (types.includes('foil_stamp')) {
+      const foilW = trimW * 0.6
+      const foilH = trimH * 0.25
+      const foilRect = new fabric.Rect({
+        left: trimX + (trimW - foilW) / 2,
+        top: trimY + (trimH - foilH) / 2,
+        width: foilW,
+        height: foilH,
+        fill: 'rgba(212,175,55,0.22)',
+        stroke: 'rgba(212,175,55,0.9)',
+        strokeWidth: 1.5,
+        strokeDashArray: [6, 3],
+        selectable: true,
+        evented: true,
+        data: { id: makeId(), name: '박 (금박) 영역', layerType: 'rect' as LayerType, finish: true },
+      })
+      canvas.add(foilRect)
+    }
+
+    // 형압(deboss_emboss): 자주색 반투명 Rect
+    if (types.includes('deboss_emboss')) {
+      const emW = trimW * 0.5
+      const emH = trimH * 0.3
+      const emRect = new fabric.Rect({
+        left: trimX + (trimW - emW) / 2,
+        top: trimY + trimH * 0.15,
+        width: emW,
+        height: emH,
+        fill: 'rgba(139,92,246,0.15)',
+        stroke: 'rgba(139,92,246,0.8)',
+        strokeWidth: 1.5,
+        strokeDashArray: [4, 3],
+        selectable: true,
+        evented: true,
+        data: { id: makeId(), name: '형압 영역', layerType: 'rect' as LayerType, finishingType: 'deboss_emboss' },
+      })
+      canvas.add(emRect)
+    }
+
+    // 오시(score_crease): 중앙 수평 점선
+    if (types.includes('score_crease')) {
+      const scoreLine = new fabric.Line(
+        [trimX, trimY + trimH / 2, trimX + trimW, trimY + trimH / 2],
+        {
+          stroke: 'rgba(16,185,129,0.9)',
+          strokeWidth: 2,
+          strokeDashArray: [8, 4],
+          selectable: true,
+          evented: true,
+          data: { id: makeId(), name: '오시(접지선)', layerType: 'rect' as LayerType, finishingType: 'score_crease' },
+        }
+      )
+      canvas.add(scoreLine)
+    }
+
+    // 미싱(perforation): 중앙 아래 점선
+    if (types.includes('perforation')) {
+      const perfLine = new fabric.Line(
+        [trimX, trimY + trimH * 0.75, trimX + trimW, trimY + trimH * 0.75],
+        {
+          stroke: 'rgba(249,115,22,0.9)',
+          strokeWidth: 2,
+          strokeDashArray: [3, 4],
+          selectable: true,
+          evented: true,
+          data: { id: makeId(), name: '미싱(점선)', layerType: 'rect' as LayerType, finishingType: 'perforation' },
+        }
+      )
+      canvas.add(perfLine)
+    }
+
+    // 타공(drilled_hole): 좌측 상단 원형 가이드
+    if (types.includes('drilled_hole')) {
+      const holePx = mmToPx(6, scale)
+      const holeCircle = new fabric.Circle({
+        left: trimX + mmToPx(6, scale),
+        top: trimY + (trimH - holePx) / 2,
+        radius: holePx / 2,
+        fill: 'rgba(100,116,139,0.15)',
+        stroke: 'rgba(100,116,139,0.8)',
+        strokeWidth: 1.5,
+        strokeDashArray: [3, 2],
+        selectable: true,
+        evented: true,
+        data: { id: makeId(), name: '타공(구멍)', layerType: 'rect' as LayerType, finishingType: 'drilled_hole' },
+      })
+      canvas.add(holeCircle)
+    }
+
+    // 도무송(die_cut): 재단선 내 자유형 외곽 가이드 (Rect로 표현)
+    if (types.includes('die_cut')) {
+      const dcRect = new fabric.Rect({
+        left: trimX + mmToPx(4, scale),
+        top: trimY + mmToPx(4, scale),
+        width: trimW - mmToPx(8, scale),
+        height: trimH - mmToPx(8, scale),
+        fill: 'transparent',
+        stroke: 'rgba(236,72,153,0.85)',
+        strokeWidth: 2,
+        strokeDashArray: [5, 4],
+        rx: mmToPx(4, scale),
+        ry: mmToPx(4, scale),
+        selectable: true,
+        evented: true,
+        data: { id: makeId(), name: '도무송 외곽선', layerType: 'rect' as LayerType, finishingType: 'die_cut' },
+      })
+      canvas.add(dcRect)
+    }
+  }
+
   // ── Snap guides ───────────────────────────────────────────────────────────
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -3097,6 +3223,11 @@ export default function EditorClient({ product, options }: Props) {
       const urlBg = searchParams.get('bg')
       if (urlBg) { bgColorRef.current = urlBg; setBgColor(urlBg) }
       buildTemplate(canvas, fabric, initialTemplate, bgColorRef.current)
+
+      // OMO-3484: 구성기에서 선택된 후가공 레이어를 캔버스에 표현
+      const urlFinishing = searchParams.get('finishing') ?? ''
+      if (urlFinishing) addFinishingLayers(canvas, fabric, urlFinishing)
+
       canvas.renderAll()
 
       syncLayers(canvas)
