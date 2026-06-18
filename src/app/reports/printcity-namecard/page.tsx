@@ -58,7 +58,8 @@ export default function PrintcityNamecardReport() {
         </h1>
       </div>
       <p className="mt-2 text-sm text-gray-500">
-        OMO-3414 · OMO-3411 파생. printcity(dtp21/iamdesign/printdeal 공용 SaaS) 명함 카테고리{' '}
+        OMO-3454(OMO-3411/3414/3452 파생). printcity <b>실제 스토어프론트</b>(
+        <code className="rounded bg-gray-100 px-1">site/seller/printcity</code> menuCategory[명함]) 명함{' '}
         <b>{CENSUS.productCount}제품</b>을 <b>공개 GET JSON API</b>(
         <code className="rounded bg-gray-100 px-1">price-api.dtp21.com/v2</code>)로 직독.
         가격은 OCR/LLM 추론 없이 JSON 직독(읽기전용, 실주문 없음). 캡처:{' '}
@@ -83,9 +84,9 @@ export default function PrintcityNamecardReport() {
             (성원은 base + 박 surcharge <b>분리형</b>). 박 가격을 RE 없이 색상별 완성가로 직독.
           </li>
           <li>
-            표준 명함 base 200매: printcity <b>{won(baseDiff.find((r) => r.printcityName === '일반지 명함')?.printcityKrw)}</b>{' '}
+            표준 명함 base 200매: printcity <b>{won(baseDiff.find((r) => r.printcityName === '일반 명함')?.printcityKrw)}</b>{' '}
             vs 성원 앵커 <b>{won(SWADPIA_ANCHORS.baseNamecardWholesaleKrw.krw)}</b>{' '}
-            (<b>{pct(baseDiff.find((r) => r.printcityName === '일반지 명함')?.diffPct ?? NaN)}</b>).
+            (<b>{pct(baseDiff.find((r) => r.printcityName === '일반 명함')?.diffPct ?? NaN)}</b>).
           </li>
           <li>
             가격 컷오버/공급사 전환은 <b>보드 게이트</b>. 본 페이지는 읽기전용 분석 리포트.
@@ -317,8 +318,9 @@ export default function PrintcityNamecardReport() {
         <p className="mt-0.5">{CENSUS.method}</p>
         <p className="mt-0.5">{CENSUS.note}</p>
         <p className="mt-1">
-          크롤러: <code className="rounded bg-gray-100 px-1">scripts/omo3414-printcity-namecard-census.mjs</code> ·
-          full census: <code className="rounded bg-gray-100 px-1">scripts/test-artifacts/omo3414/printcity-namecard-census.full.json</code> ·
+          크롤러: <code className="rounded bg-gray-100 px-1">scripts/omo3452-printcity-real-namecard-crawl.mjs</code> ·
+          census 빌더: <code className="rounded bg-gray-100 px-1">scripts/omo3454-build-printcity-namecard-census.mjs</code> ·
+          full artifact: <code className="rounded bg-gray-100 px-1">scripts/test-artifacts/omo3452-printcity-real-namecard.full.json</code> ·
           분석: <code className="rounded bg-gray-100 px-1">src/lib/printcity-namecard.ts</code>
         </p>
       </div>

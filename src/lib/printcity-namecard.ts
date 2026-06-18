@@ -77,24 +77,25 @@ export interface ProductMapping {
   ourSlug: string | null
   note: string
 }
+// OMO-3454: printcity 실제 스토어프론트(site/seller/printcity menuCategory[명함]) 16제품 기준.
+// category3rd = subCateCode(bc01~bc06). null = 우리 카탈로그 미보유(printcity 측 갭).
 export const PRODUCT_MAPPING: ProductMapping[] = [
-  { printcityId: '61de7e13a36b0ec358946de3', printcityName: '일반지 명함', category3rd: 'MP_GNC', ourSlug: 'business-cards', note: '표준 명함(스노우/아트지) ↔ 우리 일반 명함' },
-  { printcityId: '63e4abde3374d8d1dc54458d', printcityName: '통합 명함', category3rd: 'MP_UNC', ourSlug: 'business-cards', note: '통합(용지 다종) 표준 명함 ↔ 일반 명함' },
-  { printcityId: '61d7e6ff4618a211d2069c9a', printcityName: '수입지 명함', category3rd: 'MP_INC', ourSlug: 'premium-business-cards', note: '수입지(프리미엄 용지) ↔ 프리미엄 명함' },
-  { printcityId: '6879cc61a67a79397627ad3c', printcityName: '특가 수입지 명함', category3rd: 'MP_INC', ourSlug: 'premium-business-cards', note: '특가 수입지 ↔ 프리미엄 명함(가격대 별도)' },
-  { printcityId: '61db8d7fb2fd4166089fa04d', printcityName: 'VIP 명함', category3rd: 'MP_VNC', ourSlug: 'premium-business-cards', note: 'VIP(고급 용지·8사이즈) ↔ 프리미엄 명함' },
-  { printcityId: '63db173890953943cfdafc94', printcityName: '엣지명함', category3rd: 'MP_EDG', ourSlug: 'premium-foil-cards', note: '엣지박(12색) ↔ 박 카드(foil cards)' },
-  { printcityId: '61ef5b679b270074d7f1e369', printcityName: '부분코팅 명함', category3rd: 'MP_PNC', ourSlug: 'uv-business-cards', note: '부분코팅(스팟UV) ↔ UV 카드' },
-  { printcityId: '61e52abfabaed95eaaf08cb0', printcityName: '에폭엠보 명함', category3rd: 'MP_ENC', ourSlug: 'premium-foil-cards', note: '에폭/엠보(형압) ↔ 박·형압 카드' },
-  { printcityId: '61de95b8241774a67e60074f', printcityName: '옵셋 카드명함', category3rd: 'MP_MNC', ourSlug: 'premium-business-cards', note: '두꺼운 카드명함 ↔ 프리미엄 명함' },
-  { printcityId: '61de9be4241774a67e601af8', printcityName: 'PET카드 명함', category3rd: 'MP_PEC', ourSlug: 'transparent-business-cards', note: 'PET(투명/반투명) ↔ 투명 명함' },
-  { printcityId: '61dfcbbe542d106e1224f76f', printcityName: '점자명함', category3rd: 'MP_ZNC', ourSlug: null, note: '점자(UV 돌출) — 우리 카탈로그 미보유(갭)' },
-  { printcityId: '61dfda7fc03d48fd50efdc83', printcityName: '포토카드', category3rd: 'MP_PCD', ourSlug: null, note: '포토카드 — 명함 외 굿즈성(갭)' },
-  { printcityId: '677cf067604e619a80edfa32', printcityName: '옵셋 피켓', category3rd: 'MP_OPK', ourSlug: null, note: '피켓(응원) — 명함 아님(카탈로그 분류 혼입)' },
-  { printcityId: '6a05875bd6dd07b8536a14f8', printcityName: '수입지 명함(이벤트)', category3rd: 'MP_INC', ourSlug: 'premium-business-cards', note: '이벤트 단일조합 — 프리미엄 명함' },
-  { printcityId: '690d5723122978358a481644', printcityName: '일반지 명함(이벤트)', category3rd: 'MP_GNC', ourSlug: 'business-cards', note: '이벤트 단일조합 — 일반 명함' },
-  { printcityId: '68d384a31b09594495f4c1b9', printcityName: '통합 명함(draft)', category3rd: 'MP_UNC', ourSlug: 'business-cards', note: '가격표 미적재(draft) — 맵핑만' },
-  { printcityId: '68ba716b4f93d8608081affd', printcityName: '수입지 명함(draft)', category3rd: 'MP_INC', ourSlug: 'premium-business-cards', note: '가격표 미적재(draft) — 맵핑만' },
+  { printcityId: '679c60008db6e006523747ad', printcityName: '일반 명함', category3rd: 'bc01', ourSlug: 'business-cards', note: '표준 명함(스노우/아트지) ↔ 우리 일반 명함' },
+  { printcityId: '679c60008db6e006523747b9', printcityName: '고급 명함', category3rd: 'bc01', ourSlug: 'premium-business-cards', note: '고급(통합·수입지 다종, 434조합) ↔ 프리미엄 명함' },
+  { printcityId: '679c60008db6e006523747b8', printcityName: 'PET 카드명함', category3rd: 'bc02', ourSlug: 'transparent-business-cards', note: 'PET(투명/반투명) ↔ 투명 명함' },
+  { printcityId: '679c60008db6e006523747b5', printcityName: 'MC 카드명함', category3rd: 'bc02', ourSlug: 'premium-business-cards', note: '두꺼운 카드명함(MC) ↔ 프리미엄 명함' },
+  { printcityId: '679c60008db6e006523747ae', printcityName: '점자 명함', category3rd: 'bc03', ourSlug: null, note: '점자(UV 돌출) — 우리 카탈로그 미보유(갭)' },
+  { printcityId: '679c60008db6e006523747b1', printcityName: '엣지 명함', category3rd: 'bc03', ourSlug: 'premium-foil-cards', note: '엣지박(12색) ↔ 박 카드(foil cards)' },
+  { printcityId: '679c60008db6e006523747b6', printcityName: '부분코팅 명함', category3rd: 'bc03', ourSlug: 'uv-business-cards', note: '부분코팅(스팟UV) ↔ UV 카드' },
+  { printcityId: '679c60008db6e006523747b2', printcityName: '에폭시 명함', category3rd: 'bc03', ourSlug: 'premium-foil-cards', note: '에폭/엠보(형압) ↔ 박·형압 카드' },
+  { printcityId: '679c57c58db6e00652374789', printcityName: '디지털 명함', category3rd: 'bc04', ourSlug: 'business-cards', note: '디지털 인쇄 표준 명함 ↔ 일반 명함' },
+  { printcityId: '679c5fff8db6e0065237478e', printcityName: '디지털 화이트명함', category3rd: 'bc04', ourSlug: 'business-cards', note: '화이트토너 디지털 ↔ 일반 명함(특수토너 큐레이션)' },
+  { printcityId: '679c5fff8db6e0065237478d', printcityName: '디지털 긴급명함', category3rd: 'bc04', ourSlug: 'business-cards', note: '긴급(당일) 디지털 ↔ 일반 명함(리드타임 옵션)' },
+  { printcityId: '679c5fff8db6e0065237478c', printcityName: '디지털 형광명함', category3rd: 'bc04', ourSlug: 'business-cards', note: '형광(네온) 디지털 ↔ 일반 명함(형광토너 큐레이션)' },
+  { printcityId: '679c50d38db6e0065237477e', printcityName: '디지털 카드명함', category3rd: 'bc05', ourSlug: 'premium-business-cards', note: '두꺼운 카드(디지털) ↔ 프리미엄 명함' },
+  { printcityId: '679c60008db6e006523747b3', printcityName: '디지털 3D박명함', category3rd: 'bc06', ourSlug: 'premium-foil-cards', note: '디지털 3D박(3색) ↔ 박 카드(foil cards)' },
+  { printcityId: '679c60008db6e006523747b7', printcityName: '디지털 부분에폭명함', category3rd: 'bc06', ourSlug: 'premium-foil-cards', note: '부분에폭(스팟에폭시) ↔ 박·형압 카드' },
+  { printcityId: '679c58488db6e0065237478b', printcityName: '디지털 홀로그램명함', category3rd: 'bc06', ourSlug: 'premium-foil-cards', note: '홀로그램 디지털 ↔ 박 카드(홀로그램 큐레이션)' },
 ]
 
 export interface ProductMappingRow extends ProductMapping {
@@ -285,7 +286,9 @@ export interface BaseDiffRow {
 export function buildBaseDiff(): BaseDiffRow[] {
   // 성원 앵커는 q200=4,000 단일점만 검증. 동일 수량(200매) base 비교.
   const swadpia = SWADPIA_ANCHORS.baseNamecardWholesaleKrw
-  const targets = ['일반지 명함', '통합 명함', '수입지 명함', 'VIP 명함']
+  // OMO-3454: printcity 실제 스토어프론트 명함명 기준(전역 census 폐기).
+  const targets = ['일반 명함', '고급 명함', 'MC 카드명함', '디지털 카드명함']
+  const premium = new Set(['고급 명함', 'MC 카드명함', '디지털 카드명함'])
   const rows: BaseDiffRow[] = []
   for (const name of targets) {
     // 동명 다수 → 가격표 가장 풍부한(combos 최다) 제품 선택
@@ -305,7 +308,7 @@ export function buildBaseDiff(): BaseDiffRow[] {
       swadpiaKrw: swadpia.krw,
       diffKrw: diff,
       diffPct: Math.round((diff / swadpia.krw) * 1000) / 10,
-      note: name.includes('수입지') || name.includes('VIP') ? '프리미엄 용지(↔성원 표준앵커, 등급차 존재)' : '표준 용지',
+      note: premium.has(name) ? '프리미엄/카드(↔성원 표준앵커, 등급차 존재)' : '표준 용지',
     })
   }
   return rows
@@ -324,7 +327,7 @@ export interface FoilDiffRow {
 // printcity 표준 명함 base(동수량) — 박 프리미엄 분리 추정용
 function printcityStandardBase(qty: number): number | null {
   const std = CENSUS.products
-    .filter((p) => p.nameKO === '일반지 명함' && p.counts.combos > 0)
+    .filter((p) => p.nameKO === '일반 명함' && p.counts.combos > 0)
     .sort((a, z) => z.counts.combos - a.counts.combos)[0]
   const v = std?.baseByQty[String(qty)]
   return v ?? null
