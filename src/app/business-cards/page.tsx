@@ -3,7 +3,7 @@ import { ArrowLeft, BadgeCheck, Database, ShieldCheck, ArrowRight } from 'lucide
 import { PRINTCITY_PRODUCTS, startingSupplyKrw, withVat, wonKR } from '@/lib/printcity-product'
 
 // OMO-3452 (보드 2026-06-18): "실제 제품 페이지를 만들어라 — printcity 제품·옵션 기반".
-//   printcity 명함 판매가능 제품을 개별 실제 제품 페이지(/business-cards/printcity/[id])로 구성.
+//   printcity 명함 판매가능 제품을 개별 실제 제품 페이지(/business-cards/[id])로 구성.
 //   각 페이지는 전 옵션축(용지·사이즈·코팅·도수·박 등) 선택형 구성기 + 조합별 printcity 직독가.
 //   성원(swadpia) 명함 경로는 삭제하지 않고 본 섹션에 노출하지 않음(보존). 고객가/결제 컷오버는 보드 게이트.
 export const dynamic = 'force-static'
@@ -57,7 +57,7 @@ export default function PrintcityNamecardIndexPage() {
               return (
                 <Link
                   key={p.id}
-                  href={`/business-cards/printcity/${p.id}`}
+                  href={`/business-cards/${p.id}`}
                   className="group rounded-2xl border border-gray-200 bg-white p-5 hover:border-blue-300 hover:shadow-lg transition-all hover:-translate-y-0.5"
                 >
                   <div className="aspect-[16/9] rounded-xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 border border-gray-100 flex items-center justify-center mb-4">

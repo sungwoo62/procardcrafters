@@ -92,6 +92,62 @@ function axisKeyForCode(p: PrintcityProductData, code: string): string | null {
 }
 
 /**
+ * 의존 옵션(constraint) 핵심: 현재 선택(codes)에서 axisKey 의 **실제 가능한 옵션 code 집합**.
+ * = 다른 축 선택을 만족하는 priced combo 들에 등장하는 axisKey code 만.
+ * printcity 스토어프론트의 조건부 옵션 노출(예: 고급명함 코팅은 스노우용지에서만)을 그대로 재현.
+ */
+export function availableCodes(p: PrintcityProductData, axisKey: string, codes: Record<string, string>): Set<string> {
+  const result = new Set<string>()
+  for (const row of p.table) {
+    let ok = true
+    for (const [k, code] of Object.entries(codes)) {
+      if (k === axisKey) continue
+      // 다른 축이 이 제품 combo 에 쓰이는 축이면, 선택값이 combo 에 포함돼야 함
+      const usesK = p.axes[k] && row.c.some((c) => p.axes[k].options.some((o) => o.code === c))
+      if (usesK && !row.c.includes(code)) { ok = false; break }
+    }
+    if (!ok) continue
+    for (const c of row.c) {
+      if (axisKeyForCode(p, c) === axisKey) result.add(c)
+    }
+  }
+  return result
+}
+
+/** 현재 선택에서 가능한 수량 목록(선택 조합에 실제 가격이 있는 수량만). */
+export function availableQuantities(p: PrintcityProductData, codes: Record<string, string>): number[] {
+  const chosen = new Set(Object.values(codes))
+  const qtys = new Set<number>()
+  for (const row of p.table) {
+    if (!row.c.every((c) => chosen.has(c))) continue
+    for (const [q, v] of row.p) if (v > 0) qtys.add(q)
+  }
+  return [...qtys].sort((a, b) => a - b)
+}
+
+/**
+ * 한 축을 바꾼 뒤 나머지 축을 가능한 값으로 정합화(snap). 무효 선택이 남지 않도록.
+ * 변경축(changedKey)은 고정하고, 다른 축 순서대로 available 밖이면 첫 가능값으로 교체. 안정될 때까지 반복.
+ */
+export function reconcile(p: PrintcityProductData, codes: Record<string, string>, changedKey: string): Record<string, string> {
+  const next = { ...codes }
+  const keys = Object.keys(p.axes)
+  for (let pass = 0; pass < keys.length + 1; pass++) {
+    let changed = false
+    for (const k of keys) {
+      if (k === changedKey) continue
+      const avail = availableCodes(p, k, next)
+      if (avail.size && !avail.has(next[k])) {
+        next[k] = [...avail][0]
+        changed = true
+      }
+    }
+    if (!changed) break
+  }
+  return next
+}
+
+/**
  * 구성기 초기 선택값 — 실제 가격이 있는 대표 조합에서 도출(첫 옵션 단순조합은 미가격일 수 있음).
  * 우선순위: 200매 최저가 행 → 최소수량 최저가 행 → 첫 행.
  */

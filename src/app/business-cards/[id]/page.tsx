@@ -45,7 +45,7 @@ export default async function PrintcityProductPage({ params }: Props) {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Link
-          href="/business-cards/printcity"
+          href="/business-cards"
           className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
         >
           <ArrowLeft className="h-4 w-4" /> printcity 명함 전체

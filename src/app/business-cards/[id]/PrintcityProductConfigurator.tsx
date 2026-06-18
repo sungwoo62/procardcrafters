@@ -10,6 +10,9 @@ import { Database, ShieldCheck, Info } from 'lucide-react'
 import {
   resolveSupplyKrw,
   defaultSelection,
+  availableCodes,
+  availableQuantities,
+  reconcile,
   withVat,
   wonKR,
   type PrintcityProductData,
@@ -33,29 +36,45 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
   const [codes, setCodes] = useState<Record<string, string>>(initial.codes)
   const [qty, setQty] = useState<number>(initial.qty)
 
-  const supply = resolveSupplyKrw(product, { codes, qty })
-  const money = supply != null ? withVat(supply) : null
-  const unit = supply != null && qty > 0 ? supply / qty : null
+  // 현재 선택에서 실제 가능한 수량(조합 의존)
+  const qtys = useMemo(() => availableQuantities(product, codes), [product, codes])
+  const effectiveQty = qtys.includes(qty) ? qty : qtys[0] ?? qty
 
-  const pick = (axisKey: string, code: string) => setCodes((prev) => ({ ...prev, [axisKey]: code }))
+  const supply = resolveSupplyKrw(product, { codes, qty: effectiveQty })
+  const money = supply != null ? withVat(supply) : null
+  const unit = supply != null && effectiveQty > 0 ? supply / effectiveQty : null
+
+  // 옵션 변경: 의존 축을 가능한 값으로 정합화(printcity 조건부 옵션 재현) + 수량 보정
+  const pick = (axisKey: string, code: string) => {
+    setCodes((prev) => {
+      const next = reconcile(product, { ...prev, [axisKey]: code }, axisKey)
+      const q = availableQuantities(product, next)
+      setQty((cur) => (q.includes(cur) ? cur : q[0] ?? cur))
+      return next
+    })
+  }
 
   return (
     <div className="space-y-5">
       {axisKeys.map((key) => {
         const axis = product.axes[key]
         if (!axis || axis.options.length === 0) return null
-        const isChips = axis.options.length <= 6
+        // 의존 옵션: 현재 다른 축 선택에서 실제 가능한 값만 노출(printcity 스토어프론트 동일).
+        const avail = availableCodes(product, key, codes)
+        const opts = axis.options.filter((o) => avail.has(o.code))
+        if (opts.length === 0) return null
+        const isChips = opts.length <= 6
         return (
           <div key={key}>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {axis.label}
-              {axis.options.length === 1 && (
+              {opts.length === 1 && (
                 <span className="ml-2 text-[11px] font-normal text-gray-400">(고정)</span>
               )}
             </label>
             {isChips ? (
               <div className="flex flex-wrap gap-2">
-                {axis.options.map((o) => {
+                {opts.map((o) => {
                   const active = codes[key] === o.code
                   return (
                     <button
@@ -75,11 +94,11 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
               </div>
             ) : (
               <select
-                value={codes[key]}
+                value={avail.has(codes[key]) ? codes[key] : opts[0].code}
                 onChange={(e) => pick(key, e.target.value)}
                 className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
               >
-                {axis.options.map((o) => (
+                {opts.map((o) => (
                   <option key={o.code} value={o.code}>
                     {o.ko}
                   </option>
@@ -94,11 +113,11 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
       <div>
         <label className="block text-sm font-semibold text-gray-700 mb-2">수량 Quantity</label>
         <select
-          value={qty}
+          value={effectiveQty}
           onChange={(e) => setQty(Number(e.target.value))}
           className="w-full border border-gray-300 rounded-lg px-3 py-2.5 text-sm text-gray-800 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400"
         >
-          {product.quantities.map((q) => (
+          {qtys.map((q) => (
             <option key={q} value={q}>
               {q.toLocaleString('ko-KR')}매
             </option>
@@ -111,7 +130,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
         {money ? (
           <>
             <div className="flex justify-between text-sm text-gray-600">
-              <span>printcity 공급가 ({qty.toLocaleString('ko-KR')}매)</span>
+              <span>printcity 공급가 ({effectiveQty.toLocaleString('ko-KR')}매)</span>
               <span>{wonKR(money.supply)}</span>
             </div>
             <div className="flex justify-between text-sm text-gray-600">
