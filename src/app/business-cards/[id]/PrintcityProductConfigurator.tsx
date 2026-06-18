@@ -14,7 +14,6 @@ import {
   availableQuantities,
   reconcile,
   withVat,
-  wonKR,
   type PrintcityProductData,
 } from '@/lib/printcity-product'
 import {
@@ -32,6 +31,9 @@ function orderedAxisKeys(axes: Record<string, unknown>): string[] {
   const rest = keys.filter((k) => !AXIS_ORDER.includes(k))
   return [...known, ...rest]
 }
+
+// 영어사이트: 가격은 ₩ 표기(고객 USD 컷오버는 보드 게이트).
+const won = (n: number) => `₩${Math.round(n).toLocaleString('en-US')}`
 
 export default function PrintcityProductConfigurator({ product }: { product: PrintcityProductData }) {
   const axisKeys = useMemo(() => orderedAxisKeys(product.axes), [product])
@@ -95,7 +97,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
             <label className="block text-sm font-semibold text-gray-700 mb-2">
               {axis.label}
               {opts.length === 1 && (
-                <span className="ml-2 text-[11px] font-normal text-gray-400">(고정)</span>
+                <span className="ml-2 text-[11px] font-normal text-gray-400">(fixed)</span>
               )}
             </label>
             {isChips ? (
@@ -135,9 +137,9 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
         )
       })}
 
-      {/* 수량 */}
+      {/* Quantity */}
       <div>
-        <label className="block text-sm font-semibold text-gray-700 mb-2">수량 Quantity</label>
+        <label className="block text-sm font-semibold text-gray-700 mb-2">Quantity</label>
         <select
           value={effectiveQty}
           onChange={(e) => setQty(Number(e.target.value))}
@@ -145,7 +147,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
         >
           {qtys.map((q) => (
             <option key={q} value={q}>
-              {q.toLocaleString('ko-KR')}매
+              {q.toLocaleString('en-US')} pcs
             </option>
           ))}
         </select>
@@ -155,7 +157,7 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
       {works.length > 0 && (
         <div>
           <label className="block text-sm font-semibold text-gray-700 mb-2 flex items-center gap-1.5">
-            <Sparkles className="h-4 w-4 text-amber-500" /> 후가공 옵션 <span className="font-normal text-gray-400 text-xs">(선택 · printcity 직독)</span>
+            <Sparkles className="h-4 w-4 text-amber-500" /> Finishing <span className="font-normal text-gray-400 text-xs">(optional · priced by quantity)</span>
           </label>
           <div className="space-y-2.5">
             {works.map((work) => {
@@ -179,12 +181,12 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
                       />
                       <span className="text-sm font-medium text-gray-800">{work.name}</span>
                       <span className="text-[11px] text-gray-400">
-                        {work.pricing === 'per_unit' ? '매당' : '주문당'}
+                        {work.pricing === 'per_unit' ? 'per unit' : 'per order'}
                       </span>
                     </label>
                     {on && surcharge != null && (
                       <span className="text-sm font-semibold text-amber-700 whitespace-nowrap">
-                        + {wonKR(surcharge)}
+                        + {won(surcharge)}
                       </span>
                     )}
                   </div>
@@ -219,50 +221,50 @@ export default function PrintcityProductConfigurator({ product }: { product: Pri
           <>
             <div className="flex justify-between text-sm text-gray-600">
               <span>
-                {finish.lines.length > 0 ? '기본 인쇄' : 'printcity 공급가'} ({effectiveQty.toLocaleString('ko-KR')}매)
+                {finish.lines.length > 0 ? 'Base print' : 'Price'} ({effectiveQty.toLocaleString('en-US')} pcs)
               </span>
-              <span>{wonKR(baseSupply ?? 0)}</span>
+              <span>{won(baseSupply ?? 0)}</span>
             </div>
             {finish.lines.map((l) => (
               <div key={l.workType} className="flex justify-between text-sm text-amber-700">
                 <span>+ {l.name} <span className="text-amber-500/80 text-xs">({l.optionLabel})</span></span>
-                <span>{wonKR(l.krw)}</span>
+                <span>{won(l.krw)}</span>
               </div>
             ))}
             {finish.lines.length > 0 && (
               <div className="flex justify-between text-sm text-gray-600 border-t border-gray-200 pt-2.5">
-                <span>공급가 합계</span>
-                <span>{wonKR(money.supply)}</span>
+                <span>Subtotal</span>
+                <span>{won(money.supply)}</span>
               </div>
             )}
             <div className="flex justify-between text-sm text-gray-600">
-              <span>부가세 (10%)</span>
-              <span>{wonKR(money.vat)}</span>
+              <span>VAT (10%)</span>
+              <span>{won(money.vat)}</span>
             </div>
             <div className="flex justify-between text-base font-bold text-gray-900 border-t border-gray-200 pt-2.5">
-              <span>합계 (VAT 포함)</span>
-              <span>{wonKR(money.total)}</span>
+              <span>Total (incl. VAT)</span>
+              <span>{won(money.total)}</span>
             </div>
             {unit != null && (
               <div className="text-right text-[11px] text-gray-400">
-                1매당 {wonKR(unit)} (공급가 기준)
+                {won(unit)} per unit
               </div>
             )}
           </>
         ) : (
           <div className="flex items-start gap-2 text-sm text-gray-500">
             <Info className="h-4 w-4 mt-0.5 shrink-0 text-gray-400" />
-            <span>선택한 옵션 조합은 printcity 가격표에 없는 구성입니다. 다른 용지·사이즈·수량을 선택해 주세요.</span>
+            <span>This option combination isn&apos;t available. Please choose a different paper, size, or quantity.</span>
           </div>
         )}
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] text-gray-400">
         <span className="inline-flex items-center gap-1">
-          <Database className="h-3.5 w-3.5" /> printcity 공개 API 직독 · 옵션 누락 0
+          <Database className="h-3.5 w-3.5" /> Live pricing · all options mapped
         </span>
         <span className="inline-flex items-center gap-1">
-          <ShieldCheck className="h-3.5 w-3.5" /> 고객가(USD)·결제 컷오버는 보드 승인 게이트
+          <ShieldCheck className="h-3.5 w-3.5" /> Quality guaranteed · worldwide delivery
         </span>
       </div>
     </div>

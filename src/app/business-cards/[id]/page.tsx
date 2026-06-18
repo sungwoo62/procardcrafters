@@ -2,7 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { ArrowLeft, BadgeCheck, CheckCircle, Clock, Globe, ShieldCheck, Layers } from 'lucide-react'
-import { PRINTCITY_PRODUCTS, getPrintcityProduct, startingSupplyKrw, withVat, wonKR } from '@/lib/printcity-product'
+import { PRINTCITY_PRODUCTS, getPrintcityProduct, startingSupplyKrw, withVat } from '@/lib/printcity-product'
 import PrintcityProductConfigurator from './PrintcityProductConfigurator'
 
 export const dynamic = 'force-static'
@@ -20,10 +20,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const p = getPrintcityProduct(id)
   if (!p) return { title: 'Product Not Found' }
   return {
-    title: `${p.nameKO} (${p.label}) · printcity 명함 · Procardcrafters`,
-    description: `printcity ${p.nameKO} — 용지·사이즈·코팅·도수${p.hasFoil ? '·박' : ''} 전 옵션 선택형 명함 제품. printcity 공개 가격 API 직독, 옵션 누락 없음.`,
+    title: `${p.label} | Custom ${p.label} Printing · Procardcrafters`,
+    description: `Order ${p.label} online — choose paper, size, coating, sides${p.hasFoil ? ', foil' : ''} and finishing. Full option mapping, fast worldwide delivery.`,
   }
 }
+
+const won = (n: number) => `₩${Math.round(n).toLocaleString('en-US')}`
 
 const TRUST = [
   { icon: ShieldCheck, text: 'Quality Guaranteed' },
@@ -48,71 +50,70 @@ export default async function PrintcityProductPage({ params }: Props) {
           href="/business-cards"
           className="mb-6 inline-flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800"
         >
-          <ArrowLeft className="h-4 w-4" /> printcity 명함 전체
+          <ArrowLeft className="h-4 w-4" /> All Business Cards
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-start">
-          {/* 좌: 제품 정보 */}
+          {/* Left: product info */}
           <div>
             <div className="aspect-[16/10] rounded-2xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 border border-gray-200 flex items-center justify-center mb-6">
               <div className="text-center">
                 <BadgeCheck className="h-12 w-12 text-blue-500 mx-auto mb-2" />
-                <div className="text-sm font-semibold text-blue-900/70">printcity · {product.sub ?? product.category3rd}</div>
+                <div className="text-sm font-semibold text-blue-900/70">{product.subEn ?? product.sub}</div>
               </div>
             </div>
 
             <div className="flex items-start justify-between gap-3 mb-1">
-              <h1 className="text-3xl font-bold text-gray-900">{product.nameKO}</h1>
+              <h1 className="text-3xl font-bold text-gray-900">{product.label}</h1>
               {product.hasFoil && (
                 <span className="text-xs font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 whitespace-nowrap">
-                  박 {product.axes.foil?.options.length ?? 0}색
+                  {product.axes.foil?.options.length ?? 0} foil colors
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mb-1">{product.sub} · {product.label}</p>
-            <p className="text-[11px] text-gray-400 mb-4">printcity.co.kr 스토어프론트 실제 명함 제품 (productbysite 직독)</p>
+            <p className="text-sm text-gray-500 mb-4">{product.subEn ?? product.sub}</p>
 
             {startTotal != null && (
               <p className="text-gray-700 mb-5">
-                <span className="text-gray-500 text-sm">부터 </span>
-                <span className="text-2xl font-bold text-gray-900">{wonKR(startTotal)}</span>
-                <span className="text-gray-500 text-sm"> ({start?.qty.toLocaleString('ko-KR')}매, VAT 포함)</span>
+                <span className="text-gray-500 text-sm">From </span>
+                <span className="text-2xl font-bold text-gray-900">{won(startTotal)}</span>
+                <span className="text-gray-500 text-sm"> / {start?.qty.toLocaleString('en-US')} pcs incl. VAT</span>
               </p>
             )}
 
             <div className="bg-white rounded-xl border border-gray-200 p-5 mb-6">
-              <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">옵션 구성 (printcity 직독)</h3>
+              <h3 className="font-semibold text-gray-900 mb-3 text-sm uppercase tracking-wide">Options</h3>
               <ul className="space-y-2">
                 {Object.entries(product.axes).map(([k, ax]) => (
                   <li key={k} className="flex items-center gap-2.5 text-sm text-gray-700">
                     <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
                     <span className="font-medium">{ax.label}</span>
-                    <span className="text-gray-400">— {ax.options.length}종</span>
+                    <span className="text-gray-400">— {ax.options.length} options</span>
                   </li>
                 ))}
                 <li className="flex items-center gap-2.5 text-sm text-gray-700">
                   <CheckCircle className="w-4 h-4 text-green-500 shrink-0" />
-                  <span className="font-medium">수량 Quantity</span>
-                  <span className="text-gray-400">— {product.quantities.length}구간</span>
+                  <span className="font-medium">Quantity</span>
+                  <span className="text-gray-400">— {product.quantities.length} tiers</span>
                 </li>
               </ul>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-blue-50 border border-blue-100 rounded-xl p-4">
-                <div className="font-semibold text-blue-800 text-sm mb-1">{axisCount + 1}축 옵션</div>
-                <div className="text-blue-600 text-xs leading-relaxed">모든 옵션이 선택 가능 · 조합별 실가격</div>
+                <div className="font-semibold text-blue-800 text-sm mb-1">{axisCount + 1} option groups</div>
+                <div className="text-blue-600 text-xs leading-relaxed">Every option selectable · real per-combo price</div>
               </div>
               <div className="bg-green-50 border border-green-100 rounded-xl p-4">
-                <div className="font-semibold text-green-800 text-sm mb-1">{product.table.length}개 조합</div>
-                <div className="text-green-600 text-xs leading-relaxed">printcity 가격표 직독 · 추론 없음</div>
+                <div className="font-semibold text-green-800 text-sm mb-1">{product.table.length} combinations</div>
+                <div className="text-green-600 text-xs leading-relaxed">Live pricing · no estimates</div>
               </div>
             </div>
           </div>
 
-          {/* 우: 구성/견적 */}
+          {/* Right: configure & quote */}
           <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm lg:sticky lg:top-6">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">옵션 선택 · 견적</h2>
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Configure &amp; Quote</h2>
             <PrintcityProductConfigurator product={product} />
           </div>
         </div>
