@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { OrderStatus } from '@/types/database'
+import { generateOrderInvoicePdf } from '@/lib/order-pdf'
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
 const FROM = 'Procardcrafters <orders@procardcrafters.com>'
@@ -69,7 +70,9 @@ function buildItemsTable(items: OrderEmailData['items']): string {
   `
 }
 
-function buildEmailHtml(status: OrderStatus, data: OrderEmailData): string {
+// OMO-2841: 산출물 이미지 생성 스크립트(generate-quote-samples)가 실제 회신메일과
+// 동일한 HTML 을 렌더하기 위해 export 한다.
+export function buildEmailHtml(status: OrderStatus, data: OrderEmailData): string {
   const { orderNumber, customerName, totalUsd, trackingNumber, items } = data
 
   const header = `<div style="font-family:sans-serif;max-width:600px;margin:0 auto">`
@@ -160,6 +163,40 @@ export function buildOrderStatusEmail(
   return { subject: `[Procardcrafters] ${subject} — #${data.orderNumber}`, html }
 }
 
+// OMO-2841: 주문 접수(pending)·확정(paid) 회신메일에는 영문 USD 인보이스 PDF 를 첨부한다.
+// 고객 발송·어드민 테스트 발송이 동일한 첨부를 받도록 단일 헬퍼로 통일한다.
+const INVOICE_STATUSES = new Set<OrderStatus>(['pending', 'paid'])
+
+type ResendAttachment = { filename: string; content: string }
+
+// 인보이스 첨부를 best-effort 로 생성한다. PDF 생성 실패가 메일 발송을 막지 않도록 null 을 반환한다.
+async function buildOrderInvoiceAttachment(
+  status: OrderStatus,
+  data: OrderEmailData
+): Promise<ResendAttachment | null> {
+  if (!INVOICE_STATUSES.has(status)) return null
+  try {
+    const pdf = await generateOrderInvoicePdf({
+      orderNumber: data.orderNumber,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      totalUsd: data.totalUsd,
+      lineItems: data.items?.map((i) => ({
+        description: i.name,
+        quantity: i.quantity,
+        unitPriceUsd: i.quantity > 0 ? i.priceUsd / i.quantity : i.priceUsd,
+        subtotalUsd: i.priceUsd,
+      })),
+    })
+    return {
+      filename: `invoice-${data.orderNumber}.pdf`,
+      content: Buffer.from(pdf).toString('base64'),
+    }
+  } catch {
+    return null
+  }
+}
+
 export async function sendOrderStatusEmail(
   status: OrderStatus,
   data: OrderEmailData
@@ -168,11 +205,14 @@ export async function sendOrderStatusEmail(
   const built = buildOrderStatusEmail(status, data)
   if (!built) return
 
+  const attachment = await buildOrderInvoiceAttachment(status, data)
+
   await resend.emails.send({
     from: FROM,
     to: data.customerEmail,
     subject: built.subject,
     html: built.html,
+    ...(attachment ? { attachments: [attachment] } : {}),
   })
 }
 
@@ -188,26 +228,31 @@ export interface TestQuoteEmailParams {
 
 export async function sendTestQuoteEmail(
   params: TestQuoteEmailParams
-): Promise<{ sent: boolean; subject: string; html: string }> {
+): Promise<{ sent: boolean; subject: string; html: string; hasPdf: boolean }> {
   const { status, data, toEmail } = params
   const built = buildOrderStatusEmail(status, data)
   if (!built) {
     throw new Error(`지원하지 않는 샘플 유형입니다: ${status}`)
   }
   const subject = `[테스트] ${built.subject}`
+  // OMO-2841: 테스트 메일도 고객 발송과 100% 동일하게 인보이스 PDF 를 첨부한다.
+  const hasPdf = INVOICE_STATUSES.has(status)
 
   if (!resend) {
     // 키 미설정 환경(미배포/로컬): 발송 대신 미리보기만 제공
-    return { sent: false, subject, html: built.html }
+    return { sent: false, subject, html: built.html, hasPdf }
   }
+
+  const attachment = await buildOrderInvoiceAttachment(status, data)
 
   await resend.emails.send({
     from: FROM,
     to: toEmail, // 입력값으로만 강제 — 실고객/CC/BCC 없음
     subject,
     html: built.html,
+    ...(attachment ? { attachments: [attachment] } : {}),
   })
-  return { sent: true, subject, html: built.html }
+  return { sent: true, subject, html: built.html, hasPdf }
 }
 
 // OMO-2840: orderId 없이 호출할 때 사용하는 대표 샘플 데이터(실데이터 미참조).
