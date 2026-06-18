@@ -33,6 +33,12 @@ import {
   reverseCoverageSummary,
   reverseMissingSwadpia,
 } from '@/lib/swadpia-coverage'
+import {
+  buildFinishingMatrix,
+  finishingMatrixSummary,
+  SWADPIA_FINISHING_MATRIX_DATE,
+  type FinishingCellStatus,
+} from '@/config/swadpia-finishing-matrix'
 
 // ─── 교차검수 로직 (선언 config ↔ 실제 변환) ──────────────────────────────────
 
@@ -111,6 +117,15 @@ const STATUS_META: Record<SwadpiaFinishingMapping['status'], { ko: string; cls: 
   needs_audit: { ko: '카테고리 재조사', cls: 'bg-gray-100 text-gray-600 border-gray-300' },
 }
 
+// OMO-3483: 카테고리 × 후가공 매트릭스 셀 상태 메타.
+const CELL_META: Record<FinishingCellStatus, { icon: string; ko: string; cls: string }> = {
+  auto_priced: { icon: '✅', ko: '자동발주+공급가', cls: 'bg-green-100 text-green-800 border-green-300' },
+  auto_unpriced: { icon: '🟡', ko: '자동발주·공급가 미적재', cls: 'bg-yellow-100 text-yellow-800 border-yellow-300' },
+  needs_audit: { icon: '⚠️', ko: '카탈로그·미매핑(재조사)', cls: 'bg-amber-100 text-amber-800 border-amber-300' },
+  unmapped: { icon: '❌', ko: '성원전용·미대응', cls: 'bg-red-100 text-red-700 border-red-300' },
+  investigate: { icon: '❓', ko: '토큰불확실(재조사)', cls: 'bg-purple-100 text-purple-700 border-purple-300' },
+}
+
 export default function SwadpiaLinkageDashboard() {
   const checks = runCrossChecks()
   const allPass = checks.every((c) => c.pass)
@@ -170,6 +185,11 @@ export default function SwadpiaLinkageDashboard() {
       note: '용지별 유효수량(매수)은 사다리 스냅(OMO-2485)으로 흡수.',
     },
   ]
+
+  // OMO-3483: 카테고리 × 후가공 매트릭스 (성원 실폼 chk_is_* 토큰 셀 단위, 2026-06-12 라이브 스냅샷)
+  const matrix = buildFinishingMatrix()
+  const matrixSummary = finishingMatrixSummary()
+  const catLabel = (code: string) => SWADPIA_CATEGORY_AUDIT.find((c) => c.code === code)?.label ?? code
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8 space-y-8">
@@ -443,6 +463,96 @@ export default function SwadpiaLinkageDashboard() {
             (스티커·도무송·전단·엽서)은 generic 옵션 미매핑 → 보드 결정 대기(OMO-2904).
           </p>
         </div>
+      </section>
+
+      {/* OMO-3483: 카테고리 × 후가공 전수 매트릭스 */}
+      <section className="space-y-3">
+        <h2 className="text-lg font-semibold text-gray-800 border-b pb-1">
+          카테고리 × 후가공 전수 매트릭스 — 성원 실폼 기준 (OMO-3483 · 라이브 스냅샷 {SWADPIA_FINISHING_MATRIX_DATE})
+        </h2>
+        <p className="text-sm text-gray-600 leading-relaxed">
+          보드 지시(2026-06-18): "성원기준으로 다른 제품들도 후가공 옵션 전수검사." 각 카테고리 성원
+          goods_view 폼의 <code>chk_is_*</code> 후가공 토글을 셀 단위로 추출해, 우리 자동발주 매핑·공급가
+          적재 상태와 대조한다. <strong>🟡(공급가 미적재)는 자동발주는 되지만 고객가 surcharge=0 → 주문마다
+          손해</strong>(박 케이스와 동형). ❌/❓는 성원 전용 후가공이라 우리 카탈로그 미대응(역방향 누락).
+        </p>
+        {/* 셀 상태 요약 */}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3">
+            <div className="text-xs text-green-600">✅ 자동발주+공급가</div>
+            <div className="text-2xl font-bold text-green-700">{matrixSummary.autoPriced}</div>
+          </div>
+          <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3">
+            <div className="text-xs text-yellow-700">🟡 공급가 미적재</div>
+            <div className="text-2xl font-bold text-yellow-700">{matrixSummary.autoUnpriced.length}</div>
+            <div className="text-[11px] text-yellow-600">{matrixSummary.autoUnpriced.join(', ') || '—'}</div>
+          </div>
+          <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div className="text-xs text-amber-700">⚠️ 미매핑(재조사)</div>
+            <div className="text-2xl font-bold text-amber-700">{matrixSummary.needsAudit.length}</div>
+            <div className="text-[11px] text-amber-600">{matrixSummary.needsAudit.join(', ') || '—'}</div>
+          </div>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3">
+            <div className="text-xs text-red-600">❌ 성원전용·미대응</div>
+            <div className="text-2xl font-bold text-red-700">{matrixSummary.unmapped.length}</div>
+            <div className="text-[11px] text-red-500">{matrixSummary.unmapped.join(', ') || '—'}</div>
+          </div>
+          <div className="rounded-lg border border-purple-200 bg-purple-50 p-3">
+            <div className="text-xs text-purple-600">❓ 토큰 불확실</div>
+            <div className="text-2xl font-bold text-purple-700">{matrixSummary.investigate.length}</div>
+            <div className="text-[11px] text-purple-500">{matrixSummary.investigate.join(', ') || '—'}</div>
+          </div>
+        </div>
+        {/* 범례 */}
+        <div className="flex flex-wrap gap-2 text-xs">
+          {(Object.keys(CELL_META) as FinishingCellStatus[]).map((s) => (
+            <span key={s} className={`inline-block px-2 py-0.5 rounded border ${CELL_META[s].cls}`}>
+              {CELL_META[s].icon} {CELL_META[s].ko}
+            </span>
+          ))}
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse">
+            <thead>
+              <tr className="bg-gray-50 text-left text-gray-600 border-b">
+                <th className="p-2 font-medium whitespace-nowrap">카테고리</th>
+                <th className="p-2 font-medium">성원 후가공 토글(chk_is_*) — 셀 상태</th>
+              </tr>
+            </thead>
+            <tbody>
+              {matrix.map((row) => (
+                <tr key={row.code} className="border-b align-top hover:bg-gray-50">
+                  <td className="p-2 whitespace-nowrap">
+                    <span className="font-medium text-gray-800">{catLabel(row.code)}</span>{' '}
+                    <code className="text-xs text-gray-400">{row.code}</code>
+                  </td>
+                  <td className="p-2">
+                    <div className="flex flex-wrap gap-1">
+                      {row.cells.map((cell) => {
+                        const meta = CELL_META[cell.status]
+                        return (
+                          <span
+                            key={cell.token}
+                            title={`${cell.token}${cell.finishingValue ? ` → ${cell.finishingValue}` : ' (우리 카탈로그 미대응)'} · ${meta.ko}`}
+                            className={`inline-block px-1.5 py-0.5 rounded border text-xs whitespace-nowrap ${meta.cls}`}
+                          >
+                            {meta.icon} {cell.label_ko}
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="text-xs text-gray-500 bg-gray-50 border rounded p-3 leading-relaxed">
+          데이터 원천: <code>scripts/test-artifacts/omo2961/allcat-audit.json</code>(2026-06-12 Playwright READ-ONLY).
+          매핑·상태는 <code>src/config/swadpia-finishing-matrix.ts</code> 에서 라이브 파생(드리프트 0). 노이즈 토큰
+          <code>today_sat</code>(토요일배송)은 후가공이 아니라 제외. ❓ <code>dbak</code>/<code>depoxy</code>는 토큰
+          의미 불확실 → 라이브 재조사 child 로 분리.
+        </p>
       </section>
 
       {/* OMO-2961: 전 카테고리 라이브 감사 */}
