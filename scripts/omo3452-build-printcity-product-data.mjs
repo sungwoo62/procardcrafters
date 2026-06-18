@@ -38,7 +38,17 @@ function main() {
   const census = JSON.parse(readFileSync(SRC, 'utf8'))
   const out = []
   for (const p of census.products) {
-    const pt = (p.priceTable || []).filter((r) => (r.prices || []).some((x) => x.v > 0))
+    // selecter(printcity 스토어프론트가 실제 노출하는 옵션)의 전체 code 집합.
+    // productTypes 에는 selecter 에 없는 orphan 용지(예 고급명함 SNW/POS) 조합이 섞여 있고,
+    // 그 orphan 조합이 가짜 코팅(무광/유광)을 만든다 → selecter 밖 code 를 가진 조합은 폐기.
+    const validCodes = new Set()
+    for (const [k, items] of Object.entries(p.axes)) {
+      if (k === 'other') { for (const o of items) for (const t of o.options) validCodes.add(t.code) }
+      else for (const t of items) validCodes.add(t.code)
+    }
+    const pt = (p.priceTable || [])
+      .filter((r) => r.combo.every((c) => validCodes.has(c)))
+      .filter((r) => (r.prices || []).some((x) => x.v > 0))
     if (pt.length === 0) continue
 
     const usedCodes = new Set()
