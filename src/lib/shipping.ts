@@ -12,10 +12,21 @@
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate, krwToUsd } from '@/lib/exchange-rate'
 import { fetchFedexRates, fedexServiceToInternalCode, isFedexApiConfigured } from '@/lib/fedex-api'
-import { estimateItemWeight, pickBox } from '@/lib/weight-estimate'
+import { estimateItemWeight, pickBox, BOX_TIERS } from '@/lib/weight-estimate'
 
 const DEFAULT_VAT_MARKUP_PCT = 10
 const DEFAULT_FALLBACK_USD = 35
+
+// OMO-3458: 라이브 FedEx 견적에 패키지 치수(부피무게)를 반영한다.
+// FedEx 는 실제무게 vs 부피무게(L×W×H/5000) 중 큰 값으로 청구하므로, 무게만 보내면
+// 가볍지만 부피가 큰 주문이 과소 견적된다. 무게에 맞는 박스 tier 의 내부치수(mm→cm)를
+// BOX_TIERS(단일 진실원천)에서 가져와 견적 요청에 동봉한다(과소청구 방지·보수적).
+function boxDimsCmForWeight(weightKg: number): { lengthCm: number; widthCm: number; heightCm: number } {
+  const grams = Math.max(0, weightKg * 1000)
+  const { tier } = pickBox(grams)
+  const dims = (tier ?? BOX_TIERS[BOX_TIERS.length - 1]).innerDims
+  return { lengthCm: dims.l / 10, widthCm: dims.w / 10, heightCm: dims.h / 10 }
+}
 
 // FedEx API 응답 금액을 USD 로 환산.
 // 계약 계정(KR)은 preferredCurrency:USD 요청에도 KRW 로 응답하므로,
@@ -139,6 +150,7 @@ export async function quoteShipping(
         recipientPostalCode: recipientPostal ?? '00000',
         recipientCity: 'CITY',
         weightKg: effectiveWeight,
+        ...boxDimsCmForWeight(effectiveWeight),
         preferredService: mapPreferredService(serviceCode),
       })
       if (apiResult.cheapest) {
@@ -389,6 +401,7 @@ export async function quoteShippingOptions(
         recipientPostalCode: recipientPostal ?? '00000',
         recipientCity: 'CITY',
         weightKg: effectiveWeight,
+        ...boxDimsCmForWeight(effectiveWeight),
       })
       if (apiResult.options.length > 0) {
         const allCodes = apiResult.options.map((o) => fedexServiceToInternalCode(o.serviceType))
