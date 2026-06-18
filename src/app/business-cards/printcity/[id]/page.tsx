@@ -57,7 +57,7 @@ export default async function PrintcityProductPage({ params }: Props) {
             <div className="aspect-[16/10] rounded-2xl bg-gradient-to-br from-blue-100 via-indigo-50 to-blue-50 border border-gray-200 flex items-center justify-center mb-6">
               <div className="text-center">
                 <BadgeCheck className="h-12 w-12 text-blue-500 mx-auto mb-2" />
-                <div className="text-sm font-semibold text-blue-900/70">printcity · {product.category3rd}</div>
+                <div className="text-sm font-semibold text-blue-900/70">printcity · {product.sub ?? product.category3rd}</div>
               </div>
             </div>
 
@@ -69,7 +69,8 @@ export default async function PrintcityProductPage({ params }: Props) {
                 </span>
               )}
             </div>
-            <p className="text-sm text-gray-500 mb-4">{product.label}</p>
+            <p className="text-sm text-gray-500 mb-1">{product.sub} · {product.label}</p>
+            <p className="text-[11px] text-gray-400 mb-4">printcity.co.kr 스토어프론트 실제 명함 제품 (productbysite 직독)</p>
 
             {startTotal != null && (
               <p className="text-gray-700 mb-5">
