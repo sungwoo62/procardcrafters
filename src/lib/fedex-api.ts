@@ -18,21 +18,52 @@ interface OAuthToken {
   expires_at: number   // epoch ms
 }
 
-let cachedToken: OAuthToken | null = null
+// OMO-3458: 계약 계정이 복수가 될 수 있어(신 211340858 + 구 210839884) 토큰을 client_id 별로 캐시.
+const tokenCache = new Map<string, OAuthToken>()
 const TOKEN_REFRESH_MARGIN_MS = 60_000
 
 function getBaseUrl(): string {
   return process.env.FEDEX_API_BASE ?? 'https://apis.fedex.com'
 }
 
-export function isFedexApiConfigured(): boolean {
-  return Boolean(process.env.FEDEX_CLIENT_ID && process.env.FEDEX_CLIENT_SECRET && process.env.FEDEX_ACCOUNT_NUMBER)
+// OMO-3458: 계약 계정 프로파일. FedEx OAuth 자격증명은 특정 계정번호에 귀속되므로
+// (키↔계정 1:1) 신/구 계약을 모두 쓰려면 프로파일을 각각 구성한다.
+export interface FedexCredentialProfile {
+  clientId: string
+  clientSecret: string
+  account: string
+  label: string          // 'primary'(신계약) | 'legacy'(구계약)
 }
 
-async function getAccessToken(): Promise<string> {
+function primaryProfile(): FedexCredentialProfile | null {
+  const clientId = process.env.FEDEX_CLIENT_ID
+  const clientSecret = process.env.FEDEX_CLIENT_SECRET
+  const account = process.env.FEDEX_ACCOUNT_NUMBER
+  return clientId && clientSecret && account ? { clientId, clientSecret, account, label: 'primary' } : null
+}
+
+// 구 계약(기존 고객코드+API 키). 설정돼 있을 때만 신/구 비교에 합류한다.
+function legacyProfile(): FedexCredentialProfile | null {
+  const clientId = process.env.FEDEX_LEGACY_CLIENT_ID
+  const clientSecret = process.env.FEDEX_LEGACY_CLIENT_SECRET
+  const account = process.env.FEDEX_LEGACY_ACCOUNT_NUMBER
+  return clientId && clientSecret && account ? { clientId, clientSecret, account, label: 'legacy' } : null
+}
+
+/** 구성된 모든 계약 프로파일(신계약 우선, 구계약은 설정 시 추가). */
+export function getFedexProfiles(): FedexCredentialProfile[] {
+  return [primaryProfile(), legacyProfile()].filter((p): p is FedexCredentialProfile => p !== null)
+}
+
+export function isFedexApiConfigured(): boolean {
+  return primaryProfile() !== null
+}
+
+async function getAccessToken(clientId: string, clientSecret: string): Promise<string> {
   const now = Date.now()
-  if (cachedToken && cachedToken.expires_at - now > TOKEN_REFRESH_MARGIN_MS) {
-    return cachedToken.access_token
+  const cached = tokenCache.get(clientId)
+  if (cached && cached.expires_at - now > TOKEN_REFRESH_MARGIN_MS) {
+    return cached.access_token
   }
 
   const res = await fetch(`${getBaseUrl()}/oauth/token`, {
@@ -40,8 +71,8 @@ async function getAccessToken(): Promise<string> {
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      client_id: process.env.FEDEX_CLIENT_ID!,
-      client_secret: process.env.FEDEX_CLIENT_SECRET!,
+      client_id: clientId,
+      client_secret: clientSecret,
     }),
   })
 
@@ -51,11 +82,12 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = (await res.json()) as { access_token: string; expires_in: number }
-  cachedToken = {
+  const token: OAuthToken = {
     access_token: data.access_token,
     expires_at: now + (data.expires_in - 60) * 1000,
   }
-  return cachedToken.access_token
+  tokenCache.set(clientId, token)
+  return token.access_token
 }
 
 export interface FedexRateInput {
@@ -93,13 +125,14 @@ export interface FedexRateResult {
  * 한국(KR) 발 → 임의 국가행 실시간 요율 견적.
  * shipper 는 계약 계정 주소 사용.
  */
-export async function fetchFedexRates(input: FedexRateInput): Promise<FedexRateResult> {
-  if (!isFedexApiConfigured()) {
+export async function fetchFedexRates(input: FedexRateInput, profile?: FedexCredentialProfile): Promise<FedexRateResult> {
+  const prof = profile ?? primaryProfile()
+  if (!prof) {
     throw new Error('FedEx API not configured (FEDEX_CLIENT_ID / FEDEX_CLIENT_SECRET / FEDEX_ACCOUNT_NUMBER required)')
   }
 
-  const token = await getAccessToken()
-  const account = process.env.FEDEX_ACCOUNT_NUMBER!
+  const token = await getAccessToken(prof.clientId, prof.clientSecret)
+  const account = prof.account
 
   const recipientCountry = input.recipientCountryCode.toUpperCase()
   const shipperCountry = 'KR'
@@ -249,6 +282,49 @@ function parseRateResponse(data: FedexRateRawResponse): FedexRateResult {
   }
 }
 
+/**
+ * OMO-3458: 서비스별로 여러 계약(신/구) 결과 중 **가장 싼 요율**만 골라 합친다.
+ * 런던처럼 구계약이 더 싼 구간 + 미국처럼 신계약이 더 싼 구간을 국가·서비스 단위로 cherry-pick.
+ * (모든 KR-출발 계약 계정은 KRW 응답이라 totalNetCharge 직접 비교 가능.)
+ */
+export function mergeCheapestByService(results: FedexRateResult[]): FedexRateResult {
+  const best = new Map<string, FedexRateOption>()
+  const alerts: { code: string; message: string }[] = []
+  for (const r of results) {
+    for (const opt of r.options) {
+      const cur = best.get(opt.serviceType)
+      if (!cur || opt.totalNetCharge < cur.totalNetCharge) best.set(opt.serviceType, opt)
+    }
+    alerts.push(...r.alerts)
+  }
+  const options = [...best.values()].sort((a, b) => a.totalNetCharge - b.totalNetCharge)
+  return { options, alerts, cheapest: options[0] ?? null }
+}
+
+/**
+ * OMO-3458: 구성된 모든 계약 프로파일(신+구)을 병렬 조회해 서비스별 최저가로 합친 결과.
+ * 구계약(legacy) 프로파일이 설정돼 있지 않으면 신계약 단독 결과와 동일(기존 동작 보존).
+ * 한 프로파일이 실패해도(미연결/오류) 나머지로 견적을 낸다.
+ */
+export async function fetchFedexRatesCheapest(input: FedexRateInput): Promise<FedexRateResult> {
+  const profiles = getFedexProfiles()
+  if (profiles.length === 0) {
+    throw new Error('FedEx API not configured (FEDEX_CLIENT_ID / FEDEX_CLIENT_SECRET / FEDEX_ACCOUNT_NUMBER required)')
+  }
+  const settled = await Promise.all(
+    profiles.map(async (p) => {
+      try {
+        return await fetchFedexRates(input, p)
+      } catch {
+        return null // 한 계약이 실패해도 다른 계약으로 견적 (silent)
+      }
+    }),
+  )
+  const ok = settled.filter((r): r is FedexRateResult => r !== null)
+  if (ok.length === 0) throw new Error('FedEx Rate API failed for all profiles')
+  return mergeCheapestByService(ok)
+}
+
 // ====================================================================
 // Ship API — 실제 라벨/송장 PDF 생성 (OMO-2371: ETD 자동 첨부)
 // ====================================================================
@@ -306,7 +382,7 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
 
   const { buildAutoInvoiceEtd } = await import('@/lib/fedex-etd')
 
-  const token = await getAccessToken()
+  const token = await getAccessToken(process.env.FEDEX_CLIENT_ID!, process.env.FEDEX_CLIENT_SECRET!)
   const account = process.env.FEDEX_ACCOUNT_NUMBER!
   const isInternational = input.recipient.countryCode.toUpperCase() !== 'KR'
   const includeEtd = isInternational && (input.includeAutoEtdInvoice ?? true)

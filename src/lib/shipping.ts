@@ -11,7 +11,7 @@
 
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate, krwToUsd } from '@/lib/exchange-rate'
-import { fetchFedexRates, fedexServiceToInternalCode, isFedexApiConfigured } from '@/lib/fedex-api'
+import { fetchFedexRatesCheapest, fedexServiceToInternalCode, isFedexApiConfigured } from '@/lib/fedex-api'
 import { estimateItemWeight, pickBox, BOX_TIERS } from '@/lib/weight-estimate'
 
 const DEFAULT_VAT_MARKUP_PCT = 10
@@ -145,7 +145,7 @@ export async function quoteShipping(
       const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
       const override = Number(cfg?.krw_per_usd_override ?? 0)
       const usdPerKrw = override > 0 ? 1 / override : await getKrwToUsdRate()
-      const apiResult = await fetchFedexRates({
+      const apiResult = await fetchFedexRatesCheapest({
         recipientCountryCode: upperCountry,
         recipientPostalCode: recipientPostal ?? '00000',
         recipientCity: 'CITY',
@@ -396,7 +396,7 @@ export async function quoteShippingOptions(
       const markupPct = Number(cfg?.vat_markup_percent ?? DEFAULT_VAT_MARKUP_PCT)
       const override = Number(cfg?.krw_per_usd_override ?? 0)
       const usdPerKrw = override > 0 ? 1 / override : await getKrwToUsdRate()
-      const apiResult = await fetchFedexRates({
+      const apiResult = await fetchFedexRatesCheapest({
         recipientCountryCode: upperCountry,
         recipientPostalCode: recipientPostal ?? '00000',
         recipientCity: 'CITY',
