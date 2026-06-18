@@ -18,6 +18,30 @@ const OUT = join(ROOT, 'src/data/printcity-namecard-pricing.json')
 
 const ENGLISH_AXIS = { coating: 'Coating', material: 'Paper', color: 'Print Sides', size: 'Size', foil: 'Foil' }
 
+// 영어사이트 표시명(스토어프론트 한글명 → 깔끔한 영문 제품명).
+const EN_NAME = {
+  '고급 명함': 'Premium Business Cards',
+  '일반 명함': 'Standard Business Cards',
+  'PET 카드명함': 'PET Transparent Cards',
+  'MC 카드명함': 'MC Thick Card',
+  '점자 명함': 'Braille Business Cards',
+  '엣지 명함': 'Edge-Foil Business Cards',
+  '부분코팅 명함': 'Spot-UV Business Cards',
+  '에폭시 명함': 'Epoxy Business Cards',
+  '디지털 명함': 'Digital Business Cards',
+  '디지털 화이트명함': 'Digital White Cards',
+  '디지털 긴급명함': 'Digital Express Cards',
+  '디지털 형광명함': 'Digital Neon Cards',
+  '디지털 카드명함': 'Digital Thick Cards',
+  '디지털 3D박명함': 'Digital 3D Foil Cards',
+  '디지털 부분에폭명함': 'Digital Spot-Epoxy Cards',
+  '디지털 홀로그램명함': 'Digital Hologram Cards',
+}
+const EN_SUB = {
+  일반명함: 'Offset Cards', 카드명함: 'Card Stock', 스페셜명함: 'Specialty',
+  디지털일반명함: 'Digital', 디지털카드명함: 'Digital Card', 디지털후가공명함: 'Digital Finished',
+}
+
 // 우리 카탈로그 slug 매핑(표시 참고용, 실제 storefront 제품 기준 큐레이션)
 const OUR_SLUG = {
   '일반 명함': 'business-cards',
@@ -82,9 +106,10 @@ function main() {
 
     out.push({
       id: p.id,
-      nameKO: p.storefrontTitle, // printcity 스토어프론트 실제 명칭
-      label: p.nameEN || p.storefrontTitle,
+      nameKO: p.storefrontTitle, // 스토어프론트 실제 명칭(내부 참조)
+      label: EN_NAME[p.storefrontTitle] || p.nameEN || p.storefrontTitle, // 영문 표시명
       sub: p.sub,
+      subEn: EN_SUB[p.sub] || p.sub,
       subCode: p.subCode,
       subType: p.subType,
       ourSlug: OUR_SLUG[p.storefrontTitle] ?? null,

@@ -51,9 +51,37 @@ export interface FinishingPayload {
 
 export const FINISHING = data as unknown as FinishingPayload
 
-/** 제품 id 의 후가공 work 목록(없으면 빈 배열 — printcity 미노출 제품). */
+// 영어사이트: 후가공 종류/서브옵션 영문 라벨. (데이터는 KO, 표시는 EN)
+const WORKTYPE_EN: Record<string, string> = {
+  bak: 'Foil Stamping', bakDongpan: 'Foil Die', ap: 'Embossing Press', apDongpan: 'Emboss Die',
+  osi: 'Scoring', mising: 'Perforation', tagong: 'Hole Punch', embo: 'Pigment Emboss',
+  guido: 'Round Corners', numbering: 'Numbering', apBraille: 'Braille Press', emboBraille: 'Braille Emboss',
+  domusong: 'Die-Cut',
+}
+const SUBCODE_EN: Record<string, string> = {
+  'APS:1F': 'Front', 'APS:1B': 'Back', 'BKS:1F': 'Front', 'BKS:1B': 'Back', 'BKS:2': 'Both sides',
+  'EBS:1F': 'Front', 'EBS:1B': 'Back', 'EBS:2': 'Both sides',
+  'BKK:GOLD-GS': 'Gold (gloss)', 'BKK:GOLD-MT': 'Gold (matte)', 'BKK:SILVER-GS': 'Silver (gloss)', 'BKK:SILVER-MT': 'Silver (matte)',
+  'BKK:RED': 'Red', 'BKK:BLUE': 'Blue', 'BKK:GREEN': 'Green', 'BKK:BLACK': 'Black', 'BKK:PEARL3': 'Pearl', 'BKK:HOLOGRAM3': 'Hologram',
+  'BKK:DONG': 'Copper', 'BKK:REDGOLD': 'Red gold', 'EBK:BLACK': 'Black', 'EBK:TRANSPARENT': 'Clear',
+  'OSL:1': '1 line', 'OSL:2': '2 lines', 'OSL:3': '3 lines', 'OSL:C1': 'Center line',
+  'MSL:1': '1 line', 'MSL:2': '2 lines', 'MSL:3': '3 lines', 'MSL:C1': 'Center line',
+  'NBC:1': '1 set', 'NBC:2': '2 sets',
+}
+const enSubLabel = (codes: string[], fallback: string) =>
+  codes.length ? codes.map((c) => SUBCODE_EN[c] || c).join(' · ') : (fallback === '기본' ? 'Standard' : fallback)
+
+function toEnglish(work: FinishingWork): FinishingWork {
+  return {
+    ...work,
+    name: WORKTYPE_EN[work.workType] || work.name,
+    options: work.options.map((o) => ({ ...o, label: enSubLabel(o.codes, o.label) })),
+  }
+}
+
+/** 제품 id 의 후가공 work 목록(영문 라벨). 없으면 빈 배열(printcity 미노출 제품). */
 export function getProductFinishing(productId: string): FinishingWork[] {
-  return FINISHING.products.find((p) => p.id === productId)?.works ?? []
+  return (FINISHING.products.find((p) => p.id === productId)?.works ?? []).map(toEnglish)
 }
 
 /** 수량 qty 에 해당하는 브래킷 금액(min<=qty<=max). 데이터 역전/범위밖은 최근접 브래킷으로 보정. */
@@ -123,7 +151,7 @@ export function finishingTotalKrw(
     lines.push({
       workType: work.workType,
       name: work.name,
-      optionLabel: opt?.label ?? '기본',
+      optionLabel: opt?.label ?? 'Standard',
       pricing: work.pricing,
       krw,
     })
