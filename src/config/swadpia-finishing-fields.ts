@@ -187,8 +187,16 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
     finishingValue: 'coating',
     label_ko: '코팅',
     status: 'needs_audit',
-    note: '명함은 코팅이 용지/인쇄 옵션(print_color_type) 혹은 라디오로 통합됨. 카테고리별 재조사 필요.',
-    fields: [],
+    note: 'OMO-3487(2026-06-18) 정적 폼 추출: 비명함 카테고리(엽서/배너/스티커/전단)는 chk_is_coating + select[coating_type] 노출. 명함은 코팅이 용지/인쇄옵션에 통합. mapped 전환 = 카테고리별 가용옵션(책자/도무송 runtime) + surcharge(OMO-3485) 확정 후.',
+    fields: [
+      {
+        name: 'coating_type',
+        options: {
+          COT10: '단면유광써멀코팅', COT20: '단면무광써멀코팅', COT30: '단면UV코팅',
+          COT40: '양면유광써멀코팅', COT50: '양면무광써멀코팅', COT60: '양면UV코팅',
+        },
+      },
+    ],
   },
   {
     finishingValue: 'spot_color',
@@ -199,9 +207,26 @@ export const SWADPIA_FINISHING_FIELDS: SwadpiaFinishingMapping[] = [
   },
   { finishingValue: 'gluing', label_ko: '접착', status: 'needs_audit', note: '메모지/양식 전용. 해당 카테고리 폼 조사 필요.', fields: [] },
   { finishingValue: 'multi_die', label_ko: '문어발', status: 'needs_audit', note: '스티커 전용. 스티커 카테고리 폼 조사 필요.', fields: [] },
-  { finishingValue: 'binding', label_ko: '제본', status: 'needs_audit', note: '책자 전용. 책자 카테고리 폼 조사 필요.', fields: [] },
+  {
+    finishingValue: 'binding',
+    label_ko: '제본',
+    status: 'needs_audit',
+    note: 'OMO-3487(2026-06-18) 정적 폼 추출. 책자(CPR4000)는 binding_type 런타임 populate(무선/중철 등 추정) → 라이브 크롤 확정 필요. binding_add_set(철 방향)은 정적.',
+    fields: [
+      { name: 'binding_type', options: { BDT10: '떡제본' }, runtimeOnly: true },
+      { name: 'binding_add_set', options: { BDS30: '세로상철', BDS40: '세로좌철', BDS10: '가로상철', BDS20: '가로좌철' } },
+    ],
+  },
   { finishingValue: 'scratch_off', label_ko: '복권', status: 'needs_audit', fields: [] },
-  { finishingValue: 'window_patch', label_ko: '창문', status: 'needs_audit', note: '봉투/지함 전용.', fields: [] },
+  {
+    finishingValue: 'window_patch',
+    label_ko: '창문',
+    status: 'needs_audit',
+    note: 'OMO-3487(2026-06-18) 정적 폼 추출. 봉투(CEV1000) 전용 chk_is_window. window_size 고정규격 리스트(85*40~). surcharge(OMO-3485) 확정 후 mapped 전환.',
+    fields: [
+      { name: 'window_size', runtimeOnly: false, options: { '85*40': '85*40', '100*35': '100*35', '100*40': '100*40', '110*50': '110*50', '120*30': '120*30', '120*40': '120*40', '120*45': '120*45', '125*45': '125*45', '130*40': '130*40', '130*45': '130*45' } },
+    ],
+  },
 ]
 
 export const SWADPIA_FINISHING_BY_VALUE: Record<string, SwadpiaFinishingMapping> =

@@ -1,0 +1,109 @@
+{
+  "issue": "OMO-3487",
+  "extractedAt": "2026-06-18",
+  "method": "static HTML READ-ONLY — goods_view 폼 직접 파싱(로그인/주문 없음). 성원 goods_view 페이지는 비로그인으로도 전체 폼 마크업(모든 chk_is_* 블록 + select[name]/option)을 노출한다. 카테고리별 가시성만 런타임 JS 가 제어하므로, 필드 구조 자체는 정적으로 결정론 추출 가능.",
+  "source": "https://www.swadpia.co.kr/goods/goods_view/<CODE>/1",
+  "note_runtime": "options=null 인 필드는 정적 HTML 에서 옵션이 비어 있고 성원이 사이즈/용지 선택 후 JS 로 채운다(runtime). 옵션값 확정은 SWADPIA 로그인 크롤(scripts/omo3487-finishing-probe.mts) 필요 — 현재 .env.local 미보유(보드 발급 대기).",
+  "tokens": {
+    "coating": {
+      "label_ko": "코팅",
+      "seenIn": ["CDP3000", "CPR5000", "CST2000", "CPR4000", "CST5000"],
+      "fields": [
+        { "name": "coating_type", "options": { "COT10": "단면유광써멀코팅", "COT20": "단면무광써멀코팅", "COT30": "단면UV코팅", "COT40": "양면유광써멀코팅", "COT50": "양면무광써멀코팅", "COT60": "양면UV코팅" }, "note": "JS 내 COT70/COT80 추가코드 흔적 존재 — 카테고리별 가용 옵션 상이. CPR4000/CST2000 에선 런타임 populate." }
+      ]
+    },
+    "binding": {
+      "label_ko": "제본",
+      "seenIn": ["CST5000", "CPR4000", "CNR2000"],
+      "fields": [
+        { "name": "binding_type", "options": { "BDT10": "떡제본" }, "note": "CPR4000(책자)에선 런타임 populate — 무선/중철 등 추가 옵션 가능성. 라이브 크롤 확정 필요." },
+        { "name": "binding_add_set", "options": { "BDS30": "세로상철", "BDS40": "세로좌철", "BDS10": "가로상철", "BDS20": "가로좌철" } }
+      ]
+    },
+    "window_patch": {
+      "label_ko": "창문(봉투)",
+      "seenIn": ["CEV1000"],
+      "fields": [
+        { "name": "window_size", "options_sample": ["85*40", "100*35", "100*40", "110*50", "120*30", "120*40", "120*45", "125*45", "130*40", "130*45"], "note": "고정 규격 리스트(다수). 봉투 전용. chk_is_window." }
+      ]
+    },
+    "cutting": {
+      "label_ko": "재단",
+      "seenIn": ["CST5000", "CST2000", "CCD1000", "CCD2000", "CLP1000"],
+      "fields": [
+        { "name": "cutting_type", "options": { "CTT10": "같은규격 내용같음", "CTT20": "같은규격 내용틀림", "CTT30": "2건-규격다름", "CTT40": "3건-규격다름", "CTT50": "4건-규격다름" } }
+      ]
+    },
+    "add_cutting": {
+      "label_ko": "추가재단",
+      "seenIn": ["CST2000"],
+      "fields": [
+        { "name": "chk_is_add_cutting", "type": "checkbox", "value": "1", "note": "토큰 전용 select 없음 — 불리언 추가옵션(체크 시 추가재단 1회). 도무송스티커 전용." }
+      ]
+    },
+    "partial_coating": {
+      "label_ko": "부분코팅",
+      "seenIn": ["CPR4000", "CPR5000"],
+      "fields": [
+        { "name": "chk_is_partial_coating", "type": "checkbox", "value": "1", "note": "토큰 전용 select 미발견 — 카테고리 JS(display_chk_is)로 노출/제어. 세부 필드는 런타임 크롤 확정 필요. (HTML 에 chk_is_partial_coation 오타 변형도 공존)" }
+      ]
+    },
+    "bonding": {
+      "label_ko": "합지/접착",
+      "seenIn": ["CDP3000", "CST5000", "CPR5000"],
+      "fields": [
+        { "name": "bonding_type", "options": { "BOT10": "1면접착(손으로접착)", "BOT20": "2면접착(손으로접착)", "BOT80": "3면접착(손으로접착)", "BOT30": "1면접착(기계로접착)", "BOT40": "3면접착(기계로접착)", "BOT50": "양면테잎1개", "BOT60": "양면테잎2개" }, "note": "엽서(CDP3000)는 축약셋(BOT10/20/50/60). 카테고리별 가용옵션 상이." }
+      ]
+    },
+    "folding": {
+      "label_ko": "접지",
+      "seenIn": ["CDP3000", "CST5000", "CLF1000", "CLF2000", "CPR3000"],
+      "fields": [
+        { "name": "folding_type", "options": { "FDT01": "반접지", "FDT02": "3단접지", "FDT03": "4단접지", "FDT04": "N접지", "FDT05": "4단병풍접지", "FDT06": "5단병풍접지", "FDT07": "6단병풍접지", "FDT08": "대문접지", "FDT09": "4단두루마리접지", "FDT10": "십자접지", "FDT11": "4단접지후반접지", "FDT12": "4단병풍후반접지", "FDT13": "3단접지후반접지", "FDT16": "N접지후반접지", "FDT17": "반접고3단접지" } },
+        { "name": "folding_direction", "options": null, "note": "runtime populate" }
+      ]
+    },
+    "laminex": {
+      "label_ko": "라미넥스(무광 라미네이팅)",
+      "seenIn": ["CST5000", "CLP1000", "CCD1000"],
+      "fields": [
+        { "name": "laminex_num", "options": null, "note": "runtime populate — 매수/면 옵션 추정. 라이브 크롤 확정 필요." }
+      ]
+    },
+    "stitching": {
+      "label_ko": "중철제본",
+      "seenIn": ["CST5000", "CLF1000", "CLF2000", "CPR3000"],
+      "fields": [
+        { "name": "stitching_type", "options": null, "note": "runtime populate" },
+        { "name": "stitching_direction", "options": { "SHD10": "좌철", "SHD20": "상철" } }
+      ]
+    },
+    "tape": {
+      "label_ko": "양면테이프",
+      "seenIn": ["CEV1000", "CPR5000"],
+      "fields": [
+        { "name": "tape_type", "options_byCategory": { "CEV1000": { "TAP10": "폭10mm", "TAP20": "폭15mm", "TAP30": "폭20mm" }, "CPR5000": { "TAP20": "양면테잎 길이 약10cm 1개", "TAP30": "양면테잎 길이 약15cm 1개", "TAP40": "양면테잎 길이 약20cm 1개" } }, "note": "값코드(TAP*)가 카테고리별로 의미 상이 — 봉투=폭, 배너=길이. 자동발주 시 카테고리별 분기 필수." }
+      ]
+    },
+    "dbak": {
+      "label_ko": "디지털박",
+      "semantic_resolved": "dbak = 디지털박(digital hot-foil). dbak_section_* 의 유일 옵션이 BKS30=디지털 (일반 bak_section 은 BKS10=신규/BKS20=보유동판). 즉 'd'=디지털(NOT 양면). 디지털 인쇄 제품(디지털명함/엽서)에서만 노출. 면/종류 옵션은 일반 박과 동일(BKD/BKT). 최대 3세트(_1/_2/_3).",
+      "seenIn": ["CDP3000", "CNC1000"],
+      "fields": [
+        { "name": "dbak_section_1", "options": { "BKS30": "디지털" } },
+        { "name": "dbak_side_1", "options": { "BKD10": "전면", "BKD20": "후면", "BKD30": "양면" } },
+        { "name": "dbak_type_1", "options": { "BKT02": "금박(유광)", "BKT09": "금박(무광)", "BKT01": "은박(유광)", "BKT10": "은박(무광)" } },
+        { "name": "dbak_exist_dongpan_1", "options": null, "note": "runtime — 동판 보유여부 선택 후 JS(chgDBakExistDongpanPrice)" }
+      ]
+    },
+    "depoxy": {
+      "label_ko": "디지털에폭시",
+      "semantic_resolved": "depoxy = 디지털에폭시. depoxy_kind_* = EPK91=에폭시. 'd'=디지털(dbak 와 동일 명명규칙). 디지털 엽서(CDP3000)에서만 노출. 최대 2세트(_1/_2). depoxy_type 은 runtime populate.",
+      "seenIn": ["CDP3000"],
+      "fields": [
+        { "name": "depoxy_type_1", "options": null, "note": "runtime populate" },
+        { "name": "depoxy_kind_1", "options": { "EPK91": "에폭시" } }
+      ]
+    }
+  }
+}

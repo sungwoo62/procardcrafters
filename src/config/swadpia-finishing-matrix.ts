@@ -63,9 +63,14 @@ export const SWADPIA_FINISHING_TOKENS: Record<string, SwadpiaTokenDef> = {
   laminex: { token: 'laminex', label_ko: '라미넥스(무광코팅)' },
   stitching: { token: 'stitching', label_ko: '중철제본' },
   tape: { token: 'tape', label_ko: '양면테이프' },
-  // 토큰 의미 불확실 — 라이브 재조사 필요
-  dbak: { token: 'dbak', label_ko: '양면박(추정)', needsInvestigation: true },
-  depoxy: { token: 'depoxy', label_ko: '양면에폭시(추정)', needsInvestigation: true },
+  // OMO-3487 의미 확정(2026-06-18, goods_view 정적 폼 READ-ONLY 추출):
+  //   dbak   = 디지털박   — dbak_section 유일옵션 BKS30=디지털 (일반 bak 은 BKS10 신규/BKS20 동판).
+  //                         'd'=디지털(NOT 양면). 디지털인쇄 제품(디지털명함/엽서)에만 노출.
+  //   depoxy = 디지털에폭시 — depoxy_kind=EPK91 에폭시, dbak 와 동일 명명규칙(d=디지털).
+  //   우리 카탈로그에 디지털박/디지털에폭시 대응 카드·자동발주·surcharge 미생성 → 역방향 누락
+  //   유지(finishingValue 미부여). 필드: scripts/test-artifacts/omo3487/finishing-fields-static.json.
+  dbak: { token: 'dbak', label_ko: '디지털박' },
+  depoxy: { token: 'depoxy', label_ko: '디지털에폭시' },
   // 후가공 아님 — 노이즈(배송 토글)
   today_sat: { token: 'today_sat', label_ko: '토요일배송', noise: true },
 }
