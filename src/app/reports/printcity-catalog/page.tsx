@@ -2,10 +2,10 @@ import Link from 'next/link'
 import { ArrowLeft, ListTree, Database, Layers } from 'lucide-react'
 import { CATALOG } from '@/lib/printcity-namecard'
 
-// OMO-3414 (board 2026-06-17 reopen): printcity 전체 제품군 전수 크롤링 리스트업.
+// OMO-3454 (board 2026-06-18): printcity 전체 제품군 리스트업을 실제 스토어프론트로 교정.
 // 데이터: src/data/printcity-catalog-census.json
-//   = scripts/omo3414-printcity-full-catalog-census.mjs 가 price-api.dtp21.com/v2
-//     product?all=true&page=N 으로 전수(171제품/25카테고리) 직독한 경량 카탈로그.
+//   = scripts/omo3454-printcity-real-catalog-crawl.mjs 가 site/seller/printcity menuCategory
+//     (실제 노출 카탈로그 104제품/12카테고리) 직독. OMO-3414 전역 product?all=true(타 테넌트 혼입) 폐기.
 export const dynamic = 'force-static'
 
 const priceTypeLabel = (t: string | null) =>
@@ -28,8 +28,8 @@ export default function PrintcityCatalogReport() {
         <h1 className="text-2xl font-bold text-gray-900">printcity 전체 제품군 전수 크롤링 · 리스트업</h1>
       </div>
       <p className="mt-2 text-sm text-gray-500">
-        OMO-3414. printcity(dtp21/iamdesign/printdeal 공용 SaaS)의 <b>전 제품군</b>을{' '}
-        <b>공개 GET JSON API</b>(<code className="rounded bg-gray-100 px-1">price-api.dtp21.com/v2</code>)로 전수 크롤링.
+        OMO-3454. printcity <b>실제 스토어프론트</b>(<code className="rounded bg-gray-100 px-1">site/seller/printcity</code>)의{' '}
+        <b>전 제품군</b>을 <b>공개 GET JSON API</b>(<code className="rounded bg-gray-100 px-1">price-api.dtp21.com/v2</code>)로 직독.
         총 <b>{CATALOG.productCount}제품</b> / <b>{CATALOG.categoryCount}개 1차 카테고리</b>. 읽기전용, 실주문 없음.
       </p>
 
@@ -44,10 +44,12 @@ export default function PrintcityCatalogReport() {
       <div className="mt-5 rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-900">
         <div className="font-semibold">크롤링 방식 (재현 가능)</div>
         <p className="mt-1">
-          API 특이점: <code className="rounded bg-emerald-100 px-1">product?categoryName1st=…</code>는 카테고리 필터지만 응답에 카테고리명을 안 실어줌.
-          전수는 <code className="rounded bg-emerald-100 px-1">product?all=true&page=N</code>(20/page, 9페이지)로 페이지네이션하여 각 제품의 중첩{' '}
-          <code className="rounded bg-emerald-100 px-1">category[]</code>(1/2/3차)로 그룹핑. 크롤러:{' '}
-          <code className="rounded bg-emerald-100 px-1">scripts/omo3414-printcity-full-catalog-census.mjs</code>.
+          교정 사유: 기존 <code className="rounded bg-emerald-100 px-1">product?all=true&page=N</code> 전수는 site-scope가 없어
+          공용 SaaS 타 테넌트 제품(171제품/25카테고리)이 혼입됐다. 진실원천은{' '}
+          <code className="rounded bg-emerald-100 px-1">site/seller/printcity</code>의 <code className="rounded bg-emerald-100 px-1">menuCategory</code> —
+          printcity가 실제 노출하는 카테고리·제품(cateItems)만 그룹핑하고, priceType은{' '}
+          <code className="rounded bg-emerald-100 px-1">productbysite/{'{id}'}</code> 직독으로 채운다. 크롤러:{' '}
+          <code className="rounded bg-emerald-100 px-1">scripts/omo3454-printcity-real-catalog-crawl.mjs</code>.
         </p>
       </div>
 
@@ -98,7 +100,7 @@ export default function PrintcityCatalogReport() {
         <p className="mt-1">{CATALOG.source}</p>
         <p className="mt-0.5">크롤 방식: {CATALOG.crawledVia}</p>
         <p className="mt-0.5">
-          크롤러: <code className="rounded bg-gray-100 px-1">scripts/omo3414-printcity-full-catalog-census.mjs</code> ·
+          크롤러: <code className="rounded bg-gray-100 px-1">scripts/omo3454-printcity-real-catalog-crawl.mjs</code> ·
           데이터: <code className="rounded bg-gray-100 px-1">src/data/printcity-catalog-census.json</code>
         </p>
       </div>
