@@ -11,6 +11,8 @@ import data from '@/data/printcity-namecard-pricing.json'
 export interface PrintcityAxisOption {
   code: string
   ko: string
+  /** 영문 표시명 (보드: 용지/옵션 이름 영어). 없으면 ko 폴백. */
+  en?: string
 }
 export interface PrintcityAxis {
   label: string
