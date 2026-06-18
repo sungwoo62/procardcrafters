@@ -45,6 +45,17 @@ export const FINISHING_SURCHARGE: Record<string, FinishingSurchargeDef> = {
   die_cut: { value: 'die_cut', areaPriced: false, flatKrw: 21500 },
   foil_stamp: { value: 'foil_stamp', areaPriced: true, ratePerMm2: AREA_PRICE_BASE_KRW / AREA_PRICE_BASE_MM2 },
   deboss_emboss: { value: 'deboss_emboss', areaPriced: true, ratePerMm2: AREA_PRICE_BASE_KRW / AREA_PRICE_BASE_MM2 },
+  // OMO-3485: 자동발주 5종 미적재 갭 보강(부모 OMO-3483 전수검사).
+  //   검증값 출처: swadpia-finishing-fields.ts OMO-2961 라이브 검증(CNC1000, 1,000매, 로그인).
+  //   정액(셋업비 성격) 취급 — drilled_hole/die_cut 와 동형. 수량 의존성은 v1 정액,
+  //   최종 단가는 자동발주 모달 성원 calcuEstimate 가 권위.
+  round_corner: { value: 'round_corner', areaPriced: false, flatKrw: 3000 }, // 귀도리 ₩3,000
+  epoxy: { value: 'epoxy', areaPriced: false, flatKrw: 22500 }, // 에폭시 ₩22,500
+  score_crease: { value: 'score_crease', areaPriced: false, flatKrw: 7000 }, // 오시 ₩7,000
+  perforation: { value: 'perforation', areaPriced: false, flatKrw: 7000 }, // 미싱 ₩7,000
+  // numbering(넘버링): 의도적 미적재(=0 유지). OMO-2961 에서 surcharge 라이브 검증 안 됨
+  //   (용지별 차단 케이스 가능). 정액 추정 적재 시 미검증 인상이 되므로, 라이브 READ-ONLY
+  //   재확인 전까지 명시적 0 유지. 검증 완료 시 본 맵에 정액 추가(별도 보드 게이트).
 }
 
 /**

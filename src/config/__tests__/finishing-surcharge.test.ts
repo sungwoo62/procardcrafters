@@ -12,6 +12,29 @@ import { expandFinishingToSwadpiaFields } from '../swadpia-finishing-fields'
 
 const BASE_AREA_MM2 = FINISHING_DEFAULT_AREA_MM.width * FINISHING_DEFAULT_AREA_MM.height // 1,500
 
+describe('FINISHING_SURCHARGE 정액 검증값 — OMO-3485 미적재 5종 보강', () => {
+  // 검증값 출처: swadpia-finishing-fields.ts OMO-2961 라이브 검증(CNC1000, 1,000매).
+  it('round_corner(귀도리) = ₩3,000', () => {
+    expect(finishingSurchargeKrw('round_corner')).toBe(3000)
+  })
+  it('epoxy(에폭시) = ₩22,500', () => {
+    expect(finishingSurchargeKrw('epoxy')).toBe(22500)
+  })
+  it('score_crease(오시) = ₩7,000', () => {
+    expect(finishingSurchargeKrw('score_crease')).toBe(7000)
+  })
+  it('perforation(미싱) = ₩7,000', () => {
+    expect(finishingSurchargeKrw('perforation')).toBe(7000)
+  })
+  it('numbering(넘버링) = 0 (의도적 미적재 — 라이브 검증 전까지 명시적 0 유지)', () => {
+    expect(finishingSurchargeKrw('numbering')).toBe(0)
+  })
+  it('결제 권위 경로(buildOrderExtraPricesKrw)에서도 신규 4종 반영', () => {
+    const extras = buildOrderExtraPricesKrw({ finishing: 'round_corner,epoxy' }, [])
+    expect(extras.reduce((a, b) => a + b, 0)).toBe(3000 + 22500)
+  })
+})
+
 describe('finishingSurchargeKrwFromOptions — 결제 권위 재계산', () => {
   it('(a) 다중 후가공(박+도무송) surcharge 는 각 항목 합산과 일치 (BLOCK #1: 콤마결합 0원 청구 방지)', () => {
     const opts = { finishing: 'foil_stamp,die_cut' }
