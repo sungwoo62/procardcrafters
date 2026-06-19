@@ -341,7 +341,7 @@ export interface FoilLayer {
 
 export interface FoilLayerValidation {
   ok: boolean
-  /** 사용자 노출용 한국어 오류 메시지(레이어별). ok=true 면 빈 배열. */
+  /** 사용자 노출용 영문 오류 메시지(레이어별 — 고객 노출, OMO-3529). ok=true 면 빈 배열. */
   errors: string[]
 }
 
@@ -442,24 +442,24 @@ export function validateFoilLayers(
   paperCut?: FoilPaperCut,
 ): FoilLayerValidation {
   const errors: string[] = []
-  if (layers.length < 1) errors.push('박 레이어가 최소 1개 필요합니다.')
+  if (layers.length < 1) errors.push('At least one foil layer is required.')
   if (layers.length > MAX_FOIL_LAYERS) {
-    errors.push(`박 레이어는 최대 ${MAX_FOIL_LAYERS}개까지 추가할 수 있습니다.`)
+    errors.push(`You can add up to ${MAX_FOIL_LAYERS} foil layers.`)
   }
   layers.forEach((l, i) => {
     const n = i + 1
     const x = Number(l.x_size)
     const y = Number(l.y_size)
     if (!Number.isFinite(x) || !Number.isFinite(y) || x <= 0 || y <= 0) {
-      errors.push(`박 레이어 ${n}: 가로·세로(mm)를 0보다 큰 값으로 입력하세요.`)
+      errors.push(`Foil layer ${n}: enter a width and height (mm) greater than 0.`)
       return
     }
     if (paperCut) {
       if (x > paperCut.cutX) {
-        errors.push(`박 레이어 ${n}: 가로 ${x}mm 가 용지 규격(${paperCut.cutX}mm)보다 큽니다.`)
+        errors.push(`Foil layer ${n}: width ${x}mm exceeds the paper size (${paperCut.cutX}mm).`)
       }
       if (y > paperCut.cutY) {
-        errors.push(`박 레이어 ${n}: 세로 ${y}mm 가 용지 규격(${paperCut.cutY}mm)보다 큽니다.`)
+        errors.push(`Foil layer ${n}: height ${y}mm exceeds the paper size (${paperCut.cutY}mm).`)
       }
     }
   })

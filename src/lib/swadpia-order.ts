@@ -190,7 +190,7 @@ export async function placeSwadpiaOrder(
   const password = process.env.SWADPIA_PASSWORD
 
   if (!username || !password) {
-    return { success: false, errorMessage: 'SWADPIA_USERNAME / SWADPIA_PASSWORD 환경변수 없음' }
+    return { success: false, errorMessage: 'SWADPIA_USERNAME / SWADPIA_PASSWORD environment variables are missing' }
   }
 
   const mapEntry = SWADPIA_GOODS_MAP[input.productSlugOrCategoryCode]
@@ -257,7 +257,7 @@ export async function placeSwadpiaOrder(
     // 4. plupload iframe 파일 업로드
     const chgFileName = await uploadViaPlupload(page, filePath)
     if (!chgFileName) {
-      return { success: false, errorMessage: 'plupload 업로드 실패 — chgFileName 없음' }
+      return { success: false, errorMessage: 'plupload upload failed — chgFileName missing' }
     }
 
     // 5. hidden 필드 설정 + 폼 제출
@@ -310,7 +310,7 @@ export async function placeSwadpiaOrder(
     await page.waitForTimeout(2000)
 
     if (!page.url().includes('/order/order_info')) {
-      return { success: false, errorMessage: `주문서 페이지 도달 실패 — URL: ${page.url()}` }
+      return { success: false, errorMessage: `Failed to reach the order page — URL: ${page.url()}` }
     }
 
     // 7. "주문 확인" 클릭 → /order/order_pay (결제서)
@@ -324,7 +324,7 @@ export async function placeSwadpiaOrder(
     await page.waitForTimeout(2000)
 
     if (!page.url().includes('/order/order_pay')) {
-      return { success: false, errorMessage: `결제서 페이지 도달 실패 — URL: ${page.url()}` }
+      return { success: false, errorMessage: `Failed to reach the payment page — URL: ${page.url()}` }
     }
 
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
@@ -370,7 +370,7 @@ export async function placeSwadpiaOrder(
 
     return {
       success: false,
-      errorMessage: `주문 완료 확인 실패 — URL: ${finalUrl}`,
+      errorMessage: `Failed to confirm order completion — URL: ${finalUrl}`,
     }
 
   } catch (err) {
@@ -399,7 +399,7 @@ async function swadpiaLogin(page: Page, username: string, password: string): Pro
   await page.waitForTimeout(2000)
 
   if (page.url().includes('/member/login')) {
-    throw new Error('Swadpia 로그인 실패')
+    throw new Error('Swadpia login failed')
   }
 }
 
@@ -855,12 +855,12 @@ async function uploadViaPlupload(page: Page, filePath: string): Promise<string |
     // iframe_InnoDS 접근
     const innoDSFrame: Frame | null = page.frame({ name: 'iframe_InnoDS' })
     if (!innoDSFrame) {
-      throw new Error('iframe_InnoDS 프레임 없음')
+      throw new Error('iframe_InnoDS frame not found')
     }
 
     const fileInput = await innoDSFrame.$('input[type="file"]')
     if (!fileInput) {
-      throw new Error('iframe 내 file input 없음')
+      throw new Error('file input not found inside iframe')
     }
 
     await fileInput.setInputFiles(filePath)
@@ -906,7 +906,7 @@ async function downloadFile(url: string, destDir: string): Promise<string> {
   }
 
   const res = await fetch(url, { signal: AbortSignal.timeout(60_000) })
-  if (!res.ok) throw new Error(`파일 다운로드 실패 ${res.status}: ${url}`)
+  if (!res.ok) throw new Error(`File download failed ${res.status}: ${url}`)
 
   const contentType = res.headers.get('content-type') ?? ''
   const ext =

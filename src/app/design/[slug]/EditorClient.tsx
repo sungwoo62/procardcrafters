@@ -5297,19 +5297,20 @@ export default function EditorClient({ product, options }: Props) {
                 return (
                   <div className="px-3 py-2 bg-amber-50/60 border-b border-amber-100 text-[11px]">
                     <div className="flex items-center justify-between mb-0.5">
-                      <div className="font-semibold text-gray-700">선택한 후가공 가이드</div>
+                      <div className="font-semibold text-gray-700">Selected finishing guides</div>
                       <button
                         onClick={() => setAllFinishingLocks(anyUnlocked)}
-                        title={anyUnlocked ? '모든 후가공 가이드를 잠가 이동/삭제를 막습니다' : '모든 후가공 가이드 잠금을 해제해 편집할 수 있게 합니다'}
+                        title={anyUnlocked ? 'Lock all finishing guides to prevent moving or deleting them' : 'Unlock all finishing guides so you can edit them'}
                         className="inline-flex items-center gap-1 rounded border border-amber-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-50"
                       >
                         {anyUnlocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
-                        {anyUnlocked ? '모두 잠금' : '모두 해제'}
+                        {anyUnlocked ? 'Lock all' : 'Unlock all'}
                       </button>
                     </div>
                     <p className="leading-snug text-gray-500 mb-1.5">
-                      색 점선 영역은 후가공 적용 위치 가이드입니다. 실수로 옮기거나 지우지 않도록 기본 잠금되어 있으며,
-                      각 레이어의 잠금 아이콘으로 해제하면 위치를 조정할 수 있습니다. 선택하면 영역 치수(mm)가 표시됩니다.
+                      The colored dashed areas mark where each finishing will be applied. They are locked by default
+                      so you don&apos;t move or delete them by mistake; unlock a layer with its lock icon to reposition it.
+                      Select an area to see its dimensions (mm).
                     </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-gray-600">
                       {finishingTypes.map(t => (
@@ -5339,10 +5340,10 @@ export default function EditorClient({ product, options }: Props) {
                       <span className="truncate flex-1 font-medium text-gray-700">{layer.name}</span>
                       {layer.finishingType && FINISHING_LAYER_META[layer.finishingType] && (
                         <span
-                          title="후가공 가이드 — 실제 인쇄 시 이 영역에 후가공이 적용됩니다"
+                          title="Finishing guide — this area will receive the finishing on the printed piece"
                           className={`shrink-0 text-[9px] font-semibold px-1 rounded ${FINISHING_LAYER_META[layer.finishingType].badgeClass}`}
                         >
-                          후가공·{FINISHING_LAYER_META[layer.finishingType].label}
+                          Finishing·{FINISHING_LAYER_META[layer.finishingType].label}
                         </span>
                       )}
                       {layer.imageQuality && (

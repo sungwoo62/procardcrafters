@@ -62,7 +62,7 @@ describe('validateFoilLayers — 양수·개수 + per-axis(용지규격) 가드'
     const cut = { cutX: 90, cutY: 50 }
     const v = validateFoilLayers([layer(50, 30), layer(50, 99)], cut) // 레이어2 세로 99 > 50
     expect(v.ok).toBe(false)
-    expect(v.errors.some((e) => e.includes('레이어 2'))).toBe(true)
+    expect(v.errors.some((e) => e.includes('layer 2'))).toBe(true)
   })
 })
 

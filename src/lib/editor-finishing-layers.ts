@@ -75,7 +75,7 @@ export function addFoilStampLayer(
     selectable: false,
     evented: false,
     hasControls: false,
-    data: { id: makeId(), name: '박 (금박) 영역', layerType: 'rect', finish: true, finishingType: 'foil_stamp' },
+    data: { id: makeId(), name: 'Foil (gold) area', layerType: 'rect', finish: true, finishingType: 'foil_stamp' },
   })
   canvas.add(foilRect)
 }
@@ -104,7 +104,7 @@ export function addDebossEmbossLayer(
     selectable: false,
     evented: false,
     hasControls: false,
-    data: { id: makeId(), name: '형압 영역', layerType: 'rect', finishingType: 'deboss_emboss' },
+    data: { id: makeId(), name: 'Emboss area', layerType: 'rect', finishingType: 'deboss_emboss' },
   })
   canvas.add(emRect)
 }
@@ -128,7 +128,7 @@ export function addScoreCreaseLayer(
       selectable: false,
       evented: false,
       hasControls: false,
-      data: { id: makeId(), name: '오시(접지선)', layerType: 'rect', finishingType: 'score_crease' },
+      data: { id: makeId(), name: 'Score (fold line)', layerType: 'rect', finishingType: 'score_crease' },
     },
   )
   canvas.add(scoreLine)
@@ -153,7 +153,7 @@ export function addPerforationLayer(
       selectable: false,
       evented: false,
       hasControls: false,
-      data: { id: makeId(), name: '미싱(점선)', layerType: 'rect', finishingType: 'perforation' },
+      data: { id: makeId(), name: 'Perforation (dotted line)', layerType: 'rect', finishingType: 'perforation' },
     },
   )
   canvas.add(perfLine)
@@ -181,7 +181,7 @@ export function addDrilledHoleLayer(
     selectable: false,
     evented: false,
     hasControls: false,
-    data: { id: makeId(), name: '타공(구멍)', layerType: 'rect', finishingType: 'drilled_hole' },
+    data: { id: makeId(), name: 'Drill (hole)', layerType: 'rect', finishingType: 'drilled_hole' },
   })
   canvas.add(holeCircle)
 }
@@ -210,7 +210,7 @@ export function addDieCutLayer(
     selectable: false,
     evented: false,
     hasControls: false,
-    data: { id: makeId(), name: '도무송 외곽선', layerType: 'rect', finishingType: 'die_cut' },
+    data: { id: makeId(), name: 'Die-cut outline', layerType: 'rect', finishingType: 'die_cut' },
   })
   canvas.add(dcRect)
 }
@@ -266,7 +266,7 @@ export function addFinishingLayers(
 // "같은 후가공 = 같은 색" 인지 단서를 준다(박=금/형압=보라/오시=초록/미싱=주황/타공=회/도무송=핑크).
 
 export interface FinishingLayerMeta {
-  /** 레이어 패널 배지 라벨(한국어 후가공 명). */
+  /** 레이어 패널 배지 라벨(영문 후가공 명 — 고객 노출, OMO-3529). */
   label: string
   /** 배지 Tailwind 클래스(배경+텍스트). 캔버스 가이드 색과 정렬. */
   badgeClass: string
@@ -276,10 +276,10 @@ export interface FinishingLayerMeta {
 
 /** 후가공 타입 → 레이어 패널 표시 메타. */
 export const FINISHING_LAYER_META: Record<FinishingType, FinishingLayerMeta> = {
-  foil_stamp: { label: '박', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-400' },
-  deboss_emboss: { label: '형압', badgeClass: 'bg-violet-100 text-violet-700', dotClass: 'bg-violet-400' },
-  score_crease: { label: '오시', badgeClass: 'bg-emerald-100 text-emerald-700', dotClass: 'bg-emerald-400' },
-  perforation: { label: '미싱', badgeClass: 'bg-orange-100 text-orange-700', dotClass: 'bg-orange-400' },
-  drilled_hole: { label: '타공', badgeClass: 'bg-slate-100 text-slate-700', dotClass: 'bg-slate-400' },
-  die_cut: { label: '도무송', badgeClass: 'bg-pink-100 text-pink-700', dotClass: 'bg-pink-400' },
+  foil_stamp: { label: 'Foil', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-400' },
+  deboss_emboss: { label: 'Emboss', badgeClass: 'bg-violet-100 text-violet-700', dotClass: 'bg-violet-400' },
+  score_crease: { label: 'Score', badgeClass: 'bg-emerald-100 text-emerald-700', dotClass: 'bg-emerald-400' },
+  perforation: { label: 'Perforation', badgeClass: 'bg-orange-100 text-orange-700', dotClass: 'bg-orange-400' },
+  drilled_hole: { label: 'Drill', badgeClass: 'bg-slate-100 text-slate-700', dotClass: 'bg-slate-400' },
+  die_cut: { label: 'Die Cut', badgeClass: 'bg-pink-100 text-pink-700', dotClass: 'bg-pink-400' },
 }
