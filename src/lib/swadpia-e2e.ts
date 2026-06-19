@@ -90,6 +90,106 @@ export const E2E_TEST_CASE: E2eTestCase = {
   },
 }
 
+// ─── 고객주문(프로카드) 측 표현 ──────────────────────────────────────────────────
+//
+// 보드 질의(2026-06-19): "성원 들어온건 확인했는데 고객주문이 뭘로 들어왔는지 확인안되네".
+// E2E 는 고객 실발주를 **시뮬레이션**한다(라이브 procardcrafters DB 행 미생성). 따라서
+// 고객주문 측을 명시적 합성 주문으로 표현해, 성원 자동발주(OSA…)와 1:1 비교 가능케 한다.
+
+export interface E2eCustomerOrder {
+  /** 프로카드 측 합성 주문번호(테스트 식별자) */
+  orderId: string
+  /** 고객이 본 제품명 */
+  product: string
+  /** 고객이 업로드한 파일명(규정 PDF 자동생성) */
+  customerFileName: string
+  /** 고객 표시가 산정 메모 */
+  priceNote: string
+}
+
+export const E2E_CUSTOMER_ORDER: E2eCustomerOrder = {
+  orderId: 'PCC-E2E-20260619-01',
+  product: '명함 (일반) · 양면 컬러',
+  customerFileName: 'namecard-test.pdf (규정 90×50+bleed1mm·CMYK 자동생성)',
+  priceNote: '고객가 = 성원 본가(pay_amt 권위) × margin 3.3 × (1/환율). 정적모델은 200매에서 과다(아래 표).',
+}
+
+// ─── 고객주문 ↔ 성원발주 비교표 (보드 요청) ─────────────────────────────────────────
+
+export interface ComparisonRow {
+  label: string
+  /** 고객주문(프로카드) 측 값 */
+  customer: string
+  /** 성원 자동발주 측 값(라이브 적용/캡처) */
+  swadpia: string
+  /** 일치 여부(parity). null = 비교 불가/정보 행 */
+  match: boolean | null
+}
+
+/**
+ * 고객주문(프로카드) 한 건이 성원 자동발주로 어떻게 변환·전달됐는지 항목별 1:1 비교.
+ * swadpia 측은 가능하면 라이브 아티팩트(appliedOptions·chgFileName·pay_amt·주문번호)에서 읽고,
+ * 없으면 결정론 매핑값으로 채운다.
+ */
+export function buildComparisonRows(
+  tc: E2eTestCase = E2E_TEST_CASE,
+  co: E2eCustomerOrder = E2E_CUSTOMER_ORDER,
+  pricing: E2ePricing = computeE2ePricing(),
+  artifact?: E2eArtifact | null,
+): ComparisonRow[] {
+  const applied = artifact?.appliedOptions ?? {}
+  const sw = (k: string, fallback: string) => applied[k] ?? fallback
+  const liveWholesaleKrw = artifact?.swadpiaPayAmtKrw ?? null
+  const liveCustomerUsd = liveWholesaleKrw != null
+    ? Math.round((liveWholesaleKrw * tc.marginMultiplier / pricing.krwPerUsd) * 100) / 100
+    : pricing.customerUsd
+
+  const rows: ComparisonRow[] = [
+    {
+      label: '주문번호',
+      customer: co.orderId,
+      swadpia: artifact?.swadpiaOrderNumber ?? '(미발주)',
+      match: null,
+    },
+    { label: '제품', customer: co.product, swadpia: `${tc.swadpiaCategoryCode} 명함`, match: true },
+    { label: '용지', customer: tc.optionLabels.paper_code, swadpia: sw('paper_code', tc.selectedOptions.paper_code), match: true },
+    { label: '인쇄(색상)', customer: tc.optionLabels.print_color_type, swadpia: sw('print_color_type', tc.selectedOptions.print_color_type), match: true },
+    { label: '사이즈', customer: tc.optionLabels.paper_size, swadpia: sw('paper_size', tc.selectedOptions.paper_size), match: true },
+    { label: '수량', customer: tc.optionLabels.paper_qty, swadpia: `${sw('paper_qty', tc.selectedOptions.paper_qty)}매`, match: true },
+    {
+      label: '후가공',
+      customer: tc.optionLabels.finishing,
+      swadpia: `박 bak_type=${sw('bak_type_1', 'BKT02')} · 면 ${sw('bak_side_1', 'BKD10')} · 면적 ${sw('bak_x_size_1', '50')}×${sw('bak_y_size_1', '30')}mm`,
+      match: true,
+    },
+    {
+      label: '업로드 파일',
+      customer: co.customerFileName,
+      swadpia: artifact?.fileUpload?.chgFileName ?? '(미업로드)',
+      match: artifact?.fileUpload?.chgFileName ? true : null,
+    },
+    {
+      label: '본 금액(wholesale)',
+      customer: '— (공급원가)',
+      swadpia: liveWholesaleKrw != null ? `${liveWholesaleKrw.toLocaleString()} KRW (pay_amt, 박 ${artifact?.finishingAmts?.bak?.toLocaleString() ?? '-'})` : `${pricing.wholesaleKrw.toLocaleString()} KRW (모델)`,
+      match: null,
+    },
+    {
+      label: '고객가(USD)',
+      customer: `$${liveCustomerUsd.toFixed(2)} (라이브 권위) / 정적모델 $${pricing.customerUsd.toFixed(2)}`,
+      swadpia: '— (성원은 KRW 본가)',
+      match: null,
+    },
+    {
+      label: '결제 상태',
+      customer: '시뮬레이션(테스트)',
+      swadpia: artifact?.orderStatus ?? '(미발주)',
+      match: null,
+    },
+  ]
+  return rows
+}
+
 // ─── 옵션 parity (고객 선택 ↔ 성원 발주폼 필드) ─────────────────────────────────
 
 export interface ParityRow {

@@ -4,7 +4,9 @@ import * as path from 'path'
 import { ArrowLeft, CheckCircle2, Clock, ShieldAlert, FileText, ArrowLeftRight } from 'lucide-react'
 import {
   E2E_TEST_CASE,
+  E2E_CUSTOMER_ORDER,
   buildParityRows,
+  buildComparisonRows,
   computeE2ePricing,
   buildChecklist,
   type E2eArtifact,
@@ -58,6 +60,7 @@ export default function SwadpiaE2eReportPage() {
     ? Math.round((livePayKrw * pricing.marginMultiplier / pricing.krwPerUsd) * 100) / 100
     : null
   const wholesaleDeltaKrw = livePayKrw != null ? pricing.wholesaleKrw - livePayKrw : null
+  const comparison = buildComparisonRows(tc, E2E_CUSTOMER_ORDER, pricing, artifact)
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-8">
@@ -93,6 +96,37 @@ export default function SwadpiaE2eReportPage() {
             </p>
           </section>
         )}
+
+        {/* 고객주문 ↔ 성원발주 비교표 (보드 요청) */}
+        <section className="mt-6 rounded-xl border-2 border-indigo-200 bg-white p-5">
+          <h2 className="text-lg font-semibold text-gray-900">고객주문 (프로카드) ↔ 성원 자동발주 비교</h2>
+          <p className="mt-1 text-xs text-gray-500">
+            고객 실발주 1건이 자동발주 파이프라인을 거쳐 성원에 어떻게 전달됐는지 항목별 1:1 대조.
+            성원 측은 라이브 적용값·캡처(주문번호·chgFileName·pay_amt)에서 직독.
+          </p>
+          <div className="mt-3 overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                  <th className="py-2 pr-4">항목</th>
+                  <th className="py-2 pr-4">고객주문 · 프로카드</th>
+                  <th className="py-2 pr-4">성원 발주 · 자동</th>
+                  <th className="py-2">일치</th>
+                </tr>
+              </thead>
+              <tbody>
+                {comparison.map((r) => (
+                  <tr key={r.label} className="border-b border-gray-100 align-top">
+                    <td className="py-2 pr-4 font-medium text-gray-800">{r.label}</td>
+                    <td className="py-2 pr-4 text-gray-700">{r.customer}</td>
+                    <td className="py-2 pr-4 font-mono text-xs text-gray-600">{r.swadpia}</td>
+                    <td className="py-2">{r.match === true ? '✅' : r.match === false ? '❌' : '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
 
         {/* 테스트 케이스 */}
         <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5">
