@@ -1,4 +1,28 @@
 import { parseFoilLayersFromOptions } from './swadpia-finishing-fields'
+import {
+  CARD_MATRIX_FINISHINGS,
+  cardFinishingWholesaleKrw,
+  type CardFinishingDetail,
+} from './finishing-card-matrix'
+
+// OMO-3567: 명함 후가공 세부옵션 단가 매트릭스 라우팅 플래그.
+//   OFF(기본) = 현행 정액/면적선형(finishingSurchargeKrw) 유지(dormant, 회귀 0).
+//   ON = 박/형압/도무송을 OMO-3566 매트릭스(종류×면×면적×수량 / 면적×수량 / 모양×개수×수량)로 라우팅.
+//   ⚠️ ON 전환(고객 표시가/청구가 변경)은 **보드 가격 승인 게이트**(OMO-3511 a344e1b4).
+//   NEXT_PUBLIC_ 접두 = 클라이언트 표시가 경로(ProductConfigurator)와 서버 청구 경로가 동일 값 참조.
+export const FINISHING_MATRIX_ROUTING =
+  process.env.NEXT_PUBLIC_FINISHING_MATRIX_ROUTING === 'on'
+
+/** selectedOptions 에서 발주 수량(매수)을 해석. paper_qty → quantity 순. */
+export function resolveFinishingQuantity(
+  selectedOptions: Record<string, string>,
+  explicit?: number,
+): number {
+  if (explicit && explicit > 0) return explicit
+  const raw = selectedOptions.paper_qty ?? selectedOptions.quantity ?? ''
+  const n = Number(raw)
+  return Number.isFinite(n) && n > 0 ? n : 0
+}
 
 // OMO-2664: 후가공 도매 surcharge(성원애드피아 wholesale KRW) 단일 소스.
 //
@@ -104,22 +128,34 @@ const AREA_KEYS_BY_FINISHING: Record<string, { x: string; y: string }> = {
  *  - 면적비례 후가공(박/형압)은 선택된 면적키(bak_x_size_1 등)로 areaMm2 산출, 없으면 기본면적.
  *  - `finishing` 키가 없으면 0(후가공 미선택 — 회귀 없음).
  */
-export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string, string>): number {
+export function finishingSurchargeKrwFromOptions(
+  selectedOptions: Record<string, string>,
+  // OMO-3567: 매트릭스 라우팅(수량 의존) 시 발주 매수. 미지정 시 selectedOptions 에서 해석.
+  quantity?: number,
+): number {
   const raw = selectedOptions.finishing
   if (!raw) return 0
+  // OMO-3567: 플래그 ON 시 박/형압/도무송은 수량·세부옵션 매트릭스로 라우팅.
+  const useMatrix = FINISHING_MATRIX_ROUTING
+  const qty = useMatrix ? resolveFinishingQuantity(selectedOptions, quantity) : 0
   let total = 0
   for (const value of raw.split(',').map((v) => v.trim()).filter(Boolean)) {
+    const matrixRoute = useMatrix && qty > 0 && CARD_MATRIX_FINISHINGS.has(value)
     // OMO-3257: 박(foil)은 최대 3 레이어 면적 합산 — 레이어별 surcharge 를 각각 가산한다.
     // (성원 setPPBakAmtSum 과 동일하게 레이어 면적 단가를 합산하는 1차 근사. 최종
     //  금액은 자동발주 모달의 성원 calcuEstimate 응답 bak_amt 가 권위.)
     if (value === 'foil_stamp') {
       const layers = parseFoilLayersFromOptions(selectedOptions)
       if (layers.length === 0) {
-        total += finishingSurchargeKrw(value) // 면적 미지정 → 기본면적 1회
+        total += matrixRoute
+          ? cardFinishingWholesaleKrw(value, qty, {})
+          : finishingSurchargeKrw(value) // 면적 미지정 → 기본면적 1회
       } else {
         for (const l of layers) {
           const area = l.x_size > 0 && l.y_size > 0 ? l.x_size * l.y_size : undefined
-          total += finishingSurchargeKrw(value, area)
+          total += matrixRoute
+            ? cardFinishingWholesaleKrw(value, qty, { areaMm2: area, bakType: l.bak_type, side: l.bak_side })
+            : finishingSurchargeKrw(value, area)
         }
       }
       continue
@@ -131,7 +167,17 @@ export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string,
       const h = Number(selectedOptions[areaKeys.y])
       if (Number.isFinite(w) && Number.isFinite(h) && w > 0 && h > 0) areaMm2 = w * h
     }
-    total += finishingSurchargeKrw(value, areaMm2)
+    if (matrixRoute) {
+      const detail: CardFinishingDetail = { areaMm2 }
+      if (value === 'die_cut') {
+        detail.shape = selectedOptions.domusong_type || undefined
+        const num = Number(selectedOptions.domusong_num)
+        if (Number.isFinite(num) && num > 0) detail.num = num
+      }
+      total += cardFinishingWholesaleKrw(value, qty, detail)
+    } else {
+      total += finishingSurchargeKrw(value, areaMm2)
+    }
   }
   return total
 }
@@ -154,6 +200,8 @@ export const FINISHING_KEY_SET: ReadonlySet<string> = new Set<string>(FINISHING_
 export function buildOrderExtraPricesKrw(
   selectedOptions: Record<string, string>,
   productOptions: { option_type: string; value: string; extra_price_krw: number }[],
+  // OMO-3567: 매트릭스 라우팅(수량 의존) 시 발주 매수. 미지정 시 selectedOptions 에서 해석.
+  quantity?: number,
 ): number[] {
   const base = Object.entries(selectedOptions)
     .filter(([type]) => !FINISHING_KEY_SET.has(type))
@@ -161,6 +209,6 @@ export function buildOrderExtraPricesKrw(
       const opt = productOptions.find((o) => o.option_type === type && o.value === value)
       return opt?.extra_price_krw ?? 0
     })
-  const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(selectedOptions)
+  const finishingSurchargeKrw = finishingSurchargeKrwFromOptions(selectedOptions, quantity)
   return finishingSurchargeKrw > 0 ? [...base, finishingSurchargeKrw] : base
 }
