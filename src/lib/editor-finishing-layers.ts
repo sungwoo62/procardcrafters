@@ -8,6 +8,10 @@
 // - React 클로저(dims, scale) 를 직접 참조하지 않고, 호출측이 trim 영역
 //   픽셀 좌표(FinishingGeom)를 주입(dependency injection)한다.
 // - fabric 인스턴스도 파라미터로 받아 단위 테스트 가능하도록 분리.
+//
+// OMO-3522: 생성되는 가이드 레이어는 기본 잠금 상태(selectable:false / evented:false)다.
+// 일반 디자인 요소와 혼동되거나 실수로 이동/삭제되는 것을 막기 위함이며,
+// EditorClient 의 레이어 패널 잠금 토글로 개별 해제하면 자유롭게 편집할 수 있다.
 
 // FinishingType: 지원 후가공 코드 (URL ?finishing= 값과 동일)
 export type FinishingType =
@@ -67,8 +71,10 @@ export function addFoilStampLayer(
     stroke: 'rgba(212,175,55,0.9)',
     strokeWidth: 1.5,
     strokeDashArray: [6, 3],
-    selectable: true,
-    evented: true,
+    // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+    selectable: false,
+    evented: false,
+    hasControls: false,
     data: { id: makeId(), name: '박 (금박) 영역', layerType: 'rect', finish: true, finishingType: 'foil_stamp' },
   })
   canvas.add(foilRect)
@@ -94,8 +100,10 @@ export function addDebossEmbossLayer(
     stroke: 'rgba(139,92,246,0.8)',
     strokeWidth: 1.5,
     strokeDashArray: [4, 3],
-    selectable: true,
-    evented: true,
+    // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+    selectable: false,
+    evented: false,
+    hasControls: false,
     data: { id: makeId(), name: '형압 영역', layerType: 'rect', finishingType: 'deboss_emboss' },
   })
   canvas.add(emRect)
@@ -116,8 +124,10 @@ export function addScoreCreaseLayer(
       stroke: 'rgba(16,185,129,0.9)',
       strokeWidth: 2,
       strokeDashArray: [8, 4],
-      selectable: true,
-      evented: true,
+      // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+      selectable: false,
+      evented: false,
+      hasControls: false,
       data: { id: makeId(), name: '오시(접지선)', layerType: 'rect', finishingType: 'score_crease' },
     },
   )
@@ -139,8 +149,10 @@ export function addPerforationLayer(
       stroke: 'rgba(249,115,22,0.9)',
       strokeWidth: 2,
       strokeDashArray: [3, 4],
-      selectable: true,
-      evented: true,
+      // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+      selectable: false,
+      evented: false,
+      hasControls: false,
       data: { id: makeId(), name: '미싱(점선)', layerType: 'rect', finishingType: 'perforation' },
     },
   )
@@ -165,8 +177,10 @@ export function addDrilledHoleLayer(
     stroke: 'rgba(100,116,139,0.8)',
     strokeWidth: 1.5,
     strokeDashArray: [3, 2],
-    selectable: true,
-    evented: true,
+    // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+    selectable: false,
+    evented: false,
+    hasControls: false,
     data: { id: makeId(), name: '타공(구멍)', layerType: 'rect', finishingType: 'drilled_hole' },
   })
   canvas.add(holeCircle)
@@ -192,8 +206,10 @@ export function addDieCutLayer(
     strokeDashArray: [5, 4],
     rx: mmToPx(4),
     ry: mmToPx(4),
-    selectable: true,
-    evented: true,
+    // OMO-3522: 후가공 가이드는 기본 잠금(이동/리사이즈/삭제 방지). 레이어 패널 토글로 해제.
+    selectable: false,
+    evented: false,
+    hasControls: false,
     data: { id: makeId(), name: '도무송 외곽선', layerType: 'rect', finishingType: 'die_cut' },
   })
   canvas.add(dcRect)

@@ -735,6 +735,12 @@ export default function EditorClient({ product, options }: Props) {
   const [mobileUploadError, setMobileUploadError] = useState('')
   const mobileFileInputRef = useRef<HTMLInputElement>(null)
 
+  // OMO-3522: 후가공 가이드 레이어 선택 시 표시하는 영역 치수(mm) 오버레이 상태.
+  // 화면 고정좌표(fixed)로 캔버스 위에 떠서 가이드 영역의 W×H(또는 선 길이)를 보여준다.
+  const [dimOverlay, setDimOverlay] = useState<
+    { left: number; top: number; text: string; finishingType: FinishingType } | null
+  >(null)
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mq = window.matchMedia('(max-width: 767px)')
@@ -742,6 +748,19 @@ export default function EditorClient({ product, options }: Props) {
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
+  }, [])
+
+  // OMO-3522: 치수 오버레이는 화면 고정좌표라 캔버스 스크롤/리사이즈 시 위치가 어긋난다.
+  // 스크롤(캡처 단계로 내부 overflow-auto 컨테이너 포함)·리사이즈에 맞춰 재계산한다.
+  useEffect(() => {
+    const recompute = () => updateDimOverlay(fabricRef.current)
+    window.addEventListener('scroll', recompute, true)
+    window.addEventListener('resize', recompute)
+    return () => {
+      window.removeEventListener('scroll', recompute, true)
+      window.removeEventListener('resize', recompute)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function handleMobileDirectUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -906,10 +925,11 @@ export default function EditorClient({ product, options }: Props) {
     if (!obj || isBackground(obj)) {
       setSelectedId(null)
       setSelectedProps(null)
+      setDimOverlay(null)
       return
     }
     // Skip property panel update when the crop rect is selected (keep crop mode active)
-    if (obj.data?.role === 'crop') return
+    if (obj.data?.role === 'crop') { setDimOverlay(null); return }
     const id = obj.data?.id ?? ''
     setSelectedId(id)
 
@@ -964,6 +984,41 @@ export default function EditorClient({ product, options }: Props) {
 
     setSelectedProps(props)
     setActivePanel('properties')
+    updateDimOverlay(canvas)
+  }
+
+  // OMO-3522: 후가공 가이드 레이어가 활성 상태면 영역 치수(mm) 오버레이를 갱신한다.
+  // - getBoundingRect()는 fabric v6에서 "씬 좌표"(줌/팬 미반영)이므로 viewportTransform으로
+  //   화면 좌표로 변환한 뒤, 캔버스 DOM 위치(getBoundingClientRect)를 더해 fixed 좌표를 만든다.
+  // - 실측 mm 는 줌과 무관한 getScaledWidth/Height 를 캔버스 scale 로 나눠 산출.
+  // - 가이드(=finishingType 보유)가 아니면 오버레이를 숨긴다.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function updateDimOverlay(canvas: any) {
+    const obj = canvas?.getActiveObject?.()
+    const finishingType: FinishingType | undefined = obj?.data?.finishingType
+    const el = canvasElRef.current
+    if (!obj || !finishingType || !el) {
+      setDimOverlay(null)
+      return
+    }
+    const rect = el.getBoundingClientRect()
+    const bound = obj.getBoundingRect() // 씬 좌표(줌/팬 미반영)
+    // viewportTransform = [a, b, c, d, e, f] (회전/스큐 없음 → a=d=zoom, e/f=pan)
+    const vpt: number[] = canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0]
+    const centerSceneX = bound.left + bound.width / 2
+    const screenX = centerSceneX * vpt[0] + vpt[4]
+    const screenY = bound.top * vpt[3] + vpt[5]
+    const wMm = Math.round(((obj.getScaledWidth?.() ?? obj.width ?? 0) / scale) * 10) / 10
+    const hMm = Math.round(((obj.getScaledHeight?.() ?? obj.height ?? 0) / scale) * 10) / 10
+    // 오시/미싱 등 선형 가이드는 W×H 대신 길이만 표기(높이가 strokeWidth 수준이라 무의미)
+    const isLine = obj.type === 'line'
+    const text = isLine ? `선 길이 ${wMm} mm` : `${wMm} × ${hMm} mm`
+    setDimOverlay({
+      left: rect.left + screenX,
+      top: rect.top + screenY,
+      text,
+      finishingType,
+    })
   }
 
   // ── History ───────────────────────────────────────────────────────────────
@@ -1056,7 +1111,8 @@ export default function EditorClient({ product, options }: Props) {
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const obj = canvas.getActiveObject()
-        if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
+        // OMO-3522: 잠금(selectable:false) 레이어는 키보드 삭제 차단 — 후가공 가이드 보호
+        if (obj && !isBackground(obj) && obj.data?.role !== 'crop' && obj.selectable !== false) {
           canvas.remove(obj)
           canvas.discardActiveObject()
           canvas.renderAll()
@@ -3131,7 +3187,7 @@ export default function EditorClient({ product, options }: Props) {
       // ── Events ────────────────────────────────────────────────────────────
       canvas.on('selection:created', () => syncSelected(canvas))
       canvas.on('selection:updated', () => syncSelected(canvas))
-      canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null) })
+      canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null); setDimOverlay(null) })
 
       canvas.on('object:modified', () => {
         syncLayers(canvas)
@@ -3161,10 +3217,12 @@ export default function EditorClient({ product, options }: Props) {
           const q = calcImageQuality(obj, scale, (obj.data?.imageQuality as ImageQuality | undefined)?.fileBytes ?? 0)
           obj.set('data', { ...obj.data, imageQuality: q })
         }
+        updateDimOverlay(canvas) // OMO-3522: 잠금 해제된 가이드 리사이즈 중 치수 실시간 갱신
       })
 
       canvas.on('object:moving', (e: { target: object }) => {
         snapObject(canvas, fabric, e.target)
+        updateDimOverlay(canvas) // OMO-3522: 가이드 이동 시 치수 오버레이가 따라오도록
       })
 
       canvas.on('object:moved', () => {
@@ -3179,6 +3237,7 @@ export default function EditorClient({ product, options }: Props) {
         z = Math.min(Math.max(z, 0.2), 5)
         canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, z)
         setZoom(z)
+        updateDimOverlay(canvas) // OMO-3522: 줌 변경 시 오버레이 위치 재계산
         opt.e.preventDefault()
         opt.e.stopPropagation()
       })
@@ -3189,6 +3248,7 @@ export default function EditorClient({ product, options }: Props) {
         panningRef.current = true
         canvas.selection = false
         canvas.discardActiveObject()
+        setDimOverlay(null) // OMO-3522: 팬 시작 시 선택 해제 → 치수 오버레이 숨김
         lastPanPosRef.current = { x: opt.e.clientX, y: opt.e.clientY }
         canvas.setCursor('grabbing')
       })
@@ -3723,7 +3783,8 @@ export default function EditorClient({ product, options }: Props) {
     const canvas = fabricRef.current
     if (!canvas) return
     const obj = canvas.getActiveObject()
-    if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
+    // OMO-3522: 잠금(selectable:false) 레이어는 삭제 차단 — 레이어 패널 휴지통 버튼 포함
+    if (obj && !isBackground(obj) && obj.data?.role !== 'crop' && obj.selectable !== false) {
       canvas.remove(obj)
       canvas.discardActiveObject()
       canvas.renderAll()
@@ -3731,6 +3792,7 @@ export default function EditorClient({ product, options }: Props) {
       saveHistory(canvas)
       setSelectedId(null)
       setSelectedProps(null)
+      setDimOverlay(null)
       setActivePanel('layers')
     }
   }
@@ -3771,7 +3833,26 @@ export default function EditorClient({ product, options }: Props) {
       canvas.renderAll()
       syncLayers(canvas)
       saveHistory(canvas)
+      updateDimOverlay(canvas) // OMO-3522: 잠금 토글 후 선택 상태면 치수 오버레이 갱신
     }
+  }
+
+  // OMO-3522: 후가공 가이드 레이어 전체를 한 번에 잠그거나 해제하는 마스터 토글.
+  function setAllFinishingLocks(locked: boolean) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const guides = canvas.getObjects().filter((o: any) => !!o.data?.finishingType)
+    if (guides.length === 0) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    guides.forEach((o: any) => {
+      o.set({ selectable: !locked, evented: !locked, hasControls: !locked })
+    })
+    if (locked) canvas.discardActiveObject()
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+    updateDimOverlay(canvas)
   }
 
   function moveLayerOrder(id: string, dir: 'up' | 'down') {
@@ -3808,6 +3889,7 @@ export default function EditorClient({ product, options }: Props) {
     // 캔버스 중앙 기준 줌
     canvas.zoomToPoint({ x: canvas.getWidth() / 2, y: canvas.getHeight() / 2 }, z)
     setZoom(z)
+    updateDimOverlay(canvas) // OMO-3522: 줌 버튼 조작 시 오버레이 위치 재계산
   }
   function zoomIn() { applyZoom(zoom * 1.2) }
   function zoomOut() { applyZoom(zoom / 1.2) }
@@ -3817,6 +3899,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
     setZoom(1)
     canvas.requestRenderAll()
+    updateDimOverlay(canvas) // OMO-3522: 뷰 리셋 후 오버레이 위치 재계산
   }
 
   // ── 정렬 (대지 기준) ────────────────────────────────────────────────────────
@@ -4798,6 +4881,20 @@ export default function EditorClient({ product, options }: Props) {
             <canvas ref={canvasElRef} />
           </div>
 
+          {/* OMO-3522: 후가공 가이드 선택 시 영역 치수(mm) 오버레이 — 화면 고정좌표 */}
+          {dimOverlay && FINISHING_LAYER_META[dimOverlay.finishingType] && (
+            <div
+              className="fixed z-30 -translate-x-1/2 -translate-y-full pointer-events-none rounded-md bg-gray-900/90 px-2 py-1 shadow-lg ring-1 ring-black/10"
+              style={{ left: dimOverlay.left, top: dimOverlay.top - 8 }}
+            >
+              <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold text-white">
+                <span className={`inline-block w-2 h-2 rounded-full ${FINISHING_LAYER_META[dimOverlay.finishingType].dotClass}`} />
+                <span>{FINISHING_LAYER_META[dimOverlay.finishingType].label}</span>
+                <span className="font-mono tracking-tight text-amber-200">{dimOverlay.text}</span>
+              </div>
+            </div>
+          )}
+
           {/* 줌 컨트롤 (하단 좌측) */}
           <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
             <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
@@ -5190,15 +5287,29 @@ export default function EditorClient({ product, options }: Props) {
             <div className="flex-1 overflow-y-auto">
               {/* OMO-3484: 후가공 가이드 범례 — 구성기에서 선택한 후가공이 캔버스에 표현될 때 안내 */}
               {(() => {
+                const finishingLayers = layers.filter(l => !!l.finishingType)
                 const finishingTypes = Array.from(
-                  new Set(layers.map(l => l.finishingType).filter((t): t is FinishingType => !!t)),
+                  new Set(finishingLayers.map(l => l.finishingType).filter((t): t is FinishingType => !!t)),
                 )
                 if (finishingTypes.length === 0) return null
+                // OMO-3522: 가이드가 하나라도 잠겨있지 않으면 "모두 잠금", 전부 잠겨있으면 "모두 해제"
+                const anyUnlocked = finishingLayers.some(l => !l.locked)
                 return (
                   <div className="px-3 py-2 bg-amber-50/60 border-b border-amber-100 text-[11px]">
-                    <div className="font-semibold text-gray-700 mb-0.5">선택한 후가공 가이드</div>
+                    <div className="flex items-center justify-between mb-0.5">
+                      <div className="font-semibold text-gray-700">선택한 후가공 가이드</div>
+                      <button
+                        onClick={() => setAllFinishingLocks(anyUnlocked)}
+                        title={anyUnlocked ? '모든 후가공 가이드를 잠가 이동/삭제를 막습니다' : '모든 후가공 가이드 잠금을 해제해 편집할 수 있게 합니다'}
+                        className="inline-flex items-center gap-1 rounded border border-amber-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-50"
+                      >
+                        {anyUnlocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {anyUnlocked ? '모두 잠금' : '모두 해제'}
+                      </button>
+                    </div>
                     <p className="leading-snug text-gray-500 mb-1.5">
-                      색 점선 영역은 후가공 적용 위치 가이드입니다. 자유롭게 옮길 수 있으며, 실제 인쇄 시 해당 위치에 후가공이 적용됩니다.
+                      색 점선 영역은 후가공 적용 위치 가이드입니다. 실수로 옮기거나 지우지 않도록 기본 잠금되어 있으며,
+                      각 레이어의 잠금 아이콘으로 해제하면 위치를 조정할 수 있습니다. 선택하면 영역 치수(mm)가 표시됩니다.
                     </p>
                     <div className="flex flex-wrap gap-x-3 gap-y-1 text-gray-600">
                       {finishingTypes.map(t => (
@@ -5252,7 +5363,12 @@ export default function EditorClient({ product, options }: Props) {
                       <button onClick={e => { e.stopPropagation(); toggleVisibility(layer.id) }} className="text-gray-400 hover:text-gray-600">
                         {layer.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       </button>
-                      <button onClick={e => { e.stopPropagation(); toggleLock(layer.id) }} className="text-gray-400 hover:text-gray-600">
+                      {/* OMO-3522: 잠금 상태는 amber 로 강조 — 후가공 가이드가 보호 중임을 시각화 */}
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleLock(layer.id) }}
+                        title={layer.locked ? '잠금 해제 (이동/리사이즈/삭제 허용)' : '잠금 (이동/리사이즈/삭제 방지)'}
+                        className={layer.locked ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-gray-600'}
+                      >
                         {layer.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                       </button>
                       <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'up') }} className="text-gray-400 hover:text-gray-600">
@@ -5261,9 +5377,12 @@ export default function EditorClient({ product, options }: Props) {
                       <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'down') }} className="text-gray-400 hover:text-gray-600">
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
+                      {/* OMO-3522: 잠긴 레이어는 삭제 버튼 비활성화 — 실수 삭제 방지 */}
                       <button
-                        onClick={e => { e.stopPropagation(); selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
-                        className="text-red-400 hover:text-red-600"
+                        onClick={e => { e.stopPropagation(); if (layer.locked) return; selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
+                        disabled={layer.locked}
+                        title={layer.locked ? '잠긴 레이어는 삭제할 수 없습니다 (먼저 잠금 해제)' : '레이어 삭제'}
+                        className={layer.locked ? 'text-gray-200 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
