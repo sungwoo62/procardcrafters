@@ -153,6 +153,29 @@ export interface SwadpiaOrderInput {
   quantity: number
   fileUrl: string
   orderTitle?: string
+  /**
+   * OMO-3520: dry-run 모드. true 면 결제서(order_pay) 페이지까지만 진행하고
+   * 최종 paySubmit() (공급사 실비·물리적 생산 발생)은 호출하지 않는다.
+   * 파일 업로드·옵션 적용·결제금액 캡처(diagnostics)는 모두 수행한다.
+   */
+  dryRun?: boolean
+}
+
+/**
+ * OMO-3520: E2E 검증용 진단 스냅샷 — 라이브 폼에서 읽어온 실제 적용 상태.
+ * (화면 추론 금지 원칙 준수: 가격은 hidden total_price/{type}_amt 직독.)
+ */
+export interface SwadpiaOrderDiagnostics {
+  /** 도달한 마지막 단계 */
+  reachedStage: string
+  /** plupload 업로드 결과 */
+  fileUpload: { chgFileName: string | null; fileName: string; sizeBytes: number } | null
+  /** 성원 폼 select 에 실제 적용된 값(옵션 parity read-back) */
+  appliedOptions: Record<string, string> | null
+  /** 성원 hidden total_price / pay_amt (본가 KRW) */
+  swadpiaPayAmtKrw: number | null
+  /** 후가공별 hidden {type}_amt (KRW) */
+  finishingAmts: Record<string, number> | null
 }
 
 export interface SwadpiaOrderResult {
@@ -160,6 +183,8 @@ export interface SwadpiaOrderResult {
   swadpiaOrderNumber?: string
   checkoutUrl?: string
   errorMessage?: string
+  /** OMO-3520: dry-run/실발주 진단 스냅샷 */
+  diagnostics?: SwadpiaOrderDiagnostics
 }
 
 export interface FactoryOrderRecord {
@@ -232,6 +257,9 @@ export async function placeSwadpiaOrder(
     // 옵션이 아니라 시드에 없으므로 발주 직전 코드에서 채운다.
     const effectiveOptions = withBookletInPageQtyDefault(categoryCode, input.selectedOptions)
     await selectOrderOptions(page, effectiveOptions, input.quantity, fieldAlias)
+
+    // OMO-3520: 옵션 적용 직후 폼 진단 스냅샷(옵션 read-back + 본가/후가공 amt 직독).
+    const goodsDiag = await captureGoodsDiagnostics(page, effectiveOptions, fieldAlias)
 
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
@@ -327,6 +355,25 @@ export async function placeSwadpiaOrder(
       return { success: false, errorMessage: `결제서 페이지 도달 실패 — URL: ${page.url()}` }
     }
 
+    // OMO-3520: 결제서 도달 = "결제 직전" dry-run 정지점.
+    //   결제금액(pay_amt) 직독 후 diagnostics 조립. dryRun 이면 paySubmit() 미호출(실비 차단).
+    const payAmtKrw = await readDisplayedPrice(page)
+    const diagnostics: SwadpiaOrderDiagnostics = {
+      reachedStage: input.dryRun ? 'order_pay (dry-run, 미제출)' : 'order_pay',
+      fileUpload: { chgFileName, fileName, sizeBytes: fileSize },
+      appliedOptions: goodsDiag.appliedOptions,
+      swadpiaPayAmtKrw: payAmtKrw ?? goodsDiag.totalPriceKrw,
+      finishingAmts: goodsDiag.finishingAmts,
+    }
+
+    if (input.dryRun) {
+      return {
+        success: true,
+        checkoutUrl: page.url(),
+        diagnostics,
+      }
+    }
+
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
     await page.evaluate(() => {
       const radios = document.getElementsByName('pay_method')
@@ -355,17 +402,19 @@ export async function placeSwadpiaOrder(
     const finalUrl = page.url()
 
     // /order/order_result/SUCCESS/OSA260513344332
+    diagnostics.reachedStage = 'order_result'
     const orderMatch = finalUrl.match(/order_result\/SUCCESS\/([A-Z0-9]+)/)
     if (orderMatch) {
       return {
         success: true,
         swadpiaOrderNumber: orderMatch[1],
         checkoutUrl: finalUrl,
+        diagnostics,
       }
     }
 
     if (finalUrl.includes('order_result')) {
-      return { success: true, checkoutUrl: finalUrl }
+      return { success: true, checkoutUrl: finalUrl, diagnostics }
     }
 
     return {
@@ -835,6 +884,58 @@ export async function selectOrderOptions(
   if (Object.keys(finishingOpts).length > 0) {
     await activateFinishings(page, finishingOpts)
   }
+}
+
+// ─── OMO-3520: 발주폼 진단 스냅샷 (옵션 read-back + 본가/후가공 amt 직독) ──────────
+//
+// 화면 OCR/추론 금지 — 성원 폼의 hidden total_price/pay_amt 및 {type}_amt 를 직독한다.
+// 옵션 parity 는 적용된 select[name] 의 실제 value 를 읽어 우리 입력과 비교한다.
+async function captureGoodsDiagnostics(
+  page: Page,
+  effectiveOptions: Record<string, string>,
+  fieldAlias: Record<string, string>,
+): Promise<{
+  appliedOptions: Record<string, string>
+  totalPriceKrw: number | null
+  finishingAmts: Record<string, number>
+}> {
+  // 우리가 적용하려 한 키 → 성원 실제 필드명(alias)으로 변환해 read-back
+  const fieldNames: string[] = []
+  for (const key of Object.keys(effectiveOptions)) {
+    fieldNames.push(fieldAlias[key] ?? key)
+  }
+  const ppTypes = FINISHING_GROUPS.map((g) => g.ppType)
+
+  return page.evaluate(
+    (params: { fieldNames: string[]; ppTypes: string[] }) => {
+      const readNum = (sel: string): number | null => {
+        const el = document.querySelector(sel) as HTMLInputElement | HTMLElement | null
+        if (!el) return null
+        const raw = (el as HTMLInputElement).value ?? (el.textContent || '')
+        const digits = String(raw).replace(/[^0-9]/g, '')
+        if (!digits) return null
+        const n = parseInt(digits, 10)
+        return Number.isFinite(n) && n > 0 ? n : null
+      }
+      const applied: Record<string, string> = {}
+      for (const name of params.fieldNames) {
+        const el = document.querySelector(`[name="${name}"]`) as
+          | HTMLSelectElement
+          | HTMLInputElement
+          | null
+        if (el) applied[name] = (el as HTMLInputElement).value ?? ''
+      }
+      const totalPriceKrw =
+        readNum('#total_price') ?? readNum('[name="total_price"]') ?? readNum('[name="pay_amt"]')
+      const finishingAmts: Record<string, number> = {}
+      for (const t of params.ppTypes) {
+        const amt = readNum(`[name="${t}_amt"]`)
+        if (amt !== null) finishingAmts[t] = amt
+      }
+      return { appliedOptions: applied, totalPriceKrw, finishingAmts }
+    },
+    { fieldNames, ppTypes },
+  )
 }
 
 async function uploadViaPlupload(page: Page, filePath: string): Promise<string | null> {

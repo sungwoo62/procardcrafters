@@ -1,0 +1,54 @@
+%PDF-1.5
+%‚„œ”
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 260.79 147.40] /TrimBox [2.83 2.83 257.95 144.57] /BleedBox [0 0 260.79 147.40] /Resources << /Font << /F1 5 0 R >> >> /Contents 4 0 R >>
+endobj
+4 0 obj
+<< /Length 322 >>
+stream
+/DeviceCMYK cs
+0 0 0 0.06 sc
+0 0 260.79 147.40 re f
+0 0 0 1 SC
+0.5 w
+2.83 2.83 255.12 141.73 re S
+BT
+/F1 9 Tf
+0 0 0 1 sc
+16.83 82.83 Td
+(PROCARDCRAFTERS - SWADPIA E2E TEST) Tj
+ET
+BT
+/F1 7 Tf
+16.83 64.83 Td
+(Trim 90x50mm  Bleed 1mm  CMYK  300dpi) Tj
+ET
+BT
+/F1 7 Tf
+16.83 48.83 Td
+(OMO-3520 do-not-print test artifact) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+xref
+0 6
+0000000000 65535 f 
+0000000015 00000 n 
+0000000064 00000 n 
+0000000121 00000 n 
+0000000318 00000 n 
+0000000691 00000 n 
+trailer
+<< /Size 6 /Root 1 0 R >>
+startxref
+761
+%%EOF
