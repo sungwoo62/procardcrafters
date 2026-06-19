@@ -1,4 +1,10 @@
 import { parseFoilLayersFromOptions } from './swadpia-finishing-fields'
+import {
+  numberingPriceNbt,
+  numberingPriceNcr,
+  type NumberingType,
+  type NumberingKind,
+} from '@/lib/swadpia-finishing-formula'
 
 // OMO-2664: 후가공 도매 surcharge(성원애드피아 wholesale KRW) 단일 소스.
 //
@@ -62,6 +68,63 @@ export function finishingSurchargeKrw(value: string, areaMm2?: number): number {
   return def.flatKrw ?? 0
 }
 
+/* ──────────────────────────────────────────────────────────────────────────
+ * OMO-3528: 넘버링 도매 surcharge 적재 (보드 가격승인 게이트 통과, 2026-06-19)
+ * 소스 of truth = src/lib/swadpia-finishing-formula.ts (PR#127, RE 확정).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+const NUMBERING_KIND_SET: ReadonlySet<string> = new Set([
+  'NBN11', 'NBN12', 'NBN13', 'NBN14', 'NBN21', 'NBN23',
+])
+
+/** 음수/비유한 값을 fallback 으로 안전 파싱. */
+function numOr(s: string | undefined, fallback: number): number {
+  const n = Number(s)
+  return Number.isFinite(n) && n >= 0 ? n : fallback
+}
+
+/**
+ * 넘버링 도매 surcharge(KRW). 화면 OCR/추론 금지 — RE 공식(numberingPriceNbt/Ncr) 직산.
+ *
+ * 결정론 규칙:
+ *  - 컨텍스트(cut/매수/종수/용지코드)가 selected_options 에 있으면 정밀 unit 산정.
+ *  - 없으면 floor(일반 NBT10 38k / 난수 NBT20 70k / NCR 47k) — 성원 최소청구 = 안전 하한.
+ *    (현재 명함류 자동발주 기본값 = NBT10/NBN11 → floor 38k. 정밀 컨텍스트는 후속 배선.)
+ *  - 용지 게이트(SNW300/DNT250GP0/UPP250FB0, SNW250 무광)는 numberingPriceNbt 내부에서
+ *    amt=0 처리(성원도 0) → 게이트 용지 상품은 surcharge 0(과다청구 방지).
+ *  - 모델 분기: numbering_model='ncr'(양식/먹지) 면 numberingPriceNcr, 그 외 명함류 NBT/NBN.
+ */
+export function numberingSurchargeKrwFromOptions(opts: Record<string, string>): number {
+  if (opts.numbering_model === 'ncr') {
+    return numberingPriceNcr({
+      typeUnit: numOr(opts.numbering_type_unit, 1),
+      cutXSize: numOr(opts.numbering_cut_x, 0),
+      cutYSize: numOr(opts.numbering_cut_y, 0),
+      paperPrice1: numOr(opts.numbering_paper_price1, 0),
+      bundleQty: numOr(opts.numbering_bundle_qty, 0),
+      bindingQty: numOr(opts.numbering_binding_qty, 0),
+      doubleDigit: opts.numbering_double_digit === '1',
+    })
+  }
+
+  const type: NumberingType = opts.numbering_type === 'NBT20' ? 'NBT20' : 'NBT10'
+  const kind: NumberingKind = (
+    NUMBERING_KIND_SET.has(opts.numbering_kind) ? opts.numbering_kind : 'NBN11'
+  ) as NumberingKind
+
+  return numberingPriceNbt({
+    type,
+    kind,
+    cutXSize: numOr(opts.numbering_cut_x, 0),
+    cutYSize: numOr(opts.numbering_cut_y, 0),
+    paperQty: numOr(opts.numbering_paper_qty, 0),
+    orderCount: Math.max(1, numOr(opts.numbering_order_count, 1)),
+    categoryCode: opts.numbering_category || 'CNC1000',
+    paperCode: opts.numbering_paper_code,
+    matteCoated: opts.numbering_matte_coated === '1',
+  })
+}
+
 // OMO-2667: 후가공 직렬화 키 — option_type 화이트리스트와 별개로 /order·/design 진입 시
 // 별도 복원·저장해야 하는 키들. ProductConfigurator.finishingParams 가 내보내는 키와 일치.
 //   - finishing: 콤마구분 value 목록(예 "foil_stamp,die_cut") — expandFinishingToSwadpiaFields 소비
@@ -77,6 +140,24 @@ export const FINISHING_PASSTHROUGH_KEYS = [
   'bak_y_size_3',
   'ap_x_size_1',
   'ap_y_size_1',
+  // OMO-3528: 넘버링 surcharge 결정론 컨텍스트. 있으면 numberingPriceNbt/Ncr unit 정밀
+  //   산정, 없으면 floor(일반 38k / 난수 70k / NCR 47k). 모두 option_type 화이트리스트
+  //   밖이라 별도 패스스루로 보존(정확일치 가산에서 제외).
+  'numbering_type',
+  'numbering_kind',
+  'numbering_model',
+  'numbering_cut_x',
+  'numbering_cut_y',
+  'numbering_paper_qty',
+  'numbering_order_count',
+  'numbering_paper_code',
+  'numbering_category',
+  'numbering_matte_coated',
+  'numbering_type_unit',
+  'numbering_paper_price1',
+  'numbering_bundle_qty',
+  'numbering_binding_qty',
+  'numbering_double_digit',
 ] as const
 
 /** 면적 키 → 해당 면적비례 후가공 value. (server surcharge 재계산용) */
@@ -111,6 +192,11 @@ export function finishingSurchargeKrwFromOptions(selectedOptions: Record<string,
           total += finishingSurchargeKrw(value, area)
         }
       }
+      continue
+    }
+    // OMO-3528: 넘버링은 카테고리별 RE 공식(floor/unit) — 정액 FINISHING_SURCHARGE 미사용.
+    if (value === 'numbering') {
+      total += numberingSurchargeKrwFromOptions(selectedOptions)
       continue
     }
     let areaMm2: number | undefined
