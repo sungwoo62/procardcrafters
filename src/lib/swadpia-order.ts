@@ -22,6 +22,11 @@ import {
   parseFoilLayersFromOptions,
   validateFoilLayers,
 } from '@/config/swadpia-finishing-fields'
+import {
+  requiresSpotPlate,
+  getPdfPageCount,
+  assertFinishingPlatePresent,
+} from './finishing-combined-pdf'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
@@ -206,6 +211,28 @@ export async function placeSwadpiaOrder(
     const fileName = path.basename(filePath)
     const fileExt = path.extname(filePath)
     const fileSize = fs.statSync(filePath).size
+
+    // OMO-3568: 별색 후가공(박/형압/도무송/에폭시/별색) 누락 가드.
+    //   별색 후가공은 합본 PDF(p1 디자인판 + p2 별색판) 2페이지가 필수다. p2 누락 시
+    //   후가공이 빠진 채 인쇄돼 손해가 나므로(동판/목형은 별색판 기준 제작), 업로드를
+    //   진행하기 전에 결정론 가드로 차단한다. 별색 후가공이 없으면 무영향(기존 주문 통과).
+    if (requiresSpotPlate(input.selectedOptions)) {
+      const pageCount =
+        fileExt.toLowerCase() === '.pdf'
+          ? await getPdfPageCount(fs.readFileSync(filePath)).catch(() => null)
+          : null
+      const guard = assertFinishingPlatePresent({
+        selectedOptions: input.selectedOptions,
+        pageCount,
+        fileExt,
+      })
+      if (!guard.ok) {
+        return { success: false, errorMessage: `[합본PDF 가드] ${guard.errorMessage}` }
+      }
+      console.log(
+        `[swadpia-order] 별색 합본 PDF 가드 통과 — 후가공=${guard.spotPlateFinishings.join(',')} 페이지수=${pageCount}`,
+      )
+    }
 
     const chromium = await getChromium()
     browser = await chromium.launch({ headless: true })
