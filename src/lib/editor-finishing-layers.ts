@@ -69,7 +69,7 @@ export function addFoilStampLayer(
     strokeDashArray: [6, 3],
     selectable: true,
     evented: true,
-    data: { id: makeId(), name: '박 (금박) 영역', layerType: 'rect', finish: true },
+    data: { id: makeId(), name: '박 (금박) 영역', layerType: 'rect', finish: true, finishingType: 'foil_stamp' },
   })
   canvas.add(foilRect)
 }
@@ -241,4 +241,29 @@ export function addFinishingLayers(
       handler(canvas, fabric, geom)
     }
   }
+}
+
+// ── 후가공 레이어 표시 메타 (레이어 패널 배지/범례용) ─────────────────────────
+//
+// OMO-3484(전체 스코프): 후가공 가이드 레이어가 사용자 디자인 요소와 구분되도록
+// 레이어 패널에 색상 배지로 표시한다. 배지색은 캔버스 가이드 stroke 색과 일치시켜
+// "같은 후가공 = 같은 색" 인지 단서를 준다(박=금/형압=보라/오시=초록/미싱=주황/타공=회/도무송=핑크).
+
+export interface FinishingLayerMeta {
+  /** 레이어 패널 배지 라벨(한국어 후가공 명). */
+  label: string
+  /** 배지 Tailwind 클래스(배경+텍스트). 캔버스 가이드 색과 정렬. */
+  badgeClass: string
+  /** 범례 점(dot) Tailwind 배경 클래스. */
+  dotClass: string
+}
+
+/** 후가공 타입 → 레이어 패널 표시 메타. */
+export const FINISHING_LAYER_META: Record<FinishingType, FinishingLayerMeta> = {
+  foil_stamp: { label: '박', badgeClass: 'bg-amber-100 text-amber-700', dotClass: 'bg-amber-400' },
+  deboss_emboss: { label: '형압', badgeClass: 'bg-violet-100 text-violet-700', dotClass: 'bg-violet-400' },
+  score_crease: { label: '오시', badgeClass: 'bg-emerald-100 text-emerald-700', dotClass: 'bg-emerald-400' },
+  perforation: { label: '미싱', badgeClass: 'bg-orange-100 text-orange-700', dotClass: 'bg-orange-400' },
+  drilled_hole: { label: '타공', badgeClass: 'bg-slate-100 text-slate-700', dotClass: 'bg-slate-400' },
+  die_cut: { label: '도무송', badgeClass: 'bg-pink-100 text-pink-700', dotClass: 'bg-pink-400' },
 }
