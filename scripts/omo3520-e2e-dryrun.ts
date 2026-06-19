@@ -66,11 +66,12 @@ async function main() {
     swadpiaPayAmtKrw: result.diagnostics?.swadpiaPayAmtKrw ?? null,
     finishingAmts: result.diagnostics?.finishingAmts ?? null,
     screenshots: result.success && fs.existsSync(SHOT_PATH) ? ['order-pay.png'] : [],
+    swadpiaOrderNumber: result.swadpiaOrderNumber ?? null,
     error: result.success ? null : result.errorMessage ?? 'unknown',
   }
   fs.writeFileSync(RESULT_PATH, JSON.stringify(artifact, null, 2))
 
-  log(`결과: success=${result.success} stage=${artifact.reachedStage}`)
+  log(`결과: success=${result.success} stage=${artifact.reachedStage} 주문번호=${result.swadpiaOrderNumber ?? '-'}`)
   log(`  파일업로드 chgFileName=${artifact.fileUpload?.chgFileName ?? '-'}`)
   log(`  성원 pay_amt(KRW)=${artifact.swadpiaPayAmtKrw ?? '-'}  후가공amt=${JSON.stringify(artifact.finishingAmts)}`)
   log(`아티팩트 적재: ${RESULT_PATH}`)

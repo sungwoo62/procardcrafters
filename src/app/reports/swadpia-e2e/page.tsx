@@ -76,6 +76,24 @@ export default function SwadpiaE2eReportPage() {
           hidden <code>total_price</code>/<code>{`{type}_amt`}</code> 직독. 최종 제출은 보드 확인 게이트.
         </p>
 
+        {/* 실발주 결과 (real_submit) */}
+        {artifact?.mode === 'real_submit' && artifact.swadpiaOrderNumber && (
+          <section className="mt-6 rounded-xl border border-emerald-300 bg-emerald-50 p-5">
+            <h2 className="flex items-center gap-2 text-base font-semibold text-emerald-800">
+              <CheckCircle2 className="h-5 w-5" /> 테스트 실발주 완료 (최종 제출됨)
+            </h2>
+            <div className="mt-2 grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
+              <div><span className="text-gray-500">성원 주문번호</span> · <b className="font-mono">{artifact.swadpiaOrderNumber}</b></div>
+              <div><span className="text-gray-500">총 결제금액</span> · {artifact.payTotalKrw?.toLocaleString()} KRW (공급가+VAT+배송)</div>
+              <div className="sm:col-span-2"><span className="text-gray-500">상태</span> · {artifact.orderStatus}</div>
+            </div>
+            <p className="mt-2 text-xs text-emerald-700/80">
+              가상계좌(S머니) 결제라 <b>입금 전까지 실제 비용·생산 미발생</b> — 파이프라인 전 구간(파일 자동업로드→옵션→결제 제출)이 실주문으로 검증됨.
+              실제 생산 진행 여부(입금) 또는 만료/취소는 보드/재무 결정.
+            </p>
+          </section>
+        )}
+
         {/* 테스트 케이스 */}
         <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5">
           <h2 className="text-lg font-semibold text-gray-900">대표 테스트 케이스 (명함 1건 · 후가공 포함)</h2>

@@ -288,5 +288,10 @@ export interface E2eArtifact {
   swadpiaPayAmtKrw: number | null
   finishingAmts: Record<string, number> | null
   screenshots: string[]
+  /** real_submit 시 성원 주문번호(OSA…). dry-run/실패 시 null. */
+  swadpiaOrderNumber?: string | null
+  /** real_submit 후 주문 상태(예: 결제대기/입금대기) 및 총 결제금액(VAT·배송 포함). */
+  orderStatus?: string | null
+  payTotalKrw?: number | null
   error?: string | null
 }

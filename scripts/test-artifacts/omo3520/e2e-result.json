@@ -1,10 +1,10 @@
 {
-  "ranAt": "2026-06-19T02:39:18.465Z",
-  "mode": "dry_run",
-  "reachedStage": "order_pay (dry-run, 미제출)",
+  "ranAt": "2026-06-19T02:48:40.791Z",
+  "mode": "real_submit",
+  "reachedStage": "order_result",
   "fileUpload": {
-    "chgFileName": "222.100.166.77_o_1jreru6d31i5g1j4bmav13s68avb.pdf",
-    "fileName": "print_file_1781836731934.pdf",
+    "chgFileName": "222.100.166.77_o_1jresf8u413391imc1bmgpte15p1b.pdf",
+    "fileName": "print_file_1781837290542.pdf",
     "sizeBytes": 943
   },
   "appliedOptions": {
@@ -22,5 +22,8 @@
   "screenshots": [
     "order-pay.png"
   ],
-  "error": null
+  "error": null,
+  "swadpiaOrderNumber": "OSA260619512225",
+  "orderStatus": "결제대기(가상계좌 미입금) — 입금 전까지 생산 미착수, 미입금 시 자동만료",
+  "payTotalKrw": 20870
 }
