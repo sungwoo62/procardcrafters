@@ -153,6 +153,8 @@ export interface SwadpiaOrderInput {
   quantity: number
   fileUrl: string
   orderTitle?: string
+  /** OMO-3520: 성원 작업메모(work_memo). 미지정 시 orderTitle 사용. UTF-8 강제 전송(한글 깨짐 방지). */
+  workMemo?: string
   /**
    * OMO-3520: dry-run 모드. true 면 결제서(order_pay) 페이지까지만 진행하고
    * 최종 paySubmit() (공급사 실비·물리적 생산 발생)은 호출하지 않는다.
@@ -181,6 +183,8 @@ export interface SwadpiaOrderDiagnostics {
   swadpiaPayAmtKrw: number | null
   /** 후가공별 hidden {type}_amt (KRW) */
   finishingAmts: Record<string, number> | null
+  /** OMO-3520: 결제서에 렌더된 주문명(서버 라운드트립 후 — 한글 인코딩 검증용) */
+  orderTitleRendered?: string | null
 }
 
 export interface SwadpiaOrderResult {
@@ -280,12 +284,21 @@ export async function placeSwadpiaOrder(
     })
     await page.waitForTimeout(2000)
 
-    // 주문명 설정
+    // 주문명 + 작업메모 설정
+    // OMO-3520: 성원 goods_view 는 charset meta 가 없어 브라우저가 windows-1252 로 기본 판정한다
+    // (라이브 확인). 그 상태로 폼을 submit 하면 한글(주문명·작업메모)이 windows-1252 로 인코딩되며
+    // 깨진다(보드 제보). order_form 에 accept-charset="UTF-8" 을 강제해 한글이 UTF-8 로 전송되게
+    // 한다(성원 신규 페이지 order_unpaid 가 UTF-8 인 것으로 보아 백엔드는 UTF-8 처리).
     const orderTitle = input.orderTitle ?? fileName
-    await page.evaluate((title: string) => {
+    const workMemo = input.workMemo ?? orderTitle
+    await page.evaluate((params: { title: string; memo: string }) => {
+      const form = document.getElementById('order_form') as HTMLFormElement | null
+      if (form) form.setAttribute('accept-charset', 'UTF-8')
       const el = document.getElementById('order_title') as HTMLInputElement
-      if (el) el.value = title
-    }, orderTitle)
+      if (el) el.value = params.title
+      const memoEl = document.querySelector('[name="work_memo"]') as HTMLTextAreaElement | null
+      if (memoEl) memoEl.value = params.memo
+    }, { title: orderTitle, memo: workMemo })
 
     // 4. plupload iframe 파일 업로드
     const chgFileName = await uploadViaPlupload(page, filePath)
@@ -294,7 +307,10 @@ export async function placeSwadpiaOrder(
     }
 
     // 5. hidden 필드 설정 + 폼 제출
-    await page.evaluate((params: { chgFileName: string; fileName: string; fileExt: string; fileSize: number; orderTitle: string }) => {
+    await page.evaluate((params: { chgFileName: string; fileName: string; fileExt: string; fileSize: number; orderTitle: string; workMemo: string }) => {
+      // OMO-3520: submit 직전 재확인 — accept-charset=UTF-8 강제(한글 깨짐 방지).
+      const orderForm = document.getElementById('order_form') as HTMLFormElement | null
+      if (orderForm) orderForm.setAttribute('accept-charset', 'UTF-8')
       const setField = (name: string, value: string) => {
         let el = document.getElementById(name) as HTMLInputElement
         if (!el) el = document.querySelector(`[name="${name}"]`) as HTMLInputElement
@@ -330,7 +346,8 @@ export async function placeSwadpiaOrder(
       setField('upload_mode', '1')
       setField('order_path', 'ODP10')
       setField('order_title', params.orderTitle)
-    }, { chgFileName, fileName, fileExt, fileSize, orderTitle })
+      setField('work_memo', params.workMemo)
+    }, { chgFileName, fileName, fileExt, fileSize, orderTitle, workMemo })
 
     // 6. uploadSuccessOrderSubmit() → /order/order_info/direct_order (주문서)
     await Promise.all([
@@ -345,6 +362,22 @@ export async function placeSwadpiaOrder(
     if (!page.url().includes('/order/order_info')) {
       return { success: false, errorMessage: `주문서 페이지 도달 실패 — URL: ${page.url()}` }
     }
+
+    // OMO-3520: 주문서(order_info)는 서버가 우리 order_title/work_memo 를 에코한다 →
+    // 한글 인코딩(accept-charset=UTF-8 수정) 라운드트립 검증. mojibake 면 깨진 문자로 보임.
+    const orderInfoTitleEcho = await page
+      .evaluate(() => {
+        try {
+          const inp = document.querySelector('[name="order_title"]') as HTMLInputElement | null
+          if (inp?.value) return inp.value
+          const memo = document.querySelector('[name="work_memo"]') as HTMLTextAreaElement | null
+          if (memo?.value) return memo.value
+          return null
+        } catch {
+          return null
+        }
+      })
+      .catch(() => null)
 
     // 7. "주문 확인" 클릭 → /order/order_pay (결제서)
     const confirmBtn = await page.$('input[src*="bt_order_confirm"]')
@@ -363,12 +396,25 @@ export async function placeSwadpiaOrder(
     // OMO-3520: 결제서 도달 = "결제 직전" dry-run 정지점.
     //   결제금액(pay_amt) 직독 후 diagnostics 조립. dryRun 이면 paySubmit() 미호출(실비 차단).
     const payAmtKrw = await readDisplayedPrice(page)
+    // OMO-3520: 결제서에 렌더된 주문명(서버 라운드트립) — 한글 깨짐 여부 검증.
+    const orderTitleRendered = await page
+      .evaluate((t: string) => {
+        const inp = document.querySelector('[name="order_title"]') as HTMLInputElement | null
+        if (inp && inp.value) return inp.value
+        // 주문상품 요약행에서 주문명 텍스트 추출(서버 라운드트립 결과)
+        const rowTexts = [...document.querySelectorAll('table tr, .order_item, li')]
+          .map((el) => (el as HTMLElement).innerText?.replace(/\s+/g, ' ').trim() ?? '')
+          .filter((s) => s && (s.includes(t.slice(0, 6)) || /테스트|명함|OMO/i.test(s)))
+        return rowTexts[0]?.slice(0, 120) ?? (document.body.innerText || '').includes(t) ? t : null
+      }, orderTitle)
+      .catch(() => null)
     const diagnostics: SwadpiaOrderDiagnostics = {
       reachedStage: input.dryRun ? 'order_pay (dry-run, 미제출)' : 'order_pay',
       fileUpload: { chgFileName, fileName, sizeBytes: fileSize },
       appliedOptions: goodsDiag.appliedOptions,
       swadpiaPayAmtKrw: payAmtKrw ?? goodsDiag.totalPriceKrw,
       finishingAmts: goodsDiag.finishingAmts,
+      orderTitleRendered: orderInfoTitleEcho ?? orderTitleRendered,
     }
 
     if (input.screenshotPath) {
