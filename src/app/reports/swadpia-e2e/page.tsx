@@ -12,6 +12,14 @@ import {
   type E2eArtifact,
   type CheckState,
 } from '@/lib/swadpia-e2e'
+import { finishingSurchargeKrwFromOptions } from '@/config/finishing-surcharge'
+
+interface SweepCase {
+  id: string; label: string; qty: number; opts: Record<string, string>
+  ok: boolean; payAmtKrw?: number | null; finishingAmt?: number; baseKrw?: number | null
+  amts?: Record<string, number>; applied?: Record<string, string>; error?: string
+}
+interface SweepData { ranAt: string; cases: SweepCase[] }
 
 // OMO-3520: 프로카드→성원 E2E 테스트 실발주 검증 리포트.
 //   결정론(옵션 parity·본가/마진 가격)은 src/lib/swadpia-e2e 에서 산출하고,
@@ -24,6 +32,16 @@ function loadArtifact(): E2eArtifact | null {
     const p = path.join(process.cwd(), 'scripts', 'test-artifacts', 'omo3520', 'e2e-result.json')
     if (!fs.existsSync(p)) return null
     return JSON.parse(fs.readFileSync(p, 'utf8')) as E2eArtifact
+  } catch {
+    return null
+  }
+}
+
+function loadSweep(): SweepData | null {
+  try {
+    const p = path.join(process.cwd(), 'scripts', 'test-artifacts', 'omo3520', 'price-sweep.json')
+    if (!fs.existsSync(p)) return null
+    return JSON.parse(fs.readFileSync(p, 'utf8')) as SweepData
   } catch {
     return null
   }
@@ -61,6 +79,15 @@ export default function SwadpiaE2eReportPage() {
     : null
   const wholesaleDeltaKrw = livePayKrw != null ? pricing.wholesaleKrw - livePayKrw : null
   const comparison = buildComparisonRows(tc, E2E_CUSTOMER_ORDER, pricing, artifact)
+  const sweep = loadSweep()
+  // 스윕 각 행에 현행 정적모델(본가 anchor 4,000 + 후가공 surcharge)과 라이브 델타 부가.
+  const sweepRows = (sweep?.cases ?? []).map((c) => {
+    const staticSurcharge = finishingSurchargeKrwFromOptions(c.opts)
+    const staticWholesale = tc.basePriceKrw + staticSurcharge
+    const live = c.payAmtKrw ?? null
+    const deltaPct = live && live > 0 ? Math.round(((staticWholesale - live) / live) * 100) : null
+    return { ...c, staticSurcharge, staticWholesale, deltaPct }
+  })
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-8">
@@ -127,6 +154,50 @@ export default function SwadpiaE2eReportPage() {
             </table>
           </div>
         </section>
+
+        {/* 수량/옵션 변동 스윕 (보드 요청) */}
+        {sweepRows.length > 0 && (
+          <section className="mt-6 rounded-xl border-2 border-amber-200 bg-white p-5">
+            <h2 className="text-lg font-semibold text-gray-900">수량·옵션 변동 가격 매트릭스 (라이브 read-only 스윕)</h2>
+            <p className="mt-1 text-xs text-gray-500">
+              CNC1000 명함 폼을 케이스별 새로고침·옵션적용·calcuEstimate 후 성원 hidden pay_amt/{`{type}`}_amt 직독.
+              <b> 발주·제출·파일업로드 없음(실비 0)</b>. 현행 정적모델(본가 anchor {tc.basePriceKrw.toLocaleString()} + 후가공 surcharge)과 라이브 델타 대조.
+            </p>
+            <div className="mt-3 overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
+                    <th className="py-2 pr-4">케이스</th>
+                    <th className="py-2 pr-4">적용수량</th>
+                    <th className="py-2 pr-4 text-right">성원 pay_amt</th>
+                    <th className="py-2 pr-4 text-right">후가공 amt</th>
+                    <th className="py-2 pr-4 text-right">정적모델(현행)</th>
+                    <th className="py-2 text-right">델타(정적−라이브)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sweepRows.map((r) => (
+                    <tr key={r.id} className="border-b border-gray-100">
+                      <td className="py-2 pr-4 font-medium text-gray-800">{r.label}</td>
+                      <td className="py-2 pr-4 font-mono text-xs">{r.applied?.paper_qty ?? r.qty}{r.applied && Number(r.applied.paper_qty) === r.qty ? ' ✅' : ''}</td>
+                      <td className="py-2 pr-4 text-right font-mono">{r.payAmtKrw?.toLocaleString() ?? '—'}</td>
+                      <td className="py-2 pr-4 text-right font-mono text-gray-500">{(r.finishingAmt ?? 0).toLocaleString()}</td>
+                      <td className="py-2 pr-4 text-right font-mono text-gray-500">{r.staticWholesale.toLocaleString()}</td>
+                      <td className={`py-2 text-right font-mono ${r.deltaPct != null && Math.abs(r.deltaPct) >= 15 ? 'font-semibold text-rose-700' : 'text-gray-500'}`}>
+                        {r.deltaPct != null ? `${r.deltaPct > 0 ? '+' : ''}${r.deltaPct}%` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="mt-3 text-xs text-amber-700">
+              ★ 결론: 라이브 본가·후가공은 <b>수량 선형</b>(박 200매 11,600 → 2,000매 75,700). 현행 정적모델은 수량 무관(anchor 고정)이라
+              저수량 과다·고수량 과소. 에폭시는 정적 surcharge 미등록(=0)이라 라이브 9,000 전액 누락. <b>발주금액 자체는 성원 calcuEstimate 권위라 항상 정확</b>(오발주 아님);
+              교정 대상은 고객 표시가 산정 — [OMO-3511] 공식기반 매트릭스(수량의존) 전환 필요. 옵션 parity 는 전 케이스 적용수량 일치(✅).
+            </p>
+          </section>
+        )}
 
         {/* 테스트 케이스 */}
         <section className="mt-6 rounded-xl border border-gray-200 bg-white p-5">
