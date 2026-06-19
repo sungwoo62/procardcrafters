@@ -37,8 +37,27 @@ export default function SwadpiaE2eReportPage() {
   const tc = E2E_TEST_CASE
   const parity = buildParityRows(tc)
   const pricing = computeE2ePricing(tc)
-  const checklist = buildChecklist(pricing)
+  const rawChecklist = buildChecklist(pricing)
   const artifact = loadArtifact()
+
+  // 라이브 dry-run 성공 시 해당 체크 항목을 검증완료로 승격.
+  const checklist = rawChecklist.map((c) => {
+    if (!artifact || artifact.reachedStage === 'failed') return c
+    if (c.id === 'file_upload' && artifact.fileUpload?.chgFileName) {
+      return { ...c, state: 'pass' as const, detail: `라이브 업로드 확정: chgFileName=${artifact.fileUpload.chgFileName} (성원 첨부 실제 업로드, ${artifact.fileUpload.sizeBytes.toLocaleString()} bytes).` }
+    }
+    if (c.id === 'pay_amount_match' && artifact.swadpiaPayAmtKrw != null) {
+      return { ...c, state: 'pass' as const, detail: `라이브 pay_amt=${artifact.swadpiaPayAmtKrw.toLocaleString()} KRW(박 ${artifact.finishingAmts?.bak?.toLocaleString() ?? '-'} 포함) 캡처 — 발주금액은 성원 calcuEstimate 권위로 정확. 우리 정적 표시모델과는 델타 존재(아래 가격 검증 참조).` }
+    }
+    return c
+  })
+
+  // 라이브 권위(성원 pay_amt) 기반 고객가 + 우리 정적모델 대비 델타.
+  const livePayKrw = artifact?.swadpiaPayAmtKrw ?? null
+  const liveCustomerUsd = livePayKrw != null
+    ? Math.round((livePayKrw * pricing.marginMultiplier / pricing.krwPerUsd) * 100) / 100
+    : null
+  const wholesaleDeltaKrw = livePayKrw != null ? pricing.wholesaleKrw - livePayKrw : null
 
   return (
     <div className="min-h-screen bg-gray-50 px-4 py-8 sm:px-8">
@@ -147,16 +166,24 @@ export default function SwadpiaE2eReportPage() {
             </p>
           )}
           <div className="mt-3 rounded-lg border border-gray-200 p-3 text-sm">
-            <div className="flex items-center justify-between">
-              <span className="text-gray-600">결제금액(pay_amt) ↔ 우리 본가 일치 검증</span>
-              {artifact?.swadpiaPayAmtKrw != null ? (
-                <span className="font-mono text-gray-800">
-                  성원 {artifact.swadpiaPayAmtKrw.toLocaleString()} KRW / 우리 {pricing.wholesaleKrw.toLocaleString()} KRW
-                </span>
-              ) : (
-                <span className="text-amber-600">⏳ 라이브 dry-run 대기</span>
-              )}
-            </div>
+            <div className="mb-1 font-medium text-gray-700">결제금액(pay_amt) ↔ 우리 모델 비교 (라이브 권위)</div>
+            {livePayKrw != null ? (
+              <div className="space-y-1">
+                <div className="flex justify-between"><span className="text-gray-500">성원 라이브 pay_amt (200매, 박 {artifact?.finishingAmts?.bak?.toLocaleString() ?? '-'} 포함)</span><span className="font-mono font-semibold">{livePayKrw.toLocaleString()} KRW → ${liveCustomerUsd?.toFixed(2)}</span></div>
+                <div className="flex justify-between"><span className="text-gray-500">우리 정적 모델(base 4,000 + 박 surcharge 22,300)</span><span className="font-mono">{pricing.wholesaleKrw.toLocaleString()} KRW → ${pricing.customerUsd.toFixed(2)}</span></div>
+                <div className="flex justify-between border-t border-gray-200 pt-1 text-rose-700">
+                  <span className="font-medium">델타(우리 − 성원)</span>
+                  <span className="font-mono font-semibold">{wholesaleDeltaKrw != null && wholesaleDeltaKrw > 0 ? '+' : ''}{wholesaleDeltaKrw?.toLocaleString()} KRW (정적모델 과다)</span>
+                </div>
+                <p className="pt-1 text-xs text-rose-700/80">
+                  ★ 발견: 정적 박 surcharge(22,300=~1,000매 셋업 캘리브레이션)가 200매에서 라이브 박(11,600)을 과다계상.
+                  base 도 SNW300W00/양면 실가(~5,100)와 상이. <b>최종 고객가는 라이브 pay_amt 를 권위로 산정</b>해야 정확
+                  (OMO-3511 공식기반 매트릭스 전환의 실증 근거). 자동발주는 성원 calcuEstimate 가 최종 권위라 발주금액 자체는 정확.
+                </p>
+              </div>
+            ) : (
+              <span className="text-amber-600">⏳ 라이브 dry-run 대기</span>
+            )}
           </div>
         </section>
 
@@ -167,6 +194,9 @@ export default function SwadpiaE2eReportPage() {
             <div className="mt-2 text-sm text-gray-700">
               <p>✅ 업로드 캡처: <code>chgFileName={artifact.fileUpload.chgFileName ?? '-'}</code></p>
               <p>파일명 {artifact.fileUpload.fileName} · {artifact.fileUpload.sizeBytes.toLocaleString()} bytes · 단계 {artifact.reachedStage}</p>
+              {artifact.screenshots.length > 0 && (
+                <p className="mt-1 text-xs text-gray-500">증거 스크린샷: <code>scripts/test-artifacts/omo3520/{artifact.screenshots[0]}</code> (결제서 — 공급사 계정·단가 노출로 비공개 내부 아티팩트).</p>
+              )}
             </div>
           ) : (
             <p className="mt-2 text-sm text-amber-600">

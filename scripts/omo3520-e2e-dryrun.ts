@@ -23,6 +23,7 @@ import { E2E_TEST_CASE, type E2eArtifact } from '../src/lib/swadpia-e2e'
 const ART_DIR = path.join(import.meta.dirname ?? __dirname, 'test-artifacts', 'omo3520')
 const PDF_PATH = path.join(ART_DIR, 'namecard-test.pdf')
 const RESULT_PATH = path.join(ART_DIR, 'e2e-result.json')
+const SHOT_PATH = path.join(ART_DIR, 'order-pay.png')
 
 const REAL_SUBMIT = process.argv.includes('--real-submit') // 보드 게이트: 명시해야 실제 제출
 
@@ -53,6 +54,7 @@ async function main() {
     fileUrl: PDF_PATH,
     orderTitle: 'OMO-3520 E2E 테스트(명함+박)',
     dryRun,
+    screenshotPath: SHOT_PATH,
   })
 
   const artifact: E2eArtifact = {
@@ -63,7 +65,7 @@ async function main() {
     appliedOptions: result.diagnostics?.appliedOptions ?? null,
     swadpiaPayAmtKrw: result.diagnostics?.swadpiaPayAmtKrw ?? null,
     finishingAmts: result.diagnostics?.finishingAmts ?? null,
-    screenshots: [],
+    screenshots: result.success && fs.existsSync(SHOT_PATH) ? ['order-pay.png'] : [],
     error: result.success ? null : result.errorMessage ?? 'unknown',
   }
   fs.writeFileSync(RESULT_PATH, JSON.stringify(artifact, null, 2))

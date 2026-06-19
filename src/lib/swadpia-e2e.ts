@@ -50,7 +50,12 @@ export interface E2eTestCase {
 /**
  * 명함(business-cards / CNC1000) + 박(foil) 후가공 대표건.
  * - 박은 total_price 에 안 잡히는 예외 → surcharge(면적 50×30) 로 분리 산정.
- * - q200 본가 4,000(KRW) 은 OMO-3142 MATRIX_VERIFIED(CNC1000 q200=4000) 결정론값.
+ * - 옵션 코드는 성원 CNC1000 goods_view 라이브 select 직접 probe 로 확정(OMO-3520):
+ *   paper_code SNW300W00 / print_color_type CTN40(양면칼라) / paper_size N0100(90×50) / paper_qty 200.
+ * - ★ 발견: paper_qty 는 용지/사이즈 선택에 따라 재populate 되는 종속 select. 본 조합
+ *   (SNW300W00 + N0100) 브래킷 = 200,400,600,… → MOQ 200(우리 매트릭스 q200 과 일치).
+ *   q200 본가 4,000 = MATRIX_VERIFIED anchor. (폼 로드 직후 default 표시는 500부터지만
+ *   용지/사이즈 확정 후 200 브래킷으로 재populate.)
  */
 export const E2E_TEST_CASE: E2eTestCase = {
   productSlug: 'business-cards',
@@ -60,19 +65,19 @@ export const E2E_TEST_CASE: E2eTestCase = {
   basePriceKrw: 4000,
   marginMultiplier: 3.3,
   selectedOptions: {
-    paper_code: 'SNW300W00',       // 스노우지 300g
-    print_color_type: 'both_8',     // 양면 컬러(8도)
-    paper_size: '90x50',            // 표준 명함
-    paper_qty: '200',
+    paper_code: 'SNW300W00',       // 스노우지 300g (라이브 확인: SNW250W00/SNW300W00 중)
+    print_color_type: 'CTN40',      // 양면 컬러(라이브 default)
+    paper_size: 'N0100',            // 90×50 표준 명함(라이브 default)
+    paper_qty: '200',               // 종속 재populate 후 브래킷 최소(라이브 확인)
     finishing: 'foil_stamp',        // 박(금박 유광)
     bak_x_size_1: '50',             // 박 면적(mm)
     bak_y_size_1: '30',
   },
   optionLabels: {
     paper_code: '스노우지 300g',
-    print_color_type: '양면 컬러(8도)',
-    paper_size: '90 × 50 mm (표준 명함)',
-    paper_qty: '200매',
+    print_color_type: '양면 컬러 (CTN40)',
+    paper_size: '90 × 50 mm 표준 명함 (N0100)',
+    paper_qty: '200매 (종속 재populate 브래킷 200·400·600…)',
     finishing: '박 — 금박(유광), 전면',
     bak_x_size_1: '박 가로 50mm',
     bak_y_size_1: '박 세로 30mm',
@@ -261,7 +266,7 @@ export function buildChecklist(pricing: E2ePricing): ChecklistItem[] {
       id: 'edge_cases',
       label: '엣지케이스(수량 브래킷·넘버링 차단·양면 등)',
       state: 'pass',
-      detail: 'q200 매트릭스 검증값. 넘버링은 명함 일부 용지 차단(NUMBERING_BLOCKED_PAPERS). 양면(both_8) 인쇄단가 print_unit2 사용.',
+      detail: '★ 종속 수량 발견(OMO-3520 라이브): paper_qty 는 용지/사이즈 선택에 따라 재populate 되는 종속 select(브래킷 변동). 본 조합 = 200·400·600…(MOQ 200, 매트릭스 q200 일치). selectOrderOptions 가 immediate 옵션 후 수량을 적용해 정합. 넘버링은 명함 일부 용지 차단(NUMBERING_BLOCKED_PAPERS).',
     },
     {
       id: 'real_submit',

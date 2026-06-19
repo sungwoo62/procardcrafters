@@ -159,6 +159,11 @@ export interface SwadpiaOrderInput {
    * 파일 업로드·옵션 적용·결제금액 캡처(diagnostics)는 모두 수행한다.
    */
   dryRun?: boolean
+  /**
+   * OMO-3520: 결제서 도달 시 스크린샷을 저장할 로컬 경로(증거). 미지정 시 캡처 안 함.
+   * ⚠️ 결제서에는 공급사 로그인 계정·단가가 노출되므로 web-served(/public) 금지 — 내부 아티팩트로만.
+   */
+  screenshotPath?: string
 }
 
 /**
@@ -364,6 +369,13 @@ export async function placeSwadpiaOrder(
       appliedOptions: goodsDiag.appliedOptions,
       swadpiaPayAmtKrw: payAmtKrw ?? goodsDiag.totalPriceKrw,
       finishingAmts: goodsDiag.finishingAmts,
+    }
+
+    if (input.screenshotPath) {
+      try {
+        fs.mkdirSync(path.dirname(input.screenshotPath), { recursive: true })
+        await page.screenshot({ path: input.screenshotPath, fullPage: true })
+      } catch { /* 증거용 best-effort */ }
     }
 
     if (input.dryRun) {
