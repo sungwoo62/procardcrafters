@@ -20,6 +20,14 @@ import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as G
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 import { detectFoilLayersFromCanvas } from '@/lib/editor-foil-detect'
+// OMO-3577: 별색 후가공판(p2) — 오브젝트 선택/래스터 상수 + 합본 PDF 빌더.
+import { SPOT_PLATE_FILL, SPOT_PLATE_BG } from '@/lib/editor-finish-plate'
+import {
+  requiresSpotPlate,
+  listSpotPlateFinishings,
+  buildCombinedFinishingPdf,
+} from '@/lib/finishing-combined-pdf'
+import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -121,6 +129,8 @@ interface SelectedProps {
   grayscale?: boolean
   blendMode?: string
   hasCrop?: boolean
+  // OMO-3577: 별색 후가공 영역 마커(data.finish). ON 이면 별색판(p2)에 M100 으로 래스터된다.
+  finish?: boolean
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -915,6 +925,8 @@ export default function EditorClient({ product, options }: Props) {
       width: Math.round((obj.getScaledWidth?.() ?? obj.width ?? 0) * 10) / 10,
       height: Math.round((obj.getScaledHeight?.() ?? obj.height ?? 0) * 10) / 10,
       angle: Math.round((obj.angle ?? 0) * 10) / 10,
+      // OMO-3577: 별색 후가공 영역 마커(모든 오브젝트 타입 공통).
+      finish: !!obj.data?.finish,
     }
 
     const objType: string = obj.type ?? ''
@@ -3469,6 +3481,17 @@ export default function EditorClient({ product, options }: Props) {
     if (patch.strokeColor !== undefined) obj.set('stroke', patch.strokeColor)
     if (patch.strokeWidth !== undefined) obj.set('strokeWidth', patch.strokeWidth)
 
+    // OMO-3577: 별색 후가공 영역 마커 토글. data.finish = truthy 면 별색판(p2) 래스터 +
+    // 박 자동 치수(editor-foil-detect)가 동일 소스로 측정한다. (canvas.toJSON(['data']) 로 저장됨)
+    if (patch.finish !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = (obj as any).data ?? {}
+      if (patch.finish) data.finish = true
+      else delete data.finish
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(obj as any).set('data', data)
+    }
+
     // Image-specific
     if (patch.opacity !== undefined) obj.set('opacity', patch.opacity)
     if (patch.blendMode !== undefined) obj.set('globalCompositeOperation', patch.blendMode)
@@ -3914,7 +3937,9 @@ export default function EditorClient({ product, options }: Props) {
   // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
   // 블리드 포함 영역(= trim + 2×bleed)을 export 한다. 인쇄소 재단 기준을 맞추기 위함.
   // includeBleed=false 인 경우 trim만 export (PNG 미리보기 등 호환용).
-  function getExportDataUrl(targetDpi = 150, includeBleed = true): string {
+  // spotPlate=true (OMO-3577): 별색 후가공판(p2) 모드 — data.finish 오브젝트만 M100(마젠타)
+  //   단색으로, 나머지/배경은 흰색으로 래스터한다(성원 별색판). data.finish 가 없으면 ''.
+  function getExportDataUrl(targetDpi = 150, includeBleed = true, spotPlate = false): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
     const bleedPx = mmToPx(dims.bleedMm, scale)
@@ -3940,6 +3965,19 @@ export default function EditorClient({ product, options }: Props) {
     const vpt: any = [...(canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0])]
     canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
 
+    // OMO-3577: 별색판 모드 — 비파괴 스냅샷 후 data.finish 오브젝트만 M100 단색으로 칠하고
+    // 나머지를 숨긴다. 래스터 직후 원상복구한다(라이브 캔버스 변형 없음).
+    let restoreSpot: (() => void) | null = null
+    if (spotPlate) {
+      restoreSpot = applySpotPlateRender()
+      if (!restoreSpot) {
+        // data.finish 오브젝트가 없음 → 별색판 없음. 뷰포트 복구 후 '' 반환.
+        canvas.setViewportTransform(vpt)
+        canvas.renderAll()
+        return ''
+      }
+    }
+
     const dataUrl = canvas.toDataURL({
       format: 'png',
       left: exportLeft,
@@ -3949,9 +3987,84 @@ export default function EditorClient({ product, options }: Props) {
       multiplier,
     })
 
+    if (restoreSpot) restoreSpot()
     canvas.setViewportTransform(vpt)
     canvas.renderAll()
     return dataUrl
+  }
+
+  // OMO-3577: 별색판(p2) 비파괴 래스터 변형. data.finish 오브젝트만 M100 단색 실루엣으로,
+  // 나머지 오브젝트/배경은 흰색으로 만든 뒤, 복구 함수를 반환한다. data.finish 가 하나도
+  // 없으면 null(별색판 불필요). 이미지 finish 오브젝트는 fill 이 무시되므로 bbox 마젠타
+  // 사각형으로 대체한다(영역 기준 — editor-foil-detect 합집합 bbox 와 정합).
+  function applySpotPlateRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    if (!objs.some(isFinish)) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const snap = objs.map((o: any) => ({
+      o,
+      visible: o.visible,
+      fill: o.fill,
+      stroke: o.stroke,
+      opacity: o.opacity,
+      filters: o.filters,
+      shadow: o.shadow,
+    }))
+    const bgColor = canvas.backgroundColor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tempRects: any[] = []
+
+    canvas.backgroundColor = SPOT_PLATE_BG
+    for (const o of objs) {
+      if (isFinish(o)) {
+        if (o.type === 'image') {
+          // 이미지: fill 무시 → bbox 마젠타 사각형으로 영역 표시 후 원본은 숨김.
+          o.set('visible', false)
+          const r = o.getBoundingRect()
+          const rect = new fabric.Rect({
+            left: r.left, top: r.top, width: r.width, height: r.height,
+            fill: SPOT_PLATE_FILL, stroke: SPOT_PLATE_FILL, strokeWidth: 0,
+            selectable: false, evented: false,
+            data: { role: 'spot-temp' },
+          })
+          canvas.add(rect)
+          tempRects.push(rect)
+        } else {
+          o.set({ fill: SPOT_PLATE_FILL, stroke: SPOT_PLATE_FILL, opacity: 1, shadow: null, filters: [] })
+          if (typeof o.applyFilters === 'function') o.applyFilters()
+        }
+      } else if (!isBackground(o) || o.data?.role) {
+        // 비-finish 사용자 오브젝트 + 배경/가이드 레이어 모두 숨김(별색판은 영역만 남긴다).
+        o.set('visible', false)
+      }
+    }
+    canvas.renderAll()
+
+    return () => {
+      for (const r of tempRects) canvas.remove(r)
+      for (const s of snap) {
+        s.o.set({ visible: s.visible, fill: s.fill, stroke: s.stroke, opacity: s.opacity, shadow: s.shadow })
+        s.o.filters = s.filters
+        if (typeof s.o.applyFilters === 'function') s.o.applyFilters()
+      }
+      canvas.backgroundColor = bgColor
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3577 (참조 OMO-2706): 별색 후가공판(p2) dataURL. data.finish 오브젝트 집합을
+  // (editor-foil-detect 와 동일 소스) M100/흰배경으로 300DPI 풀블리드 래스터한다.
+  // 별색 영역이 없으면 '' 반환(별색판 미생성 → 합본 PDF 미산출).
+  function getFinishPlateDataUrl(): string {
+    return getExportDataUrl(300, true, true)
   }
 
   function exportPng() {
@@ -4012,12 +4125,48 @@ export default function EditorClient({ product, options }: Props) {
     return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
   }
 
+  // OMO-3577: 발주/다운로드용 최종 PDF. 별색 후가공(박/형압/도무송/에폭시/별색)이 선택되면
+  // p1 디자인판 + p2 별색판(M100) 합본 PDF(정확히 2페이지)를 생성한다 → assertFinishingPlatePresent
+  // 가드 통과. 그 외에는 기존 단일 디자인판 PDF(재단선 포함). 별색 선택인데 별색 영역 오브젝트가
+  // 없으면 한국어 사유로 throw(호출측이 발주 차단·메시지 노출).
+  async function buildOrderPdfBlob(finishingStr: string): Promise<Blob> {
+    if (!requiresSpotPlate({ finishing: finishingStr })) {
+      return buildPdfBlob()
+    }
+    const labels = listSpotPlateFinishings({ finishing: finishingStr })
+      .map((v) => FINISHING_BY_VALUE[v]?.label_ko ?? v)
+      .join(', ')
+    const designUrl = getExportDataUrl(300, true)
+    if (!designUrl) throw new Error('디자인판 생성에 실패했습니다.')
+    const spotUrl = getFinishPlateDataUrl()
+    if (!spotUrl) {
+      throw new Error(
+        `별색 후가공(${labels})이 선택됐지만 별색 영역으로 지정된 오브젝트가 없습니다. ` +
+          `박/형압/도무송/에폭시/별색을 적용할 오브젝트를 선택한 뒤 속성 패널의 "별색 후가공 영역"을 켜주세요.`,
+      )
+    }
+    const designBytes = await fetch(designUrl).then((r) => r.arrayBuffer())
+    const spotBytes = await fetch(spotUrl).then((r) => r.arrayBuffer())
+    const pdfBytes = await buildCombinedFinishingPdf({
+      designPlate: { bytes: designBytes, mime: 'image/png' },
+      spotPlate: { bytes: spotBytes, mime: 'image/png' },
+      pageWidthMm: dims.widthMm + 2 * dims.bleedMm,
+      pageHeightMm: dims.heightMm + 2 * dims.bleedMm,
+    })
+    return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+  }
+
   async function exportPdf() {
-    const blob = await buildPdfBlob()
-    const link = document.createElement('a')
-    link.download = `pcc-${product.slug}-${generateDownloadCode()}-300dpi.pdf`
-    link.href = URL.createObjectURL(blob)
-    link.click()
+    try {
+      const finishingStr = searchParams.get('finishing') ?? ''
+      const blob = await buildOrderPdfBlob(finishingStr)
+      const link = document.createElement('a')
+      link.download = `pcc-${product.slug}-${generateDownloadCode()}-300dpi.pdf`
+      link.href = URL.createObjectURL(blob)
+      link.click()
+    } catch (e) {
+      setOrderError(e instanceof Error ? e.message : 'PDF 생성에 실패했습니다.')
+    }
   }
 
   // ── Phase 6: QR code ──────────────────────────────────────────────────────
@@ -4269,7 +4418,10 @@ export default function EditorClient({ product, options }: Props) {
 
   async function proceedToOrderInternal() {
     try {
-      const blob = await buildPdfBlob()
+      // OMO-3577: 별색 후가공이면 합본 PDF(p1+p2), 아니면 단일 디자인판. finishing 진실원천은
+      // searchParams(구성기 → 에디터 진입 시 전달, /order 패스스루와 동일).
+      const finishingStr = searchParams.get('finishing') ?? ''
+      const blob = await buildOrderPdfBlob(finishingStr)
       const formData = new FormData()
       formData.append('file', blob, `pcc-${product.slug}-${generateDownloadCode()}-design.pdf`)
       const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
@@ -4310,9 +4462,10 @@ export default function EditorClient({ product, options }: Props) {
         setOrdering(false)
         setOrderError(data.error || 'Upload failed.')
       }
-    } catch {
+    } catch (e) {
       setOrdering(false)
-      setOrderError('An error occurred. Please try again.')
+      // OMO-3577: 별색 영역 누락 등 한국어 사유는 그대로 노출(발주 차단 안내).
+      setOrderError(e instanceof Error ? e.message : 'An error occurred. Please try again.')
     }
   }
 
@@ -4414,6 +4567,11 @@ export default function EditorClient({ product, options }: Props) {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   const selectedLayer = layers.find(l => l.id === selectedId) ?? null
+
+  // OMO-3577: 현재 발주에 선택된 별색 후가공 value 목록(박/형압/도무송/에폭시/별색).
+  // 별색판(p2)을 요구하는 후가공만 — 작업가이드 노출 + 별색 영역 UI 안내에 쓴다.
+  const spotFinishings = listSpotPlateFinishings({ finishing: searchParams.get('finishing') ?? '' })
+  const spotFinishingDefs = spotFinishings.map(v => FINISHING_BY_VALUE[v]).filter(Boolean)
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
@@ -4747,6 +4905,21 @@ export default function EditorClient({ product, options }: Props) {
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas area */}
         <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+          {/* OMO-3577: 후가공 작업가이드 — 선택된 별색 후가공(박/형압/도무송/에폭시/별색)의
+              가이드 이미지를 에디터 옆에 표시(finishing-catalog image_url). 별색 후가공이 없으면 숨김. */}
+          {spotFinishingDefs.length > 0 && (
+            <div className="absolute top-3 right-3 z-10 w-44 rounded-lg border border-fuchsia-200 bg-white/95 shadow-md p-2 space-y-2 max-h-[70vh] overflow-y-auto">
+              <p className="text-[10px] font-semibold text-fuchsia-800">후가공 작업가이드</p>
+              {spotFinishingDefs.map(d => (
+                <div key={d.value} className="space-y-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={d.image_url} alt={d.label_ko} className="w-full rounded border border-gray-100 object-cover" loading="lazy" />
+                  <p className="text-[10px] text-gray-600">{d.label_ko} · {d.label_en}</p>
+                </div>
+              ))}
+              <p className="text-[9px] leading-relaxed text-gray-400">영역을 선택 후 속성 패널의 “별색 후가공 영역”을 켜면 별색판(p2)으로 발주됩니다.</p>
+            </div>
+          )}
           {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
@@ -5634,6 +5807,26 @@ export default function EditorClient({ product, options }: Props) {
                   </>)}
                 </>
               )}
+
+              {/* OMO-3577: 별색 후가공 영역(스팟) 토글 — 이 오브젝트를 별색판(p2)에 M100 으로
+                  출력한다. ON 이면 박/형압/도무송/에폭시/별색 영역으로 발주 PDF p2 에 합본된다. */}
+              <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50/60 p-2.5 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-fuchsia-800">별색 후가공 영역</label>
+                  <button
+                    onClick={() => updateSelected({ finish: !selectedProps.finish })}
+                    className={`px-2.5 py-0.5 rounded text-[10px] font-semibold transition-colors ${selectedProps.finish ? 'bg-fuchsia-600 text-white' : 'bg-gray-100 text-gray-500'}`}
+                  >
+                    {selectedProps.finish ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+                <p className="text-[10px] leading-relaxed text-fuchsia-700/80">
+                  박·형압·도무송·에폭시·별색이 들어갈 영역으로 지정합니다. 발주 시 별색판(2페이지 합본 PDF)으로 산출됩니다.
+                </p>
+                {spotFinishingDefs.length > 0 && (
+                  <p className="text-[10px] text-fuchsia-700/70">선택된 후가공: {spotFinishingDefs.map(d => d.label_ko).join(', ')}</p>
+                )}
+              </div>
 
               <button
                 onClick={deleteSelectedLayer}

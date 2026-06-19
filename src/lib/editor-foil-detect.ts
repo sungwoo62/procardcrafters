@@ -21,6 +21,8 @@ import {
   foilLayersToFields,
   validateFoilLayers,
 } from '@/config/swadpia-finishing-fields'
+// OMO-3577: 별색판 대상 오브젝트 선택의 진실원천. 박 자동 치수 집합 ≡ 별색판 래스터 집합.
+import { isFinishPlateObject } from '@/lib/editor-finish-plate'
 
 /** fabric 오브젝트의 캔버스 px 기준 bounding rect (`object.getBoundingRect()` 형태). */
 export interface FoilObjectRect {
@@ -130,9 +132,7 @@ export function detectFoilLayersFromCanvas(
   const empty: FoilDetectResult = { params: {}, layers: [], validation: { ok: true, errors: [] } }
   if (!canvas || typeof canvas.getObjects !== 'function') return empty
 
-  const finishObjs = canvas
-    .getObjects()
-    .filter((o) => o && o.data?.finish && o.visible !== false)
+  const finishObjs = canvas.getObjects().filter((o) => isFinishPlateObject(o))
   if (finishObjs.length === 0) return empty
 
   const rects = finishObjs.map((o) => o.getBoundingRect())
