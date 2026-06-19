@@ -20,6 +20,7 @@ import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as G
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 import { detectFoilLayersFromCanvas } from '@/lib/editor-foil-detect'
+import { addFinishingLayers as addFinishingLayersLib, FINISHING_LAYER_META, type FinishingType } from '@/lib/editor-finishing-layers'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +63,8 @@ interface LayerInfo {
   visible: boolean
   locked: boolean
   imageQuality?: ImageQuality
+  /** OMO-3484: 후가공 가이드 레이어면 해당 후가공 타입(레이어 패널 배지용). */
+  finishingType?: FinishingType
 }
 
 interface EditorDimensions {
@@ -882,7 +885,7 @@ export default function EditorClient({ product, options }: Props) {
     const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o) && o.data?.role !== 'crop')
     const layerList: LayerInfo[] = [...objs].reverse().map((o: {
       type?: string
-      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality }
+      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality; finishingType?: FinishingType }
       visible?: boolean
       selectable?: boolean
     }) => ({
@@ -892,6 +895,7 @@ export default function EditorClient({ product, options }: Props) {
       visible: o.visible ?? true,
       locked: !(o.selectable ?? true),
       imageQuality: o.type === 'image' ? (o.data?.imageQuality ?? undefined) : undefined,
+      finishingType: o.data?.finishingType,
     }))
     setLayers(layerList)
   }
@@ -1196,6 +1200,23 @@ export default function EditorClient({ product, options }: Props) {
     canvas.sendObjectToBack(bleedBg)
     canvas.sendObjectToBack(artboardShadow)
     canvas.sendObjectToBack(pasteboard)
+  }
+
+  // ── 후가공 레이어 초기화 (OMO-3484) ─────────────────────────────────────────
+  // 구성기에서 선택한 후가공(finishing) 값을 URL 파라미터로 받아
+  // 에디터 캔버스에 시각적 레이어로 표현한다.
+  // 레이어 정의는 @/lib/editor-finishing-layers 에 캡슐화되어 있다.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function addFinishingLayers(canvas: any, fabric: typeof import('fabric'), finishingStr: string) {
+    addFinishingLayersLib(canvas, fabric, {
+      trimX: mmToPx(dims.bleedMm + PASTEBOARD_MM, scale),
+      trimY: mmToPx(dims.bleedMm + PASTEBOARD_MM, scale),
+      trimW: mmToPx(dims.widthMm, scale),
+      trimH: mmToPx(dims.heightMm, scale),
+      mmToPx: (mm: number) => mmToPx(mm, scale),
+      makeId,
+    }, finishingStr)
   }
 
   // ── Snap guides ───────────────────────────────────────────────────────────
@@ -3097,6 +3118,11 @@ export default function EditorClient({ product, options }: Props) {
       const urlBg = searchParams.get('bg')
       if (urlBg) { bgColorRef.current = urlBg; setBgColor(urlBg) }
       buildTemplate(canvas, fabric, initialTemplate, bgColorRef.current)
+
+      // OMO-3484: 구성기에서 선택된 후가공 레이어를 캔버스에 표현
+      const urlFinishing = searchParams.get('finishing') ?? ''
+      if (urlFinishing) addFinishingLayers(canvas, fabric, urlFinishing)
+
       canvas.renderAll()
 
       syncLayers(canvas)
@@ -5162,6 +5188,29 @@ export default function EditorClient({ product, options }: Props) {
           {/* Layers panel */}
           {activePanel === 'layers' && (
             <div className="flex-1 overflow-y-auto">
+              {/* OMO-3484: 후가공 가이드 범례 — 구성기에서 선택한 후가공이 캔버스에 표현될 때 안내 */}
+              {(() => {
+                const finishingTypes = Array.from(
+                  new Set(layers.map(l => l.finishingType).filter((t): t is FinishingType => !!t)),
+                )
+                if (finishingTypes.length === 0) return null
+                return (
+                  <div className="px-3 py-2 bg-amber-50/60 border-b border-amber-100 text-[11px]">
+                    <div className="font-semibold text-gray-700 mb-0.5">선택한 후가공 가이드</div>
+                    <p className="leading-snug text-gray-500 mb-1.5">
+                      색 점선 영역은 후가공 적용 위치 가이드입니다. 자유롭게 옮길 수 있으며, 실제 인쇄 시 해당 위치에 후가공이 적용됩니다.
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-gray-600">
+                      {finishingTypes.map(t => (
+                        <span key={t} className="inline-flex items-center gap-1">
+                          <span className={`w-2 h-2 rounded-full ${FINISHING_LAYER_META[t].dotClass}`} />
+                          {FINISHING_LAYER_META[t].label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
               {layers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
                   <Layers className="w-6 h-6" />
@@ -5177,6 +5226,14 @@ export default function EditorClient({ product, options }: Props) {
                     >
                       <span className="text-gray-300 text-[10px] w-4 shrink-0">{idx + 1}</span>
                       <span className="truncate flex-1 font-medium text-gray-700">{layer.name}</span>
+                      {layer.finishingType && FINISHING_LAYER_META[layer.finishingType] && (
+                        <span
+                          title="후가공 가이드 — 실제 인쇄 시 이 영역에 후가공이 적용됩니다"
+                          className={`shrink-0 text-[9px] font-semibold px-1 rounded ${FINISHING_LAYER_META[layer.finishingType].badgeClass}`}
+                        >
+                          후가공·{FINISHING_LAYER_META[layer.finishingType].label}
+                        </span>
+                      )}
                       {layer.imageQuality && (
                         <span
                           title={`${layer.imageQuality.dpi} DPI`}
