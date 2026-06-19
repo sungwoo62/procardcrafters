@@ -734,6 +734,13 @@ export default function EditorClient({ product, options }: Props) {
   const [mobileUploading, setMobileUploading] = useState(false)
   const [mobileUploadError, setMobileUploadError] = useState('')
   const mobileFileInputRef = useRef<HTMLInputElement>(null)
+  // OMO-3523: 모바일 반응형 에디터 — 폴백 안내에서 "에디터 계속 사용"을 누르면
+  // 반응형 레이아웃(접이식 패널 + 터치 제스처) 에디터로 진입한다. (OMO-2617 직행 업로드 경로 보존)
+  const [mobileEditorMode, setMobileEditorMode] = useState(false)
+  // 모바일 도구 패널(하단 바텀시트) 펼침 상태 — 기본 접힘으로 캔버스 영역 최대 확보
+  const [mobilePanelOpen, setMobilePanelOpen] = useState(false)
+  // 모바일 핀치줌/패닝 제스처를 부착할 캔버스 뷰포트 컨테이너
+  const canvasViewportRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
@@ -743,6 +750,91 @@ export default function EditorClient({ product, options }: Props) {
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
   }, [])
+
+  // OMO-3523: 모바일 터치 제스처 — 두 손가락 핀치줌 + 패닝.
+  // 단일 손가락 터치는 Fabric 기본 동작(객체 선택/이동)에 그대로 위임하고,
+  // 두 손가락일 때만 가로채 뷰포트를 확대/이동한다. 데스크톱에는 부착되지 않아 회귀 0.
+  useEffect(() => {
+    if (!isMobile || !mobileEditorMode) return
+    const el = canvasViewportRef.current
+    if (!el) return
+
+    let pinching = false
+    let lastDist = 0
+    let lastMid = { x: 0, y: 0 }
+
+    const distOf = (t: TouchList) =>
+      Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY)
+    const midOf = (t: TouchList) => ({
+      x: (t[0].clientX + t[1].clientX) / 2,
+      y: (t[0].clientY + t[1].clientY) / 2,
+    })
+
+    const onStart = (e: TouchEvent) => {
+      if (e.touches.length !== 2) return
+      const canvas = fabricRef.current
+      if (!canvas) return
+      pinching = true
+      canvas.selection = false
+      canvas.discardActiveObject()
+      canvas.requestRenderAll()
+      lastDist = distOf(e.touches)
+      lastMid = midOf(e.touches)
+      e.preventDefault()
+    }
+
+    const onMove = (e: TouchEvent) => {
+      if (!pinching || e.touches.length !== 2) return
+      const canvas = fabricRef.current
+      if (!canvas) return
+      e.preventDefault()
+      const newDist = distOf(e.touches)
+      const newMid = midOf(e.touches)
+      // 핀치줌 — 두 손가락 중점을 초점으로 확대/축소 (휠 줌과 동일한 0.2~5 범위)
+      if (lastDist > 0) {
+        const canvasEl = canvas.upperCanvasEl || canvasElRef.current
+        const rect = canvasEl?.getBoundingClientRect()
+        let z = canvas.getZoom() * (newDist / lastDist)
+        z = Math.min(Math.max(z, 0.2), 5)
+        canvas.zoomToPoint(
+          { x: newMid.x - (rect?.left ?? 0), y: newMid.y - (rect?.top ?? 0) },
+          z,
+        )
+        setZoom(z)
+      }
+      // 두 손가락 패닝 — 중점 이동량만큼 뷰포트 평행이동
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const vpt: any = canvas.viewportTransform
+      if (vpt) {
+        vpt[4] += newMid.x - lastMid.x
+        vpt[5] += newMid.y - lastMid.y
+        canvas.requestRenderAll()
+      }
+      lastDist = newDist
+      lastMid = newMid
+    }
+
+    const onEnd = (e: TouchEvent) => {
+      if (!pinching) return
+      if (e.touches.length < 2) {
+        pinching = false
+        lastDist = 0
+        const canvas = fabricRef.current
+        if (canvas) canvas.selection = true
+      }
+    }
+
+    el.addEventListener('touchstart', onStart, { passive: false })
+    el.addEventListener('touchmove', onMove, { passive: false })
+    el.addEventListener('touchend', onEnd)
+    el.addEventListener('touchcancel', onEnd)
+    return () => {
+      el.removeEventListener('touchstart', onStart)
+      el.removeEventListener('touchmove', onMove)
+      el.removeEventListener('touchend', onEnd)
+      el.removeEventListener('touchcancel', onEnd)
+    }
+  }, [isMobile, mobileEditorMode])
 
   async function handleMobileDirectUpload(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -4443,8 +4535,8 @@ export default function EditorClient({ product, options }: Props) {
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
-      {/* OMO-2617: 모바일 폴백 오버레이 — 에디터는 데스크톱 전용. 좁은 폭에서 안내 + 파일 직행 업로드 노출 */}
-      {isMobile && (
+      {/* OMO-2617/3523: 모바일 안내 오버레이 — 파일 직행 업로드 + 반응형 에디터 진입 선택 노출 */}
+      {isMobile && !mobileEditorMode && (
         <div className="fixed inset-0 z-[80] flex flex-col items-center justify-center overflow-y-auto bg-white px-6 py-10 text-center">
           <input
             ref={mobileFileInputRef}
@@ -4456,10 +4548,11 @@ export default function EditorClient({ product, options }: Props) {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
             <Monitor className="h-8 w-8 text-indigo-600" />
           </div>
-          <h2 className="mt-5 text-xl font-bold text-gray-900">에디터는 데스크톱에서 가장 잘 작동합니다</h2>
+          <h2 className="mt-5 text-xl font-bold text-gray-900">디자인을 어떻게 시작할까요?</h2>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
-            정밀한 디자인 도구가 많아 모바일 화면에는 최적화되어 있지 않습니다.
-            컴퓨터에서 접속하시면 디자인 에디터를 온전히 사용하실 수 있어요.
+            완성된 인쇄용 파일이 있다면 바로 업로드해 주문할 수 있어요.
+            새로 디자인한다면 모바일에서도 에디터를 사용할 수 있습니다.
+            (정밀 작업은 컴퓨터 사용을 권장합니다.)
           </p>
 
           <div className="mt-8 w-full max-w-sm rounded-2xl border border-gray-200 bg-gray-50 p-5 text-left">
@@ -4483,9 +4576,16 @@ export default function EditorClient({ product, options }: Props) {
             )}
           </div>
 
+          <button
+            onClick={() => setMobileEditorMode(true)}
+            className="mt-5 w-full max-w-sm rounded-xl border border-indigo-200 bg-white px-4 py-3 text-sm font-semibold text-indigo-600 hover:bg-indigo-50"
+          >
+            모바일 에디터로 새로 디자인하기
+          </button>
+
           <Link
             href={`/products/${product.slug}`}
-            className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
+            className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
           >
             <ArrowLeft className="h-4 w-4" /> 제품 페이지로 돌아가기
           </Link>
@@ -4649,7 +4749,8 @@ export default function EditorClient({ product, options }: Props) {
       )}
 
       {/* Top bar */}
-      <div className="flex items-center gap-2 bg-white border-b border-gray-200 px-3 py-2 shrink-0 flex-wrap">
+      {/* 상단 툴바 — 데스크톱은 줄바꿈, 모바일은 가로 스크롤로 모든 액션(Order 포함) 접근 보장 (OMO-3523) */}
+      <div className={`flex items-center gap-2 bg-white border-b border-gray-200 px-3 py-2 shrink-0 ${isMobile ? 'flex-nowrap overflow-x-auto [&>*]:shrink-0' : 'flex-wrap'}`}>
         <Link href={`/products/${product.slug}`} className="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm">
           <ArrowLeft className="w-4 h-4" /> Back
         </Link>
@@ -4772,7 +4873,11 @@ export default function EditorClient({ product, options }: Props) {
 
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas area */}
-        <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+        <div
+          ref={canvasViewportRef}
+          className={`relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 ${isMobile ? 'p-3' : 'p-6'}`}
+          style={isMobile ? { touchAction: 'none' } : undefined}
+        >
           {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
@@ -4798,8 +4903,8 @@ export default function EditorClient({ product, options }: Props) {
             <canvas ref={canvasElRef} />
           </div>
 
-          {/* 줌 컨트롤 (하단 좌측) */}
-          <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
+          {/* 줌 컨트롤 (하단 좌측) — 모바일에서는 하단 바텀시트 위로 올림 */}
+          <div className={`absolute ${isMobile ? 'bottom-16' : 'bottom-3'} left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1`}>
             <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
             <button onClick={resetView} title="100% / 맞춤 (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
             <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
@@ -4808,14 +4913,31 @@ export default function EditorClient({ product, options }: Props) {
             <button onClick={toggleGrid} title="그리드 (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
           </div>
 
-          {/* 팬 힌트 */}
-          <div className="absolute bottom-3 right-3 z-10 text-[10px] text-gray-400 bg-white/70 rounded px-2 py-1 pointer-events-none">
-            Space+드래그로 이동 · 휠로 확대/축소
+          {/* 팬 힌트 — 입력 방식에 맞춰 안내 (모바일은 바텀시트 위로 올림) */}
+          <div className={`absolute ${isMobile ? 'bottom-16' : 'bottom-3'} right-3 z-10 text-[10px] text-gray-400 bg-white/70 rounded px-2 py-1 pointer-events-none`}>
+            {isMobile ? '두 손가락으로 확대·이동 · 한 손가락으로 개체 편집' : 'Space+드래그로 이동 · 휠로 확대/축소'}
           </div>
         </div>
 
-        {/* Right panel */}
-        <div className="w-64 bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0">
+        {/* Right panel — 데스크톱은 우측 고정 사이드바, 모바일은 하단 접이식 바텀시트 (OMO-3523) */}
+        <div
+          className={
+            isMobile
+              ? `fixed inset-x-0 bottom-0 z-40 bg-white border-t border-gray-200 flex flex-col overflow-hidden shadow-[0_-4px_20px_rgba(0,0,0,0.12)] transition-[max-height] duration-200 ${mobilePanelOpen ? 'max-h-[62vh]' : 'max-h-12'}`
+              : 'w-64 bg-white border-l border-gray-200 flex flex-col overflow-hidden shrink-0'
+          }
+        >
+          {/* 모바일 바텀시트 핸들/토글 — 접힘 상태에서도 항상 보임 */}
+          {isMobile && (
+            <button
+              onClick={() => setMobilePanelOpen(o => !o)}
+              className="flex h-12 shrink-0 items-center justify-center gap-2 border-b border-gray-100 text-sm font-medium text-gray-600 active:bg-gray-50"
+            >
+              <span className="h-1 w-8 rounded-full bg-gray-300" />
+              <span className="ml-1">{mobilePanelOpen ? '패널 접기' : '도구 패널 열기'}</span>
+              {mobilePanelOpen ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </button>
+          )}
           {/* Panel tabs */}
           <div className="flex border-b border-gray-200 shrink-0">
             {([
