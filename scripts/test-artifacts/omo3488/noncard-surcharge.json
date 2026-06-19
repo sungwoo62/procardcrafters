@@ -1,0 +1,1214 @@
+{
+  "ranAt": "2026-06-19T05:28:28.858Z",
+  "loggedIn": true,
+  "base": "https://www.swadpia.co.kr",
+  "tolerance": 0.01,
+  "qtySweep": true,
+  "categories": [
+    {
+      "code": "CLF1000",
+      "label": "CLF1000",
+      "goods": "GLF1001",
+      "url": "https://www.swadpia.co.kr/goods/goods_view/CLF1000/GLF1001",
+      "qtyField": "paper_qty",
+      "qtyLadder": [
+        2000,
+        4000,
+        8000
+      ],
+      "finishings": {
+        "die_cut": {
+          "ppType": "domusong",
+          "amtField": "domusong_amt",
+          "model": "flat",
+          "expected": 21500,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 70000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 77000,
+              "determinismOk": false,
+              "pp": 70000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "FB(DMT10)",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 113000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 124300,
+              "determinismOk": false,
+              "pp": 113000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "FB(DMT10)",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 199000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 218900,
+              "determinismOk": false,
+              "pp": 199000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "FB(DMT10)",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "drilled_hole": {
+          "ppType": "tagong",
+          "amtField": "tagong_amt",
+          "model": "flat",
+          "expected": 3800,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 10000,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 11000,
+              "determinismOk": false,
+              "pp": 10000,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 15000,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 16500,
+              "determinismOk": false,
+              "pp": 15000,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 25000,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 27500,
+              "determinismOk": false,
+              "pp": 25000,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "epoxy": {
+          "ppType": "epoxy",
+          "amtField": "epoxy_amt",
+          "model": "flat",
+          "expected": 22500,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 150000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 165000,
+              "determinismOk": false,
+              "pp": 150000,
+              "setRes": {
+                "epoxy_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 180000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 198000,
+              "determinismOk": false,
+              "pp": 180000,
+              "setRes": {
+                "epoxy_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 350000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 385000,
+              "determinismOk": false,
+              "pp": 350000,
+              "setRes": {
+                "epoxy_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "score_crease": {
+          "ppType": "osi",
+          "amtField": "osi_amt",
+          "model": "flat",
+          "expected": 7000,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "osi_num": "NO_OPT",
+                "osi_direction": "ABSENT",
+                "osi_type": "AUTO(1)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "osi_num": "NO_OPT",
+                "osi_direction": "ABSENT",
+                "osi_type": "AUTO(1)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "osi_num": "NO_OPT",
+                "osi_direction": "ABSENT",
+                "osi_type": "AUTO(1)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "perforation": {
+          "ppType": "missing",
+          "amtField": "missing_amt",
+          "model": "flat",
+          "expected": 7000,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 36000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 39600,
+              "determinismOk": false,
+              "pp": 36000,
+              "setRes": {
+                "missing_num": "FB(1)",
+                "missing_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 36000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 39600,
+              "determinismOk": false,
+              "pp": 36000,
+              "setRes": {
+                "missing_num": "FB(1)",
+                "missing_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 60000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 66000,
+              "determinismOk": false,
+              "pp": 60000,
+              "setRes": {
+                "missing_num": "FB(1)",
+                "missing_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "numbering": {
+          "ppType": "numbering",
+          "amtField": "numbering_amt",
+          "model": "flat",
+          "expected": null,
+          "series": [
+            {
+              "qty": 2000,
+              "amt": 90000,
+              "amtSource": "named:numbering_amt",
+              "payDelta": 99000,
+              "determinismOk": false,
+              "pp": 90000,
+              "setRes": {
+                "numbering_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4000,
+              "amt": 160000,
+              "amtSource": "named:numbering_amt",
+              "payDelta": 176000,
+              "determinismOk": false,
+              "pp": 160000,
+              "setRes": {
+                "numbering_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 8000,
+              "amt": 330000,
+              "amtSource": "named:numbering_amt",
+              "payDelta": 363000,
+              "determinismOk": false,
+              "pp": 330000,
+              "setRes": {
+                "numbering_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        }
+      }
+    },
+    {
+      "code": "CPR4000",
+      "label": "CPR4000",
+      "goods": "GPR4001",
+      "url": "https://www.swadpia.co.kr/goods/goods_view/CPR4000/GPR4001",
+      "qtyField": "bundle_qty",
+      "qtyLadder": [
+        50,
+        1200,
+        5000
+      ],
+      "finishings": {
+        "die_cut": {
+          "ppType": "domusong",
+          "amtField": "domusong_amt",
+          "model": "flat",
+          "expected": 21500,
+          "series": [
+            {
+              "qty": 50,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 106000,
+              "setRes": {
+                "domusong_section": "ABSENT",
+                "domusong_type": "SET",
+                "domusong_num": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 1200,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 163000,
+              "setRes": {
+                "domusong_section": "ABSENT",
+                "domusong_type": "SET",
+                "domusong_num": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 459000,
+              "setRes": {
+                "domusong_section": "ABSENT",
+                "domusong_type": "SET",
+                "domusong_num": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "epoxy": {
+          "ppType": "epoxy",
+          "amtField": "epoxy_amt",
+          "model": "flat",
+          "expected": 22500,
+          "series": [
+            {
+              "qty": 50,
+              "amt": 150000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 165000,
+              "determinismOk": false,
+              "pp": 256000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 1200,
+              "amt": 150000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 165000,
+              "determinismOk": false,
+              "pp": 313000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 435000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 478500,
+              "determinismOk": false,
+              "pp": 894000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "round_corner": {
+          "ppType": "guidori",
+          "amtField": "guidori_amt",
+          "model": "flat",
+          "expected": 3000,
+          "series": [
+            {
+              "qty": 50,
+              "amt": 40000,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 44000,
+              "determinismOk": false,
+              "pp": 146000,
+              "setRes": {
+                "guidori_type": "FB(GDR06)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 1200,
+              "amt": 720000,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 792000,
+              "determinismOk": false,
+              "pp": 883000,
+              "setRes": {
+                "guidori_type": "FB(GDR06)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 3000000,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 3300000,
+              "determinismOk": false,
+              "pp": 3459000,
+              "setRes": {
+                "guidori_type": "FB(GDR06)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "score_crease": {
+          "ppType": "osi",
+          "amtField": "osi_amt",
+          "model": "flat",
+          "expected": 7000,
+          "series": [
+            {
+              "qty": 50,
+              "amt": 20000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 106000,
+              "setRes": {
+                "osi_num": "FB(1)",
+                "osi_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 1200,
+              "amt": 28000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 163000,
+              "setRes": {
+                "osi_num": "FB(1)",
+                "osi_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 81000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 459000,
+              "setRes": {
+                "osi_num": "FB(1)",
+                "osi_direction": "ABSENT"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        }
+      }
+    },
+    {
+      "code": "CPR5000",
+      "label": "CPR5000",
+      "goods": "GPR5001",
+      "url": "https://www.swadpia.co.kr/goods/goods_view/CPR5000/GPR5001",
+      "qtyField": "paper_qty",
+      "qtyLadder": [
+        400,
+        2800,
+        4800
+      ],
+      "finishings": {
+        "die_cut": {
+          "ppType": "domusong",
+          "amtField": "domusong_amt",
+          "model": "flat",
+          "expected": 21500,
+          "series": [
+            {
+              "qty": 400,
+              "amt": 40000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 130000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2800,
+              "amt": 50000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 307000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4800,
+              "amt": 74000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 481000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "epoxy": {
+          "ppType": "epoxy",
+          "amtField": "epoxy_amt",
+          "model": "flat",
+          "expected": 22500,
+          "series": [
+            {
+              "qty": 400,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 130000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2800,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 307000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 4800,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 481000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK80)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        }
+      }
+    },
+    {
+      "code": "CNC1000",
+      "label": "CNC1000",
+      "goods": "GNC1001",
+      "url": "https://www.swadpia.co.kr/goods/goods_view/CNC1000/GNC1001",
+      "qtyField": "paper_qty",
+      "qtyLadder": [
+        500,
+        2000,
+        5000
+      ],
+      "finishings": {
+        "die_cut": {
+          "ppType": "domusong",
+          "amtField": "domusong_amt",
+          "model": "flat",
+          "expected": 21500,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 21500,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 23650,
+              "determinismOk": false,
+              "pp": 21500,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 49000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 53900,
+              "determinismOk": false,
+              "pp": 49000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 106000,
+              "amtSource": "named:domusong_amt",
+              "payDelta": 116600,
+              "determinismOk": false,
+              "pp": 106000,
+              "setRes": {
+                "domusong_section": "SET",
+                "domusong_type": "SET",
+                "domusong_num": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "drilled_hole": {
+          "ppType": "tagong",
+          "amtField": "tagong_amt",
+          "model": "flat",
+          "expected": 3800,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 3800,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 4180,
+              "determinismOk": false,
+              "pp": 3800,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 10100,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 11110,
+              "determinismOk": false,
+              "pp": 10100,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 19500,
+              "amtSource": "named:tagong_amt",
+              "payDelta": 21450,
+              "determinismOk": false,
+              "pp": 19500,
+              "setRes": {
+                "tagong_num": "SET",
+                "tagong_size": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "round_corner": {
+          "ppType": "guidori",
+          "amtField": "guidori_amt",
+          "model": "flat",
+          "expected": 3000,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 3000,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 3300,
+              "determinismOk": false,
+              "pp": 3000,
+              "setRes": {
+                "guidori_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 11200,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 12320,
+              "determinismOk": false,
+              "pp": 11200,
+              "setRes": {
+                "guidori_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 24000,
+              "amtSource": "named:guidori_amt",
+              "payDelta": 26400,
+              "determinismOk": false,
+              "pp": 24000,
+              "setRes": {
+                "guidori_type": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "epoxy": {
+          "ppType": "epoxy",
+          "amtField": "epoxy_amt",
+          "model": "flat",
+          "expected": 22500,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 22500,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 24750,
+              "determinismOk": false,
+              "pp": 22500,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK10)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 90000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 99000,
+              "determinismOk": false,
+              "pp": 90000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK10)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 225000,
+              "amtSource": "named:epoxy_amt",
+              "payDelta": 247500,
+              "determinismOk": false,
+              "pp": 225000,
+              "setRes": {
+                "epoxy_type": "SET",
+                "epoxy_kind": "K(EPK10)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "score_crease": {
+          "ppType": "osi",
+          "amtField": "osi_amt",
+          "model": "flat",
+          "expected": 7000,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 7000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 7700,
+              "determinismOk": false,
+              "pp": 7000,
+              "setRes": {
+                "osi_num": "SET",
+                "osi_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 19000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 20900,
+              "determinismOk": false,
+              "pp": 19000,
+              "setRes": {
+                "osi_num": "SET",
+                "osi_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 38000,
+              "amtSource": "named:osi_amt",
+              "payDelta": 41800,
+              "determinismOk": false,
+              "pp": 38000,
+              "setRes": {
+                "osi_num": "SET",
+                "osi_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "perforation": {
+          "ppType": "missing",
+          "amtField": "missing_amt",
+          "model": "flat",
+          "expected": 7000,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 7000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 7700,
+              "determinismOk": false,
+              "pp": 7000,
+              "setRes": {
+                "missing_num": "SET",
+                "missing_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 19000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 20900,
+              "determinismOk": false,
+              "pp": 19000,
+              "setRes": {
+                "missing_num": "SET",
+                "missing_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 38000,
+              "amtSource": "named:missing_amt",
+              "payDelta": 41800,
+              "determinismOk": false,
+              "pp": 38000,
+              "setRes": {
+                "missing_num": "SET",
+                "missing_direction": "SET"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        },
+        "numbering": {
+          "ppType": "numbering",
+          "amtField": "numbering_amt",
+          "model": "flat",
+          "expected": null,
+          "series": [
+            {
+              "qty": 500,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "numbering_type": "SET",
+                "numbering_kind": "K(NBN11)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 2000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "numbering_type": "SET",
+                "numbering_kind": "K(NBN11)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            },
+            {
+              "qty": 5000,
+              "amt": 0,
+              "amtSource": "none",
+              "payDelta": 0,
+              "determinismOk": false,
+              "pp": 0,
+              "setRes": {
+                "numbering_type": "SET",
+                "numbering_kind": "K(NBN11)"
+              },
+              "log": [
+                "setIsPostpress ok",
+                "calcuEstimate ok"
+              ]
+            }
+          ],
+          "fit": null,
+          "verdict": "NO_DATA"
+        }
+      }
+    }
+  ],
+  "summary": {
+    "match": [],
+    "diverge": [],
+    "sampled": [],
+    "noData": [
+      "CLF1000/die_cut",
+      "CLF1000/drilled_hole",
+      "CLF1000/epoxy",
+      "CLF1000/score_crease",
+      "CLF1000/perforation",
+      "CLF1000/numbering",
+      "CPR4000/die_cut",
+      "CPR4000/epoxy",
+      "CPR4000/round_corner",
+      "CPR4000/score_crease",
+      "CPR5000/die_cut",
+      "CPR5000/epoxy",
+      "CNC1000/die_cut",
+      "CNC1000/drilled_hole",
+      "CNC1000/round_corner",
+      "CNC1000/epoxy",
+      "CNC1000/score_crease",
+      "CNC1000/perforation",
+      "CNC1000/numbering"
+    ],
+    "drift": [
+      "CLF1000/die_cut",
+      "CLF1000/drilled_hole",
+      "CLF1000/epoxy",
+      "CLF1000/perforation",
+      "CLF1000/numbering",
+      "CPR4000/epoxy",
+      "CPR4000/round_corner",
+      "CPR4000/score_crease",
+      "CPR5000/die_cut",
+      "CNC1000/die_cut",
+      "CNC1000/drilled_hole",
+      "CNC1000/round_corner",
+      "CNC1000/epoxy",
+      "CNC1000/score_crease",
+      "CNC1000/perforation"
+    ]
+  },
+  "clf3Merged": true
+}

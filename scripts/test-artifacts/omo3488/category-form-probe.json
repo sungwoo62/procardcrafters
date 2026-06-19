@@ -1,0 +1,829 @@
+{
+  "ranAt": "2026-06-19T05:07:07.714Z",
+  "loggedIn": true,
+  "categories": [
+    {
+      "code": "CST1000",
+      "goods": "GST1001",
+      "toggles": {
+        "bak": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "ap": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "domusong": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "tagong": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "guidori": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "epoxy": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "osi": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "missing": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "numbering": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        }
+      },
+      "amtFields": [
+        "save_design_amt",
+        "save_working_amt",
+        "save_working_amt",
+        "save_coating_amt",
+        "order_amt",
+        "supply_amt",
+        "tax_amt",
+        "pay_amt",
+        "postpress_amt",
+        "sale_amt",
+        "risk_amt",
+        "bak_amt",
+        "dongpan_amt",
+        "working_amt",
+        "add_amt",
+        "cutting_amt",
+        "coating_amt"
+      ],
+      "qtySelects": [
+        {
+          "name": "paper_qty",
+          "opts": [
+            "500",
+            "1000",
+            "2000",
+            "3000",
+            "4000",
+            "5000",
+            "6000",
+            "8000"
+          ]
+        }
+      ],
+      "finSelectNames": [
+        "coating_type",
+        "cut_margin",
+        "bak_section_1",
+        "bak_type_1",
+        "bak_exist_dongpan_1",
+        "bak_section_2",
+        "bak_type_2",
+        "bak_exist_dongpan_2",
+        "bak_section_3",
+        "bak_type_3",
+        "bak_exist_dongpan_3"
+      ]
+    },
+    {
+      "code": "CLF1000",
+      "goods": "GLF1001",
+      "toggles": {
+        "bak": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "ap": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "domusong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "tagong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "guidori": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "epoxy": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "osi": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "missing": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "numbering": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        }
+      },
+      "amtFields": [
+        "save_design_amt",
+        "save_osi_amt",
+        "save_missing_amt",
+        "save_coating_amt",
+        "save_domusong_amt",
+        "save_numbering_amt",
+        "save_tagong_amt",
+        "save_folding_amt",
+        "save_cutting_amt",
+        "save_binding_amt",
+        "save_bonding_amt",
+        "save_laminex_amt",
+        "save_stitching_amt",
+        "save_epoxy_amt",
+        "bak_amt",
+        "bak_dongpan_amt",
+        "ap_amt",
+        "ap_dongpan_amt",
+        "order_amt",
+        "supply_amt",
+        "tax_amt",
+        "pay_amt",
+        "postpress_amt",
+        "sale_amt",
+        "risk_amt",
+        "add_amt",
+        "folding_unit_min_amt",
+        "folding_amt",
+        "osi_amt",
+        "missing_amt",
+        "coating_amt",
+        "domusong_amt",
+        "moghyeong_amt",
+        "numbering_amt",
+        "tagong_amt",
+        "cutting_amt",
+        "binding_amt",
+        "bonding_amt",
+        "laminex_amt",
+        "epoxy_amt",
+        "stitching_amt"
+      ],
+      "qtySelects": [
+        {
+          "name": "fside_color_amount",
+          "opts": [
+            "4"
+          ]
+        },
+        {
+          "name": "bside_color_amount",
+          "opts": [
+            "0",
+            "4"
+          ]
+        },
+        {
+          "name": "paper_qty",
+          "opts": [
+            "2000",
+            "4000",
+            "8000",
+            "12000",
+            "16000",
+            "20000",
+            "24000",
+            "28000"
+          ]
+        },
+        {
+          "name": "osi_num",
+          "opts": []
+        },
+        {
+          "name": "missing_num",
+          "opts": []
+        },
+        {
+          "name": "domusong_num",
+          "opts": []
+        },
+        {
+          "name": "numbering_type",
+          "opts": [
+            "NBT10"
+          ]
+        },
+        {
+          "name": "numbering_num",
+          "opts": [
+            "1",
+            "2"
+          ]
+        },
+        {
+          "name": "tagong_num",
+          "opts": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "laminex_num",
+          "opts": []
+        }
+      ],
+      "finSelectNames": [
+        "folding_type",
+        "folding_direction",
+        "osi_num",
+        "osi_type",
+        "missing_num",
+        "coating_type",
+        "domusong_section",
+        "domusong_type",
+        "domusong_num",
+        "domusong_finishing",
+        "domusong_exist_mok",
+        "bak_section_1",
+        "bak_side_1",
+        "bak_type_1",
+        "bak_exist_dongpan_1",
+        "bak_section_2",
+        "bak_side_2",
+        "bak_type_2",
+        "bak_exist_dongpan_2",
+        "bak_section_3",
+        "bak_side_3",
+        "bak_type_3",
+        "bak_exist_dongpan_3",
+        "ap_section_1",
+        "ap_type_1",
+        "ap_exist_dongpan_1",
+        "ap_section_2",
+        "ap_type_2",
+        "ap_exist_dongpan_2",
+        "ap_section_3",
+        "ap_type_3",
+        "ap_exist_dongpan_3",
+        "numbering_type",
+        "numbering_num",
+        "tagong_num",
+        "tagong_size",
+        "cutting_type",
+        "binding_type",
+        "binding_add_set",
+        "epoxy_type",
+        "epoxy_kind"
+      ]
+    },
+    {
+      "code": "CPR4000",
+      "goods": "GPR4001",
+      "toggles": {
+        "bak": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "ap": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "domusong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": false,
+          "amtField": true
+        },
+        "tagong": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "guidori": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "epoxy": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "osi": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "missing": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "numbering": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        }
+      },
+      "amtFields": [
+        "save_design_amt",
+        "save_osi_amt",
+        "save_missing_amt",
+        "save_coating_amt",
+        "save_partial_coating_amt",
+        "save_domusong_amt",
+        "save_numbering_amt",
+        "save_tagong_amt",
+        "save_folding_amt",
+        "save_cutting_amt",
+        "save_binding_amt",
+        "save_bonding_amt",
+        "save_epoxy_amt",
+        "save_guidori_amt",
+        "bak_amt",
+        "ap_amt",
+        "order_amt",
+        "supply_amt",
+        "tax_amt",
+        "pay_amt",
+        "postpress_amt",
+        "sale_amt",
+        "risk_amt",
+        "add_amt",
+        "domusong_amt",
+        "binding_amt",
+        "osi_amt",
+        "cover_coating_amt",
+        "coating_amt",
+        "in_coating_amt",
+        "partial_coating_amt",
+        "epoxy_amt",
+        "guidori_amt"
+      ],
+      "qtySelects": [
+        {
+          "name": "bundle_qty",
+          "opts": [
+            "50",
+            "100",
+            "200",
+            "300",
+            "400",
+            "500",
+            "600",
+            "700"
+          ]
+        },
+        {
+          "name": "in_page_qty",
+          "opts": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24",
+            "28"
+          ]
+        },
+        {
+          "name": "add_page_qty",
+          "opts": [
+            "0",
+            "4",
+            "8",
+            "12",
+            "16",
+            "20",
+            "24",
+            "28"
+          ]
+        },
+        {
+          "name": "osi_num",
+          "opts": [
+            "1"
+          ]
+        }
+      ],
+      "finSelectNames": [
+        "binding_type",
+        "osi_num",
+        "coating_type",
+        "bak_section_1",
+        "bak_side_1",
+        "bak_type_1",
+        "bak_exist_dongpan_1",
+        "bak_section_2",
+        "bak_side_2",
+        "bak_type_2",
+        "bak_exist_dongpan_2",
+        "bak_section_3",
+        "bak_side_3",
+        "bak_type_3",
+        "bak_exist_dongpan_3",
+        "ap_section_1",
+        "ap_type_1",
+        "ap_exist_dongpan_1",
+        "ap_section_2",
+        "ap_type_2",
+        "ap_exist_dongpan_2",
+        "ap_section_3",
+        "ap_type_3",
+        "ap_exist_dongpan_3",
+        "epoxy_type",
+        "epoxy_kind",
+        "guidori_type"
+      ]
+    },
+    {
+      "code": "CPR5000",
+      "goods": "GPR5001",
+      "toggles": {
+        "bak": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "ap": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "domusong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": false,
+          "amtField": true
+        },
+        "tagong": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "guidori": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "epoxy": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "osi": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "missing": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        },
+        "numbering": {
+          "chk": false,
+          "chk2": false,
+          "pnl": false,
+          "amtField": false
+        }
+      },
+      "amtFields": [
+        "save_design_amt",
+        "save_domusong_amt",
+        "save_moghyeong_amt",
+        "save_coating_amt",
+        "save_bonding_amt",
+        "save_partial_coating_amt",
+        "save_tape_amt",
+        "save_epoxy_amt",
+        "bak_amt",
+        "dongpan_amt",
+        "ap_amt",
+        "ap_dongpan_amt",
+        "order_amt",
+        "supply_amt",
+        "tax_amt",
+        "pay_amt",
+        "postpress_amt",
+        "sale_amt",
+        "risk_amt",
+        "add_amt",
+        "coating_amt",
+        "partial_coating_amt",
+        "partial_coating_suji_amt",
+        "tape_amt",
+        "domusong_amt",
+        "moghyeong_amt",
+        "bonding_amt",
+        "epoxy_amt"
+      ],
+      "qtySelects": [
+        {
+          "name": "fside_color_amount",
+          "opts": [
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "bside_color_amount",
+          "opts": [
+            "0",
+            "4",
+            "5"
+          ]
+        },
+        {
+          "name": "paper_qty",
+          "opts": [
+            "400",
+            "800",
+            "1200",
+            "1600",
+            "2000",
+            "2400",
+            "2800",
+            "3200"
+          ]
+        }
+      ],
+      "finSelectNames": [
+        "coating_type",
+        "bak_section_1",
+        "bak_side_1",
+        "bak_type_1",
+        "bak_exist_dongpan_1",
+        "bak_section_2",
+        "bak_side_2",
+        "bak_type_2",
+        "bak_exist_dongpan_2",
+        "bak_section_3",
+        "bak_side_3",
+        "bak_type_3",
+        "bak_exist_dongpan_3",
+        "ap_section_1",
+        "ap_exist_dongpan_1",
+        "ap_section_2",
+        "ap_exist_dongpan_2",
+        "ap_section_3",
+        "ap_exist_dongpan_3",
+        "epoxy_type",
+        "epoxy_kind"
+      ]
+    },
+    {
+      "code": "CNC1000",
+      "goods": "GNC1001",
+      "toggles": {
+        "bak": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "ap": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "domusong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "tagong": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "guidori": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "epoxy": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "osi": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "missing": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        },
+        "numbering": {
+          "chk": true,
+          "chk2": false,
+          "pnl": true,
+          "amtField": true
+        }
+      },
+      "amtFields": [
+        "save_design_amt",
+        "save_osi_amt",
+        "save_missing_amt",
+        "save_domusong_amt",
+        "save_numbering_amt",
+        "save_tagong_amt",
+        "save_guidori_amt",
+        "save_epoxy_amt",
+        "bak_amt",
+        "ap_amt",
+        "bak_dp_amt",
+        "ap_dp_amt",
+        "dbak_amt",
+        "dbak_dp_amt",
+        "order_amt",
+        "supply_amt",
+        "tax_amt",
+        "pay_amt",
+        "postpress_amt",
+        "sale_amt",
+        "risk_amt",
+        "add_amt",
+        "osi_amt",
+        "osi_mok_amt",
+        "missing_amt",
+        "missing_mok_amt",
+        "domusong_amt",
+        "moghyeong_amt",
+        "numbering_amt",
+        "tagong_amt",
+        "guidori_amt",
+        "epoxy_amt"
+      ],
+      "qtySelects": [
+        {
+          "name": "paper_qty",
+          "opts": [
+            "500",
+            "1000",
+            "1500",
+            "2000",
+            "3000",
+            "4000",
+            "5000",
+            "6000"
+          ]
+        },
+        {
+          "name": "osi_num",
+          "opts": []
+        },
+        {
+          "name": "missing_num",
+          "opts": []
+        },
+        {
+          "name": "domusong_num",
+          "opts": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        },
+        {
+          "name": "numbering_type",
+          "opts": [
+            "NBT10",
+            "NBT20"
+          ]
+        },
+        {
+          "name": "numbering_kind",
+          "opts": []
+        },
+        {
+          "name": "tagong_num",
+          "opts": [
+            "1",
+            "2",
+            "3",
+            "4"
+          ]
+        }
+      ],
+      "finSelectNames": [
+        "osi_num",
+        "osi_direction",
+        "missing_num",
+        "missing_direction",
+        "domusong_section",
+        "domusong_type",
+        "domusong_num",
+        "domusong_exist_mok",
+        "bak_section_1",
+        "bak_side_1",
+        "bak_type_1",
+        "bak_compare_1",
+        "bak_exist_dongpan_1",
+        "bak_section_2",
+        "bak_side_2",
+        "bak_type_2",
+        "bak_compare_2",
+        "bak_exist_dongpan_2",
+        "bak_section_3",
+        "bak_side_3",
+        "bak_type_3",
+        "bak_compare_3",
+        "bak_exist_dongpan_3",
+        "ap_section_1",
+        "ap_type_1",
+        "ap_compare_1",
+        "ap_exist_dongpan_1",
+        "ap_section_2",
+        "ap_type_2",
+        "ap_compare_2",
+        "ap_exist_dongpan_2",
+        "ap_section_3",
+        "ap_type_3",
+        "ap_compare_3",
+        "ap_exist_dongpan_3",
+        "numbering_type",
+        "numbering_kind",
+        "tagong_num",
+        "tagong_size",
+        "guidori_type",
+        "epoxy_type",
+        "epoxy_kind"
+      ]
+    }
+  ]
+}

@@ -128,3 +128,79 @@ export function finishingWholesaleKrwFormula(value: string, quantity: number): n
   if (!f || !quantity || quantity <= 0) return 0
   return qtyInterpolate(f, quantity)
 }
+
+// ─── OMO-3557: 비명함 카테고리 분기 (DORMANT) ────────────────────────────────
+//
+// 측정: scripts/test-artifacts/omo3488/NONCARD-SURCHARGE.md / noncard-surcharge.json
+//   (2026-06-19 라이브 수량스윕, production activateFinishings 1:1 재현 + base-config 자동선택,
+//    hidden {type}_amt 직독 · READ-ONLY 실주문 없음). parity 게이트: payΔ/amt=1.100(VAT) 일관.
+//
+// 검증(harness): CNC1000 컨트롤이 위 FINISHING_FORMULA(명함 기준선)를 재현(전 종목 MATCH, R²≈1.0).
+//
+// ⚠️ DORMANT — 위 명함 매트릭스와 동일하게 라이브 가격경로 미연결. 활성화는 **보드 가격 승인 게이트**
+//   (approval a344e1b4). import 하지 말 것.
+//
+// 인코딩 범위(게이트 LOADABLE = COUPLED_OK ≥2점만):
+//   - 포함: per-sheet(매) 카테고리의 VAT-정상 측정. CNC 대비 coef 병기.
+//   - 제외(자식이슈): 박/형압(면적모델, 비명함 add-to-list UI 미측정) · bundle(묶음) 단위 CPR4000
+//     (매수환산 필요) · HOLD_UNCOUPLED(payΔ=0 가격미반영) · BLOCK_NODATA(amt=0).
+export interface CategoryFinishingFormula extends FinishingFormula {
+  category: string
+  /** 수량 단위 — 'sheet'(매) | 'bundle'(묶음, CNC 매수기준과 직접 비교 불가) */
+  qtyUnit: 'sheet' | 'bundle'
+  /** CNC(명함) 동일 후가공 대비 배율(@2,000). null=CNC 미측정(비명함 최초). */
+  cncCoef: number | null
+  /** 적합 신뢰도 — 'high'(≥3점) | 'low-2pt'(2점, slope 잠정). */
+  confidence: 'high' | 'low-2pt'
+}
+
+export const CATEGORY_FINISHING_FORMULA: Record<string, Record<string, CategoryFinishingFormula>> = {
+  // 전단(CLF1000) — 매(sheet) 단위. CNC 대비 도무송/에폭시 대폭 상회(대형 판형).
+  // 넘버링은 명함(GNC1001) 차단으로 CNC 미측정이었던 항목의 **비명함 최초 실측**.
+  CLF1000: {
+    // 3점 라이브(2,000/4,000/8,000매, noncard-surcharge-clf3.json). 브래킷 보간 권위.
+    die_cut: {
+      value: 'die_cut', label_ko: '도무송', category: 'CLF1000', qtyUnit: 'sheet',
+      qtyPoints: { 2000: 70000, 4000: 113000, 8000: 199000 }, qtyModel: { base: 27000, rate: 21.5 },
+      cncCoef: 1.421, confidence: 'high', note: 'R²=1.0 선형. CNC 대비 +42%(대형 판형).',
+    },
+    drilled_hole: {
+      value: 'drilled_hole', label_ko: '타공', category: 'CLF1000', qtyUnit: 'sheet',
+      qtyPoints: { 2000: 10000, 4000: 15000, 8000: 25000 }, qtyModel: { base: 5000, rate: 2.5 },
+      cncCoef: 1.058, confidence: 'high', note: 'R²=1.0 선형. CNC 와 근사(+6%).',
+    },
+    epoxy: {
+      value: 'epoxy', label_ko: '에폭시', category: 'CLF1000', qtyUnit: 'sheet',
+      qtyPoints: { 2000: 150000, 4000: 180000, 8000: 350000 }, qtyModel: { base: 65000, rate: 34.64 },
+      cncCoef: 1.492, confidence: 'high', note: '비선형(4,000매 이후 가팔라짐) → 브래킷 보간. CNC 대비 +49%.',
+    },
+    perforation: {
+      value: 'perforation', label_ko: '미싱', category: 'CLF1000', qtyUnit: 'sheet',
+      qtyPoints: { 2000: 36000, 4000: 36000, 8000: 60000 }, qtyModel: { base: 24000, rate: 4.29 },
+      cncCoef: 1.82, confidence: 'high', note: '≤4,000매 정액 floor 36,000 후 상승 → 브래킷 보간. CNC 대비 +82%.',
+    },
+    numbering: {
+      value: 'numbering', label_ko: '넘버링', category: 'CLF1000', qtyUnit: 'sheet',
+      qtyPoints: { 2000: 90000, 4000: 160000, 8000: 330000 }, qtyModel: { base: 5000, rate: 40.36 },
+      cncCoef: null, confidence: 'high', note: '명함 차단으로 CNC 미측정 → 비명함 최초 실측(R²=0.998). OMO-3528 적재값 교차검증 대상.',
+    },
+    // score_crease(오시): CLF 폼서 amt=0(osi_num 옵션 빈값 → 활성화 선행조건 미충족). BLOCK — 자식이슈.
+  },
+}
+
+/**
+ * 카테고리별 공식기반 후가공 wholesale KRW (DORMANT). 카테고리 분기값이 있으면 우선, 없으면 CNC 기준선.
+ * @param category 성원 카테고리 코드(예 'CLF1000'). undefined → CNC 기준선.
+ * @param value    finishing value
+ * @param quantity 발주 수량(카테고리 qtyUnit 단위). 0/음수 → 0.
+ */
+export function categoryFinishingWholesaleKrwFormula(
+  category: string | undefined,
+  value: string,
+  quantity: number,
+): number {
+  if (!quantity || quantity <= 0) return 0
+  const cf = category ? CATEGORY_FINISHING_FORMULA[category]?.[value] : undefined
+  if (cf) return qtyInterpolate(cf, quantity)
+  return finishingWholesaleKrwFormula(value, quantity)
+}

@@ -1,0 +1,719 @@
+{
+  "ranAt": "2026-06-19T05:28:28.858Z",
+  "processedAt": "2026-06-19T05:45:26.300Z",
+  "vatRatio": 1.1,
+  "categories": [
+    {
+      "code": "CLF1000",
+      "qtyField": "paper_qty",
+      "qtyUnit": "매(sheet)",
+      "finishings": {
+        "die_cut": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 70000,
+              "payDelta": 77000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 4000,
+              "amt": 113000,
+              "payDelta": 124300,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 8000,
+              "amt": 199000,
+              "payDelta": 218900,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 27000,
+            "rate": 21.5,
+            "r2": 1,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 49273,
+            "catAt2000": 70000,
+            "coef": 1.421,
+            "verdict": "DIVERGE"
+          },
+          "amtField": "domusong_amt"
+        },
+        "drilled_hole": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 10000,
+              "payDelta": 11000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 4000,
+              "amt": 15000,
+              "payDelta": 16500,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 8000,
+              "amt": 25000,
+              "payDelta": 27500,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 5000,
+            "rate": 2.5,
+            "r2": 1,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 9453,
+            "catAt2000": 10000,
+            "coef": 1.058,
+            "verdict": "DIVERGE"
+          },
+          "amtField": "tagong_amt"
+        },
+        "epoxy": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 150000,
+              "payDelta": 165000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 4000,
+              "amt": 180000,
+              "payDelta": 198000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 8000,
+              "amt": 350000,
+              "payDelta": 385000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 65000,
+            "rate": 34.6429,
+            "r2": 0.9629,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 90000,
+            "catAt2000": 134286,
+            "coef": 1.492,
+            "verdict": "DIVERGE"
+          },
+          "amtField": "epoxy_amt"
+        },
+        "score_crease": {
+          "gate": "BLOCK_NODATA",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 4000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 8000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            }
+          ],
+          "fit": null,
+          "parity": null,
+          "amtField": "osi_amt"
+        },
+        "perforation": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 36000,
+              "payDelta": 39600,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 4000,
+              "amt": 36000,
+              "payDelta": 39600,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 8000,
+              "amt": 60000,
+              "payDelta": 66000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 24000,
+            "rate": 4.2857,
+            "r2": 0.8929,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 17896,
+            "catAt2000": 32571,
+            "coef": 1.82,
+            "verdict": "DIVERGE"
+          },
+          "amtField": "missing_amt"
+        },
+        "numbering": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 2000,
+              "amt": 90000,
+              "payDelta": 99000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 4000,
+              "amt": 160000,
+              "payDelta": 176000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 8000,
+              "amt": 330000,
+              "payDelta": 363000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 5000,
+            "rate": 40.3571,
+            "r2": 0.9979,
+            "n": 3
+          },
+          "parity": {
+            "note": "CNC 미측정(명함 차단) — 비명함 최초 측정값",
+            "verdict": "NEW_DATA"
+          },
+          "amtField": "numbering_amt"
+        }
+      }
+    },
+    {
+      "code": "CPR4000",
+      "qtyField": "bundle_qty",
+      "qtyUnit": "bundle(묶음)",
+      "finishings": {
+        "die_cut": {
+          "gate": "BLOCK_NODATA",
+          "points": [
+            {
+              "qty": 50,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 1200,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 5000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            }
+          ],
+          "fit": null,
+          "parity": null,
+          "amtField": "domusong_amt"
+        },
+        "epoxy": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 50,
+              "amt": 150000,
+              "payDelta": 165000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 1200,
+              "amt": 150000,
+              "payDelta": 165000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 435000,
+              "payDelta": 478500,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 115972,
+            "rate": 61.9334,
+            "r2": 0.9507,
+            "n": 3
+          },
+          "parity": null,
+          "amtField": "epoxy_amt"
+        },
+        "round_corner": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 50,
+              "amt": 40000,
+              "payDelta": 44000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 1200,
+              "amt": 720000,
+              "payDelta": 792000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 3000000,
+              "payDelta": 3300000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 6490,
+            "rate": 598.485,
+            "r2": 1,
+            "n": 3
+          },
+          "parity": null,
+          "amtField": "guidori_amt"
+        },
+        "score_crease": {
+          "gate": "HOLD_UNCOUPLED",
+          "points": [
+            {
+              "qty": 50,
+              "amt": 20000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            },
+            {
+              "qty": 1200,
+              "amt": 28000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            },
+            {
+              "qty": 5000,
+              "amt": 81000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            }
+          ],
+          "fit": {
+            "base": 16480,
+            "rate": 12.7294,
+            "r2": 0.9895,
+            "n": 3
+          },
+          "parity": null,
+          "amtField": "osi_amt"
+        }
+      }
+    },
+    {
+      "code": "CPR5000",
+      "qtyField": "paper_qty",
+      "qtyUnit": "매(sheet)",
+      "finishings": {
+        "die_cut": {
+          "gate": "HOLD_UNCOUPLED",
+          "points": [
+            {
+              "qty": 400,
+              "amt": 40000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            },
+            {
+              "qty": 2800,
+              "amt": 50000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            },
+            {
+              "qty": 4800,
+              "amt": 74000,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "UNCOUPLED"
+            }
+          ],
+          "fit": {
+            "base": 34374,
+            "rate": 7.6099,
+            "r2": 0.9205,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 49273,
+            "catAt2000": 49594,
+            "coef": 1.007,
+            "verdict": "MATCH"
+          },
+          "amtField": "domusong_amt"
+        },
+        "epoxy": {
+          "gate": "BLOCK_NODATA",
+          "points": [
+            {
+              "qty": 400,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 2800,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 4800,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            }
+          ],
+          "fit": null,
+          "parity": null,
+          "amtField": "epoxy_amt"
+        }
+      }
+    },
+    {
+      "code": "CNC1000",
+      "qtyField": "paper_qty",
+      "qtyUnit": "매(sheet)",
+      "finishings": {
+        "die_cut": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 21500,
+              "payDelta": 23650,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 49000,
+              "payDelta": 53900,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 106000,
+              "payDelta": 116600,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 11810,
+            "rate": 18.8095,
+            "r2": 0.9999,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 49273,
+            "catAt2000": 49429,
+            "coef": 1.003,
+            "verdict": "MATCH"
+          },
+          "amtField": "domusong_amt"
+        },
+        "drilled_hole": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 3800,
+              "payDelta": 4180,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 10100,
+              "payDelta": 11110,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 19500,
+              "payDelta": 21450,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 2538,
+            "rate": 3.4381,
+            "r2": 0.9941,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 9453,
+            "catAt2000": 9414,
+            "coef": 0.996,
+            "verdict": "MATCH"
+          },
+          "amtField": "tagong_amt"
+        },
+        "round_corner": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 3000,
+              "payDelta": 3300,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 11200,
+              "payDelta": 12320,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 24000,
+              "payDelta": 26400,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 1210,
+            "rate": 4.6095,
+            "r2": 0.9959,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 10446,
+            "catAt2000": 10429,
+            "coef": 0.998,
+            "verdict": "MATCH"
+          },
+          "amtField": "guidori_amt"
+        },
+        "epoxy": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 22500,
+              "payDelta": 24750,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 90000,
+              "payDelta": 99000,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 225000,
+              "payDelta": 247500,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 0,
+            "rate": 45,
+            "r2": 1,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 90000,
+            "catAt2000": 90000,
+            "coef": 1,
+            "verdict": "MATCH"
+          },
+          "amtField": "epoxy_amt"
+        },
+        "score_crease": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 7000,
+              "payDelta": 7700,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 19000,
+              "payDelta": 20900,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 38000,
+              "payDelta": 41800,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 4310,
+            "rate": 6.8095,
+            "r2": 0.9963,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 17896,
+            "catAt2000": 17929,
+            "coef": 1.002,
+            "verdict": "MATCH"
+          },
+          "amtField": "osi_amt"
+        },
+        "perforation": {
+          "gate": "LOADABLE",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 7000,
+              "payDelta": 7700,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 2000,
+              "amt": 19000,
+              "payDelta": 20900,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            },
+            {
+              "qty": 5000,
+              "amt": 38000,
+              "payDelta": 41800,
+              "ratio": 1.1,
+              "cls": "COUPLED_OK"
+            }
+          ],
+          "fit": {
+            "base": 4310,
+            "rate": 6.8095,
+            "r2": 0.9963,
+            "n": 3
+          },
+          "parity": {
+            "cncAt2000": 17896,
+            "catAt2000": 17929,
+            "coef": 1.002,
+            "verdict": "MATCH"
+          },
+          "amtField": "missing_amt"
+        },
+        "numbering": {
+          "gate": "BLOCK_NODATA",
+          "points": [
+            {
+              "qty": 500,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 2000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            },
+            {
+              "qty": 5000,
+              "amt": 0,
+              "payDelta": 0,
+              "ratio": null,
+              "cls": "NO_DATA"
+            }
+          ],
+          "fit": null,
+          "parity": null,
+          "amtField": "numbering_amt"
+        }
+      }
+    }
+  ]
+}
