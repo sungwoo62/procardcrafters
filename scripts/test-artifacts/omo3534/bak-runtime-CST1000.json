@@ -1,0 +1,61 @@
+{
+  "code": "CST1000",
+  "ok": false,
+  "selected": {
+    "paper_code": "STK075AT0"
+  },
+  "bakActivation": [
+    "chk_is_bak clicked",
+    "setIsPostpress('bak') called"
+  ],
+  "bak": {
+    "hasObj": false,
+    "raw": null,
+    "bakTypeOptions": [
+      {
+        "value": "BKT02",
+        "label": "湲덈컯(�좉킅)"
+      },
+      {
+        "value": "BKT09",
+        "label": "湲덈컯(臾닿킅)"
+      },
+      {
+        "value": "BKT01",
+        "label": "��諛�(�좉킅)"
+      },
+      {
+        "value": "BKT10",
+        "label": "��諛�(臾닿킅)"
+      },
+      {
+        "value": "BKT03",
+        "label": "泥�컯(�좉킅)"
+      },
+      {
+        "value": "BKT04",
+        "label": "�곷컯(�좉킅)"
+      },
+      {
+        "value": "BKT05",
+        "label": "�밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT06",
+        "label": "癒밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT11",
+        "label": "��濡쒓렇�⑤컯(����)"
+      },
+      {
+        "value": "BKT12",
+        "label": "��濡쒓렇�⑤컯(蹂�)"
+      },
+      {
+        "value": "BKT13",
+        "label": "��濡쒓렇�⑤컯(臾쇰갑��)"
+      }
+    ]
+  }
+}

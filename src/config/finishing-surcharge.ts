@@ -2,8 +2,11 @@ import { parseFoilLayersFromOptions } from './swadpia-finishing-fields'
 import {
   numberingPriceNbt,
   numberingPriceNcr,
+  bakPriceCnc,
   type NumberingType,
   type NumberingKind,
+  type BakSide,
+  type BakSection,
 } from '@/lib/swadpia-finishing-formula'
 
 // OMO-2664: 후가공 도매 surcharge(성원애드피아 wholesale KRW) 단일 소스.
@@ -123,6 +126,53 @@ export function numberingSurchargeKrwFromOptions(opts: Record<string, string>): 
     paperCode: opts.numbering_paper_code,
     matteCoated: opts.numbering_matte_coated === '1',
   })
+}
+
+/* ──────────────────────────────────────────────────────────────────────────
+ * OMO-3534: 박 단가 카테고리별 함수 매트릭스 승격 (런타임 표집·검증, board-gated cutover)
+ *
+ * 현 라이브 foil_stamp = 단일 ratePerMm2(22,300/1,500㎟ 선형, 명함 1점 근사). RE ④ 가
+ * "박 단가는 카테고리별 상이 함수" 임을 확정했고, OMO-3534 가 ppBakJsonOBJ 를 런타임 표집해
+ * CNC1000 정확 함수(bakPriceCnc)를 성원 hidden bak_amt 대비 4/4 EXACT 검증했다.
+ *
+ * ⚠️ 라이브 기본 경로(finishingSurchargeKrwFromOptions)는 **변경하지 않는다**:
+ *   - foil_stamp ratePerMm2 = CNC 기본 픽스처(BKT01 50×30, 90×50) 캘리브레이션 → 기본 주문
+ *     parity 이동 ≈0(정확 함수도 22,300 으로 수렴). 명함 8종 회귀 불변(기존 테스트 전부 유지).
+ *   - 정확 함수로의 라이브 cutover(면적 비선형 형상 반영, bak_type/카테고리 분기)는 **보드
+ *     가격 라우팅 게이트**. 본 매트릭스는 그 게이트 통과 시 즉시 라우팅 가능한 적재물(opt-in).
+ * ────────────────────────────────────────────────────────────────────────── */
+
+/** 박 정확 단가 컨텍스트(카테고리 함수 입력). selected_options 의 bak_* 키에서 복원. */
+export interface BakAccurateContext {
+  category: string
+  bakType: string
+  bakXSize: number
+  bakYSize: number
+  cutXSize: number
+  cutYSize: number
+  paperQty: number
+  orderCount: number
+  bakSide: BakSide
+  section: BakSection
+}
+
+/** 카테고리 → 박 정확 단가 함수. CNC1000 검증 완료. CLF/CPR/CST 는 후속(런타임 모델 상이). */
+export const BAK_SURCHARGE_BY_CATEGORY: Record<
+  string,
+  (ctx: BakAccurateContext) => number
+> = {
+  CNC1000: (ctx) => bakPriceCnc(ctx).bakPrice,
+  // CLF2000/CPR1000/CST1000 — material 모델 상이(extra_rate=1.3 / film_unit·work_unit / 미populate).
+  //   ground-truth 표집 후 추가(OMO-3534 FINDINGS 후속 1~3).
+}
+
+/**
+ * 박 정확 단가(KRW) — 카테고리 함수 매트릭스 경유. DORMANT(opt-in).
+ * 매핑 없는 카테고리는 null → 호출측이 현행 ratePerMm2 모델로 폴백한다.
+ */
+export function bakSurchargeKrwAccurate(ctx: BakAccurateContext): number | null {
+  const fn = BAK_SURCHARGE_BY_CATEGORY[ctx.category]
+  return fn ? fn(ctx) : null
 }
 
 // OMO-2667: 후가공 직렬화 키 — option_type 화이트리스트와 별개로 /order·/design 진입 시

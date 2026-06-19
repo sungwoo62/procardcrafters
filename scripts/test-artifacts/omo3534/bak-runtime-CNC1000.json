@@ -1,0 +1,274 @@
+{
+  "code": "CNC1000",
+  "ok": true,
+  "selected": {
+    "paper_code": "SNW250W00",
+    "paper_size": "N0100"
+  },
+  "bakActivation": [
+    "chk_is_bak clicked",
+    "setIsPostpress('bak') called"
+  ],
+  "bak": {
+    "hasObj": true,
+    "raw": {
+      "pp_bak_info": [
+        {
+          "0": {
+            "bak_type": "BKT01",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT02",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT03",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT04",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT05",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT06",
+            "material_unit": "0",
+            "material_unit2": "30000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT07",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT08",
+            "material_unit": "0",
+            "material_unit2": "35000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT09",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT10",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT11",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT12",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT13",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT16",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT17",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT18",
+            "material_unit": "0",
+            "material_unit2": "80000",
+            "extra_rate": "2",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        }
+      ]
+    },
+    "materialUnits": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    "ppBakInfoTypes": [
+      "material_unit"
+    ],
+    "bakTypeOptions": [
+      {
+        "value": "BKT02",
+        "label": "湲덈컯(�좉킅)"
+      },
+      {
+        "value": "BKT09",
+        "label": "湲덈컯(臾닿킅)"
+      },
+      {
+        "value": "BKT01",
+        "label": "��諛�(�좉킅)"
+      },
+      {
+        "value": "BKT10",
+        "label": "��諛�(臾닿킅)"
+      },
+      {
+        "value": "BKT03",
+        "label": "泥�컯(�좉킅)"
+      },
+      {
+        "value": "BKT04",
+        "label": "�곷컯(�좉킅)"
+      },
+      {
+        "value": "BKT05",
+        "label": "�밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT06",
+        "label": "癒밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT11",
+        "label": "��濡쒓렇�⑤컯(����)"
+      },
+      {
+        "value": "BKT12",
+        "label": "��濡쒓렇�⑤컯(蹂�)"
+      },
+      {
+        "value": "BKT13",
+        "label": "��濡쒓렇�⑤컯(臾쇰갑��)"
+      },
+      {
+        "value": "BKT16",
+        "label": "濡쒖쫰怨⑤뱶諛�(�좉킅)"
+      },
+      {
+        "value": "BKT17",
+        "label": "�쇳뵆諛�(�좉킅)"
+      },
+      {
+        "value": "BKT18",
+        "label": "諛깅컯(臾닿킅)"
+      }
+    ]
+  }
+}
