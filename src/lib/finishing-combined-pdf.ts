@@ -1,18 +1,22 @@
-// OMO-3568: 후가공(박/형압/도무송/에폭시/별색) 자동발주용 **별색 합본 PDF** 파이프라인.
+// OMO-3568/OMO-3581: 후가공(박/형압/도무송/에폭시/별색) 자동발주용 **별색 합본 PDF** 파이프라인.
 //
-// 성원애드피아의 별색 후가공 발주는 업로드 파일이 합본 PDF여야 한다:
-//   p1 = 디자인판(CMYK 인쇄면)
-//   p2 = 별색 후가공판(스팟 1도, M100 마젠타) — 박/형압/도무송칼선/에폭시/별색이
-//        들어갈 "영역"만 단색으로 출력한 판.
-// p2가 누락되면 후가공이 빠진 채 인쇄되어 손해가 발생한다(박 동판/도무송 목형은
-// 이 별색판을 기준으로 제작). swadpia-order.ts 는 지금까지 단일 파일만 업로드했고
-// 별색판 누락을 막는 가드가 없었다 → 본 모듈이 그 결정론 가드와 합본 빌더를 제공한다.
+// 성원애드피아 별색 후가공 발주는 업로드 파일이 성원 "박인쇄 작업방법"(단면/양면) 규격의
+// 합본 PDF여야 한다. OMO-3581 교정 규격(보드 지적 OMO-3578 3f7ecd85):
+//   ① 박위치 보기용  — 박부분 **M100** 오버레이(디자인 위)
+//   ② 인쇄파일(앞/뒤) — 칼라인쇄 파일에서 **박모양 삭제**
+//   ③ 박파일         — 박모양 색상 **K100** (별색판; 양면 동일 박이면 박파일 1개)
+// (종전 OMO-3577 은 p1 디자인 + p2 별색판(M100) 2페이지였다 → ① 누락, ② 미삭제,
+//  ③ 색 M100 오류. 박 동판/도무송 목형/에폭시판은 이 K100 별색판 기준 제작이므로
+//  잘못된 색·구성이면 후가공 손해. 본 모듈이 교정 합본 빌더 + 결정론 가드를 제공한다.)
+//
+// 업로드 슬롯(라이브 실측 OMO-3581): 성원 바로주문 = **단일 파일 슬롯**(order_file_name2).
+//   → 위 ①②③ 을 **하나의 다중 페이지 PDF** 로 합본해 단일 슬롯에 업로드한다(다중 슬롯 없음).
 //
 // 소스 단일성: "어떤 후가공이 별색판을 요구하는가"는 이 모듈의 FINISHING_REQUIRES_SPOT_PLATE
 // 하나가 진실원천이다(swadpia-finishing-fields.ts 의 finishingValue 키와 동일).
 //
 // 결정론: 페이지수 가드는 pdf-lib 의 실제 파싱 페이지수만 본다(OCR/추론 금지).
-//   합본 빌더는 캔버스에서 래스터된 두 판 이미지를 mm→pt 환산으로 그대로 합본한다.
+//   합본 빌더는 캔버스에서 래스터된 판 이미지들을 mm→pt 환산으로 순서대로 합본한다.
 
 import { PDFDocument } from 'pdf-lib'
 
@@ -84,17 +88,39 @@ export interface FinishingPdfGuardResult {
   ok: boolean
   /** 별색판을 요구하는 후가공 value 목록(없으면 빈 배열) */
   spotPlateFinishings: string[]
+  /** 이 주문이 요구하는 합본 PDF 페이지수(교정 규격). */
+  expectedPageCount: number
   /** 실패 시 사유(한국어). ok=true 면 undefined. */
   errorMessage?: string
 }
 
+/** 단면/양면 분기 입력(성원 bak_side=BKD30 등에서 doubleSided 도출). */
+export interface FinishingSideSpec {
+  /** 양면 후가공 여부. */
+  doubleSided?: boolean
+  /** 양면이지만 앞/뒤 별색(박)이 동일 → 박파일 1개. */
+  sameSpotBothSides?: boolean
+}
+
 /**
- * 별색판 누락 결정론 가드. 별색 후가공이 선택됐는데 합본 PDF(정확히 2페이지)가
- * 아니면 차단한다. 별색 후가공이 없으면 페이지수와 무관하게 통과(기존 주문 무영향).
+ * 교정 규격(OMO-3581) 합본 PDF 페이지수.
+ *   위치보기용(1) + 인쇄(단면1·양면2) + 박파일(단면1·양면 distinct2·양면 동일1).
+ * 단면 = 3 (위치보기용 + 인쇄 + 박파일K100).
+ * 양면 distinct = 5, 양면 동일박 = 4.
+ */
+export function expectedFinishingPageCount(side?: FinishingSideSpec): number {
+  const printPages = side?.doubleSided ? 2 : 1
+  const spotPages = side?.doubleSided ? (side?.sameSpotBothSides ? 1 : 2) : 1
+  return 1 /* 위치보기용 */ + printPages + spotPages
+}
+
+/**
+ * 별색판 누락 결정론 가드(OMO-3581 교정). 별색 후가공이 선택됐는데 업로드 PDF 가
+ * 교정 규격 페이지수(위치보기용+인쇄+박파일K100)와 다르면 차단한다.
+ * 별색 후가공이 없으면 페이지수와 무관하게 통과(기존 주문 무영향).
  *
- * - pageCount === null  → PDF 가 아닌 업로드(.ai 등). 별색 후가공이면 차단(합본 PDF 필요),
- *   아니면 통과.
- * - pageCount !== 2     → 별색 후가공인데 p2 별색판 누락(1p) 혹은 페이지 과다 → 차단.
+ * - pageCount === null      → PDF 가 아닌 업로드(.ai 등) → 별색 후가공이면 차단.
+ * - pageCount !== expected   → 위치보기용/인쇄(박제거)/박파일(K100) 구성 불일치 → 차단.
  */
 export function assertFinishingPlatePresent(args: {
   selectedOptions: Record<string, string> | undefined | null
@@ -102,32 +128,38 @@ export function assertFinishingPlatePresent(args: {
   pageCount: number | null
   /** 업로드 파일 확장자(로그용, '.pdf' 등). */
   fileExt?: string
+  /** 단면/양면 분기(미지정 시 단면=3페이지 기준). */
+  side?: FinishingSideSpec
 }): FinishingPdfGuardResult {
   const spotPlateFinishings = listSpotPlateFinishings(args.selectedOptions)
+  const expectedPageCount = expectedFinishingPageCount(args.side)
   if (spotPlateFinishings.length === 0) {
-    return { ok: true, spotPlateFinishings }
+    return { ok: true, spotPlateFinishings, expectedPageCount }
   }
 
   const labels = spotPlateFinishings.join(', ')
+  const spec = `위치보기용(M100) + 인쇄(박제거) + 박파일(K100) ${expectedPageCount}페이지`
   if (args.pageCount === null) {
     return {
       ok: false,
       spotPlateFinishings,
+      expectedPageCount,
       errorMessage:
-        `별색 후가공(${labels})은 합본 PDF(p1 디자인판 + p2 별색판) 업로드가 필요합니다. ` +
+        `별색 후가공(${labels})은 합본 PDF(${spec}) 업로드가 필요합니다. ` +
         `현재 업로드(${args.fileExt ?? '비PDF'})는 페이지 검증이 불가합니다.`,
     }
   }
-  if (args.pageCount !== 2) {
+  if (args.pageCount !== expectedPageCount) {
     return {
       ok: false,
       spotPlateFinishings,
+      expectedPageCount,
       errorMessage:
-        `별색 후가공(${labels})은 합본 PDF 2페이지(p1 디자인판 + p2 별색판)가 필요합니다. ` +
-        `현재 업로드 페이지수=${args.pageCount}. p2 별색판 누락 또는 페이지 과다.`,
+        `별색 후가공(${labels})은 합본 PDF ${spec}가 필요합니다. ` +
+        `현재 업로드 페이지수=${args.pageCount}. 위치보기용/인쇄(박제거)/박파일(K100) 구성 불일치.`,
     }
   }
-  return { ok: true, spotPlateFinishings }
+  return { ok: true, spotPlateFinishings, expectedPageCount }
 }
 
 const MM_TO_PT = 72 / 25.4
@@ -144,11 +176,21 @@ export interface PlateImage {
   mime: PlateImageMime
 }
 
+/**
+ * 교정 규격(OMO-3581) 합본 PDF 구성 판들. 페이지는 아래 순서로 합본된다(성원 가이드 기준):
+ *   위치보기용(M100) → 인쇄(앞, 박제거) → [인쇄(뒤)] → 박파일(앞, K100) → [박파일(뒤)].
+ */
 export interface BuildCombinedFinishingPdfOptions {
-  /** p1 디자인판(CMYK 인쇄면) 래스터 이미지. */
-  designPlate: PlateImage
-  /** p2 별색 후가공판(스팟 1도 M100, 흰 배경) 래스터 이미지. */
+  /** 박위치 보기용 — 박부분 M100 오버레이(디자인 위). */
+  positionOverlay: PlateImage
+  /** 인쇄파일(앞) — 칼라인쇄에서 박모양 삭제. */
+  printPlate: PlateImage
+  /** 박파일(앞) — 박모양 K100 별색판. */
   spotPlate: PlateImage
+  /** 인쇄파일(뒤) — 양면 후가공 시. */
+  backPrintPlate?: PlateImage
+  /** 박파일(뒤) — 양면 후가공 시. 앞/뒤 동일 박이면 생략(박파일 1개). */
+  backSpotPlate?: PlateImage
   /** 페이지 가로(mm) — 보통 trim + bleed. */
   pageWidthMm: number
   /** 페이지 세로(mm) — 보통 trim + bleed. */
@@ -162,11 +204,11 @@ async function embedPlate(doc: PDFDocument, plate: PlateImage) {
 }
 
 /**
- * 별색 합본 PDF(p1 디자인판 + p2 별색판)를 생성한다.
- * 두 판 모두 동일 페이지 규격(가로×세로 mm)으로 풀블리드 배치한다 → 성원 후가공
- * 발주가 요구하는 2페이지 합본을 결정론적으로 합성(추론·여백 가정 없음).
+ * 별색 합본 PDF(위치보기용 + 인쇄[박제거] + 박파일[K100])를 성원 교정 규격(OMO-3581)으로
+ * 생성한다. 모든 판은 동일 페이지 규격(가로×세로 mm)으로 풀블리드 배치한다(추론·여백 가정 없음).
  *
- * 반환: PDF 바이트(Uint8Array). assertFinishingPlatePresent 가드를 통과한다(2페이지).
+ * 페이지 순서: 위치보기용 → 인쇄(앞) → [인쇄(뒤)] → 박파일(앞) → [박파일(뒤)].
+ * 반환: PDF 바이트. assertFinishingPlatePresent(같은 side) 가드를 통과한다.
  */
 export async function buildCombinedFinishingPdf(
   opts: BuildCombinedFinishingPdfOptions,
@@ -174,17 +216,19 @@ export async function buildCombinedFinishingPdf(
   if (!(opts.pageWidthMm > 0) || !(opts.pageHeightMm > 0)) {
     throw new Error('buildCombinedFinishingPdf: pageWidthMm/pageHeightMm must be > 0')
   }
+  // 성원 가이드 페이지 순서.
+  const ordered: PlateImage[] = [opts.positionOverlay, opts.printPlate]
+  if (opts.backPrintPlate) ordered.push(opts.backPrintPlate)
+  ordered.push(opts.spotPlate)
+  if (opts.backSpotPlate) ordered.push(opts.backSpotPlate)
+
   const doc = await PDFDocument.create()
   const wPt = mmToPt(opts.pageWidthMm)
   const hPt = mmToPt(opts.pageHeightMm)
-
-  const p1 = doc.addPage([wPt, hPt])
-  const img1 = await embedPlate(doc, opts.designPlate)
-  p1.drawImage(img1, { x: 0, y: 0, width: wPt, height: hPt })
-
-  const p2 = doc.addPage([wPt, hPt])
-  const img2 = await embedPlate(doc, opts.spotPlate)
-  p2.drawImage(img2, { x: 0, y: 0, width: wPt, height: hPt })
-
+  for (const plate of ordered) {
+    const page = doc.addPage([wPt, hPt])
+    const img = await embedPlate(doc, plate)
+    page.drawImage(img, { x: 0, y: 0, width: wPt, height: hPt })
+  }
   return doc.save()
 }

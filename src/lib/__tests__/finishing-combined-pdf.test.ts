@@ -7,12 +7,14 @@ import {
   requiresSpotPlate,
   getPdfPageCount,
   assertFinishingPlatePresent,
+  expectedFinishingPageCount,
   buildCombinedFinishingPdf,
   mmToPt,
   type PlateImage,
 } from '../finishing-combined-pdf'
 
-// OMO-3568: 별색 합본 PDF 파이프라인 — 별색판 누락 가드 + 합본 빌더 결정론 회귀.
+// OMO-3568/OMO-3581: 별색 합본 PDF 파이프라인 — 교정 규격(위치보기용+인쇄[박제거]+박파일K100)
+//   가드 + 합본 빌더 결정론 회귀.
 
 // 1×1 투명 PNG (decode 가능한 최소 PNG)
 const PNG_1x1 = Uint8Array.from(
@@ -59,23 +61,39 @@ describe('parseFinishingValues / listSpotPlateFinishings / requiresSpotPlate', (
   })
 })
 
-describe('assertFinishingPlatePresent — 결정론 가드', () => {
+describe('expectedFinishingPageCount (OMO-3581)', () => {
+  it('단면=3, 양면 동일박=4, 양면 distinct=5', () => {
+    expect(expectedFinishingPageCount()).toBe(3)
+    expect(expectedFinishingPageCount({ doubleSided: false })).toBe(3)
+    expect(expectedFinishingPageCount({ doubleSided: true, sameSpotBothSides: true })).toBe(4)
+    expect(expectedFinishingPageCount({ doubleSided: true })).toBe(5)
+  })
+})
+
+describe('assertFinishingPlatePresent — 결정론 가드(OMO-3581 교정)', () => {
   it('별색 후가공 없음 → 페이지수 무관 통과', () => {
     expect(assertFinishingPlatePresent({ selectedOptions: { finishing: 'drilled_hole' }, pageCount: 1 }).ok).toBe(true)
     expect(assertFinishingPlatePresent({ selectedOptions: {}, pageCount: null }).ok).toBe(true)
   })
-  it('별색 후가공 + 2페이지 → 통과', () => {
-    const r = assertFinishingPlatePresent({ selectedOptions: { finishing: 'foil_stamp' }, pageCount: 2 })
+  it('별색 후가공 + 단면 3페이지(위치보기용+인쇄+박파일) → 통과', () => {
+    const r = assertFinishingPlatePresent({ selectedOptions: { finishing: 'foil_stamp' }, pageCount: 3 })
     expect(r.ok).toBe(true)
     expect(r.spotPlateFinishings).toEqual(['foil_stamp'])
+    expect(r.expectedPageCount).toBe(3)
   })
-  it('별색 후가공 + 1페이지(별색판 누락) → 차단', () => {
-    const r = assertFinishingPlatePresent({ selectedOptions: { finishing: 'foil_stamp' }, pageCount: 1 })
+  it('별색 후가공 + 2페이지(구 규격/위치보기용 누락) → 차단', () => {
+    const r = assertFinishingPlatePresent({ selectedOptions: { finishing: 'foil_stamp' }, pageCount: 2 })
     expect(r.ok).toBe(false)
-    expect(r.errorMessage).toContain('2페이지')
+    expect(r.errorMessage).toContain('박파일(K100)')
   })
-  it('별색 후가공 + 3페이지(과다) → 차단', () => {
-    expect(assertFinishingPlatePresent({ selectedOptions: { finishing: 'die_cut' }, pageCount: 3 }).ok).toBe(false)
+  it('별색 후가공 + 양면 distinct 5페이지 → 통과', () => {
+    const r = assertFinishingPlatePresent({
+      selectedOptions: { finishing: 'foil_stamp' },
+      pageCount: 5,
+      side: { doubleSided: true },
+    })
+    expect(r.ok).toBe(true)
+    expect(r.expectedPageCount).toBe(5)
   })
   it('별색 후가공 + 비PDF(pageCount=null) → 차단(합본 PDF 필요)', () => {
     const r = assertFinishingPlatePresent({ selectedOptions: { finishing: 'epoxy' }, pageCount: null, fileExt: '.ai' })
@@ -98,29 +116,47 @@ describe('mmToPt', () => {
   })
 })
 
-describe('buildCombinedFinishingPdf — 합본 빌더', () => {
-  it('정확히 2페이지 PDF 생성 + 페이지 규격 mm→pt 정합 + 가드 통과', async () => {
+describe('buildCombinedFinishingPdf — 합본 빌더(OMO-3581 교정)', () => {
+  it('단면 3페이지(위치보기용+인쇄+박파일) + 규격 mm→pt 정합 + 가드 통과', async () => {
     const bytes = await buildCombinedFinishingPdf({
-      designPlate: PNG_PLATE,
+      positionOverlay: PNG_PLATE,
+      printPlate: PNG_PLATE,
       spotPlate: PNG_PLATE,
       pageWidthMm: 94,
       pageHeightMm: 54,
     })
     const doc = await PDFDocument.load(bytes)
-    expect(doc.getPageCount()).toBe(2)
+    expect(doc.getPageCount()).toBe(3)
     const { width, height } = doc.getPage(0).getSize()
     expect(width).toBeCloseTo(mmToPt(94), 3)
     expect(height).toBeCloseTo(mmToPt(54), 3)
-    // 빌더 산출물은 별색판 가드를 통과한다(2페이지).
     const r = assertFinishingPlatePresent({
       selectedOptions: { finishing: 'foil_stamp' },
       pageCount: await getPdfPageCount(bytes),
     })
     expect(r.ok).toBe(true)
   })
+  it('양면 distinct 5페이지 + 가드(side) 통과', async () => {
+    const bytes = await buildCombinedFinishingPdf({
+      positionOverlay: PNG_PLATE,
+      printPlate: PNG_PLATE,
+      backPrintPlate: PNG_PLATE,
+      spotPlate: PNG_PLATE,
+      backSpotPlate: PNG_PLATE,
+      pageWidthMm: 94,
+      pageHeightMm: 54,
+    })
+    expect(await getPdfPageCount(bytes)).toBe(5)
+    const r = assertFinishingPlatePresent({
+      selectedOptions: { finishing: 'foil_stamp' },
+      pageCount: 5,
+      side: { doubleSided: true },
+    })
+    expect(r.ok).toBe(true)
+  })
   it('규격 0 이하 → throw', async () => {
     await expect(
-      buildCombinedFinishingPdf({ designPlate: PNG_PLATE, spotPlate: PNG_PLATE, pageWidthMm: 0, pageHeightMm: 54 }),
+      buildCombinedFinishingPdf({ positionOverlay: PNG_PLATE, printPlate: PNG_PLATE, spotPlate: PNG_PLATE, pageWidthMm: 0, pageHeightMm: 54 }),
     ).rejects.toThrow()
   })
 })

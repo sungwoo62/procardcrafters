@@ -4,6 +4,7 @@ import {
   selectFinishPlateObjects,
   hasFinishPlateObjects,
   SPOT_PLATE_FILL,
+  POSITION_OVERLAY_FILL,
   SPOT_PLATE_BG,
   type FinishPlateObjectLike,
 } from '../editor-finish-plate'
@@ -62,9 +63,11 @@ describe('hasFinishPlateObjects — 별색 발주 전 가드', () => {
   })
 })
 
-describe('M100 별색판 상수', () => {
-  it('순마젠타 fill + 흰 배경(디자인판 CMYK 와 채널 분리)', () => {
-    expect(SPOT_PLATE_FILL).toBe('rgb(255,0,255)')
+describe('별색판/위치보기 색 상수 (OMO-3581 교정)', () => {
+  it('박파일(별색판) = K100(순흑), 위치보기용 = M100(순마젠타), 둘은 다르다', () => {
+    expect(SPOT_PLATE_FILL).toBe('rgb(0,0,0)') // K100 별색판(박파일/동판/목형/에폭시)
+    expect(POSITION_OVERLAY_FILL).toBe('rgb(255,0,255)') // M100 위치보기용 오버레이
+    expect(SPOT_PLATE_FILL).not.toBe(POSITION_OVERLAY_FILL)
     expect(SPOT_PLATE_BG).toBe('#ffffff')
   })
 })

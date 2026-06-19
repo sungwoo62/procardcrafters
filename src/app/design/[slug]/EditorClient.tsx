@@ -21,7 +21,7 @@ import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLay
 import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 import { detectFoilLayersFromCanvas } from '@/lib/editor-foil-detect'
 // OMO-3577: 별색 후가공판(p2) — 오브젝트 선택/래스터 상수 + 합본 PDF 빌더.
-import { SPOT_PLATE_FILL, SPOT_PLATE_BG } from '@/lib/editor-finish-plate'
+import { SPOT_PLATE_FILL, POSITION_OVERLAY_FILL, SPOT_PLATE_BG } from '@/lib/editor-finish-plate'
 import {
   requiresSpotPlate,
   listSpotPlateFinishings,
@@ -3937,9 +3937,16 @@ export default function EditorClient({ product, options }: Props) {
   // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
   // 블리드 포함 영역(= trim + 2×bleed)을 export 한다. 인쇄소 재단 기준을 맞추기 위함.
   // includeBleed=false 인 경우 trim만 export (PNG 미리보기 등 호환용).
-  // spotPlate=true (OMO-3577): 별색 후가공판(p2) 모드 — data.finish 오브젝트만 M100(마젠타)
-  //   단색으로, 나머지/배경은 흰색으로 래스터한다(성원 별색판). data.finish 가 없으면 ''.
-  function getExportDataUrl(targetDpi = 150, includeBleed = true, spotPlate = false): string {
+  // plateMode (OMO-3577/OMO-3581): 성원 별색 파일 규격 4판 래스터 모드.
+  //   'normal'  : 디자인 그대로(미리보기/썸네일).
+  //   'spot'    : 박파일 — data.finish 오브젝트만 K100 단색, 나머지/배경 흰색. 없으면 ''.
+  //   'print'   : 인쇄파일 — data.finish 오브젝트만 **삭제**, 나머지는 원본 그대로(박제거).
+  //   'overlay' : 박위치 보기용 — 디자인 위에 박 영역을 M100 으로 오버레이. 박 없으면 ''.
+  function getExportDataUrl(
+    targetDpi = 150,
+    includeBleed = true,
+    plateMode: 'normal' | 'spot' | 'print' | 'overlay' = 'normal',
+  ): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
     const bleedPx = mmToPx(dims.bleedMm, scale)
@@ -3965,17 +3972,21 @@ export default function EditorClient({ product, options }: Props) {
     const vpt: any = [...(canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0])]
     canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
 
-    // OMO-3577: 별색판 모드 — 비파괴 스냅샷 후 data.finish 오브젝트만 M100 단색으로 칠하고
-    // 나머지를 숨긴다. 래스터 직후 원상복구한다(라이브 캔버스 변형 없음).
-    let restoreSpot: (() => void) | null = null
-    if (spotPlate) {
-      restoreSpot = applySpotPlateRender()
-      if (!restoreSpot) {
-        // data.finish 오브젝트가 없음 → 별색판 없음. 뷰포트 복구 후 '' 반환.
-        canvas.setViewportTransform(vpt)
-        canvas.renderAll()
-        return ''
-      }
+    // OMO-3577/OMO-3581: 별색 파일 규격 모드 — 비파괴 스냅샷 후 모드별 변형, 래스터 직후
+    // 원상복구한다(라이브 캔버스 변형 없음). spot/overlay 는 박 오브젝트 없으면 '' 반환.
+    let restorePlate: (() => void) | null = null
+    if (plateMode === 'spot') {
+      restorePlate = applySpotPlateRender()
+    } else if (plateMode === 'overlay') {
+      restorePlate = applyPositionOverlayRender()
+    } else if (plateMode === 'print') {
+      restorePlate = applyPrintStripRender()
+    }
+    if ((plateMode === 'spot' || plateMode === 'overlay') && !restorePlate) {
+      // 박(별색) 오브젝트가 없음 → 해당 판 없음. 뷰포트 복구 후 '' 반환.
+      canvas.setViewportTransform(vpt)
+      canvas.renderAll()
+      return ''
     }
 
     const dataUrl = canvas.toDataURL({
@@ -3987,16 +3998,16 @@ export default function EditorClient({ product, options }: Props) {
       multiplier,
     })
 
-    if (restoreSpot) restoreSpot()
+    if (restorePlate) restorePlate()
     canvas.setViewportTransform(vpt)
     canvas.renderAll()
     return dataUrl
   }
 
-  // OMO-3577: 별색판(p2) 비파괴 래스터 변형. data.finish 오브젝트만 M100 단색 실루엣으로,
-  // 나머지 오브젝트/배경은 흰색으로 만든 뒤, 복구 함수를 반환한다. data.finish 가 하나도
-  // 없으면 null(별색판 불필요). 이미지 finish 오브젝트는 fill 이 무시되므로 bbox 마젠타
-  // 사각형으로 대체한다(영역 기준 — editor-foil-detect 합집합 bbox 와 정합).
+  // OMO-3577/OMO-3581: 박파일(별색판) 비파괴 래스터 변형. data.finish 오브젝트만 **K100**
+  // (SPOT_PLATE_FILL) 단색 실루엣으로, 나머지 오브젝트/배경은 흰색으로 만든 뒤 복구 함수를
+  // 반환한다. data.finish 가 하나도 없으면 null(별색판 불필요). 이미지 finish 오브젝트는 fill
+  // 이 무시되므로 bbox K100 사각형으로 대체한다(영역 기준 — editor-foil-detect 합집합 bbox 정합).
   function applySpotPlateRender(): (() => void) | null {
     const canvas = fabricRef.current
     const fabric = fabricModRef.current
@@ -4060,11 +4071,71 @@ export default function EditorClient({ product, options }: Props) {
     }
   }
 
-  // OMO-3577 (참조 OMO-2706): 별색 후가공판(p2) dataURL. data.finish 오브젝트 집합을
-  // (editor-foil-detect 와 동일 소스) M100/흰배경으로 300DPI 풀블리드 래스터한다.
-  // 별색 영역이 없으면 '' 반환(별색판 미생성 → 합본 PDF 미산출).
+  // OMO-3581: 인쇄파일(박제거) 비파괴 변형. data.finish 오브젝트만 숨기고 나머지는
+  // 원본 그대로 둔다(칼라인쇄에서 박모양 삭제). 복구 함수 반환(박 오브젝트 없으면 no-op).
+  function applyPrintStripRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    if (!canvas) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hidden: any[] = objs.filter(isFinish)
+    for (const o of hidden) o.set('visible', false)
+    canvas.renderAll()
+    return () => {
+      for (const o of hidden) o.set('visible', true)
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3581: 박위치 보기용 비파괴 변형. 디자인은 그대로 두고, data.finish 오브젝트 영역
+  // 위에 M100(POSITION_OVERLAY_FILL) 반투명 사각형을 덧대 박 위치를 표시한다. 박 오브젝트가
+  // 없으면 null(위치보기용 불필요). 복구 함수는 임시 사각형을 제거한다.
+  function applyPositionOverlayRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finish: any[] = objs.filter(isFinish)
+    if (finish.length === 0) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tempRects: any[] = []
+    for (const o of finish) {
+      const r = o.getBoundingRect()
+      const rect = new fabric.Rect({
+        left: r.left, top: r.top, width: r.width, height: r.height,
+        fill: POSITION_OVERLAY_FILL, stroke: POSITION_OVERLAY_FILL, strokeWidth: 0,
+        opacity: 0.6, selectable: false, evented: false,
+        data: { role: 'overlay-temp' },
+      })
+      canvas.add(rect)
+      tempRects.push(rect)
+    }
+    canvas.renderAll()
+    return () => {
+      for (const r of tempRects) canvas.remove(r)
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3581: 박파일(별색판) dataURL — data.finish 오브젝트를 **K100**(SPOT_PLATE_FILL)/흰배경
+  // 으로 300DPI 풀블리드 래스터(editor-foil-detect 와 동일 소스). 박 영역 없으면 '' 반환.
   function getFinishPlateDataUrl(): string {
-    return getExportDataUrl(300, true, true)
+    return getExportDataUrl(300, true, 'spot')
+  }
+  // OMO-3581: 인쇄파일(박제거) dataURL.
+  function getPrintPlateDataUrl(): string {
+    return getExportDataUrl(300, true, 'print')
+  }
+  // OMO-3581: 박위치 보기용(M100 오버레이) dataURL. 박 영역 없으면 '' 반환.
+  function getPositionOverlayDataUrl(): string {
+    return getExportDataUrl(300, true, 'overlay')
   }
 
   function exportPng() {
@@ -4125,10 +4196,12 @@ export default function EditorClient({ product, options }: Props) {
     return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
   }
 
-  // OMO-3577: 발주/다운로드용 최종 PDF. 별색 후가공(박/형압/도무송/에폭시/별색)이 선택되면
-  // p1 디자인판 + p2 별색판(M100) 합본 PDF(정확히 2페이지)를 생성한다 → assertFinishingPlatePresent
-  // 가드 통과. 그 외에는 기존 단일 디자인판 PDF(재단선 포함). 별색 선택인데 별색 영역 오브젝트가
-  // 없으면 한국어 사유로 throw(호출측이 발주 차단·메시지 노출).
+  // OMO-3577/OMO-3581: 발주/다운로드용 최종 PDF. 별색 후가공(박/형압/도무송/에폭시/별색)이
+  // 선택되면 성원 "박인쇄 작업방법" 교정 규격으로 합본 PDF(위치보기용 M100 + 인쇄[박제거] +
+  // 박파일 K100)를 생성한다 → assertFinishingPlatePresent 가드 통과(단면=3페이지). 그 외에는
+  // 기존 단일 디자인판 PDF. 별색 선택인데 별색 영역 오브젝트가 없으면 한국어 사유로 throw.
+  // NOTE(단면/양면): 에디터 캔버스는 현재 단면(1면)만 모델링한다 → 단면 3페이지 생성. 양면
+  //   앞/뒤 판은 빌더(backPrintPlate/backSpotPlate)가 지원하나, 뒷면 캔버스 도입은 후속.
   async function buildOrderPdfBlob(finishingStr: string): Promise<Blob> {
     if (!requiresSpotPlate({ finishing: finishingStr })) {
       return buildPdfBlob()
@@ -4136,19 +4209,24 @@ export default function EditorClient({ product, options }: Props) {
     const labels = listSpotPlateFinishings({ finishing: finishingStr })
       .map((v) => FINISHING_BY_VALUE[v]?.label_ko ?? v)
       .join(', ')
-    const designUrl = getExportDataUrl(300, true)
-    if (!designUrl) throw new Error('디자인판 생성에 실패했습니다.')
+    const overlayUrl = getPositionOverlayDataUrl()
+    const printUrl = getPrintPlateDataUrl()
     const spotUrl = getFinishPlateDataUrl()
-    if (!spotUrl) {
+    if (!spotUrl || !overlayUrl) {
       throw new Error(
         `별색 후가공(${labels})이 선택됐지만 별색 영역으로 지정된 오브젝트가 없습니다. ` +
           `박/형압/도무송/에폭시/별색을 적용할 오브젝트를 선택한 뒤 속성 패널의 "별색 후가공 영역"을 켜주세요.`,
       )
     }
-    const designBytes = await fetch(designUrl).then((r) => r.arrayBuffer())
-    const spotBytes = await fetch(spotUrl).then((r) => r.arrayBuffer())
+    if (!printUrl) throw new Error('인쇄파일 생성에 실패했습니다.')
+    const [overlayBytes, printBytes, spotBytes] = await Promise.all([
+      fetch(overlayUrl).then((r) => r.arrayBuffer()),
+      fetch(printUrl).then((r) => r.arrayBuffer()),
+      fetch(spotUrl).then((r) => r.arrayBuffer()),
+    ])
     const pdfBytes = await buildCombinedFinishingPdf({
-      designPlate: { bytes: designBytes, mime: 'image/png' },
+      positionOverlay: { bytes: overlayBytes, mime: 'image/png' },
+      printPlate: { bytes: printBytes, mime: 'image/png' },
       spotPlate: { bytes: spotBytes, mime: 'image/png' },
       pageWidthMm: dims.widthMm + 2 * dims.bleedMm,
       pageHeightMm: dims.heightMm + 2 * dims.bleedMm,
