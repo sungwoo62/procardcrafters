@@ -1,0 +1,206 @@
+{
+  "code": "CNC1000",
+  "goods": "GNC1001",
+  "loggedIn": true,
+  "baseline": {
+    "bak_section_1": "BKS10",
+    "bak_side_1": "BKD10",
+    "bak_type_1": "BKT02",
+    "bak_compare_1": "BAC10",
+    "bak_x_size_1": "50",
+    "bak_y_size_1": "30"
+  },
+  "formula": {
+    "ppBak": "function(seq){ppBak.dataLoad();ppBak.setBakSeq(seq);settingExistBakDongpan(seq);ppBak.calcuBakPrice();if($('save_bak_x_size_2').value!=\"\"&&$('save_bak_y_size_2').value!=\"\"){settingExistBakDongpan(2);ppBak.calcuBakPrice()}if($('save_bak_x_size_3').value!=\"\"&&$('save_bak_y_size_3').value!=\"\"){settingExistBakDongpan(3);ppBak.calcuBakPrice()}this.setPPBakAmtSum();this.setPPApAmtSum()}",
+    "setPPBakAmtSum": "function(){if($('chk_is_bak').checked==true){$('bak_amt').value=parseInt($('bak_amt_1').value)+parseInt($('bak_amt_2').value)+parseInt($('bak_amt_3').value);$('bak_dp_amt').value=parseInt($('etc1_1').value)+parseInt($('etc1_2').value)+parseInt($('etc1_3').value)}else{$('bak_amt').value=0;$('bak_dp_amt').value=0}this.changePrintPrice()}",
+    "getCutXSize": "function(){if($('cut_x_size').value==\"\"){this.setCutXSize(0);return 0}else{return parseInt($('cut_x_size').value)}}",
+    "getCutYSize": "function(){if($('cut_y_size').value==\"\"){this.setCutYSize(0);return 0}else{return parseInt($('cut_y_size').value)}}",
+    "_product1BakMethods": [
+      "ppBak",
+      "setPPBakAmtSum",
+      "ppBakExistDongpan",
+      "ppDBak",
+      "setPPDBakAmtSum",
+      "ppDBakExistDongpan",
+      "setPPApAmtSum",
+      "ppApExistDongpan"
+    ],
+    "chgBakSize": "function chgBakSize(seq) {\n\n\t\tbak_x_size = parseFloat($('bak_x_size_' + seq).value);\n\t\tbak_y_size = parseFloat($('bak_y_size_' + seq).value);\n\n\t\tif (bak_x_size < 0.1) {\n\t\t\talert('박 가로사이즈는 0보다 커야 합니다.');\n\t\t\t$('bak_x_size_' + seq).value = '0.1';\n\t\t\t$('bak_x_size_' + seq).focus();\n\t\t\t//return;\n\t\t} else if (bak_y_size < 0.1) {\n\t\t\talert('박 세로사이즈는 0보다 커야 합니다.');\n\t\t\t$('bak_y_size_' + seq).value = '0.1';\n\t\t\t$('bak_y_size_' + seq).focus();\n\t\t\t//return;\n\t\t}\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+    "chgBakSection": "function chgBakSection(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+    "chgBakSide": "function chgBakSide(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+    "chgBakType": "function chgBakType(seq) {\n\n\t\tif ($('chk_is_bak').checked == true) {\n\t\t\tproduct1.ppBak(seq);\n\t\t}\n\n\t}",
+    "chgBakExistDongpan": "function chgBakExistDongpan(seq) {\r\n\r\n  var bak_exist_dongpan = $('bak_exist_dongpan_' + seq).value;\r\n  //console.info(bak_exist_dongpan);\r\n\r\n  var bak_exist_dongpan_arry = bak_exist_dongpan.split(\"^\");\r\n  var order_no = bak_exist_dongpan_arry[0];\r\n  var order_item_no = bak_exist_dongpan_arry[1];\r\n  var postpress_seq = bak_exist_dongpan_arry[2];\r\n  var x_size = bak_exist_dongpan_arry[3];\r\n  var y_size = bak_exist_dongpan_arry[4];\r\n  var bak_order_item_key = bak_exist_dongpan_arry[5];\r\n  var bak_no = bak_exist_dongpan_arry[6];//관리자페이지 셋팅값//순번\r\n\r\n  $('bak_x_size_' + seq).value = x_size;\r\n  $('bak_y_size_' + seq).value = y_size;\r\n  $('bak_order_item_key_' + seq).value = bak_order_item_key;\r\n  $('bak_no_' + seq).value = bak_no;\r\n\r\n  chgBakExistDongpanPrice(seq);\r\n}",
+    "chgBakExistDongpanPrice": "function chgBakExistDongpanPrice(seq) {\n\n\t\tproduct1.ppBakExistDongpan(seq);\n\n\t}"
+  },
+  "sweep": {
+    "area": [
+      {
+        "x": 10,
+        "y": 10,
+        "areaMm2": 100,
+        "bak_amt": 18500,
+        "ratePerMm2": 185,
+        "echo": {
+          "bak_x": "10",
+          "bak_y": "10"
+        }
+      },
+      {
+        "x": 20,
+        "y": 20,
+        "areaMm2": 400,
+        "bak_amt": 18500,
+        "ratePerMm2": 46.25,
+        "echo": {
+          "bak_x": "20",
+          "bak_y": "20"
+        }
+      },
+      {
+        "x": 30,
+        "y": 20,
+        "areaMm2": 600,
+        "bak_amt": 18500,
+        "ratePerMm2": 30.833333333333332,
+        "echo": {
+          "bak_x": "30",
+          "bak_y": "20"
+        }
+      },
+      {
+        "x": 50,
+        "y": 30,
+        "areaMm2": 1500,
+        "bak_amt": 22300,
+        "ratePerMm2": 14.866666666666667,
+        "echo": {
+          "bak_x": "50",
+          "bak_y": "30"
+        }
+      },
+      {
+        "x": 80,
+        "y": 50,
+        "areaMm2": 4000,
+        "bak_amt": 33600,
+        "ratePerMm2": 8.4,
+        "echo": {
+          "bak_x": "80",
+          "bak_y": "50"
+        }
+      },
+      {
+        "x": 100,
+        "y": 100,
+        "areaMm2": 10000,
+        "bak_amt": 0,
+        "ratePerMm2": 0,
+        "echo": {
+          "bak_x": "0",
+          "bak_y": "0"
+        }
+      },
+      {
+        "x": 150,
+        "y": 100,
+        "areaMm2": 15000,
+        "bak_amt": 0,
+        "ratePerMm2": 0,
+        "echo": {
+          "bak_x": "0",
+          "bak_y": "0"
+        }
+      }
+    ],
+    "type": [
+      {
+        "bak_type": "BKT02",
+        "bak_amt": 22300
+      },
+      {
+        "bak_type": "BKT01",
+        "bak_amt": 22300
+      },
+      {
+        "bak_type": "BKT06",
+        "bak_amt": 22800
+      },
+      {
+        "bak_type": "BKT11",
+        "bak_amt": 27700
+      },
+      {
+        "bak_type": "BKT12",
+        "bak_amt": 27700
+      },
+      {
+        "bak_type": "BKT16",
+        "bak_amt": 22300
+      }
+    ],
+    "side": [
+      {
+        "bak_side": "BKD10",
+        "bak_amt": 22300
+      },
+      {
+        "bak_side": "BKD20",
+        "bak_amt": 22300
+      },
+      {
+        "bak_side": "BKD30",
+        "bak_amt": 41100
+      }
+    ],
+    "section": [
+      {
+        "bak_section": "BKS10",
+        "bak_amt": 22300
+      },
+      {
+        "bak_section": "BKS20",
+        "bak_amt": 22300
+      }
+    ],
+    "layers": [
+      {
+        "layers": 1,
+        "bak_amt": 22300
+      },
+      {
+        "layers": 2,
+        "bak_amt": 22300
+      },
+      {
+        "layers": 3,
+        "bak_amt": 22300
+      }
+    ],
+    "qty": [
+      {
+        "qty": "500",
+        "qtyField": null,
+        "bak_amt": 22300,
+        "total_price": 27400
+      },
+      {
+        "qty": "1000",
+        "qtyField": null,
+        "bak_amt": 22300,
+        "total_price": 27400
+      },
+      {
+        "qty": "2000",
+        "qtyField": null,
+        "bak_amt": 22300,
+        "total_price": 27400
+      },
+      {
+        "qty": "5000",
+        "qtyField": null,
+        "bak_amt": 22300,
+        "total_price": 27400
+      }
+    ]
+  }
+}

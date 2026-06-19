@@ -1,0 +1,849 @@
+{
+  "code": "CNC1000",
+  "goods": "GNC1001",
+  "loggedIn": true,
+  "qtySweep": {
+    "guidori": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 3000,
+        "pay_amt": 7920
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 3000,
+        "pay_amt": 7920
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 5900,
+        "pay_amt": 15730
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 11200,
+        "pay_amt": 29700
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 24000,
+        "pay_amt": 63800
+      }
+    ],
+    "epoxy": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 22500,
+        "pay_amt": 29370
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 22500,
+        "pay_amt": 29370
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 45000,
+        "pay_amt": 58740
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 90000,
+        "pay_amt": 116380
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 225000,
+        "pay_amt": 284900
+      }
+    ],
+    "osi": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 7000,
+        "pay_amt": 12320
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 7000,
+        "pay_amt": 12320
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 11000,
+        "pay_amt": 21340
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 19000,
+        "pay_amt": 38280
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 38000,
+        "pay_amt": 79200
+      }
+    ],
+    "missing": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 7000,
+        "pay_amt": 12320
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 7000,
+        "pay_amt": 12320
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 11000,
+        "pay_amt": 21340
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 19000,
+        "pay_amt": 38280
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 38000,
+        "pay_amt": 79200
+      }
+    ],
+    "numbering": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 0,
+        "pay_amt": 4620
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 0,
+        "pay_amt": 4620
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 0,
+        "pay_amt": 9240
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 0,
+        "pay_amt": 17380
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 0,
+        "pay_amt": 37400
+      }
+    ],
+    "bak": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 22300,
+        "pay_amt": 30140
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 22300,
+        "pay_amt": 30140
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 40100,
+        "pay_amt": 55220
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 75700,
+        "pay_amt": 104170
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 182400,
+        "pay_amt": 245520
+      }
+    ],
+    "ap": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 21400,
+        "pay_amt": 29150
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 21400,
+        "pay_amt": 29150
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 35800,
+        "pay_amt": 50490
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 64600,
+        "pay_amt": 91960
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 151000,
+        "pay_amt": 210980
+      }
+    ],
+    "domusong": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 21500,
+        "pay_amt": 28270
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 21500,
+        "pay_amt": 28270
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 30000,
+        "pay_amt": 42240
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 49000,
+        "pay_amt": 71280
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 106000,
+        "pay_amt": 154000
+      }
+    ],
+    "tagong": [
+      {
+        "qty": "200",
+        "applied": false,
+        "amt": 3800,
+        "pay_amt": 8800
+      },
+      {
+        "qty": "500",
+        "applied": true,
+        "amt": 3800,
+        "pay_amt": 8800
+      },
+      {
+        "qty": "1000",
+        "applied": true,
+        "amt": 6100,
+        "pay_amt": 15950
+      },
+      {
+        "qty": "2000",
+        "applied": true,
+        "amt": 10100,
+        "pay_amt": 28490
+      },
+      {
+        "qty": "5000",
+        "applied": true,
+        "amt": 19500,
+        "pay_amt": 58850
+      }
+    ]
+  },
+  "optionSweep": {
+    "guidori": [
+      {
+        "label": "GDR10",
+        "fieldMap": {
+          "guidori_type": "GDR10"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      },
+      {
+        "label": "GDR20",
+        "fieldMap": {
+          "guidori_type": "GDR20"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      },
+      {
+        "label": "GDR30",
+        "fieldMap": {
+          "guidori_type": "GDR30"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      },
+      {
+        "label": "GDR40",
+        "fieldMap": {
+          "guidori_type": "GDR40"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      },
+      {
+        "label": "GDR50(6mm)",
+        "fieldMap": {
+          "guidori_type": "GDR50"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      },
+      {
+        "label": "GDR80(6mm)",
+        "fieldMap": {
+          "guidori_type": "GDR80"
+        },
+        "amt": 5900,
+        "pay_amt": 15730,
+        "setRes": {
+          "guidori_type": "SET"
+        }
+      }
+    ],
+    "epoxy": [
+      {
+        "label": "EPT10전",
+        "fieldMap": {
+          "epoxy_type": "EPT10"
+        },
+        "amt": 45000,
+        "pay_amt": 58740,
+        "setRes": {
+          "epoxy_type": "SET",
+          "_epoxy_kind": "EPK10 [opts:EPK10]"
+        }
+      },
+      {
+        "label": "EPT20후",
+        "fieldMap": {
+          "epoxy_type": "EPT20"
+        },
+        "amt": 45000,
+        "pay_amt": 58740,
+        "setRes": {
+          "epoxy_type": "SET",
+          "_epoxy_kind": "EPK10 [opts:EPK10]"
+        }
+      },
+      {
+        "label": "EPT30양",
+        "fieldMap": {
+          "epoxy_type": "EPT30"
+        },
+        "amt": 90000,
+        "pay_amt": 108240,
+        "setRes": {
+          "epoxy_type": "SET",
+          "_epoxy_kind": "EPK30 [opts:EPK30|EPK40|EPK50|EPK60]"
+        }
+      }
+    ],
+    "osi": [
+      {
+        "label": "OSN01",
+        "fieldMap": {
+          "osi_num": "OSN01",
+          "osi_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "osi_num": "SET",
+          "osi_direction": "SET"
+        }
+      },
+      {
+        "label": "OSN02",
+        "fieldMap": {
+          "osi_num": "OSN02",
+          "osi_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "osi_num": "SET",
+          "osi_direction": "SET"
+        }
+      },
+      {
+        "label": "OSN03",
+        "fieldMap": {
+          "osi_num": "OSN03",
+          "osi_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "osi_num": "SET",
+          "osi_direction": "SET"
+        }
+      },
+      {
+        "label": "OSN04십자",
+        "fieldMap": {
+          "osi_num": "OSN04",
+          "osi_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "osi_num": "SET",
+          "osi_direction": "SET"
+        }
+      },
+      {
+        "label": "OSN01세로",
+        "fieldMap": {
+          "osi_num": "OSN01",
+          "osi_direction": "OMD20"
+        },
+        "amt": 9000,
+        "pay_amt": 19140,
+        "setRes": {
+          "osi_num": "SET",
+          "osi_direction": "SET"
+        }
+      }
+    ],
+    "missing": [
+      {
+        "label": "MSN01",
+        "fieldMap": {
+          "missing_num": "MSN01",
+          "missing_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "missing_num": "SET",
+          "missing_direction": "SET"
+        }
+      },
+      {
+        "label": "MSN02",
+        "fieldMap": {
+          "missing_num": "MSN02",
+          "missing_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "missing_num": "SET",
+          "missing_direction": "SET"
+        }
+      },
+      {
+        "label": "MSN03",
+        "fieldMap": {
+          "missing_num": "MSN03",
+          "missing_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "missing_num": "SET",
+          "missing_direction": "SET"
+        }
+      },
+      {
+        "label": "MSN04십자",
+        "fieldMap": {
+          "missing_num": "MSN04",
+          "missing_direction": "OMD10"
+        },
+        "amt": 11000,
+        "pay_amt": 21340,
+        "setRes": {
+          "missing_num": "SET",
+          "missing_direction": "SET"
+        }
+      }
+    ],
+    "numbering": [
+      {
+        "label": "NBT10/NBN11",
+        "fieldMap": {
+          "numbering_type": "NBT10",
+          "numbering_kind": "NBN11"
+        },
+        "amt": 0,
+        "pay_amt": 9240,
+        "setRes": {
+          "numbering_type": "SET",
+          "_numbering_kind": "NBN11 [opts:NBN11|NBN12]"
+        }
+      },
+      {
+        "label": "NBT10/NBN12",
+        "fieldMap": {
+          "numbering_type": "NBT10",
+          "numbering_kind": "NBN12"
+        },
+        "amt": 0,
+        "pay_amt": 9240,
+        "setRes": {
+          "numbering_type": "SET",
+          "_numbering_kind": "NBN12 [opts:NBN11|NBN12]"
+        }
+      },
+      {
+        "label": "NBT10/NBN13끝까지",
+        "fieldMap": {
+          "numbering_type": "NBT10",
+          "numbering_kind": "NBN13"
+        },
+        "amt": 0,
+        "pay_amt": 9240,
+        "setRes": {
+          "numbering_type": "SET",
+          "_numbering_kind": "NBN11 [opts:NBN11|NBN12]"
+        }
+      },
+      {
+        "label": "NBT20난수",
+        "fieldMap": {
+          "numbering_type": "NBT20",
+          "numbering_kind": "NBN11"
+        },
+        "amt": 0,
+        "pay_amt": 9240,
+        "setRes": {
+          "numbering_type": "SET",
+          "_numbering_kind": "NBN21 [opts:NBN21|NBN22]"
+        }
+      }
+    ],
+    "ap": [
+      {
+        "label": "10x10",
+        "fieldMap": {
+          "ap_section_1": "APS10",
+          "ap_type_1": "APT10",
+          "ap_compare_1": "BAC10",
+          "ap_x_size_1": "10",
+          "ap_y_size_1": "10"
+        },
+        "amt": 29400,
+        "pay_amt": 41580,
+        "setRes": {
+          "ap_section_1": "SET",
+          "ap_type_1": "SET",
+          "ap_compare_1": "SET",
+          "ap_x_size_1": "SET",
+          "ap_y_size_1": "SET"
+        }
+      },
+      {
+        "label": "50x30",
+        "fieldMap": {
+          "ap_section_1": "APS10",
+          "ap_type_1": "APT10",
+          "ap_compare_1": "BAC10",
+          "ap_x_size_1": "50",
+          "ap_y_size_1": "30"
+        },
+        "amt": 35800,
+        "pay_amt": 50490,
+        "setRes": {
+          "ap_section_1": "SET",
+          "ap_type_1": "SET",
+          "ap_compare_1": "SET",
+          "ap_x_size_1": "SET",
+          "ap_y_size_1": "SET"
+        }
+      },
+      {
+        "label": "100x100",
+        "fieldMap": {
+          "ap_section_1": "APS10",
+          "ap_type_1": "APT10",
+          "ap_compare_1": "BAC10",
+          "ap_x_size_1": "100",
+          "ap_y_size_1": "100"
+        },
+        "amt": 0,
+        "pay_amt": 9240,
+        "setRes": {
+          "ap_section_1": "SET",
+          "ap_type_1": "SET",
+          "ap_compare_1": "SET",
+          "ap_x_size_1": "SET",
+          "ap_y_size_1": "SET"
+        }
+      },
+      {
+        "label": "APS20보유동판",
+        "fieldMap": {
+          "ap_section_1": "APS20",
+          "ap_type_1": "APT10",
+          "ap_compare_1": "BAC10",
+          "ap_x_size_1": "50",
+          "ap_y_size_1": "30"
+        },
+        "amt": 35800,
+        "pay_amt": 50490,
+        "setRes": {
+          "ap_section_1": "NO_OPT(APS10)",
+          "ap_type_1": "SET",
+          "ap_compare_1": "SET",
+          "ap_x_size_1": "SET",
+          "ap_y_size_1": "SET"
+        }
+      },
+      {
+        "label": "APT20뒤돌출",
+        "fieldMap": {
+          "ap_section_1": "APS10",
+          "ap_type_1": "APT20",
+          "ap_compare_1": "BAC10",
+          "ap_x_size_1": "50",
+          "ap_y_size_1": "30"
+        },
+        "amt": 35800,
+        "pay_amt": 50490,
+        "setRes": {
+          "ap_section_1": "SET",
+          "ap_type_1": "SET",
+          "ap_compare_1": "SET",
+          "ap_x_size_1": "SET",
+          "ap_y_size_1": "SET"
+        }
+      }
+    ],
+    "domusong": [
+      {
+        "label": "DMS20전체/1",
+        "fieldMap": {
+          "domusong_section": "DMS20",
+          "domusong_type": "DMT51",
+          "domusong_num": "1"
+        },
+        "amt": 30000,
+        "pay_amt": 42240,
+        "setRes": {
+          "domusong_section": "SET",
+          "domusong_type": "SET",
+          "domusong_num": "SET"
+        }
+      },
+      {
+        "label": "DMS21부분/1",
+        "fieldMap": {
+          "domusong_section": "DMS21",
+          "domusong_type": "DMT51",
+          "domusong_num": "1"
+        },
+        "amt": 30000,
+        "pay_amt": 42240,
+        "setRes": {
+          "domusong_section": "SET",
+          "domusong_type": "SET",
+          "domusong_num": "SET"
+        }
+      },
+      {
+        "label": "num=2",
+        "fieldMap": {
+          "domusong_section": "DMS20",
+          "domusong_type": "DMT51",
+          "domusong_num": "2"
+        },
+        "amt": 42400,
+        "pay_amt": 55880,
+        "setRes": {
+          "domusong_section": "SET",
+          "domusong_type": "SET",
+          "domusong_num": "SET"
+        }
+      },
+      {
+        "label": "num=4",
+        "fieldMap": {
+          "domusong_section": "DMS20",
+          "domusong_type": "DMT51",
+          "domusong_num": "4"
+        },
+        "amt": 66100,
+        "pay_amt": 81950,
+        "setRes": {
+          "domusong_section": "SET",
+          "domusong_type": "SET",
+          "domusong_num": "SET"
+        }
+      },
+      {
+        "label": "DMT53사물",
+        "fieldMap": {
+          "domusong_section": "DMS20",
+          "domusong_type": "DMT53",
+          "domusong_num": "1"
+        },
+        "amt": 47900,
+        "pay_amt": 61930,
+        "setRes": {
+          "domusong_section": "SET",
+          "domusong_type": "SET",
+          "domusong_num": "SET"
+        }
+      }
+    ],
+    "tagong": [
+      {
+        "label": "1개4mm",
+        "fieldMap": {
+          "tagong_num": "1",
+          "tagong_size": "4"
+        },
+        "amt": 6100,
+        "pay_amt": 15950,
+        "setRes": {
+          "tagong_num": "SET",
+          "tagong_size": "SET"
+        }
+      },
+      {
+        "label": "2개4mm",
+        "fieldMap": {
+          "tagong_num": "2",
+          "tagong_size": "4"
+        },
+        "amt": 8300,
+        "pay_amt": 18370,
+        "setRes": {
+          "tagong_num": "SET",
+          "tagong_size": "SET"
+        }
+      },
+      {
+        "label": "4개4mm",
+        "fieldMap": {
+          "tagong_num": "4",
+          "tagong_size": "4"
+        },
+        "amt": 12900,
+        "pay_amt": 23430,
+        "setRes": {
+          "tagong_num": "SET",
+          "tagong_size": "SET"
+        }
+      },
+      {
+        "label": "1개8mm",
+        "fieldMap": {
+          "tagong_num": "1",
+          "tagong_size": "8"
+        },
+        "amt": 6100,
+        "pay_amt": 15950,
+        "setRes": {
+          "tagong_num": "SET",
+          "tagong_size": "SET"
+        }
+      }
+    ]
+  },
+  "formulas": {
+    "_product1Methods": [
+      "changePrintPrice",
+      "ppOsi",
+      "ppMissing",
+      "ppDomusong",
+      "ppDomusongExistMok",
+      "ppBak",
+      "setPPBakAmtSum",
+      "ppBakExistDongpan",
+      "ppDBak",
+      "setPPDBakAmtSum",
+      "ppDBakExistDongpan",
+      "ppAP",
+      "setPPApAmtSum",
+      "ppApExistDongpan",
+      "ppNumbering",
+      "ppTagong",
+      "ppGuidori",
+      "ppEpoxy",
+      "changePPPrice",
+      "calcuEstimate"
+    ],
+    "ppGuidori": "function(){ppGuidori.calcuGuidoriPrice();this.calcuEstimate()}",
+    "ppEpoxy": "function(){ppEpoxy.calcuEpoxyPrice();this.calcuEstimate()}",
+    "ppOsi": "function(){ppOsi.calcuOsiPrice();this.calcuEstimate()}",
+    "ppMissing": "function(){ppMissing.calcuMissingPrice();this.calcuEstimate()}",
+    "ppNumbering": "function(){ppNumbering.calcuNumberingPrice();this.calcuEstimate()}",
+    "ppBak": "function(seq){ppBak.dataLoad();ppBak.setBakSeq(seq);settingExistBakDongpan(seq);ppBak.calcuBakPrice();if($('save_bak_x_size_2').value!=\"\"&&$('save_bak_y_size_2').value!=\"\"){settingExistBakDongpan(2);ppBak.calcuBakPrice()}if($('save_bak_x_size_3').value!=\"\"&&$('save_bak_y_size_3').value!=\"\"){settingExistBakDongpan(3);ppBak.calcuBakPrice()}this.setPPBakAmtSum();this.setPPApAmtSum()}",
+    "ppDomusong": "function(){ppDomusong.dataLoad();settingExistDomusongMok();ppDomusong.calcuDomusongPrice();if(this_category_code=='CVS1000'||this_category_code=='CVS2000'){this.optionPaperQty()}this.caluPrintPrice();this.calcuEstimate()}",
+    "ppTagong": "function(){ppTagong.calcuTagongPrice();this.calcuEstimate()}",
+    "setPPBakAmtSum": "function(){if($('chk_is_bak').checked==true){$('bak_amt').value=parseInt($('bak_amt_1').value)+parseInt($('bak_amt_2').value)+parseInt($('bak_amt_3').value);$('bak_dp_amt').value=parseInt($('etc1_1').value)+parseInt($('etc1_2').value)+parseInt($('etc1_3').value)}else{$('bak_amt').value=0;$('bak_dp_amt').value=0}this.changePrintPrice()}",
+    "setPPApAmtSum": "function(){if($('chk_is_ap').checked==true){if(parseInt($('bak_add_unit_price').value)>0&&parseInt($('ap_add_unit_price').value)>0){$('bak_ap_add_unit_price').value=1000;$('ap_suji_amt_1').value=1000}else{$('bak_ap_add_unit_price').value=0;$('ap_suji_amt_1').value=0}$('ap_amt').value=parseInt($('ap_amt_1').value)+parseInt($('ap_amt_2').value)+parseInt($('ap_amt_3').value)+parseInt($('bak_ap_add_unit_price').value);$('ap_dp_amt').value=parseInt($('ap_dongpan_amt_1').value)+parseInt($('ap_dongpan_amt_2').value)+parseInt($('ap_dongpan_amt_3').value)}else{$('ap_amt').value=0;$('ap_dp_amt').value=0}this.changePrintPrice()}",
+    "getCutXSize": "function(){if($('cut_x_size').value==\"\"){this.setCutXSize(0);return 0}else{return parseInt($('cut_x_size').value)}}",
+    "getCutYSize": "function(){if($('cut_y_size').value==\"\"){this.setCutYSize(0);return 0}else{return parseInt($('cut_y_size').value)}}",
+    "calcuEstimate": "function(){$('fun_chk').value='false';var order_count=1;var total_price=0;var pp_price=0;var tax_amt=0;var order_amt=0;var pay_amt=0;var sale_amt=0;var add_amt=0;var sale_rate=0;var agree_date_price=0;order_count=parseInt($('order_count').value);sale_rate=parseFloat($('sale_rate').value);total_price=parseInt($('print_price').value);if(parseInt($('design_price').value)){total_price+=parseInt($('design_price').value)}if($('osi_amt').value>0&&$('chk_is_osi').checked)pp_price+=parseInt($('osi_amt').value);if($('missing_amt').value>0&&$('chk_is_missing').checked)pp_price+=parseInt($('missing_amt').value);if($('domusong_amt').value>0&&$('chk_is_domusong').checked)pp_price+=parseInt($('domusong_amt').value);if($('bak_amt').value>0&&$('chk_is_bak').checked)pp_price+=parseInt($('bak_amt').value);if($('ap_amt').value>0&&$('chk_is_ap').checked)pp_price+=parseInt($('ap_amt').value);if($('numbering_amt').value>0&&$('chk_is_numbering').checked)pp_price+=parseInt($('numbering_amt').value);if($('tagong_amt').value>0&&$('chk_is_tagong').checked)pp_price+=parseInt($('tagong_amt').value);if($('guidori_amt').value>0&&$('chk_is_guidori').checked)pp_price+=parseInt($('guidori_amt').value);if($('epoxy_amt').value>0&&$('chk_is_epoxy').checked)pp_price+=parseInt($('epoxy_amt').value);if($('dbak_amt').value>0&&$('chk_is_dbak').checked)pp_price+=parseInt($('dbak_amt').value);if($('agree_date_price').value>0)agree_date_price=parseInt($('agree_date_price').value);total_price=parseInt(total_price)+parseInt(pp_price)+parseInt(agree_date_price);origin_price=parseInt(total_price)+parseInt(pp_price)+parseInt(agree_date_price);if(sale_rate>0){sale_amt=total_price*(sale_rate/100);total_price=total_price-parseInt(sale_amt)}supply_amt=total_price;if(tax_type==\"TXT20\"){tax_amt=0}else{tax_amt=Math.round(total_price*0.1)}order_amt=parseInt(supply_amt);pay_amt=parseInt(supply_amt)+parseInt(tax_amt);$('total_price').value=total_price;$('supply_amt').value=supply_amt;$('tax_amt').value=tax_amt;$('order_amt').value=order_amt;$('pay_amt').value=pay_amt;$('postpress_amt').value=pp_price;$('sale_amt').value=sale_amt;$('add_amt').value=add_amt;$('lbl_pay_amt').update(numberFormat(pay_amt));$('lbl_supply_amt').update(numberFormat(supply_amt));$('lbl_tax_amt').update(numberFormat(tax_amt));if(sale_rate>0){sale_info=\"정상가 : <strike>\"+numberFormat(origin_price)+\"</strike>원,\"+\" 할인액(할인율) : \"+numberFormat(sale_amt)+\"원(\"+sale_rate+\"%)\";$('pnl_sale_amt').update(sale_info)}this.printEstimate();if($(\"print_estimate_list\")){this.printEstimatePrint();this.printEstimateTotPrint();this.printEstimateLeftPrint()}}",
+    "g_setIsPostpress": "function setIsPostpress(ppType) {\n\n\t\tif (ppType == \"osi\") { //오시\n\t\t\tproduct1.ppOsi();\n\t\t} else if (ppType == \"missing\") { //미싱\n\t\t\tproduct1.ppMissing();\n\t\t} else if (ppType == \"domusong\") { //도무송\n\t\t\tif ($('chk_is_epoxy').checked == true) {\n\t\t\t\tproduct1.ppEpoxy(); //도무송이 선택되면 에폭시 사이즈가 도무송 사이즈로 변함//\n\t\t\t}\n\t\t\tproduct1.ppDomusong();\n\n\t\t} else if (ppType == \"bak\") { //박\n\t\t\tproduct1.ppBak('1');\n\t\t} else if (ppType == \"ap\") { //형압\n\t\t\tproduct1.ppAP('1');\n\t\t} else if (ppType == \"numbering\") { //넘버링\n\t\t\tproduct1.ppNumbering();\n\t\t} else if (ppType == \"tagong\") { //타공\n\t\t\tproduct1.ppTagong();\n\t\t} else if (ppType == \"guidori\") { //귀도리\n\t\t\tproduct1.ppGuidori();\n\t\t} else if (ppType == \"epoxy\") { //에폭시\n\t\t\tproduct1.ppEpoxy();\n\t\t}else if (ppType == \"dbak\") { //디지털박\n\t\t\tproduct1.ppDBak('1');\n\t\t}\n\n\t}",
+    "g_chgNumberingType": "function chgNumberingType() {\n\t\tif ($('chk_is_numbering').checked == true) {\n\t\t\tproduct1.ppNumbering();\n\t\t}\n\t}",
+    "g_chgGuidoriType": "function chgGuidoriType() {\n\n\t\tguidori_type = $('guidori_type').value;\n\t\tsave_guidori_etc1 = $(\"save_guidori_etc1\").value;\n\n\t\t//alert(guidori_type+\"==\"+save_guidori_etc1);\n\n\t\tif (guidori_type == 'GDR40' || guidori_type == 'GDR80') { //네귀도리4mm,6mm\n\t\t\t$j('#pnl_guidori_position').hide();\n\t\t\t$('guidori_position1').checked = true;\n\t\t\t$('guidori_position2').checked = true;\n\t\t\t$('guidori_position3').checked = true;\n\t\t\t$('guidori_position4').checked = true;\n\t\t\t$('guidori_position_kind').value = 4;\n\t\t} else if (guidori_type == 'GDR90') { //사각재단만\n\t\t\t$j('#pnl_guidori_position').hide();\n\t\t\t$('guidori_position1').checked = false;\n\t\t\t$('guidori_position2').checked = false;\n\t\t\t$('guidori_position3').checked = false;\n\t\t\t$('guidori_position4').checked = false;\n\t\t\t$('guidori_position_kind').value = 0;\n\t\t} else {\n\t\t\t$j('#pnl_guidori_position').show();\n\t\t\t$('guidori_position1').checked = false;\n\t\t\t$('guidori_position2').checked = false;\n\t\t\t$('guidori_position3').checked = false;\n\t\t\t$('guidori_position4').checked = false;\n\t\t\t$('guidori_position_kind').value = 0;\n\t\t}\n\n\t\t//save_guidori_etc1_arry = save_guidori_etc1.split('|');\n\t\t//guidori_position_kind  = save_guidori_etc1_arry[4];\n\n\t\tif (save_guidori_etc1 != '') { //관리자페이지 셋팅\n\t\t\tif (guidori_type == 'GDR40' || guidori_type == 'GDR80') {\n\t\t\t\t$('guidori_position_kind').value = 4;\n\t\t\t} else if (guidori_type == 'GDR30' || guidori_type == 'GDR70') {\n\t\t\t\t$('guidori_position_kind').value = 3;\n\t\t\t} else if (guidori_type == 'GDR20' || guidori_type == 'GDR60') {\n\t\t\t\t$('guidori_position_kind').value = 2;\n\t\t\t} else if (guidori_type == 'GDR10' || guidori_type == 'GDR50') {\n\t\t\t\t$('guidori_position_kind').value = 1;\n\t\t\t} else {\n\t\t\t\t$('guidori_position_kind').value = 0; //사각재단만\n\t\t\t}\n\t\t}\n\n\t\tif (guidori_type == 'GDR10') {\n\t\t\tpreview_img_guidori = 'guidori_1.jpg';\n\t\t} else if (guidori_type == 'GDR20') {\n\t\t\tpreview_img_guidori = 'guidori_2.jpg';\n\t\t} else if (guidori_type == 'GDR30') {\n\t\t\tpreview_img_guidori = 'guidori_3.jpg';\n\t\t} else if (guidori_type == 'GDR40') {\n\t\t\tpreview_img_guidori = 'guidori_4.jpg';\n\t\t} else {\n\t\t\tpreview_img_guidori = 'guidori_4.jpg';\n\t\t}\n\t\t$j('#pp_preview_img_guidori').attr(\"src\", \"/images/pp_preview/\" + preview_img_guidori);\n\n\t\tif ($('chk_is_guidori').checked == true) {\n\t\t\tproduct1.ppGuidori();\n\t\t}\n\n\t}",
+    "g_chgEpoxyType": "function chgEpoxyType() {\n\n\t\tproduct1.ppEpoxy();\n\n\t}",
+    "g_chgOsiNum": "function chgOsiNum() {\n\n\t\tif ($('chk_is_osi').checked == true) {\n\t\t\tproduct1.ppOsi();\n\t\t}\n\n\t}",
+    "g_chgMissingNum": "function chgMissingNum() {\n\n\t\tif ($('chk_is_missing').checked == true) {\n\t\t\tproduct1.ppMissing();\n\t\t}\n\n\t}"
+  }
+}
