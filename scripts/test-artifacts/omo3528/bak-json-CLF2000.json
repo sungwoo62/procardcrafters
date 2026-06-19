@@ -1,0 +1,18 @@
+{
+  "bakKeysFound": [],
+  "topLevelKeys": [
+    "paper_kind",
+    "paper_type",
+    "paper_type_print",
+    "paper_type_print_ranking",
+    "paper_info",
+    "paper_info_ranking",
+    "size_info",
+    "print_info1",
+    "print_info2",
+    "print_info3",
+    "print_info4",
+    "paper_extra_cost"
+  ],
+  "bak": {}
+}
