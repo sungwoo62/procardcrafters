@@ -1,0 +1,122 @@
+[
+  {
+    "input": {
+      "bak_type": "BKT01",
+      "bak_x": 40,
+      "bak_y": 20,
+      "order_count": 1,
+      "bak_side": "BKD10",
+      "bak_section": "BKS10"
+    },
+    "paper_qty": "500",
+    "cut_x_size": "90",
+    "cut_y_size": "50",
+    "order_count": "1",
+    "bak_section": "BKS10",
+    "bak_side": "BKD10",
+    "bak_x_size": "40",
+    "bak_y_size": "20",
+    "bak_amt": "20200",
+    "bak_amt_1": "20200",
+    "bak_price": null,
+    "bak_price_unit": null,
+    "dongpan_price": null,
+    "bak_add_unit_price": "0"
+  },
+  {
+    "input": {
+      "bak_type": "BKT06",
+      "bak_x": 50,
+      "bak_y": 30,
+      "order_count": 1,
+      "bak_side": "BKD10",
+      "bak_section": "BKS10"
+    },
+    "paper_qty": "500",
+    "cut_x_size": "90",
+    "cut_y_size": "50",
+    "order_count": "1",
+    "bak_section": "BKS10",
+    "bak_side": "BKD10",
+    "bak_x_size": "50",
+    "bak_y_size": "30",
+    "bak_amt": "22800",
+    "bak_amt_1": "22800",
+    "bak_price": null,
+    "bak_price_unit": null,
+    "dongpan_price": null,
+    "bak_add_unit_price": "0"
+  },
+  {
+    "input": {
+      "bak_type": "BKT07",
+      "bak_x": 60,
+      "bak_y": 40,
+      "order_count": 1,
+      "bak_side": "BKD10",
+      "bak_section": "BKS10"
+    },
+    "paper_qty": "500",
+    "cut_x_size": "90",
+    "cut_y_size": "50",
+    "order_count": "1",
+    "bak_section": "BKS10",
+    "bak_side": "BKD10",
+    "bak_x_size": "60",
+    "bak_y_size": "40",
+    "bak_amt": "0",
+    "bak_amt_1": "0",
+    "bak_price": null,
+    "bak_price_unit": null,
+    "dongpan_price": null,
+    "bak_add_unit_price": "0"
+  },
+  {
+    "input": {
+      "bak_type": "BKT18",
+      "bak_x": 50,
+      "bak_y": 30,
+      "order_count": 1,
+      "bak_side": "BKD10",
+      "bak_section": "BKS10"
+    },
+    "paper_qty": "500",
+    "cut_x_size": "90",
+    "cut_y_size": "50",
+    "order_count": "1",
+    "bak_section": "BKS10",
+    "bak_side": "BKD10",
+    "bak_x_size": "50",
+    "bak_y_size": "30",
+    "bak_amt": "29000",
+    "bak_amt_1": "29000",
+    "bak_price": null,
+    "bak_price_unit": null,
+    "dongpan_price": null,
+    "bak_add_unit_price": "0"
+  },
+  {
+    "input": {
+      "bak_type": "BKT01",
+      "bak_x": 40,
+      "bak_y": 20,
+      "order_count": 1,
+      "bak_side": "BKD30",
+      "bak_section": "BKS10"
+    },
+    "paper_qty": "500",
+    "cut_x_size": "90",
+    "cut_y_size": "50",
+    "order_count": "1",
+    "bak_section": "BKS10",
+    "bak_side": "BKD30",
+    "bak_x_size": "40",
+    "bak_y_size": "20",
+    "bak_amt": "37200",
+    "bak_amt_1": "37200",
+    "bak_price": null,
+    "bak_price_unit": null,
+    "dongpan_price": null,
+    "bak_add_unit_price": "0"
+  }
+]

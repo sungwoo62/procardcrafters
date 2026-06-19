@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   finishingSurchargeKrw,
   finishingSurchargeKrwFromOptions,
+  numberingSurchargeKrwFromOptions,
   buildOrderExtraPricesKrw,
   FINISHING_DEFAULT_AREA_MM,
 } from '../finishing-surcharge'
@@ -112,6 +113,65 @@ describe('buildOrderExtraPricesKrw — 결제/표시 extra 합산 단일권위 (
   it('후가공 미선택 시 후가공 가산 없음 (None 회귀)', () => {
     expect(buildOrderExtraPricesKrw({ paper: 'premium' }, seededOptions)).toEqual([5000])
     expect(buildOrderExtraPricesKrw({}, seededOptions)).toEqual([])
+  })
+})
+
+// OMO-3528: 넘버링 도매 surcharge 적재 (보드 가격승인 게이트 통과). RE 공식 floor/unit 직산.
+describe('numberingSurchargeKrwFromOptions — 넘버링 결정론 적재', () => {
+  it('컨텍스트 없으면 일반(NBT10) floor 38,000 × order_count(기본 1)', () => {
+    expect(numberingSurchargeKrwFromOptions({})).toBe(38000)
+    expect(numberingSurchargeKrwFromOptions({ numbering_type: 'NBT10' })).toBe(38000)
+  })
+
+  it('난수(NBT20) floor 70,000', () => {
+    expect(numberingSurchargeKrwFromOptions({ numbering_type: 'NBT20' })).toBe(70000)
+  })
+
+  it('order_count 가 floor 를 배수 (동일 주문 내 종 수)', () => {
+    expect(numberingSurchargeKrwFromOptions({ numbering_order_count: '3' })).toBe(38000 * 3)
+  })
+
+  it('용지 게이트(SNW300/DNT250GP0/UPP250FB0)면 0 — 과다청구 방지', () => {
+    expect(numberingSurchargeKrwFromOptions({ numbering_paper_code: 'SNW300W00' })).toBe(0)
+    expect(numberingSurchargeKrwFromOptions({ numbering_paper_code: 'DNT250GP0' })).toBe(0)
+    expect(numberingSurchargeKrwFromOptions({ numbering_paper_code: 'UPP250FB0' })).toBe(0)
+  })
+
+  it('SNW250 은 무광코팅(matte) 일 때만 게이트', () => {
+    // 무광 → 0
+    expect(
+      numberingSurchargeKrwFromOptions({ numbering_paper_code: 'SNW250W00', numbering_matte_coated: '1' }),
+    ).toBe(0)
+    // 무광 아님 → floor 청구
+    expect(numberingSurchargeKrwFromOptions({ numbering_paper_code: 'SNW250W00' })).toBe(38000)
+  })
+
+  it('대량(매수·면적 큰) 주문은 unit 이 floor 를 초과', () => {
+    const big = numberingSurchargeKrwFromOptions({
+      numbering_type: 'NBT10',
+      numbering_cut_x: '90',
+      numbering_cut_y: '50',
+      numbering_paper_qty: '20000',
+    })
+    expect(big).toBeGreaterThan(38000)
+  })
+
+  it('NCR/양식 모델 floor 47,000', () => {
+    expect(numberingSurchargeKrwFromOptions({ numbering_model: 'ncr' })).toBe(47000)
+  })
+
+  it('finishing="numbering" 으로 통합 경로에서 floor 가산', () => {
+    expect(finishingSurchargeKrwFromOptions({ finishing: 'numbering' })).toBe(38000)
+  })
+
+  it('박+넘버링 혼합 → 각 항목 합산', () => {
+    const mixed = finishingSurchargeKrwFromOptions({ finishing: 'foil_stamp,numbering' })
+    expect(mixed).toBe(finishingSurchargeKrw('foil_stamp', BASE_AREA_MM2) + 38000)
+  })
+
+  it('buildOrderExtraPricesKrw 에서 넘버링 1회만 가산', () => {
+    const extras = buildOrderExtraPricesKrw({ finishing: 'numbering' }, [])
+    expect(extras.reduce((a, b) => a + b, 0)).toBe(38000)
   })
 })
 

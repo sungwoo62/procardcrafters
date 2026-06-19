@@ -148,6 +148,28 @@ describe('foilLayersToFields — 성원 발주 필드코드 직렬화', () => {
     expect(restored[0].x_size).toBe(50)
     expect(restored[1].y_size).toBe(25)
   })
+
+  // OMO-3528: 보유동판(BKS20) → 동판 setup 면제 경로로 발주. 기본/미지정 = 신규(BKS10).
+  it('bak_section 미지정 시 신규(BKS10)', () => {
+    const fields = foilLayersToFields([{ x_size: 50, y_size: 30 }])
+    expect(fields.bak_section_1).toBe('BKS10')
+  })
+
+  it('보유동판(BKS20) 레이어는 BKS20 으로 직렬화 (동판비 면제 경로)', () => {
+    const fields = foilLayersToFields([
+      { x_size: 50, y_size: 30, bak_section: 'BKS20' },
+      { x_size: 40, y_size: 20 },
+    ])
+    expect(fields.bak_section_1).toBe('BKS20')
+    expect(fields.bak_section_2).toBe('BKS10') // 미지정 레이어는 신규
+  })
+
+  it('BKS20 라운드트립 보존', () => {
+    const restored = parseFoilLayersFromOptions(
+      foilLayersToFields([{ x_size: 50, y_size: 30, bak_section: 'BKS20' }]),
+    )
+    expect(restored[0].bak_section).toBe('BKS20')
+  })
 })
 
 describe('finishingSurchargeKrwFromOptions — 박 멀티레이어 면적 합산', () => {

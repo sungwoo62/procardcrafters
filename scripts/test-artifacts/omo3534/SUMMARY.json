@@ -1,0 +1,69 @@
+{
+  "loggedIn": true,
+  "summary": [
+    {
+      "code": "CNC1000",
+      "ok": true,
+      "hasObj": true,
+      "materialUnitCount": 16,
+      "bakTypes": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    {
+      "code": "CST1000",
+      "ok": false,
+      "hasObj": false,
+      "materialUnitCount": 0,
+      "bakTypes": []
+    },
+    {
+      "code": "CPR1000",
+      "ok": true,
+      "hasObj": true,
+      "materialUnitCount": 0,
+      "bakTypes": []
+    },
+    {
+      "code": "CLF2000",
+      "ok": true,
+      "hasObj": true,
+      "materialUnitCount": 18,
+      "bakTypes": [
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null
+      ]
+    }
+  ]
+}

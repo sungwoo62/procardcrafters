@@ -1,0 +1,373 @@
+{
+  "code": "CLF2000",
+  "ok": true,
+  "selected": {
+    "paper_kind": "PKD10",
+    "paper_code": "ART100W00",
+    "paper_type": "ART",
+    "paper_size": "A0100"
+  },
+  "bakActivation": [
+    "chk_is_bak clicked",
+    "setIsPostpress('bak') called"
+  ],
+  "bak": {
+    "hasObj": true,
+    "raw": {
+      "pp_bak_info": [
+        {
+          "0": {
+            "bak_type": "BKT02",
+            "material_unit": "12",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT01",
+            "material_unit": "15",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT03",
+            "material_unit": "12",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT04",
+            "material_unit": "12",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT05",
+            "material_unit": "12",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT06",
+            "material_unit": "10",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT08",
+            "material_unit": "10",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT11",
+            "material_unit": "5",
+            "material_unit2": "140000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT09",
+            "material_unit": "2000",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT10",
+            "material_unit": "2000",
+            "material_unit2": "60000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT11",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT12",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT13",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT11",
+            "material_unit": "0",
+            "material_unit2": "140000",
+            "extra_rate": null,
+            "chk_size_high": null,
+            "chk_size_low": null
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT12",
+            "material_unit": "0",
+            "material_unit2": "140000",
+            "extra_rate": null,
+            "chk_size_high": null,
+            "chk_size_low": null
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT13",
+            "material_unit": "0",
+            "material_unit2": "140000",
+            "extra_rate": null,
+            "chk_size_high": null,
+            "chk_size_low": null
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT12",
+            "material_unit": "5",
+            "material_unit2": "140000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT13",
+            "material_unit": "5",
+            "material_unit2": "140000",
+            "extra_rate": "1.3",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "material_unit"
+        },
+        {
+          "0": {
+            "paper_size": "A0100",
+            "min_price": "0",
+            "min_unit": "0"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "A0200",
+            "min_price": "50000",
+            "min_unit": "50"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "A0300",
+            "min_price": "45000",
+            "min_unit": "35"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "A0400",
+            "min_price": "20000",
+            "min_unit": "20"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "A0500",
+            "min_price": "20000",
+            "min_unit": "20"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "B0200",
+            "min_price": "0",
+            "min_unit": "0"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "B0300",
+            "min_price": "50000",
+            "min_unit": "45"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "B0400",
+            "min_price": "45000",
+            "min_unit": "30"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "B0500",
+            "min_price": "20000",
+            "min_unit": "20"
+          },
+          "type": "min_unit"
+        },
+        {
+          "0": {
+            "paper_size": "B0600",
+            "min_price": "20000",
+            "min_unit": "20"
+          },
+          "type": "min_unit"
+        }
+      ]
+    },
+    "materialUnits": [
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {},
+      {}
+    ],
+    "ppBakInfoTypes": [
+      "material_unit",
+      "min_unit"
+    ],
+    "bakTypeOptions": [
+      {
+        "value": "BKT02",
+        "label": "湲덈컯(�좉킅)"
+      },
+      {
+        "value": "BKT09",
+        "label": "湲덈컯(臾닿킅)"
+      },
+      {
+        "value": "BKT01",
+        "label": "��諛�(�좉킅)"
+      },
+      {
+        "value": "BKT10",
+        "label": "��諛�(臾닿킅)"
+      },
+      {
+        "value": "BKT03",
+        "label": "泥�컯(�좉킅)"
+      },
+      {
+        "value": "BKT04",
+        "label": "�곷컯(�좉킅)"
+      },
+      {
+        "value": "BKT05",
+        "label": "�밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT06",
+        "label": "癒밸컯(�좉킅)"
+      },
+      {
+        "value": "BKT08",
+        "label": "�꾨컯(�좉킅)"
+      },
+      {
+        "value": "BKT12",
+        "label": "��濡쒓렇�⑤컯(蹂�)"
+      },
+      {
+        "value": "BKT13",
+        "label": "��濡쒓렇�⑤컯(臾쇰갑��)"
+      },
+      {
+        "value": "BKT11",
+        "label": "��濡쒓렇�⑤컯(����)"
+      }
+    ]
+  }
+}

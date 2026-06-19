@@ -337,6 +337,11 @@ export interface FoilLayer {
   bak_type?: string
   /** 박 면 BKD10(전면)/BKD20(후면)/BKD30(양면) (미지정 시 FOIL_DEFAULT_BAK_SIDE) */
   bak_side?: string
+  /**
+   * OMO-3528: 동판 구분 BKS10(신규)/BKS20(보유동판). 보유동판이면 성원 calcuBakPrice 가
+   * 동판 setup 비를 0 으로 면제(전 카테고리, RE 확정). 미지정 시 신규(BKS10).
+   */
+  bak_section?: string
 }
 
 export interface FoilLayerValidation {
@@ -475,7 +480,8 @@ export function foilLayersToFields(layers: FoilLayer[]): Record<string, string> 
   const out: Record<string, string> = {}
   layers.slice(0, MAX_FOIL_LAYERS).forEach((l, i) => {
     const idx = i + 1
-    out[`bak_section_${idx}`] = 'BKS10' // 신규
+    // OMO-3528: 보유동판(BKS20)이면 동판 setup 면제 경로로 발주. 미지정/그외 = 신규(BKS10).
+    out[`bak_section_${idx}`] = l.bak_section === 'BKS20' ? 'BKS20' : 'BKS10'
     out[`bak_side_${idx}`] = l.bak_side || FOIL_DEFAULT_BAK_SIDE
     out[`bak_type_${idx}`] = l.bak_type || FOIL_DEFAULT_BAK_TYPE
     out[`bak_compare_${idx}`] = 'BAC10' // 내용같음
@@ -501,6 +507,7 @@ export function parseFoilLayersFromOptions(opts: Record<string, string>): FoilLa
       y_size: Number(y),
       bak_type: opts[`bak_type_${i}`],
       bak_side: opts[`bak_side_${i}`],
+      bak_section: opts[`bak_section_${i}`],
     })
   }
   return layers

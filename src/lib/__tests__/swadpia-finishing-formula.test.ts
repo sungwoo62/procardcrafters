@@ -8,8 +8,12 @@ import {
   bakDongpanPriceCnc,
   bakDongpanPriceCst,
   bakAmtSum,
+  bakPriceCnc,
+  bakMaterialUnitCnc,
+  BAK_MATERIAL_UNIT_CNC,
   NUMBERING_BLOCKED_PAPERS,
 } from '../swadpia-finishing-formula'
+import type { BakPriceCncInput } from '../swadpia-finishing-formula'
 
 describe('① 넘버링 NBT/NBN (명함류 CNC1000)', () => {
   const base = {
@@ -97,5 +101,47 @@ describe('② 박 멀티레이어 합산 (setPPBakAmtSum)', () => {
   it('단일 레이어 = 그 값(부모 22,300 고정 = 레이어 2/3 미생성)', () => {
     expect(bakAmtSum([22300])).toBe(22300)
     expect(bakAmtSum([22300, NaN, NaN])).toBe(22300)
+  })
+})
+
+describe('④ CNC1000 박 단가 함수 (OMO-3534: ground-truth = 성원 hidden bak_amt)', () => {
+  // 표집 입력 공통: cut 90×50, qty 500, oc 1, BKS10 신규동판.
+  const cnc = (over: Partial<BakPriceCncInput>): BakPriceCncInput => ({
+    bakType: 'BKT01', bakXSize: 40, bakYSize: 20, cutXSize: 90, cutYSize: 50,
+    paperQty: 500, orderCount: 1, bakSide: 'BKD10', section: 'BKS10', ...over,
+  })
+
+  // scripts/omo3534-verify-formula.mjs 와 동일 — 4/4 EXACT 검증.
+  it('BKT01(26,000) 40×20 단면 = 20,200', () => {
+    expect(bakPriceCnc(cnc({})).bakPrice).toBe(20200)
+  })
+  it('BKT06(30,000) 50×30 단면 = 22,800', () => {
+    expect(bakPriceCnc(cnc({ bakType: 'BKT06', bakXSize: 50, bakYSize: 30 })).bakPrice).toBe(22800)
+  })
+  it('BKT18(80,000 백박) 50×30 단면 = 29,000', () => {
+    expect(bakPriceCnc(cnc({ bakType: 'BKT18', bakXSize: 50, bakYSize: 30 })).bakPrice).toBe(29000)
+  })
+  it('BKT01 40×20 양면(BKD30) = 37,200 (unit ×2)', () => {
+    expect(bakPriceCnc(cnc({ bakSide: 'BKD30' })).bakPrice).toBe(37200)
+  })
+
+  it('기본 픽스처(BKT01 50×30 박 + 90×50 명함) = 정확히 22,300 (현 ratePerMm2 캘리브레이션 점)', () => {
+    expect(bakPriceCnc(cnc({ bakXSize: 50, bakYSize: 30 })).bakPrice).toBe(22300)
+  })
+
+  it('보유동판(BKS20) → dongpan 항 0 분리 (#4 surcharge-side 면제)', () => {
+    const neu = bakPriceCnc(cnc({}))
+    const owned = bakPriceCnc(cnc({ section: 'BKS20' }))
+    expect(neu.dongpan).toBeGreaterThan(0)
+    expect(owned.dongpan).toBe(0)
+    expect(owned.bakPrice).toBe(neu.bakPrice - neu.dongpan)
+  })
+
+  it('material_unit2 표집 표: 홀로그램(BKT07/11/12/13)=70,000, 먹박(BKT06)=30,000, 백박(BKT18)=80,000', () => {
+    expect(bakMaterialUnitCnc('BKT07').material_unit2).toBe(70000)
+    expect(BAK_MATERIAL_UNIT_CNC.BKT06).toBe(30000)
+    expect(BAK_MATERIAL_UNIT_CNC.BKT18).toBe(80000)
+    // 미표집 bak_type → 일반박(26,000) 폴백
+    expect(bakMaterialUnitCnc('BKT99').material_unit2).toBe(26000)
   })
 })

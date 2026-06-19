@@ -1,0 +1,2029 @@
+{
+  "code": "CPR1000",
+  "ok": true,
+  "selected": {
+    "paper_size": "CPR11"
+  },
+  "bakActivation": [
+    "chk_is_bak clicked",
+    "setIsPostpress('bak') called"
+  ],
+  "bak": {
+    "hasObj": true,
+    "raw": {
+      "pp_bak_info": [
+        {
+          "0": {
+            "bak_type": "BKT02",
+            "section": "UNIT5",
+            "material_name": "금박(유광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT09",
+            "section": "UNIT5",
+            "material_name": "금박(무광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT01",
+            "section": "UNIT5",
+            "material_name": "은박(유광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT10",
+            "section": "UNIT5",
+            "material_name": "은박(무광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT03",
+            "section": "UNIT5",
+            "material_name": "청박(유광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT04",
+            "section": "UNIT5",
+            "material_name": "적박(유광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT05",
+            "section": "UNIT5",
+            "material_name": "녹박(유광)",
+            "material_unit": "0",
+            "material_unit2": "26000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT06",
+            "section": "UNIT5",
+            "material_name": "먹박(유광)",
+            "material_unit": "0",
+            "material_unit2": "30000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT11",
+            "section": "UNIT5",
+            "material_name": "홀로그램박(은펄)",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT12",
+            "section": "UNIT5",
+            "material_name": "홀로그램박(별)",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT13",
+            "section": "UNIT5",
+            "material_name": "홀로그램박(물방울)",
+            "material_unit": "0",
+            "material_unit2": "70000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "bak_type": "BKT14",
+            "section": "UNIT5",
+            "material_name": "펄박(유광)",
+            "material_unit": "0",
+            "material_unit2": "30000",
+            "extra_rate": "1.4",
+            "chk_size_high": "60000",
+            "chk_size_low": "640"
+          },
+          "type": "film_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "5",
+            "chk_size_high": "30",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "27",
+            "chk_size_high": "30",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "200",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "200",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "200",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "200",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "54",
+            "chk_size_high": "200",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "63",
+            "chk_size_high": "200",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "22",
+            "chk_size_high": "230",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "230",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "230",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "230",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "29",
+            "chk_size_high": "30",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "230",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "230",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "230",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "230",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "230",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "230",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "230",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "230",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "230",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "57",
+            "chk_size_high": "230",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "32",
+            "chk_size_high": "30",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "65",
+            "chk_size_high": "230",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "24",
+            "chk_size_high": "260",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "260",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "260",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "260",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "260",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "260",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "260",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "260",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "260",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "34",
+            "chk_size_high": "30",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "260",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "260",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "260",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "260",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "59",
+            "chk_size_high": "260",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "68",
+            "chk_size_high": "260",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "27",
+            "chk_size_high": "290",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "290",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "290",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "290",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "40",
+            "chk_size_high": "30",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "290",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "290",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "290",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "290",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "290",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "290",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "290",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "290",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "56",
+            "chk_size_high": "290",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "62",
+            "chk_size_high": "290",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "30",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "70",
+            "chk_size_high": "290",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "29",
+            "chk_size_high": "320",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "320",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "29",
+            "chk_size_high": "320",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "320",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "320",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "320",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "320",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "320",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "320",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "7",
+            "chk_size_high": "50",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "320",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "320",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "56",
+            "chk_size_high": "320",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "58",
+            "chk_size_high": "320",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "64",
+            "chk_size_high": "320",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "73",
+            "chk_size_high": "320",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "32",
+            "chk_size_high": "350",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "350",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "32",
+            "chk_size_high": "350",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "350",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "8",
+            "chk_size_high": "50",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "350",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "350",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "350",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "350",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "350",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "350",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "56",
+            "chk_size_high": "350",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "58",
+            "chk_size_high": "350",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "61",
+            "chk_size_high": "350",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "67",
+            "chk_size_high": "350",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "5",
+            "chk_size_high": "50",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "75",
+            "chk_size_high": "350",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "34",
+            "chk_size_high": "380",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "380",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "34",
+            "chk_size_high": "380",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "380",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "380",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "380",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "380",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "51",
+            "chk_size_high": "380",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "380",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "13",
+            "chk_size_high": "50",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "56",
+            "chk_size_high": "380",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "58",
+            "chk_size_high": "380",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "61",
+            "chk_size_high": "380",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "63",
+            "chk_size_high": "380",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "69",
+            "chk_size_high": "380",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "78",
+            "chk_size_high": "380",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "40",
+            "chk_size_high": "450",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "42",
+            "chk_size_high": "450",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "40",
+            "chk_size_high": "450",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "47",
+            "chk_size_high": "450",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "7",
+            "chk_size_high": "30",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "16",
+            "chk_size_high": "50",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "49",
+            "chk_size_high": "450",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "52",
+            "chk_size_high": "450",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "54",
+            "chk_size_high": "450",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "57",
+            "chk_size_high": "450",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "59",
+            "chk_size_high": "450",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "62",
+            "chk_size_high": "450",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "64",
+            "chk_size_high": "450",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "67",
+            "chk_size_high": "450",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "69",
+            "chk_size_high": "450",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "75",
+            "chk_size_high": "450",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "18",
+            "chk_size_high": "50",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "83",
+            "chk_size_high": "450",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "48",
+            "chk_size_high": "550",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "50",
+            "chk_size_high": "550",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "49",
+            "chk_size_high": "550",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "55",
+            "chk_size_high": "550",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "58",
+            "chk_size_high": "550",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "60",
+            "chk_size_high": "550",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "63",
+            "chk_size_high": "550",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "65",
+            "chk_size_high": "550",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "68",
+            "chk_size_high": "550",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "50",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "70",
+            "chk_size_high": "550",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "73",
+            "chk_size_high": "550",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "75",
+            "chk_size_high": "550",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "78",
+            "chk_size_high": "550",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "83",
+            "chk_size_high": "550",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "92",
+            "chk_size_high": "550",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "50",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "50",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "50",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "50",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "50",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "50",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "42",
+            "chk_size_high": "50",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "9",
+            "chk_size_high": "30",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "50",
+            "chk_size_high": "50",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "9",
+            "chk_size_high": "80",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "11",
+            "chk_size_high": "80",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "7",
+            "chk_size_high": "80",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "16",
+            "chk_size_high": "80",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "18",
+            "chk_size_high": "80",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "80",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "80",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "80",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "80",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "12",
+            "chk_size_high": "30",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "80",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "80",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "80",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "80",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "44",
+            "chk_size_high": "80",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "53",
+            "chk_size_high": "80",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "12",
+            "chk_size_high": "110",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "13",
+            "chk_size_high": "110",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "10",
+            "chk_size_high": "110",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "18",
+            "chk_size_high": "110",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "14",
+            "chk_size_high": "30",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "110",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "110",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "110",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "110",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "110",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "110",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "110",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "110",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "110",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "47",
+            "chk_size_high": "110",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "17",
+            "chk_size_high": "30",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "55",
+            "chk_size_high": "110",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "14",
+            "chk_size_high": "140",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "16",
+            "chk_size_high": "140",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "12",
+            "chk_size_high": "140",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "140",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "140",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "140",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "140",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "140",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "140",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "19",
+            "chk_size_high": "30",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "140",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "140",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "140",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "140",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "49",
+            "chk_size_high": "140",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "58",
+            "chk_size_high": "140",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "17",
+            "chk_size_high": "170",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "18",
+            "chk_size_high": "170",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "15",
+            "chk_size_high": "170",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "23",
+            "chk_size_high": "170",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "22",
+            "chk_size_high": "30",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "170",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "170",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "170",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "170",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "170",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "170",
+            "chk_size_low": "290"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "41",
+            "chk_size_high": "170",
+            "chk_size_low": "320"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "43",
+            "chk_size_high": "170",
+            "chk_size_low": "350"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "46",
+            "chk_size_high": "170",
+            "chk_size_low": "380"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "52",
+            "chk_size_high": "170",
+            "chk_size_low": "450"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "24",
+            "chk_size_high": "30",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "60",
+            "chk_size_high": "170",
+            "chk_size_low": "550"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "19",
+            "chk_size_high": "200",
+            "chk_size_low": "30"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "21",
+            "chk_size_high": "200",
+            "chk_size_low": "50"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "18",
+            "chk_size_high": "200",
+            "chk_size_low": "80"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "26",
+            "chk_size_high": "200",
+            "chk_size_low": "110"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "28",
+            "chk_size_high": "200",
+            "chk_size_low": "140"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "31",
+            "chk_size_high": "200",
+            "chk_size_low": "170"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "33",
+            "chk_size_high": "200",
+            "chk_size_low": "200"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "36",
+            "chk_size_high": "200",
+            "chk_size_low": "230"
+          },
+          "type": "work_unit"
+        },
+        {
+          "0": {
+            "unit_cost": "38",
+            "chk_size_high": "200",
+            "chk_size_low": "260"
+          },
+          "type": "work_unit"
+        }
+      ]
+    },
+    "materialUnits": [],
+    "ppBakInfoTypes": [
+      "film_unit",
+      "work_unit"
+    ],
+    "bakTypeOptions": [
+      {
+        "value": "BKT02",
+        "label": "금박(유광)"
+      },
+      {
+        "value": "BKT09",
+        "label": "금박(무광)"
+      },
+      {
+        "value": "BKT01",
+        "label": "은박(유광)"
+      },
+      {
+        "value": "BKT10",
+        "label": "은박(무광)"
+      },
+      {
+        "value": "BKT03",
+        "label": "청박(유광)"
+      },
+      {
+        "value": "BKT04",
+        "label": "적박(유광)"
+      },
+      {
+        "value": "BKT05",
+        "label": "녹박(유광)"
+      },
+      {
+        "value": "BKT06",
+        "label": "먹박(유광)"
+      },
+      {
+        "value": "BKT11",
+        "label": "홀로그램박(은펄)"
+      },
+      {
+        "value": "BKT12",
+        "label": "홀로그램박(별)"
+      },
+      {
+        "value": "BKT13",
+        "label": "홀로그램박(물방울)"
+      },
+      {
+        "value": "BKT14",
+        "label": "펄박(유광)"
+      }
+    ]
+  }
+}
