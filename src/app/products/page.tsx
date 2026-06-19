@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, Star, Zap } from 'lucide-react'
+import { ArrowRight, Star, Zap, Sparkles } from 'lucide-react'
 import { createServerClient } from '@/lib/supabase'
 import ProductImage from '@/components/ProductImage'
 import CompetitorPriceBadge from '@/components/CompetitorPriceBadge'
@@ -145,6 +145,14 @@ export default async function ProductsPage() {
             Configure any product and get your exact USD price in seconds —
             with live KRW exchange rates built in.
           </p>
+          {/* OMO-3265: AI 큐레이션 진입 — "뭘 골라야 할지 모르겠다" 고객을 추천 플로우로 */}
+          <Link
+            href="/curate"
+            className="inline-flex items-center gap-2 mt-6 bg-white text-blue-700 font-semibold px-5 py-2.5 rounded-full hover:bg-blue-50 transition"
+          >
+            <Sparkles className="w-4 h-4" /> Not sure what to pick? Try AI Curation
+            <ArrowRight className="w-4 h-4" />
+          </Link>
         </div>
       </section>
 

@@ -148,6 +148,28 @@ export default function NicheLanding({
         </section>
       )}
 
+      {/* AI 큐레이션 진입 (OMO-3265): 정해진 프리셋 외에 "더 원하는 게 있으면" 유도 */}
+      <section style={{ padding: '2.5rem 0', background: '#0f172a', color: 'white' }}>
+        <div style={{ ...CONTAINER, maxWidth: '780px', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.85rem', letterSpacing: '0.05em', color: '#93c5fd', fontWeight: 700, marginBottom: '0.6rem' }}>
+            ✨ AI CURATION
+          </p>
+          <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '0.6rem' }}>
+            Want something other than these?
+          </h2>
+          <p style={{ color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: 1.6 }}>
+            Tell us your style and budget — &ldquo;top-tier, money no object&rdquo;, &ldquo;premium but great value&rdquo;, or
+            &ldquo;cheaper than anywhere else&rdquo; — and our AI curates the perfect setup, ready to order.
+          </p>
+          <a
+            href={`/curate?group=${c.productGroup}`}
+            style={{ ...BTN, background: '#3b82f6', color: 'white', fontSize: '1.05rem', padding: '0.85rem 2.25rem', fontWeight: 700 }}
+          >
+            Try AI Curation →
+          </a>
+        </div>
+      </section>
+
       {/* 가격 CTA */}
       <section style={{ padding: '3.5rem 0' }}>
         <div style={{ ...CONTAINER, textAlign: 'center', maxWidth: '640px' }}>
