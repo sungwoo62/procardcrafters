@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { fetchSwadpiaCategoryData, fetchSwadpiaGoodsViewOptions, CATEGORY_MAP } from '@/lib/swadpia'
+import { requireAdmin } from '@/lib/admin-auth'
 
 export const dynamic = 'force-dynamic'
 export const maxDuration = 30
@@ -14,6 +15,11 @@ export const maxDuration = 30
 // 비교 데이터를 오염시키지 않도록. 쓰기 없음(공개 prod 안전).
 
 export async function GET(req: NextRequest) {
+  // OMO-3593 defense-in-depth: 미들웨어 게이트와 별개로 핸들러 자체에서 어드민 검증.
+  // 성원 도매 KRW(papers single/double, basePriceKrw)·category_code 노출 방지.
+  const admin = await requireAdmin()
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const slug = req.nextUrl.searchParams.get('slug')?.trim()
   if (!slug) return NextResponse.json({ error: 'slug 필요' }, { status: 400 })
 

@@ -6,7 +6,7 @@ import { CheckCircle, Clock, Globe, Shield, CreditCard, LayoutTemplate, ArrowRig
 
 export const dynamic = 'force-dynamic'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
-import { calculateItemPriceUsd } from '@/lib/pricing'
+import { calculateItemPriceUsd, buildSwadpiaPricingTable } from '@/lib/pricing'
 import { getShippingCost } from '@/lib/shipping'
 import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
 import { isPccfSlug } from '@/config/pccf-catalog'
@@ -187,6 +187,23 @@ export default async function ProductDetailPage({ params }: Props) {
   }
 
   const shippingUsd = getShippingCost('US')
+
+  // OMO-3593 보안: 성원 도매 KRW(printEntries)를 클라이언트로 직렬화하지 않는다.
+  // 서버에서 마진·환율을 적용한 고객가 USD 테이블만 미리 산출해 ProductConfigurator 에 전달.
+  // 수량 집합 = 수량 옵션값(paper_qty/quantity) ∪ 기본값 100(옵션 부재 시 폴백).
+  const qtyOptionValues = options
+    .filter((o) => o.option_type === 'paper_qty' || o.option_type === 'quantity')
+    .map((o) => parseInt(o.value, 10))
+    .filter((n) => Number.isFinite(n) && n > 0)
+  const swadpiaPricing = swadpiaData.fetchSuccess
+    ? buildSwadpiaPricingTable({
+        printEntries: swadpiaData.printEntries,
+        quantities: [...new Set([...qtyOptionValues, 100])],
+        marginMultiplier: product.margin_multiplier,
+        exchangeRate,
+      })
+    : null
+
   const features = PRODUCT_FEATURES[product.category] ?? []
   const competitorPrices = (competitorData as CompetitorPriceSummary[] | null) ?? []
   const templates = getTemplatesForProduct(product.category).slice(0, 8)
@@ -402,10 +419,9 @@ export default async function ProductDetailPage({ params }: Props) {
                 options={options}
                 exchangeRate={exchangeRate}
                 shippingUsd={shippingUsd}
-                swadpiaData={swadpiaData.fetchSuccess ? {
-                  papers: swadpiaData.papers,
-                  printEntries: swadpiaData.printEntries,
+                swadpiaData={swadpiaData.fetchSuccess && swadpiaPricing ? {
                   sizes: swadpiaData.sizes,
+                  pricing: swadpiaPricing,
                 } : undefined}
               />
             ) : (

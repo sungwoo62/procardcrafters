@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { fetchSwadpiaCategoryData, calculateSwadpiaPriceKrw } from '@/lib/swadpia'
+import { requireAdmin } from '@/lib/admin-auth'
 
 /**
  * Swadpia real-time price lookup API
@@ -7,8 +8,14 @@ import { fetchSwadpiaCategoryData, calculateSwadpiaPriceKrw } from '@/lib/swadpi
  * GET /api/swadpia-price?slug=business-cards&paper=SNW250W00&qty=500&side=2
  *
  * Response: { priceKrw, paperCode, quantity, doubleSided, fetchSuccess }
+ *
+ * ⚠️ OMO-3593: 성원 도매 KRW(priceKrw/papers/printEntries)·category_code 를 반환 → **어드민 전용**.
+ *    미들웨어 게이트와 별개로 핸들러에서도 검증(defense-in-depth). 공개 호출자 없음.
  */
 export async function GET(request: NextRequest) {
+  const admin = await requireAdmin()
+  if (!admin) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
   const { searchParams } = request.nextUrl
   const slug = searchParams.get('slug')
   const paperCode = searchParams.get('paper')
