@@ -50,6 +50,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/about`, changeFrequency: 'monthly', priority: 0.5, lastModified: now },
     { url: `${SITE_URL}/faq`, changeFrequency: 'monthly', priority: 0.5, lastModified: now },
     { url: `${SITE_URL}/contact`, changeFrequency: 'monthly', priority: 0.4, lastModified: now },
+    { url: `${SITE_URL}/terms`, changeFrequency: 'yearly', priority: 0.3, lastModified: now },
+    { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.3, lastModified: now },
+    { url: `${SITE_URL}/refund`, changeFrequency: 'yearly', priority: 0.3, lastModified: now },
+    { url: `${SITE_URL}/shipping`, changeFrequency: 'yearly', priority: 0.3, lastModified: now },
   ]
 
   // 제품 상세 — 핵심 랭킹 타깃. updated_at 을 lastModified 로 노출해 크롤 신선도 신호 제공.
