@@ -59,7 +59,12 @@ export default async function PricingAuditPage() {
       let qty: number | null = defaultQty
       try {
         const cat = await fetchSwadpiaCategoryData(p.slug)
-        const valid = cat.fetchSuccess ? cat.printEntries.filter((e) => e.print_unit2 > 0).sort((a, b) => a.quantity - b.quantity) : []
+        // OMO-3520: paper_code 가 빈("") 매트릭스는 generic endpoint 의 '사이즈가격 그리드' garbage
+        // (전단·포스터·캘린더·책자 등 quote-only, OMO-3142). 실용지 매트릭스가 아니므로 제외 →
+        // ProductConfigurator 와 동일하게 base_price_krw 로 폴백(라이브 제품페이지가 실제로 그렇게 동작).
+        const valid = cat.fetchSuccess
+          ? cat.printEntries.filter((e) => e.print_unit2 > 0 && e.paper_code).sort((a, b) => a.quantity - b.quantity)
+          : []
         const matrixPapers = new Set(valid.map((e) => e.paper_code))
         if (valid.length > 0) {
           // ProductConfigurator 동작 재현: 기본용지가 매트릭스에 있으면 사용, 없으면 매트릭스 첫 용지로 폴백.
