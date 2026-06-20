@@ -24,8 +24,12 @@ import {
   type SwadpiaCategoryData,
   calculateSwadpiaPriceKrw,
 } from './swadpia'
+import {
+  isMatrixRoutingEnabled,
+  printMatrixBaseKrw,
+} from './swadpia-print-matrix'
 
-export type BasePriceMode = 'matrix' | 'paper' | 'quote-only'
+export type BasePriceMode = 'matrix' | 'paper' | 'quote-only' | 'print-matrix'
 
 export interface ProductBasePriceSpec {
   mode: BasePriceMode
@@ -218,6 +222,20 @@ export function deriveProductBasePriceKrw(
   slug: string,
   data: SwadpiaCategoryData,
 ): BasePriceResult {
+  // ── OMO-3627: 인쇄단가 매트릭스 재분류 (보드 가격 게이트) ──
+  // 전단·포스터·브로셔·책자·캘린더 10종은 generic endpoint 가 garbage(q1=64000)를 주어
+  // quote-only(last-good 보존)로 묶여 있었다. OMO-3623 가 성원 goods_view cascade 를
+  // 그대로 실행해 parity-게이트 표집한 실공급가를 코드 레벨로 적재했다.
+  //
+  // 라이브 고객가 전환은 보드 전용 승인 게이트 → SWADPIA_MATRIX_ROUTING 활성(ON) 시에만
+  // 표집 base 를 채택한다. 기본 OFF(dormant)면 아래 quote-only 경로로 떨어져 현행
+  // 동작(last-good 보존)을 100% 유지한다(회귀 안전). 표집값은 항상 양수이므로 garbage
+  // 재오염 위험 없음.
+  const matrixBase = printMatrixBaseKrw(slug)
+  if (matrixBase !== null && isMatrixRoutingEnabled()) {
+    return { priceKrw: matrixBase, mode: 'print-matrix', reason: 'omo3623-sampled' }
+  }
+
   const spec = PRODUCT_BASE_PRICE_SPECS[slug] ?? { mode: 'matrix' as const }
 
   if (spec.mode === 'quote-only') {
