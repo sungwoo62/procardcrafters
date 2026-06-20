@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { createAuthRouteClient } from '@/lib/supabase-server'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
-import { calculateItemPriceUsd } from '@/lib/pricing'
-import { buildOrderExtraPricesKrw } from '@/config/finishing-surcharge'
+import { computeOrderItemPriceUsd } from '@/lib/order-pricing'
 import { quoteShipping, calculateOrderWeightKg } from '@/lib/shipping'
 import { createPaypalOrder } from '@/lib/paypal'
 import { sanitizeAttribution } from '@/lib/attribution'
@@ -99,14 +98,12 @@ export async function POST(request: NextRequest) {
       extra_price_krw: number
     }[]
 
-    // OMO-2667/2673: 비후가공 정확일치 + 후가공 surcharge(단일 권위)를 합산. 시드된 finishing
-    // 행과 surcharge 함수가 동시 가산되어 단일 후가공이 2배 청구되던 회귀를 헬퍼에서 차단한다.
-    const extraPricesKrw = buildOrderExtraPricesKrw(item.selectedOptions, productOptions)
-
-    const batchPriceUsd = calculateItemPriceUsd({
-      basePriceKrw: product.base_price_krw,
-      marginMultiplier: product.margin_multiplier,
-      extraPricesKrw,
+    // OMO-3562: 청구가를 제품페이지 표시가(성원 매트릭스)와 일원화(플래그 ON 시). OFF=기존 동일
+    // (base_price_krw + buildOrderExtraPricesKrw). 표시↔청구 desync(과청구) 해소.
+    const batchPriceUsd = await computeOrderItemPriceUsd({
+      product,
+      selectedOptions: item.selectedOptions,
+      options: productOptions,
       exchangeRate,
     })
 
