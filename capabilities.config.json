@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "service": "procard",
+  "serviceType": "us_pod",
+  "domain": "procardcrafters.com",
+  "capabilities": {
+    "quote_pdf":         { "status": "present", "evidence": "src/lib/quote-consent-pdf.ts" },
+    "consent_signature": { "status": "present", "evidence": "src/components/SignaturePad.tsx" },
+    "phone_removal_cta": { "status": "na",      "evidence": null, "note": "us_pod 전화 허용(미국 고객 콜센터)" },
+    "ai_chatbot":        { "status": "present", "evidence": "src/components/ChatWidget.tsx" },
+    "reviews":           { "status": "present", "evidence": "src/components/ProductReviews.tsx" },
+    "reorder":           { "status": "present", "evidence": "src/components/ReorderButton.tsx" },
+    "payment_pg":        { "status": "present", "evidence": "src/lib/paypal.ts", "note": "PayPal(미국 결제)" },
+    "jeju_shipping":     { "status": "na",      "evidence": null, "note": "us_pod 국내배송 해당없음(FedEx ETD)" },
+    "north_star_env":    { "status": "present", "evidence": ".env.local NEXT_PUBLIC_NORTH_STAR" },
+    "supabase_rls":      { "status": "present", "evidence": "supabase/migrations" },
+    "seo":               { "status": "present", "evidence": "src/app/sitemap.ts" },
+    "admin_backend":     { "status": "present", "evidence": "src/app/admin" }
+  }
+}
