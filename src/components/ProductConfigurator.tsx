@@ -409,9 +409,10 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   const rushUsd = useMemo(() => rushSurcharge(itemPriceUsd, leadTier), [itemPriceUsd, leadTier])
 
   // 후가공 surcharge(고객가, USD) — 도매 KRW × margin_multiplier × 환율 (OMO-2664).
+  // OMO-3520: 수량의존(보드 지시) — finishingSurchargeKrw 에 selectedQty 전달해 수량 따라 증가.
   const finishingUnitUsd = useCallback(
     (value: string, areaMm2?: number) => {
-      const krw = finishingSurchargeKrw(value, areaMm2)
+      const krw = finishingSurchargeKrw(value, areaMm2, selectedQty)
       if (krw <= 0) return 0
       return calculatePriceFromSwadpia({
         swadpiaCostKrw: krw,
@@ -419,7 +420,7 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
         exchangeRate,
       })
     },
-    [product.margin_multiplier, exchangeRate],
+    [product.margin_multiplier, exchangeRate, selectedQty],
   )
 
   const finishingSurchargeUsd = useMemo(() => {
