@@ -1,0 +1,254 @@
+{
+  "ranAt": "2026-06-19T05:34:19.943Z",
+  "cases": [
+    {
+      "id": "q200-foil",
+      "label": "200매 · 박",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 16700,
+      "finishingAmt": 11600,
+      "baseKrw": 5100,
+      "amts": {
+        "bak": 11600
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    },
+    {
+      "id": "q400-foil",
+      "label": "400매 · 박",
+      "qty": 400,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 28900,
+      "finishingAmt": 18800,
+      "baseKrw": 10100,
+      "amts": {
+        "bak": 18800
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "400"
+      }
+    },
+    {
+      "id": "q600-foil",
+      "label": "600매 · 박",
+      "qty": 600,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 41100,
+      "finishingAmt": 25900,
+      "baseKrw": 15200,
+      "amts": {
+        "bak": 25900
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "600"
+      }
+    },
+    {
+      "id": "q1000-foil",
+      "label": "1,000매 · 박",
+      "qty": 1000,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 65300,
+      "finishingAmt": 40100,
+      "baseKrw": 25200,
+      "amts": {
+        "bak": 40100
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "1000"
+      }
+    },
+    {
+      "id": "q2000-foil",
+      "label": "2,000매 · 박",
+      "qty": 2000,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 126100,
+      "finishingAmt": 75700,
+      "baseKrw": 50400,
+      "amts": {
+        "bak": 75700
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "2000"
+      }
+    },
+    {
+      "id": "q200-none",
+      "label": "200매 · 후가공 없음",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100"
+      },
+      "ok": true,
+      "payAmtKrw": 4200,
+      "finishingAmt": 0,
+      "baseKrw": 4200,
+      "amts": {},
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    },
+    {
+      "id": "q200-diecut",
+      "label": "200매 · 도무송",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "die_cut"
+      },
+      "ok": true,
+      "payAmtKrw": 23200,
+      "finishingAmt": 19000,
+      "baseKrw": 4200,
+      "amts": {
+        "domusong": 19000
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    },
+    {
+      "id": "q200-drill",
+      "label": "200매 · 타공",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "drilled_hole"
+      },
+      "ok": true,
+      "payAmtKrw": 6700,
+      "finishingAmt": 2500,
+      "baseKrw": 4200,
+      "amts": {
+        "tagong": 2500
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    },
+    {
+      "id": "q200-epoxy",
+      "label": "200매 · 에폭시",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "finishing": "epoxy"
+      },
+      "ok": true,
+      "payAmtKrw": 13200,
+      "finishingAmt": 9000,
+      "baseKrw": 4200,
+      "amts": {
+        "epoxy": 9000
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN40",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    },
+    {
+      "id": "q200-1side",
+      "label": "200매 · 단면 · 박",
+      "qty": 200,
+      "opts": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN10",
+        "paper_size": "N0100",
+        "finishing": "foil_stamp",
+        "bak_x_size_1": "50",
+        "bak_y_size_1": "30"
+      },
+      "ok": true,
+      "payAmtKrw": 15500,
+      "finishingAmt": 11600,
+      "baseKrw": 3900,
+      "amts": {
+        "bak": 11600
+      },
+      "applied": {
+        "paper_code": "SNW300W00",
+        "print_color_type": "CTN10",
+        "paper_size": "N0100",
+        "paper_qty": "200"
+      }
+    }
+  ]
+}
