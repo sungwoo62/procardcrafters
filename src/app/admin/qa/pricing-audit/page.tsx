@@ -10,8 +10,12 @@ export const dynamic = 'force-dynamic'
 
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
-import { fetchSwadpiaCategoryData } from '@/lib/swadpia'
+import { fetchSwadpiaCategoryData, CATEGORY_MAP } from '@/lib/swadpia'
+import { SWADPIA_CATALOG } from '@/lib/swadpia-coverage'
 import { lookupSwadpiaCost, calculatePriceFromSwadpia, calculateItemPriceUsd } from '@/lib/pricing'
+
+const SWADPIA_BASE = 'https://www.swadpia.co.kr'
+const SITE = 'https://procardcrafters.com'
 
 interface OptionRow { option_type: string; value: string; is_default: boolean }
 interface ProductRow {
@@ -21,6 +25,8 @@ interface ProductRow {
 }
 interface AuditRow {
   slug: string; name: string; category: string; margin: number
+  swCode: string | null   // 성원 category_code (포인팅 대상)
+  swLabel: string | null  // 성원 카테고리명
   defaultPaper: string | null   // DB 기본 용지(고객이 기본으로 보는 용지)
   pricedPaper: string | null    // 실제 가격책정에 쓰인 매트릭스 용지
   paperMismatch: boolean        // 기본용지가 매트릭스에 없어 폴백됨
@@ -84,9 +90,11 @@ export default async function PricingAuditPage() {
         ? calculatePriceFromSwadpia({ swadpiaCostKrw: swonKrw, marginMultiplier: p.margin_multiplier, exchangeRate })
         : calculateItemPriceUsd({ basePriceKrw: swonKrw, marginMultiplier: p.margin_multiplier, extraPricesKrw: [], exchangeRate })
       const checkUsd = Math.round((swonKrw * p.margin_multiplier) / krwPerUsd * 100) / 100
+      const swCode = CATEGORY_MAP[p.slug] ?? null
+      const swLabel = swCode ? SWADPIA_CATALOG[swCode]?.label ?? null : null
       return {
         slug: p.slug, name: p.name_en || p.name_ko, category: p.category, margin: p.margin_multiplier,
-        defaultPaper, pricedPaper, paperMismatch, qty, swonKrw, ourUsd, checkUsd, source,
+        swCode, swLabel, defaultPaper, pricedPaper, paperMismatch, qty, swonKrw, ourUsd, checkUsd, source,
       }
     }),
   )
@@ -127,7 +135,8 @@ function PriceTable({ rows, krwPerUsd }: { rows: AuditRow[]; krwPerUsd: number }
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-gray-200 text-xs uppercase text-gray-500">
-            <th className="px-3 py-2">제품</th>
+            <th className="px-3 py-2">우리 제품</th>
+            <th className="px-3 py-2">성원 제품(포인팅)</th>
             <th className="px-3 py-2">기본용지(고객노출)</th>
             <th className="px-3 py-2">가격책정용지·수량</th>
             <th className="px-3 py-2 text-right">성원원가</th>
@@ -141,7 +150,17 @@ function PriceTable({ rows, krwPerUsd }: { rows: AuditRow[]; krwPerUsd: number }
             const ok = Math.abs(r.ourUsd - r.checkUsd) < 0.02
             return (
               <tr key={r.slug} className={`border-b border-gray-100 ${r.paperMismatch ? 'bg-rose-50' : ''}`}>
-                <td className="px-3 py-2 font-medium text-gray-800">{r.name}</td>
+                <td className="px-3 py-2 font-medium">
+                  <a href={`${SITE}/products/${r.slug}`} target="_blank" rel="noreferrer" className="text-indigo-700 hover:underline">{r.name}</a>
+                  <div className="font-mono text-[10px] text-gray-400">{r.slug}</div>
+                </td>
+                <td className="px-3 py-2 text-xs">
+                  {r.swCode ? (
+                    <a href={`${SWADPIA_BASE}/goods/goods_view/${r.swCode}/1`} target="_blank" rel="noreferrer" className="text-rose-600 hover:underline">
+                      {r.swLabel ?? r.swCode} <span className="font-mono text-gray-400">({r.swCode})</span>
+                    </a>
+                  ) : <span className="text-gray-400">미매핑</span>}
+                </td>
                 <td className="px-3 py-2 font-mono text-xs text-gray-600">{r.defaultPaper ?? '—'}</td>
                 <td className="px-3 py-2 font-mono text-xs text-gray-500">
                   {r.qty ? `q${r.qty} · ${r.pricedPaper}` : '—'}{r.paperMismatch && <span className="text-rose-600"> ⚠불일치</span>}
