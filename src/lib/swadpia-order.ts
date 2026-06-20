@@ -22,10 +22,37 @@ import {
   parseFoilLayersFromOptions,
   validateFoilLayers,
 } from '@/config/swadpia-finishing-fields'
+import {
+  requiresSpotPlate,
+  getPdfPageCount,
+  assertFinishingPlatePresent,
+  type FinishingSideSpec,
+} from './finishing-combined-pdf'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
   return pw.chromium
+}
+
+/**
+ * OMO-3578: 별색 합본 PDF 가드(OMO-3581 교정 규격)의 단면/양면 분기를 발주 옵션에서 도출한다.
+ *   박 면 필드 bak_side_N: BKD10(전면)·BKD20(후면)=단면, BKD30=양면.
+ *   - 단일 박 레이어가 BKD30(양면) → 같은 박을 양면에 = 동일박(박파일 1개) → 4페이지.
+ *   - 전면(BKD10)+후면(BKD20) 레이어 공존 → 앞/뒤 다른 박 → distinct → 5페이지.
+ * 박 외 후가공(형압/도무송/에폭시)은 면 필드가 없어 단면(위치보기용+인쇄+박파일=3페이지) 기준.
+ */
+function deriveFinishingSide(
+  options: Record<string, string> | undefined | null,
+): FinishingSideSpec {
+  const sides = Object.entries(options ?? {})
+    .filter(([k]) => /^bak_side(_\d+)?$/.test(k))
+    .map(([, v]) => v)
+  const hasFront = sides.includes('BKD10')
+  const hasBack = sides.includes('BKD20')
+  const hasBoth = sides.includes('BKD30')
+  const doubleSided = hasBoth || (hasFront && hasBack)
+  const sameSpotBothSides = hasBoth && !(hasFront && hasBack)
+  return { doubleSided, sameSpotBothSides }
 }
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
@@ -153,6 +180,33 @@ export interface SwadpiaOrderInput {
   quantity: number
   fileUrl: string
   orderTitle?: string
+  /**
+   * OMO-3578: 결제 금지 dry-run 모드. true 면 로그인→옵션선택→후가공활성화→파일업로드
+   * 까지만 수행하고, 주문서 생성(uploadSuccessOrderSubmit) / 주문확인 / 결제(paySubmit)는
+   * **호출하지 않는다**. 업로드 직후 폼 스냅샷(total_price·적용된 후가공 필드값·합본PDF
+   * 가드 결과)을 캡처해 반환한다. 실발주(결제) 금지 안전 계약을 코드로 강제하는 경로다.
+   */
+  dryRun?: boolean
+}
+
+/**
+ * OMO-3578: dry-run(결제 직전) 폼 스냅샷. 자동발주 정합을 결제 없이 검증하기 위한 증거.
+ */
+export interface SwadpiaDryRunSnapshot {
+  /** 성원 발주폼 hidden total_price 직독값(공급가, KRW). 결정론 가격 — OCR/추론 아님. */
+  totalPriceRaw: string | null
+  /** 업로드 직후 폼에 실제 반영된 후가공 필드값(input.selectedOptions 의 후가공 키 한정). */
+  appliedFinishingFields: Record<string, string>
+  /** 활성화된 후가공 패널(chk_is_*=checked) ppType 목록. */
+  activatedPanels: string[]
+  /** 합본PDF 가드 결과: 별색판을 요구한 후가공 목록(없으면 빈 배열). */
+  spotPlateFinishings: string[]
+  /** 업로드 파일 페이지수(비PDF=null). */
+  uploadedPageCount: number | null
+  /** plupload 가 반환한 서버측 파일명. 업로드 성공 증거. */
+  chgFileName: string | null
+  /** 스냅샷 시점 페이지 URL(여전히 goods_view — 주문서 미생성 증거). */
+  pageUrl: string
 }
 
 export interface SwadpiaOrderResult {
@@ -160,6 +214,8 @@ export interface SwadpiaOrderResult {
   swadpiaOrderNumber?: string
   checkoutUrl?: string
   errorMessage?: string
+  /** dryRun=true 일 때만 채워지는 결제직전 스냅샷. */
+  dryRun?: SwadpiaDryRunSnapshot
 }
 
 export interface FactoryOrderRecord {
@@ -206,6 +262,35 @@ export async function placeSwadpiaOrder(
     const fileName = path.basename(filePath)
     const fileExt = path.extname(filePath)
     const fileSize = fs.statSync(filePath).size
+
+    // OMO-3568/3581: 별색 후가공(박/형압/도무송/에폭시/별색) 누락 가드.
+    //   별색 후가공 발주는 성원 "박인쇄 작업방법" 교정 규격의 합본 PDF가 필수다:
+    //   위치보기용(M100) + 인쇄(박제거) + 박파일(K100) — 단면 3p / 양면 4~5p.
+    //   판 누락 시 후가공이 빠진 채 인쇄돼 손해가 나므로(동판/목형/에폭시판은 별색판 기준 제작),
+    //   업로드 전에 결정론 가드로 차단한다. 별색 후가공이 없으면 무영향(기존 주문 통과).
+    // OMO-3578: dry-run 스냅샷이 가드 결과를 보고할 수 있도록 함수 스코프로 hoist.
+    let uploadedPageCount: number | null = null
+    let spotPlateFinishings: string[] = []
+    if (requiresSpotPlate(input.selectedOptions)) {
+      uploadedPageCount =
+        fileExt.toLowerCase() === '.pdf'
+          ? await getPdfPageCount(fs.readFileSync(filePath)).catch(() => null)
+          : null
+      const guard = assertFinishingPlatePresent({
+        selectedOptions: input.selectedOptions,
+        pageCount: uploadedPageCount,
+        fileExt,
+        side: deriveFinishingSide(input.selectedOptions),
+      })
+      if (!guard.ok) {
+        return { success: false, errorMessage: `[합본PDF 가드] ${guard.errorMessage}` }
+      }
+      spotPlateFinishings = guard.spotPlateFinishings
+      console.log(
+        `[swadpia-order] 별색 합본 PDF 가드 통과 — 후가공=${spotPlateFinishings.join(',')} ` +
+          `페이지수=${uploadedPageCount}/${guard.expectedPageCount}`,
+      )
+    }
 
     const chromium = await getChromium()
     browser = await chromium.launch({ headless: true })
@@ -258,6 +343,55 @@ export async function placeSwadpiaOrder(
     const chgFileName = await uploadViaPlupload(page, filePath)
     if (!chgFileName) {
       return { success: false, errorMessage: 'plupload upload failed — chgFileName missing' }
+    }
+
+    // OMO-3578: dry-run 정지점 — 결제 직전(파일 업로드 완료)까지만 수행하고
+    //   주문서 생성/주문확인/결제(paySubmit)는 호출하지 않는다(실발주 금지 안전계약).
+    //   여전히 goods_view 페이지에서 total_price hidden 직독 + 적용된 후가공 필드값 +
+    //   활성 패널을 캡처해 자동발주 정합을 결제 없이 검증한다.
+    if (input.dryRun) {
+      const finishingKeys = Object.keys(input.selectedOptions).filter((k) => isFinishingKey(k))
+      const snap = await page.evaluate(
+        (params: { ppTypes: string[]; finishingKeys: string[] }) => {
+          const readVal = (name: string): string | null => {
+            const el = document.querySelector(`[name="${name}"]`) as
+              | HTMLInputElement
+              | HTMLSelectElement
+              | null
+            return el ? el.value : null
+          }
+          const totalPriceRaw = readVal('total_price')
+          const appliedFinishingFields: Record<string, string> = {}
+          for (const k of params.finishingKeys) {
+            const v = readVal(k)
+            if (v !== null) appliedFinishingFields[k] = v
+          }
+          const activatedPanels: string[] = []
+          for (const t of params.ppTypes) {
+            const chk = document.getElementById(`chk_is_${t}`) as HTMLInputElement | null
+            if (chk && chk.checked) activatedPanels.push(t)
+          }
+          return { totalPriceRaw, appliedFinishingFields, activatedPanels }
+        },
+        { ppTypes: FINISHING_GROUPS.map((g) => g.ppType), finishingKeys },
+      )
+      console.log(
+        `[swadpia-order] DRY-RUN 정지(결제 미진행) — total_price=${snap.totalPriceRaw ?? '-'} ` +
+          `활성패널=[${snap.activatedPanels.join(',')}] 별색=[${spotPlateFinishings.join(',')}] ` +
+          `페이지수=${uploadedPageCount}`,
+      )
+      return {
+        success: true,
+        dryRun: {
+          totalPriceRaw: snap.totalPriceRaw,
+          appliedFinishingFields: snap.appliedFinishingFields,
+          activatedPanels: snap.activatedPanels,
+          spotPlateFinishings,
+          uploadedPageCount,
+          chgFileName,
+          pageUrl: page.url(),
+        },
+      }
     }
 
     // 5. hidden 필드 설정 + 폼 제출
