@@ -30,6 +30,34 @@ export async function middleware(req: NextRequest) {
 
   const pathname = req.nextUrl.pathname
 
+  // 인가된 어드민 여부(fail-closed): 인증됨 + (ADMIN_EMAILS 미설정이면 모든 인증사용자 / 설정되면 화이트리스트).
+  const isAllowedAdmin = (() => {
+    if (!user) return false
+    const allowedEmails = (process.env.ADMIN_EMAILS ?? '')
+      .split(',')
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean)
+    if (allowedEmails.length === 0) return true
+    return allowedEmails.includes(user.email?.toLowerCase() ?? '')
+  })()
+
+  // ===== 성원(Swadpia) 내부 데이터 보호 (OMO-3593, 보드 지시 OMO-3562) =====
+  // /reports/* (성원·프린트시티·애드피아몰 공급가 리포트) 와 /api/swadpia* 는
+  // 도매 KRW·매핑·category_code 를 노출하므로 어드민 전용. fail-closed:
+  //   미인증/비인가 → API 는 401 JSON, 페이지는 /admin/login 리다이렉트.
+  // /api/swadpia 접두로 일반화 → swadpia-mapping·swadpia-price(원오너 노출) 모두 차단.
+  if (pathname.startsWith('/reports') || pathname.startsWith('/api/swadpia')) {
+    if (!isAllowedAdmin) {
+      if (pathname.startsWith('/api/')) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      }
+      const loginUrl = new URL('/admin/login', req.url)
+      loginUrl.searchParams.set('redirectTo', pathname)
+      return NextResponse.redirect(loginUrl)
+    }
+    return supabaseResponse
+  }
+
   // ===== 어드민 인증 =====
   if (pathname.startsWith('/admin')) {
     if (!pathname.startsWith('/admin/login')) {
@@ -81,5 +109,14 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/mypage/:path*', '/auth/login'],
+  matcher: [
+    '/admin/:path*',
+    '/mypage/:path*',
+    '/auth/login',
+    // OMO-3593: 성원 내부 데이터(공급가 리포트·매핑/가격 API) 게이트.
+    '/reports/:path*',
+    '/api/swadpia/:path*',
+    '/api/swadpia-mapping/:path*',
+    '/api/swadpia-price/:path*',
+  ],
 }

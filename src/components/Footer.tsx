@@ -62,6 +62,8 @@ export default function Footer() {
               <li><Link href="/faq" className="hover:text-white transition-colors">FAQ</Link></li>
               <li><Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link></li>
               <li><Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link></li>
+              <li><Link href="/refund" className="hover:text-white transition-colors">Refund &amp; Cancellation</Link></li>
+              <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping &amp; Customs</Link></li>
             </ul>
           </div>
 
@@ -70,7 +72,7 @@ export default function Footer() {
             <h3 className="text-sm font-semibold text-white mb-4">Support</h3>
             <ul className="space-y-2.5 text-sm text-gray-400">
               <li><Link href="/orders" className="hover:text-white transition-colors">Order Status</Link></li>
-              <li><Link href="/faq" className="hover:text-white transition-colors">Shipping Info</Link></li>
+              <li><Link href="/shipping" className="hover:text-white transition-colors">Shipping &amp; Customs</Link></li>
               <li><Link href="/contact" className="hover:text-white transition-colors">File Upload Guide</Link></li>
             </ul>
             <div className="mt-6 bg-blue-600/20 border border-blue-500/30 rounded-xl p-3.5">

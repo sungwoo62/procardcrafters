@@ -22,10 +22,37 @@ import {
   parseFoilLayersFromOptions,
   validateFoilLayers,
 } from '@/config/swadpia-finishing-fields'
+import {
+  requiresSpotPlate,
+  getPdfPageCount,
+  assertFinishingPlatePresent,
+  type FinishingSideSpec,
+} from './finishing-combined-pdf'
 
 async function getChromium(): Promise<BrowserType> {
   const pw = await import('playwright')
   return pw.chromium
+}
+
+/**
+ * OMO-3578: 별색 합본 PDF 가드(OMO-3581 교정 규격)의 단면/양면 분기를 발주 옵션에서 도출한다.
+ *   박 면 필드 bak_side_N: BKD10(전면)·BKD20(후면)=단면, BKD30=양면.
+ *   - 단일 박 레이어가 BKD30(양면) → 같은 박을 양면에 = 동일박(박파일 1개) → 4페이지.
+ *   - 전면(BKD10)+후면(BKD20) 레이어 공존 → 앞/뒤 다른 박 → distinct → 5페이지.
+ * 박 외 후가공(형압/도무송/에폭시)은 면 필드가 없어 단면(위치보기용+인쇄+박파일=3페이지) 기준.
+ */
+function deriveFinishingSide(
+  options: Record<string, string> | undefined | null,
+): FinishingSideSpec {
+  const sides = Object.entries(options ?? {})
+    .filter(([k]) => /^bak_side(_\d+)?$/.test(k))
+    .map(([, v]) => v)
+  const hasFront = sides.includes('BKD10')
+  const hasBack = sides.includes('BKD20')
+  const hasBoth = sides.includes('BKD30')
+  const doubleSided = hasBoth || (hasFront && hasBack)
+  const sameSpotBothSides = hasBoth && !(hasFront && hasBack)
+  return { doubleSided, sameSpotBothSides }
 }
 
 const SWADPIA_BASE = 'https://www.swadpia.co.kr'
@@ -156,35 +183,32 @@ export interface SwadpiaOrderInput {
   /** OMO-3520: 성원 작업메모(work_memo). 미지정 시 orderTitle 사용. UTF-8 강제 전송(한글 깨짐 방지). */
   workMemo?: string
   /**
-   * OMO-3520: dry-run 모드. true 면 결제서(order_pay) 페이지까지만 진행하고
-   * 최종 paySubmit() (공급사 실비·물리적 생산 발생)은 호출하지 않는다.
-   * 파일 업로드·옵션 적용·결제금액 캡처(diagnostics)는 모두 수행한다.
+   * OMO-3578: 결제 금지 dry-run 모드. true 면 로그인→옵션선택→후가공활성화→파일업로드
+   * 까지만 수행하고, 주문서 생성(uploadSuccessOrderSubmit) / 주문확인 / 결제(paySubmit)는
+   * **호출하지 않는다**. 업로드 직후 폼 스냅샷(total_price·적용된 후가공 필드값·합본PDF
+   * 가드 결과)을 캡처해 반환한다. 실발주(결제) 금지 안전 계약을 코드로 강제하는 경로다.
    */
   dryRun?: boolean
-  /**
-   * OMO-3520: 결제서 도달 시 스크린샷을 저장할 로컬 경로(증거). 미지정 시 캡처 안 함.
-   * ⚠️ 결제서에는 공급사 로그인 계정·단가가 노출되므로 web-served(/public) 금지 — 내부 아티팩트로만.
-   */
-  screenshotPath?: string
 }
 
 /**
- * OMO-3520: E2E 검증용 진단 스냅샷 — 라이브 폼에서 읽어온 실제 적용 상태.
- * (화면 추론 금지 원칙 준수: 가격은 hidden total_price/{type}_amt 직독.)
+ * OMO-3578: dry-run(결제 직전) 폼 스냅샷. 자동발주 정합을 결제 없이 검증하기 위한 증거.
  */
-export interface SwadpiaOrderDiagnostics {
-  /** 도달한 마지막 단계 */
-  reachedStage: string
-  /** plupload 업로드 결과 */
-  fileUpload: { chgFileName: string | null; fileName: string; sizeBytes: number } | null
-  /** 성원 폼 select 에 실제 적용된 값(옵션 parity read-back) */
-  appliedOptions: Record<string, string> | null
-  /** 성원 hidden total_price / pay_amt (본가 KRW) */
-  swadpiaPayAmtKrw: number | null
-  /** 후가공별 hidden {type}_amt (KRW) */
-  finishingAmts: Record<string, number> | null
-  /** OMO-3520: 결제서에 렌더된 주문명(서버 라운드트립 후 — 한글 인코딩 검증용) */
-  orderTitleRendered?: string | null
+export interface SwadpiaDryRunSnapshot {
+  /** 성원 발주폼 hidden total_price 직독값(공급가, KRW). 결정론 가격 — OCR/추론 아님. */
+  totalPriceRaw: string | null
+  /** 업로드 직후 폼에 실제 반영된 후가공 필드값(input.selectedOptions 의 후가공 키 한정). */
+  appliedFinishingFields: Record<string, string>
+  /** 활성화된 후가공 패널(chk_is_*=checked) ppType 목록. */
+  activatedPanels: string[]
+  /** 합본PDF 가드 결과: 별색판을 요구한 후가공 목록(없으면 빈 배열). */
+  spotPlateFinishings: string[]
+  /** 업로드 파일 페이지수(비PDF=null). */
+  uploadedPageCount: number | null
+  /** plupload 가 반환한 서버측 파일명. 업로드 성공 증거. */
+  chgFileName: string | null
+  /** 스냅샷 시점 페이지 URL(여전히 goods_view — 주문서 미생성 증거). */
+  pageUrl: string
 }
 
 export interface SwadpiaOrderResult {
@@ -192,8 +216,8 @@ export interface SwadpiaOrderResult {
   swadpiaOrderNumber?: string
   checkoutUrl?: string
   errorMessage?: string
-  /** OMO-3520: dry-run/실발주 진단 스냅샷 */
-  diagnostics?: SwadpiaOrderDiagnostics
+  /** dryRun=true 일 때만 채워지는 결제직전 스냅샷. */
+  dryRun?: SwadpiaDryRunSnapshot
 }
 
 export interface FactoryOrderRecord {
@@ -224,7 +248,7 @@ export async function placeSwadpiaOrder(
   const password = process.env.SWADPIA_PASSWORD
 
   if (!username || !password) {
-    return { success: false, errorMessage: 'SWADPIA_USERNAME / SWADPIA_PASSWORD 환경변수 없음' }
+    return { success: false, errorMessage: 'SWADPIA_USERNAME / SWADPIA_PASSWORD environment variables are missing' }
   }
 
   const mapEntry = SWADPIA_GOODS_MAP[input.productSlugOrCategoryCode]
@@ -240,6 +264,35 @@ export async function placeSwadpiaOrder(
     const fileName = path.basename(filePath)
     const fileExt = path.extname(filePath)
     const fileSize = fs.statSync(filePath).size
+
+    // OMO-3568/3581: 별색 후가공(박/형압/도무송/에폭시/별색) 누락 가드.
+    //   별색 후가공 발주는 성원 "박인쇄 작업방법" 교정 규격의 합본 PDF가 필수다:
+    //   위치보기용(M100) + 인쇄(박제거) + 박파일(K100) — 단면 3p / 양면 4~5p.
+    //   판 누락 시 후가공이 빠진 채 인쇄돼 손해가 나므로(동판/목형/에폭시판은 별색판 기준 제작),
+    //   업로드 전에 결정론 가드로 차단한다. 별색 후가공이 없으면 무영향(기존 주문 통과).
+    // OMO-3578: dry-run 스냅샷이 가드 결과를 보고할 수 있도록 함수 스코프로 hoist.
+    let uploadedPageCount: number | null = null
+    let spotPlateFinishings: string[] = []
+    if (requiresSpotPlate(input.selectedOptions)) {
+      uploadedPageCount =
+        fileExt.toLowerCase() === '.pdf'
+          ? await getPdfPageCount(fs.readFileSync(filePath)).catch(() => null)
+          : null
+      const guard = assertFinishingPlatePresent({
+        selectedOptions: input.selectedOptions,
+        pageCount: uploadedPageCount,
+        fileExt,
+        side: deriveFinishingSide(input.selectedOptions),
+      })
+      if (!guard.ok) {
+        return { success: false, errorMessage: `[합본PDF 가드] ${guard.errorMessage}` }
+      }
+      spotPlateFinishings = guard.spotPlateFinishings
+      console.log(
+        `[swadpia-order] 별색 합본 PDF 가드 통과 — 후가공=${spotPlateFinishings.join(',')} ` +
+          `페이지수=${uploadedPageCount}/${guard.expectedPageCount}`,
+      )
+    }
 
     const chromium = await getChromium()
     browser = await chromium.launch({ headless: true })
@@ -267,9 +320,6 @@ export async function placeSwadpiaOrder(
     const effectiveOptions = withBookletInPageQtyDefault(categoryCode, input.selectedOptions)
     await selectOrderOptions(page, effectiveOptions, input.quantity, fieldAlias)
 
-    // OMO-3520: 옵션 적용 직후 폼 진단 스냅샷(옵션 read-back + 본가/후가공 amt 직독).
-    const goodsDiag = await captureGoodsDiagnostics(page, effectiveOptions, fieldAlias)
-
     // 2-b. 당일판(same-day) 옵션 자동 평가
     //     - 일반판 가격 대비 +10% 이내면 ON, 초과면 OFF.
     //     - Swadpia UI 가 당일판을 제공하지 않으면 no-op (decision = "not_available").
@@ -286,9 +336,9 @@ export async function placeSwadpiaOrder(
 
     // 주문명 + 작업메모 설정
     // OMO-3520: 성원 goods_view 는 charset meta 가 없어 브라우저가 windows-1252 로 기본 판정한다
-    // (라이브 확인). 그 상태로 폼을 submit 하면 한글(주문명·작업메모)이 windows-1252 로 인코딩되며
-    // 깨진다(보드 제보). order_form 에 accept-charset="UTF-8" 을 강제해 한글이 UTF-8 로 전송되게
-    // 한다(성원 신규 페이지 order_unpaid 가 UTF-8 인 것으로 보아 백엔드는 UTF-8 처리).
+    // (라이브 확인 characterSet=windows-1252). 그 상태로 폼을 submit 하면 한글(주문명·작업메모)이
+    // windows-1252 로 인코딩되며 깨진다(보드 제보). order_form 에 accept-charset="UTF-8" 을 강제해
+    // 한글이 UTF-8 로 전송되게 한다(성원 신규 페이지 order_unpaid 가 UTF-8 → 백엔드는 UTF-8 처리).
     const orderTitle = input.orderTitle ?? fileName
     const workMemo = input.workMemo ?? orderTitle
     await page.evaluate((params: { title: string; memo: string }) => {
@@ -303,7 +353,56 @@ export async function placeSwadpiaOrder(
     // 4. plupload iframe 파일 업로드
     const chgFileName = await uploadViaPlupload(page, filePath)
     if (!chgFileName) {
-      return { success: false, errorMessage: 'plupload 업로드 실패 — chgFileName 없음' }
+      return { success: false, errorMessage: 'plupload upload failed — chgFileName missing' }
+    }
+
+    // OMO-3578: dry-run 정지점 — 결제 직전(파일 업로드 완료)까지만 수행하고
+    //   주문서 생성/주문확인/결제(paySubmit)는 호출하지 않는다(실발주 금지 안전계약).
+    //   여전히 goods_view 페이지에서 total_price hidden 직독 + 적용된 후가공 필드값 +
+    //   활성 패널을 캡처해 자동발주 정합을 결제 없이 검증한다.
+    if (input.dryRun) {
+      const finishingKeys = Object.keys(input.selectedOptions).filter((k) => isFinishingKey(k))
+      const snap = await page.evaluate(
+        (params: { ppTypes: string[]; finishingKeys: string[] }) => {
+          const readVal = (name: string): string | null => {
+            const el = document.querySelector(`[name="${name}"]`) as
+              | HTMLInputElement
+              | HTMLSelectElement
+              | null
+            return el ? el.value : null
+          }
+          const totalPriceRaw = readVal('total_price')
+          const appliedFinishingFields: Record<string, string> = {}
+          for (const k of params.finishingKeys) {
+            const v = readVal(k)
+            if (v !== null) appliedFinishingFields[k] = v
+          }
+          const activatedPanels: string[] = []
+          for (const t of params.ppTypes) {
+            const chk = document.getElementById(`chk_is_${t}`) as HTMLInputElement | null
+            if (chk && chk.checked) activatedPanels.push(t)
+          }
+          return { totalPriceRaw, appliedFinishingFields, activatedPanels }
+        },
+        { ppTypes: FINISHING_GROUPS.map((g) => g.ppType), finishingKeys },
+      )
+      console.log(
+        `[swadpia-order] DRY-RUN 정지(결제 미진행) — total_price=${snap.totalPriceRaw ?? '-'} ` +
+          `활성패널=[${snap.activatedPanels.join(',')}] 별색=[${spotPlateFinishings.join(',')}] ` +
+          `페이지수=${uploadedPageCount}`,
+      )
+      return {
+        success: true,
+        dryRun: {
+          totalPriceRaw: snap.totalPriceRaw,
+          appliedFinishingFields: snap.appliedFinishingFields,
+          activatedPanels: snap.activatedPanels,
+          spotPlateFinishings,
+          uploadedPageCount,
+          chgFileName,
+          pageUrl: page.url(),
+        },
+      }
     }
 
     // 5. hidden 필드 설정 + 폼 제출
@@ -360,24 +459,8 @@ export async function placeSwadpiaOrder(
     await page.waitForTimeout(2000)
 
     if (!page.url().includes('/order/order_info')) {
-      return { success: false, errorMessage: `주문서 페이지 도달 실패 — URL: ${page.url()}` }
+      return { success: false, errorMessage: `Failed to reach the order page — URL: ${page.url()}` }
     }
-
-    // OMO-3520: 주문서(order_info)는 서버가 우리 order_title/work_memo 를 에코한다 →
-    // 한글 인코딩(accept-charset=UTF-8 수정) 라운드트립 검증. mojibake 면 깨진 문자로 보임.
-    const orderInfoTitleEcho = await page
-      .evaluate(() => {
-        try {
-          const inp = document.querySelector('[name="order_title"]') as HTMLInputElement | null
-          if (inp?.value) return inp.value
-          const memo = document.querySelector('[name="work_memo"]') as HTMLTextAreaElement | null
-          if (memo?.value) return memo.value
-          return null
-        } catch {
-          return null
-        }
-      })
-      .catch(() => null)
 
     // 7. "주문 확인" 클릭 → /order/order_pay (결제서)
     const confirmBtn = await page.$('input[src*="bt_order_confirm"]')
@@ -390,46 +473,7 @@ export async function placeSwadpiaOrder(
     await page.waitForTimeout(2000)
 
     if (!page.url().includes('/order/order_pay')) {
-      return { success: false, errorMessage: `결제서 페이지 도달 실패 — URL: ${page.url()}` }
-    }
-
-    // OMO-3520: 결제서 도달 = "결제 직전" dry-run 정지점.
-    //   결제금액(pay_amt) 직독 후 diagnostics 조립. dryRun 이면 paySubmit() 미호출(실비 차단).
-    const payAmtKrw = await readDisplayedPrice(page)
-    // OMO-3520: 결제서에 렌더된 주문명(서버 라운드트립) — 한글 깨짐 여부 검증.
-    const orderTitleRendered = await page
-      .evaluate((t: string) => {
-        const inp = document.querySelector('[name="order_title"]') as HTMLInputElement | null
-        if (inp && inp.value) return inp.value
-        // 주문상품 요약행에서 주문명 텍스트 추출(서버 라운드트립 결과)
-        const rowTexts = [...document.querySelectorAll('table tr, .order_item, li')]
-          .map((el) => (el as HTMLElement).innerText?.replace(/\s+/g, ' ').trim() ?? '')
-          .filter((s) => s && (s.includes(t.slice(0, 6)) || /테스트|명함|OMO/i.test(s)))
-        return rowTexts[0]?.slice(0, 120) ?? (document.body.innerText || '').includes(t) ? t : null
-      }, orderTitle)
-      .catch(() => null)
-    const diagnostics: SwadpiaOrderDiagnostics = {
-      reachedStage: input.dryRun ? 'order_pay (dry-run, 미제출)' : 'order_pay',
-      fileUpload: { chgFileName, fileName, sizeBytes: fileSize },
-      appliedOptions: goodsDiag.appliedOptions,
-      swadpiaPayAmtKrw: payAmtKrw ?? goodsDiag.totalPriceKrw,
-      finishingAmts: goodsDiag.finishingAmts,
-      orderTitleRendered: orderInfoTitleEcho ?? orderTitleRendered,
-    }
-
-    if (input.screenshotPath) {
-      try {
-        fs.mkdirSync(path.dirname(input.screenshotPath), { recursive: true })
-        await page.screenshot({ path: input.screenshotPath, fullPage: true })
-      } catch { /* 증거용 best-effort */ }
-    }
-
-    if (input.dryRun) {
-      return {
-        success: true,
-        checkoutUrl: page.url(),
-        diagnostics,
-      }
+      return { success: false, errorMessage: `Failed to reach the payment page — URL: ${page.url()}` }
     }
 
     // 8. S머니(가상계좌, PYM10) 기본 선택 확인 + paySubmit()
@@ -460,24 +504,22 @@ export async function placeSwadpiaOrder(
     const finalUrl = page.url()
 
     // /order/order_result/SUCCESS/OSA260513344332
-    diagnostics.reachedStage = 'order_result'
     const orderMatch = finalUrl.match(/order_result\/SUCCESS\/([A-Z0-9]+)/)
     if (orderMatch) {
       return {
         success: true,
         swadpiaOrderNumber: orderMatch[1],
         checkoutUrl: finalUrl,
-        diagnostics,
       }
     }
 
     if (finalUrl.includes('order_result')) {
-      return { success: true, checkoutUrl: finalUrl, diagnostics }
+      return { success: true, checkoutUrl: finalUrl }
     }
 
     return {
       success: false,
-      errorMessage: `주문 완료 확인 실패 — URL: ${finalUrl}`,
+      errorMessage: `Failed to confirm order completion — URL: ${finalUrl}`,
     }
 
   } catch (err) {
@@ -506,7 +548,7 @@ async function swadpiaLogin(page: Page, username: string, password: string): Pro
   await page.waitForTimeout(2000)
 
   if (page.url().includes('/member/login')) {
-    throw new Error('Swadpia 로그인 실패')
+    throw new Error('Swadpia login failed')
   }
 }
 
@@ -944,58 +986,6 @@ export async function selectOrderOptions(
   }
 }
 
-// ─── OMO-3520: 발주폼 진단 스냅샷 (옵션 read-back + 본가/후가공 amt 직독) ──────────
-//
-// 화면 OCR/추론 금지 — 성원 폼의 hidden total_price/pay_amt 및 {type}_amt 를 직독한다.
-// 옵션 parity 는 적용된 select[name] 의 실제 value 를 읽어 우리 입력과 비교한다.
-async function captureGoodsDiagnostics(
-  page: Page,
-  effectiveOptions: Record<string, string>,
-  fieldAlias: Record<string, string>,
-): Promise<{
-  appliedOptions: Record<string, string>
-  totalPriceKrw: number | null
-  finishingAmts: Record<string, number>
-}> {
-  // 우리가 적용하려 한 키 → 성원 실제 필드명(alias)으로 변환해 read-back
-  const fieldNames: string[] = []
-  for (const key of Object.keys(effectiveOptions)) {
-    fieldNames.push(fieldAlias[key] ?? key)
-  }
-  const ppTypes = FINISHING_GROUPS.map((g) => g.ppType)
-
-  return page.evaluate(
-    (params: { fieldNames: string[]; ppTypes: string[] }) => {
-      const readNum = (sel: string): number | null => {
-        const el = document.querySelector(sel) as HTMLInputElement | HTMLElement | null
-        if (!el) return null
-        const raw = (el as HTMLInputElement).value ?? (el.textContent || '')
-        const digits = String(raw).replace(/[^0-9]/g, '')
-        if (!digits) return null
-        const n = parseInt(digits, 10)
-        return Number.isFinite(n) && n > 0 ? n : null
-      }
-      const applied: Record<string, string> = {}
-      for (const name of params.fieldNames) {
-        const el = document.querySelector(`[name="${name}"]`) as
-          | HTMLSelectElement
-          | HTMLInputElement
-          | null
-        if (el) applied[name] = (el as HTMLInputElement).value ?? ''
-      }
-      const totalPriceKrw =
-        readNum('#total_price') ?? readNum('[name="total_price"]') ?? readNum('[name="pay_amt"]')
-      const finishingAmts: Record<string, number> = {}
-      for (const t of params.ppTypes) {
-        const amt = readNum(`[name="${t}_amt"]`)
-        if (amt !== null) finishingAmts[t] = amt
-      }
-      return { appliedOptions: applied, totalPriceKrw, finishingAmts }
-    },
-    { fieldNames, ppTypes },
-  )
-}
-
 async function uploadViaPlupload(page: Page, filePath: string): Promise<string | null> {
   // upload.php 응답 캡처
   let chgFileName = ''
@@ -1014,12 +1004,12 @@ async function uploadViaPlupload(page: Page, filePath: string): Promise<string |
     // iframe_InnoDS 접근
     const innoDSFrame: Frame | null = page.frame({ name: 'iframe_InnoDS' })
     if (!innoDSFrame) {
-      throw new Error('iframe_InnoDS 프레임 없음')
+      throw new Error('iframe_InnoDS frame not found')
     }
 
     const fileInput = await innoDSFrame.$('input[type="file"]')
     if (!fileInput) {
-      throw new Error('iframe 내 file input 없음')
+      throw new Error('file input not found inside iframe')
     }
 
     await fileInput.setInputFiles(filePath)
@@ -1065,7 +1055,7 @@ async function downloadFile(url: string, destDir: string): Promise<string> {
   }
 
   const res = await fetch(url, { signal: AbortSignal.timeout(60_000) })
-  if (!res.ok) throw new Error(`파일 다운로드 실패 ${res.status}: ${url}`)
+  if (!res.ok) throw new Error(`File download failed ${res.status}: ${url}`)
 
   const contentType = res.headers.get('content-type') ?? ''
   const ext =

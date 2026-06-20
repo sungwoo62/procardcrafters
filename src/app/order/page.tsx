@@ -3,8 +3,8 @@ import { notFound } from 'next/navigation'
 import { createServerClient } from '@/lib/supabase'
 import { getKrwToUsdRate } from '@/lib/exchange-rate'
 import { getShippingCost } from '@/lib/shipping'
-import { calculateItemPriceUsd } from '@/lib/pricing'
-import { FINISHING_PASSTHROUGH_KEYS, buildOrderExtraPricesKrw } from '@/config/finishing-surcharge'
+import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
+import { computeOrderItemPriceUsd } from '@/lib/order-pricing'
 import OrderForm from './OrderForm'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
 
@@ -61,12 +61,11 @@ async function OrderPageContent({ searchParams }: PageProps) {
 
   // OMO-2667/2673: 비후가공 정확일치 + 후가공 surcharge(단일 권위)를 합산. create-order 와 동일
   // 헬퍼로 표시가=청구가 보장 + 시드된 finishing 행 이중가산(2배) 회귀 차단.
-  const extraPricesKrw = buildOrderExtraPricesKrw(selectedOptions, options)
-
-  const itemPriceUsd = calculateItemPriceUsd({
-    basePriceKrw: product.base_price_krw,
-    marginMultiplier: product.margin_multiplier,
-    extraPricesKrw,
+  // OMO-3562: 청구가를 제품페이지 표시가(성원 매트릭스)와 일원화(플래그 ON 시). OFF=기존 동일.
+  const itemPriceUsd = await computeOrderItemPriceUsd({
+    product,
+    selectedOptions,
+    options,
     exchangeRate,
   })
 

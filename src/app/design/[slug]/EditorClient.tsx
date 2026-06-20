@@ -20,6 +20,16 @@ import { GENERATED_TEMPLATE_MAP, GENERATED_CARD_TEMPLATES, type TemplateDef as G
 import { buildCardLayout, CARD_FONT, CARD_CATEGORIES, resolveCardColors, cardLayoutIndex, cardSampleFor } from '@/config/cardLayout'
 import { FINISHING_PASSTHROUGH_KEYS } from '@/config/finishing-surcharge'
 import { detectFoilLayersFromCanvas } from '@/lib/editor-foil-detect'
+// OMO-3577: 별색 후가공판(p2) — 오브젝트 선택/래스터 상수 + 합본 PDF 빌더.
+import { SPOT_PLATE_FILL, POSITION_OVERLAY_FILL, SPOT_PLATE_BG } from '@/lib/editor-finish-plate'
+import {
+  requiresSpotPlate,
+  listSpotPlateFinishings,
+  buildCombinedFinishingPdf,
+} from '@/lib/finishing-combined-pdf'
+import { FINISHING_BY_VALUE } from '@/config/finishing-catalog'
+// main(OMO-3522/3512): 후가공 레이어 추가 헬퍼.
+import { addFinishingLayers as addFinishingLayersLib, FINISHING_LAYER_META, type FinishingType } from '@/lib/editor-finishing-layers'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -62,6 +72,8 @@ interface LayerInfo {
   visible: boolean
   locked: boolean
   imageQuality?: ImageQuality
+  /** OMO-3484: 후가공 가이드 레이어면 해당 후가공 타입(레이어 패널 배지용). */
+  finishingType?: FinishingType
 }
 
 interface EditorDimensions {
@@ -121,6 +133,8 @@ interface SelectedProps {
   grayscale?: boolean
   blendMode?: string
   hasCrop?: boolean
+  // OMO-3577: 별색 후가공 영역 마커(data.finish). ON 이면 별색판(p2)에 M100 으로 래스터된다.
+  finish?: boolean
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -732,6 +746,12 @@ export default function EditorClient({ product, options }: Props) {
   const [mobileUploadError, setMobileUploadError] = useState('')
   const mobileFileInputRef = useRef<HTMLInputElement>(null)
 
+  // OMO-3522: 후가공 가이드 레이어 선택 시 표시하는 영역 치수(mm) 오버레이 상태.
+  // 화면 고정좌표(fixed)로 캔버스 위에 떠서 가이드 영역의 W×H(또는 선 길이)를 보여준다.
+  const [dimOverlay, setDimOverlay] = useState<
+    { left: number; top: number; text: string; finishingType: FinishingType } | null
+  >(null)
+
   useEffect(() => {
     if (typeof window === 'undefined' || !window.matchMedia) return
     const mq = window.matchMedia('(max-width: 767px)')
@@ -739,6 +759,19 @@ export default function EditorClient({ product, options }: Props) {
     update()
     mq.addEventListener('change', update)
     return () => mq.removeEventListener('change', update)
+  }, [])
+
+  // OMO-3522: 치수 오버레이는 화면 고정좌표라 캔버스 스크롤/리사이즈 시 위치가 어긋난다.
+  // 스크롤(캡처 단계로 내부 overflow-auto 컨테이너 포함)·리사이즈에 맞춰 재계산한다.
+  useEffect(() => {
+    const recompute = () => updateDimOverlay(fabricRef.current)
+    window.addEventListener('scroll', recompute, true)
+    window.addEventListener('resize', recompute)
+    return () => {
+      window.removeEventListener('scroll', recompute, true)
+      window.removeEventListener('resize', recompute)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   async function handleMobileDirectUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -882,7 +915,7 @@ export default function EditorClient({ product, options }: Props) {
     const objs = canvas.getObjects().filter((o: { data?: { role?: string } }) => !isBackground(o) && o.data?.role !== 'crop')
     const layerList: LayerInfo[] = [...objs].reverse().map((o: {
       type?: string
-      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality }
+      data?: { id?: string; name?: string; layerType?: LayerType; imageQuality?: ImageQuality; finishingType?: FinishingType }
       visible?: boolean
       selectable?: boolean
     }) => ({
@@ -892,6 +925,7 @@ export default function EditorClient({ product, options }: Props) {
       visible: o.visible ?? true,
       locked: !(o.selectable ?? true),
       imageQuality: o.type === 'image' ? (o.data?.imageQuality ?? undefined) : undefined,
+      finishingType: o.data?.finishingType,
     }))
     setLayers(layerList)
   }
@@ -902,10 +936,11 @@ export default function EditorClient({ product, options }: Props) {
     if (!obj || isBackground(obj)) {
       setSelectedId(null)
       setSelectedProps(null)
+      setDimOverlay(null)
       return
     }
     // Skip property panel update when the crop rect is selected (keep crop mode active)
-    if (obj.data?.role === 'crop') return
+    if (obj.data?.role === 'crop') { setDimOverlay(null); return }
     const id = obj.data?.id ?? ''
     setSelectedId(id)
 
@@ -915,6 +950,8 @@ export default function EditorClient({ product, options }: Props) {
       width: Math.round((obj.getScaledWidth?.() ?? obj.width ?? 0) * 10) / 10,
       height: Math.round((obj.getScaledHeight?.() ?? obj.height ?? 0) * 10) / 10,
       angle: Math.round((obj.angle ?? 0) * 10) / 10,
+      // OMO-3577: 별색 후가공 영역 마커(모든 오브젝트 타입 공통).
+      finish: !!obj.data?.finish,
     }
 
     const objType: string = obj.type ?? ''
@@ -960,6 +997,41 @@ export default function EditorClient({ product, options }: Props) {
 
     setSelectedProps(props)
     setActivePanel('properties')
+    updateDimOverlay(canvas)
+  }
+
+  // OMO-3522: 후가공 가이드 레이어가 활성 상태면 영역 치수(mm) 오버레이를 갱신한다.
+  // - getBoundingRect()는 fabric v6에서 "씬 좌표"(줌/팬 미반영)이므로 viewportTransform으로
+  //   화면 좌표로 변환한 뒤, 캔버스 DOM 위치(getBoundingClientRect)를 더해 fixed 좌표를 만든다.
+  // - 실측 mm 는 줌과 무관한 getScaledWidth/Height 를 캔버스 scale 로 나눠 산출.
+  // - 가이드(=finishingType 보유)가 아니면 오버레이를 숨긴다.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function updateDimOverlay(canvas: any) {
+    const obj = canvas?.getActiveObject?.()
+    const finishingType: FinishingType | undefined = obj?.data?.finishingType
+    const el = canvasElRef.current
+    if (!obj || !finishingType || !el) {
+      setDimOverlay(null)
+      return
+    }
+    const rect = el.getBoundingClientRect()
+    const bound = obj.getBoundingRect() // 씬 좌표(줌/팬 미반영)
+    // viewportTransform = [a, b, c, d, e, f] (회전/스큐 없음 → a=d=zoom, e/f=pan)
+    const vpt: number[] = canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0]
+    const centerSceneX = bound.left + bound.width / 2
+    const screenX = centerSceneX * vpt[0] + vpt[4]
+    const screenY = bound.top * vpt[3] + vpt[5]
+    const wMm = Math.round(((obj.getScaledWidth?.() ?? obj.width ?? 0) / scale) * 10) / 10
+    const hMm = Math.round(((obj.getScaledHeight?.() ?? obj.height ?? 0) / scale) * 10) / 10
+    // 오시/미싱 등 선형 가이드는 W×H 대신 길이만 표기(높이가 strokeWidth 수준이라 무의미)
+    const isLine = obj.type === 'line'
+    const text = isLine ? `선 길이 ${wMm} mm` : `${wMm} × ${hMm} mm`
+    setDimOverlay({
+      left: rect.left + screenX,
+      top: rect.top + screenY,
+      text,
+      finishingType,
+    })
   }
 
   // ── History ───────────────────────────────────────────────────────────────
@@ -1052,7 +1124,8 @@ export default function EditorClient({ product, options }: Props) {
 
       if (e.key === 'Delete' || e.key === 'Backspace') {
         const obj = canvas.getActiveObject()
-        if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
+        // OMO-3522: 잠금(selectable:false) 레이어는 키보드 삭제 차단 — 후가공 가이드 보호
+        if (obj && !isBackground(obj) && obj.data?.role !== 'crop' && obj.selectable !== false) {
           canvas.remove(obj)
           canvas.discardActiveObject()
           canvas.renderAll()
@@ -1196,6 +1269,23 @@ export default function EditorClient({ product, options }: Props) {
     canvas.sendObjectToBack(bleedBg)
     canvas.sendObjectToBack(artboardShadow)
     canvas.sendObjectToBack(pasteboard)
+  }
+
+  // ── 후가공 레이어 초기화 (OMO-3484) ─────────────────────────────────────────
+  // 구성기에서 선택한 후가공(finishing) 값을 URL 파라미터로 받아
+  // 에디터 캔버스에 시각적 레이어로 표현한다.
+  // 레이어 정의는 @/lib/editor-finishing-layers 에 캡슐화되어 있다.
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  function addFinishingLayers(canvas: any, fabric: typeof import('fabric'), finishingStr: string) {
+    addFinishingLayersLib(canvas, fabric, {
+      trimX: mmToPx(dims.bleedMm + PASTEBOARD_MM, scale),
+      trimY: mmToPx(dims.bleedMm + PASTEBOARD_MM, scale),
+      trimW: mmToPx(dims.widthMm, scale),
+      trimH: mmToPx(dims.heightMm, scale),
+      mmToPx: (mm: number) => mmToPx(mm, scale),
+      makeId,
+    }, finishingStr)
   }
 
   // ── Snap guides ───────────────────────────────────────────────────────────
@@ -3097,6 +3187,11 @@ export default function EditorClient({ product, options }: Props) {
       const urlBg = searchParams.get('bg')
       if (urlBg) { bgColorRef.current = urlBg; setBgColor(urlBg) }
       buildTemplate(canvas, fabric, initialTemplate, bgColorRef.current)
+
+      // OMO-3484: 구성기에서 선택된 후가공 레이어를 캔버스에 표현
+      const urlFinishing = searchParams.get('finishing') ?? ''
+      if (urlFinishing) addFinishingLayers(canvas, fabric, urlFinishing)
+
       canvas.renderAll()
 
       syncLayers(canvas)
@@ -3105,7 +3200,7 @@ export default function EditorClient({ product, options }: Props) {
       // ── Events ────────────────────────────────────────────────────────────
       canvas.on('selection:created', () => syncSelected(canvas))
       canvas.on('selection:updated', () => syncSelected(canvas))
-      canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null) })
+      canvas.on('selection:cleared', () => { setSelectedId(null); setSelectedProps(null); setDimOverlay(null) })
 
       canvas.on('object:modified', () => {
         syncLayers(canvas)
@@ -3135,10 +3230,12 @@ export default function EditorClient({ product, options }: Props) {
           const q = calcImageQuality(obj, scale, (obj.data?.imageQuality as ImageQuality | undefined)?.fileBytes ?? 0)
           obj.set('data', { ...obj.data, imageQuality: q })
         }
+        updateDimOverlay(canvas) // OMO-3522: 잠금 해제된 가이드 리사이즈 중 치수 실시간 갱신
       })
 
       canvas.on('object:moving', (e: { target: object }) => {
         snapObject(canvas, fabric, e.target)
+        updateDimOverlay(canvas) // OMO-3522: 가이드 이동 시 치수 오버레이가 따라오도록
       })
 
       canvas.on('object:moved', () => {
@@ -3153,6 +3250,7 @@ export default function EditorClient({ product, options }: Props) {
         z = Math.min(Math.max(z, 0.2), 5)
         canvas.zoomToPoint({ x: opt.e.offsetX, y: opt.e.offsetY }, z)
         setZoom(z)
+        updateDimOverlay(canvas) // OMO-3522: 줌 변경 시 오버레이 위치 재계산
         opt.e.preventDefault()
         opt.e.stopPropagation()
       })
@@ -3163,6 +3261,7 @@ export default function EditorClient({ product, options }: Props) {
         panningRef.current = true
         canvas.selection = false
         canvas.discardActiveObject()
+        setDimOverlay(null) // OMO-3522: 팬 시작 시 선택 해제 → 치수 오버레이 숨김
         lastPanPosRef.current = { x: opt.e.clientX, y: opt.e.clientY }
         canvas.setCursor('grabbing')
       })
@@ -3469,6 +3568,17 @@ export default function EditorClient({ product, options }: Props) {
     if (patch.strokeColor !== undefined) obj.set('stroke', patch.strokeColor)
     if (patch.strokeWidth !== undefined) obj.set('strokeWidth', patch.strokeWidth)
 
+    // OMO-3577: 별색 후가공 영역 마커 토글. data.finish = truthy 면 별색판(p2) 래스터 +
+    // 박 자동 치수(editor-foil-detect)가 동일 소스로 측정한다. (canvas.toJSON(['data']) 로 저장됨)
+    if (patch.finish !== undefined) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const data: any = (obj as any).data ?? {}
+      if (patch.finish) data.finish = true
+      else delete data.finish
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(obj as any).set('data', data)
+    }
+
     // Image-specific
     if (patch.opacity !== undefined) obj.set('opacity', patch.opacity)
     if (patch.blendMode !== undefined) obj.set('globalCompositeOperation', patch.blendMode)
@@ -3697,7 +3807,8 @@ export default function EditorClient({ product, options }: Props) {
     const canvas = fabricRef.current
     if (!canvas) return
     const obj = canvas.getActiveObject()
-    if (obj && !isBackground(obj) && obj.data?.role !== 'crop') {
+    // OMO-3522: 잠금(selectable:false) 레이어는 삭제 차단 — 레이어 패널 휴지통 버튼 포함
+    if (obj && !isBackground(obj) && obj.data?.role !== 'crop' && obj.selectable !== false) {
       canvas.remove(obj)
       canvas.discardActiveObject()
       canvas.renderAll()
@@ -3705,6 +3816,7 @@ export default function EditorClient({ product, options }: Props) {
       saveHistory(canvas)
       setSelectedId(null)
       setSelectedProps(null)
+      setDimOverlay(null)
       setActivePanel('layers')
     }
   }
@@ -3745,7 +3857,26 @@ export default function EditorClient({ product, options }: Props) {
       canvas.renderAll()
       syncLayers(canvas)
       saveHistory(canvas)
+      updateDimOverlay(canvas) // OMO-3522: 잠금 토글 후 선택 상태면 치수 오버레이 갱신
     }
+  }
+
+  // OMO-3522: 후가공 가이드 레이어 전체를 한 번에 잠그거나 해제하는 마스터 토글.
+  function setAllFinishingLocks(locked: boolean) {
+    const canvas = fabricRef.current
+    if (!canvas) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const guides = canvas.getObjects().filter((o: any) => !!o.data?.finishingType)
+    if (guides.length === 0) return
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    guides.forEach((o: any) => {
+      o.set({ selectable: !locked, evented: !locked, hasControls: !locked })
+    })
+    if (locked) canvas.discardActiveObject()
+    canvas.renderAll()
+    syncLayers(canvas)
+    saveHistory(canvas)
+    updateDimOverlay(canvas)
   }
 
   function moveLayerOrder(id: string, dir: 'up' | 'down') {
@@ -3782,6 +3913,7 @@ export default function EditorClient({ product, options }: Props) {
     // 캔버스 중앙 기준 줌
     canvas.zoomToPoint({ x: canvas.getWidth() / 2, y: canvas.getHeight() / 2 }, z)
     setZoom(z)
+    updateDimOverlay(canvas) // OMO-3522: 줌 버튼 조작 시 오버레이 위치 재계산
   }
   function zoomIn() { applyZoom(zoom * 1.2) }
   function zoomOut() { applyZoom(zoom / 1.2) }
@@ -3791,6 +3923,7 @@ export default function EditorClient({ product, options }: Props) {
     canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
     setZoom(1)
     canvas.requestRenderAll()
+    updateDimOverlay(canvas) // OMO-3522: 뷰 리셋 후 오버레이 위치 재계산
   }
 
   // ── 정렬 (대지 기준) ────────────────────────────────────────────────────────
@@ -3914,7 +4047,16 @@ export default function EditorClient({ product, options }: Props) {
   // targetDpi: desired output DPI. 300 = print quality, 150 = preview.
   // 블리드 포함 영역(= trim + 2×bleed)을 export 한다. 인쇄소 재단 기준을 맞추기 위함.
   // includeBleed=false 인 경우 trim만 export (PNG 미리보기 등 호환용).
-  function getExportDataUrl(targetDpi = 150, includeBleed = true): string {
+  // plateMode (OMO-3577/OMO-3581): 성원 별색 파일 규격 4판 래스터 모드.
+  //   'normal'  : 디자인 그대로(미리보기/썸네일).
+  //   'spot'    : 박파일 — data.finish 오브젝트만 K100 단색, 나머지/배경 흰색. 없으면 ''.
+  //   'print'   : 인쇄파일 — data.finish 오브젝트만 **삭제**, 나머지는 원본 그대로(박제거).
+  //   'overlay' : 박위치 보기용 — 디자인 위에 박 영역을 M100 으로 오버레이. 박 없으면 ''.
+  function getExportDataUrl(
+    targetDpi = 150,
+    includeBleed = true,
+    plateMode: 'normal' | 'spot' | 'print' | 'overlay' = 'normal',
+  ): string {
     const canvas = fabricRef.current
     if (!canvas) return ''
     const bleedPx = mmToPx(dims.bleedMm, scale)
@@ -3940,6 +4082,23 @@ export default function EditorClient({ product, options }: Props) {
     const vpt: any = [...(canvas.viewportTransform ?? [1, 0, 0, 1, 0, 0])]
     canvas.setViewportTransform([1, 0, 0, 1, 0, 0])
 
+    // OMO-3577/OMO-3581: 별색 파일 규격 모드 — 비파괴 스냅샷 후 모드별 변형, 래스터 직후
+    // 원상복구한다(라이브 캔버스 변형 없음). spot/overlay 는 박 오브젝트 없으면 '' 반환.
+    let restorePlate: (() => void) | null = null
+    if (plateMode === 'spot') {
+      restorePlate = applySpotPlateRender()
+    } else if (plateMode === 'overlay') {
+      restorePlate = applyPositionOverlayRender()
+    } else if (plateMode === 'print') {
+      restorePlate = applyPrintStripRender()
+    }
+    if ((plateMode === 'spot' || plateMode === 'overlay') && !restorePlate) {
+      // 박(별색) 오브젝트가 없음 → 해당 판 없음. 뷰포트 복구 후 '' 반환.
+      canvas.setViewportTransform(vpt)
+      canvas.renderAll()
+      return ''
+    }
+
     const dataUrl = canvas.toDataURL({
       format: 'png',
       left: exportLeft,
@@ -3949,9 +4108,144 @@ export default function EditorClient({ product, options }: Props) {
       multiplier,
     })
 
+    if (restorePlate) restorePlate()
     canvas.setViewportTransform(vpt)
     canvas.renderAll()
     return dataUrl
+  }
+
+  // OMO-3577/OMO-3581: 박파일(별색판) 비파괴 래스터 변형. data.finish 오브젝트만 **K100**
+  // (SPOT_PLATE_FILL) 단색 실루엣으로, 나머지 오브젝트/배경은 흰색으로 만든 뒤 복구 함수를
+  // 반환한다. data.finish 가 하나도 없으면 null(별색판 불필요). 이미지 finish 오브젝트는 fill
+  // 이 무시되므로 bbox K100 사각형으로 대체한다(영역 기준 — editor-foil-detect 합집합 bbox 정합).
+  function applySpotPlateRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    if (!objs.some(isFinish)) return null
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const snap = objs.map((o: any) => ({
+      o,
+      visible: o.visible,
+      fill: o.fill,
+      stroke: o.stroke,
+      opacity: o.opacity,
+      filters: o.filters,
+      shadow: o.shadow,
+    }))
+    const bgColor = canvas.backgroundColor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tempRects: any[] = []
+
+    canvas.backgroundColor = SPOT_PLATE_BG
+    for (const o of objs) {
+      if (isFinish(o)) {
+        if (o.type === 'image') {
+          // 이미지: fill 무시 → bbox 마젠타 사각형으로 영역 표시 후 원본은 숨김.
+          o.set('visible', false)
+          const r = o.getBoundingRect()
+          const rect = new fabric.Rect({
+            left: r.left, top: r.top, width: r.width, height: r.height,
+            fill: SPOT_PLATE_FILL, stroke: SPOT_PLATE_FILL, strokeWidth: 0,
+            selectable: false, evented: false,
+            data: { role: 'spot-temp' },
+          })
+          canvas.add(rect)
+          tempRects.push(rect)
+        } else {
+          o.set({ fill: SPOT_PLATE_FILL, stroke: SPOT_PLATE_FILL, opacity: 1, shadow: null, filters: [] })
+          if (typeof o.applyFilters === 'function') o.applyFilters()
+        }
+      } else if (!isBackground(o) || o.data?.role) {
+        // 비-finish 사용자 오브젝트 + 배경/가이드 레이어 모두 숨김(별색판은 영역만 남긴다).
+        o.set('visible', false)
+      }
+    }
+    canvas.renderAll()
+
+    return () => {
+      for (const r of tempRects) canvas.remove(r)
+      for (const s of snap) {
+        s.o.set({ visible: s.visible, fill: s.fill, stroke: s.stroke, opacity: s.opacity, shadow: s.shadow })
+        s.o.filters = s.filters
+        if (typeof s.o.applyFilters === 'function') s.o.applyFilters()
+      }
+      canvas.backgroundColor = bgColor
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3581: 인쇄파일(박제거) 비파괴 변형. data.finish 오브젝트만 숨기고 나머지는
+  // 원본 그대로 둔다(칼라인쇄에서 박모양 삭제). 복구 함수 반환(박 오브젝트 없으면 no-op).
+  function applyPrintStripRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    if (!canvas) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const hidden: any[] = objs.filter(isFinish)
+    for (const o of hidden) o.set('visible', false)
+    canvas.renderAll()
+    return () => {
+      for (const o of hidden) o.set('visible', true)
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3581: 박위치 보기용 비파괴 변형. 디자인은 그대로 두고, data.finish 오브젝트 영역
+  // 위에 M100(POSITION_OVERLAY_FILL) 반투명 사각형을 덧대 박 위치를 표시한다. 박 오브젝트가
+  // 없으면 null(위치보기용 불필요). 복구 함수는 임시 사각형을 제거한다.
+  function applyPositionOverlayRender(): (() => void) | null {
+    const canvas = fabricRef.current
+    const fabric = fabricModRef.current
+    if (!canvas || !fabric) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const objs: any[] = canvas.getObjects()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isFinish = (o: any) => !!(o && o.data?.finish && o.visible !== false)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const finish: any[] = objs.filter(isFinish)
+    if (finish.length === 0) return null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const tempRects: any[] = []
+    for (const o of finish) {
+      const r = o.getBoundingRect()
+      const rect = new fabric.Rect({
+        left: r.left, top: r.top, width: r.width, height: r.height,
+        fill: POSITION_OVERLAY_FILL, stroke: POSITION_OVERLAY_FILL, strokeWidth: 0,
+        opacity: 0.6, selectable: false, evented: false,
+        data: { role: 'overlay-temp' },
+      })
+      canvas.add(rect)
+      tempRects.push(rect)
+    }
+    canvas.renderAll()
+    return () => {
+      for (const r of tempRects) canvas.remove(r)
+      canvas.renderAll()
+    }
+  }
+
+  // OMO-3581: 박파일(별색판) dataURL — data.finish 오브젝트를 **K100**(SPOT_PLATE_FILL)/흰배경
+  // 으로 300DPI 풀블리드 래스터(editor-foil-detect 와 동일 소스). 박 영역 없으면 '' 반환.
+  function getFinishPlateDataUrl(): string {
+    return getExportDataUrl(300, true, 'spot')
+  }
+  // OMO-3581: 인쇄파일(박제거) dataURL.
+  function getPrintPlateDataUrl(): string {
+    return getExportDataUrl(300, true, 'print')
+  }
+  // OMO-3581: 박위치 보기용(M100 오버레이) dataURL. 박 영역 없으면 '' 반환.
+  function getPositionOverlayDataUrl(): string {
+    return getExportDataUrl(300, true, 'overlay')
   }
 
   function exportPng() {
@@ -4012,12 +4306,55 @@ export default function EditorClient({ product, options }: Props) {
     return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
   }
 
+  // OMO-3577/OMO-3581: 발주/다운로드용 최종 PDF. 별색 후가공(박/형압/도무송/에폭시/별색)이
+  // 선택되면 성원 "박인쇄 작업방법" 교정 규격으로 합본 PDF(위치보기용 M100 + 인쇄[박제거] +
+  // 박파일 K100)를 생성한다 → assertFinishingPlatePresent 가드 통과(단면=3페이지). 그 외에는
+  // 기존 단일 디자인판 PDF. 별색 선택인데 별색 영역 오브젝트가 없으면 한국어 사유로 throw.
+  // NOTE(단면/양면): 에디터 캔버스는 현재 단면(1면)만 모델링한다 → 단면 3페이지 생성. 양면
+  //   앞/뒤 판은 빌더(backPrintPlate/backSpotPlate)가 지원하나, 뒷면 캔버스 도입은 후속.
+  async function buildOrderPdfBlob(finishingStr: string): Promise<Blob> {
+    if (!requiresSpotPlate({ finishing: finishingStr })) {
+      return buildPdfBlob()
+    }
+    const labels = listSpotPlateFinishings({ finishing: finishingStr })
+      .map((v) => FINISHING_BY_VALUE[v]?.label_ko ?? v)
+      .join(', ')
+    const overlayUrl = getPositionOverlayDataUrl()
+    const printUrl = getPrintPlateDataUrl()
+    const spotUrl = getFinishPlateDataUrl()
+    if (!spotUrl || !overlayUrl) {
+      throw new Error(
+        `별색 후가공(${labels})이 선택됐지만 별색 영역으로 지정된 오브젝트가 없습니다. ` +
+          `박/형압/도무송/에폭시/별색을 적용할 오브젝트를 선택한 뒤 속성 패널의 "별색 후가공 영역"을 켜주세요.`,
+      )
+    }
+    if (!printUrl) throw new Error('인쇄파일 생성에 실패했습니다.')
+    const [overlayBytes, printBytes, spotBytes] = await Promise.all([
+      fetch(overlayUrl).then((r) => r.arrayBuffer()),
+      fetch(printUrl).then((r) => r.arrayBuffer()),
+      fetch(spotUrl).then((r) => r.arrayBuffer()),
+    ])
+    const pdfBytes = await buildCombinedFinishingPdf({
+      positionOverlay: { bytes: overlayBytes, mime: 'image/png' },
+      printPlate: { bytes: printBytes, mime: 'image/png' },
+      spotPlate: { bytes: spotBytes, mime: 'image/png' },
+      pageWidthMm: dims.widthMm + 2 * dims.bleedMm,
+      pageHeightMm: dims.heightMm + 2 * dims.bleedMm,
+    })
+    return new Blob([pdfBytes.buffer as ArrayBuffer], { type: 'application/pdf' })
+  }
+
   async function exportPdf() {
-    const blob = await buildPdfBlob()
-    const link = document.createElement('a')
-    link.download = `pcc-${product.slug}-${generateDownloadCode()}-300dpi.pdf`
-    link.href = URL.createObjectURL(blob)
-    link.click()
+    try {
+      const finishingStr = searchParams.get('finishing') ?? ''
+      const blob = await buildOrderPdfBlob(finishingStr)
+      const link = document.createElement('a')
+      link.download = `pcc-${product.slug}-${generateDownloadCode()}-300dpi.pdf`
+      link.href = URL.createObjectURL(blob)
+      link.click()
+    } catch (e) {
+      setOrderError(e instanceof Error ? e.message : 'PDF 생성에 실패했습니다.')
+    }
   }
 
   // ── Phase 6: QR code ──────────────────────────────────────────────────────
@@ -4269,7 +4606,10 @@ export default function EditorClient({ product, options }: Props) {
 
   async function proceedToOrderInternal() {
     try {
-      const blob = await buildPdfBlob()
+      // OMO-3577: 별색 후가공이면 합본 PDF(p1+p2), 아니면 단일 디자인판. finishing 진실원천은
+      // searchParams(구성기 → 에디터 진입 시 전달, /order 패스스루와 동일).
+      const finishingStr = searchParams.get('finishing') ?? ''
+      const blob = await buildOrderPdfBlob(finishingStr)
       const formData = new FormData()
       formData.append('file', blob, `pcc-${product.slug}-${generateDownloadCode()}-design.pdf`)
       const uploadRes = await fetch('/api/files/upload', { method: 'POST', body: formData })
@@ -4310,9 +4650,10 @@ export default function EditorClient({ product, options }: Props) {
         setOrdering(false)
         setOrderError(data.error || 'Upload failed.')
       }
-    } catch {
+    } catch (e) {
       setOrdering(false)
-      setOrderError('An error occurred. Please try again.')
+      // OMO-3577: 별색 영역 누락 등 한국어 사유는 그대로 노출(발주 차단 안내).
+      setOrderError(e instanceof Error ? e.message : 'An error occurred. Please try again.')
     }
   }
 
@@ -4414,6 +4755,11 @@ export default function EditorClient({ product, options }: Props) {
   // ─── Render ────────────────────────────────────────────────────────────────
 
   const selectedLayer = layers.find(l => l.id === selectedId) ?? null
+
+  // OMO-3577: 현재 발주에 선택된 별색 후가공 value 목록(박/형압/도무송/에폭시/별색).
+  // 별색판(p2)을 요구하는 후가공만 — 작업가이드 노출 + 별색 영역 UI 안내에 쓴다.
+  const spotFinishings = listSpotPlateFinishings({ finishing: searchParams.get('finishing') ?? '' })
+  const spotFinishingDefs = spotFinishings.map(v => FINISHING_BY_VALUE[v]).filter(Boolean)
 
   return (
     <div className="flex flex-col h-screen bg-gray-100 overflow-hidden">
@@ -4747,6 +5093,21 @@ export default function EditorClient({ product, options }: Props) {
       <div className="flex flex-1 overflow-hidden">
         {/* Canvas area */}
         <div className="relative flex-1 flex items-center justify-center overflow-auto bg-gray-200 p-6">
+          {/* OMO-3577: 후가공 작업가이드 — 선택된 별색 후가공(박/형압/도무송/에폭시/별색)의
+              가이드 이미지를 에디터 옆에 표시(finishing-catalog image_url). 별색 후가공이 없으면 숨김. */}
+          {spotFinishingDefs.length > 0 && (
+            <div className="absolute top-3 right-3 z-10 w-44 rounded-lg border border-fuchsia-200 bg-white/95 shadow-md p-2 space-y-2 max-h-[70vh] overflow-y-auto">
+              <p className="text-[10px] font-semibold text-fuchsia-800">후가공 작업가이드</p>
+              {spotFinishingDefs.map(d => (
+                <div key={d.value} className="space-y-1">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={d.image_url} alt={d.label_ko} className="w-full rounded border border-gray-100 object-cover" loading="lazy" />
+                  <p className="text-[10px] text-gray-600">{d.label_ko} · {d.label_en}</p>
+                </div>
+              ))}
+              <p className="text-[9px] leading-relaxed text-gray-400">영역을 선택 후 속성 패널의 “별색 후가공 영역”을 켜면 별색판(p2)으로 발주됩니다.</p>
+            </div>
+          )}
           {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
@@ -4771,6 +5132,20 @@ export default function EditorClient({ product, options }: Props) {
           >
             <canvas ref={canvasElRef} />
           </div>
+
+          {/* OMO-3522: 후가공 가이드 선택 시 영역 치수(mm) 오버레이 — 화면 고정좌표 */}
+          {dimOverlay && FINISHING_LAYER_META[dimOverlay.finishingType] && (
+            <div
+              className="fixed z-30 -translate-x-1/2 -translate-y-full pointer-events-none rounded-md bg-gray-900/90 px-2 py-1 shadow-lg ring-1 ring-black/10"
+              style={{ left: dimOverlay.left, top: dimOverlay.top - 8 }}
+            >
+              <div className="flex items-center gap-1.5 whitespace-nowrap text-[11px] font-semibold text-white">
+                <span className={`inline-block w-2 h-2 rounded-full ${FINISHING_LAYER_META[dimOverlay.finishingType].dotClass}`} />
+                <span>{FINISHING_LAYER_META[dimOverlay.finishingType].label}</span>
+                <span className="font-mono tracking-tight text-amber-200">{dimOverlay.text}</span>
+              </div>
+            </div>
+          )}
 
           {/* 줌 컨트롤 (하단 좌측) */}
           <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
@@ -5162,6 +5537,44 @@ export default function EditorClient({ product, options }: Props) {
           {/* Layers panel */}
           {activePanel === 'layers' && (
             <div className="flex-1 overflow-y-auto">
+              {/* OMO-3484: 후가공 가이드 범례 — 구성기에서 선택한 후가공이 캔버스에 표현될 때 안내 */}
+              {(() => {
+                const finishingLayers = layers.filter(l => !!l.finishingType)
+                const finishingTypes = Array.from(
+                  new Set(finishingLayers.map(l => l.finishingType).filter((t): t is FinishingType => !!t)),
+                )
+                if (finishingTypes.length === 0) return null
+                // OMO-3522: 가이드가 하나라도 잠겨있지 않으면 "모두 잠금", 전부 잠겨있으면 "모두 해제"
+                const anyUnlocked = finishingLayers.some(l => !l.locked)
+                return (
+                  <div className="px-3 py-2 bg-amber-50/60 border-b border-amber-100 text-[11px]">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <div className="font-semibold text-gray-700">Selected finishing guides</div>
+                      <button
+                        onClick={() => setAllFinishingLocks(anyUnlocked)}
+                        title={anyUnlocked ? 'Lock all finishing guides to prevent moving or deleting them' : 'Unlock all finishing guides so you can edit them'}
+                        className="inline-flex items-center gap-1 rounded border border-amber-200 bg-white px-1.5 py-0.5 text-[10px] font-medium text-amber-700 hover:bg-amber-50"
+                      >
+                        {anyUnlocked ? <Lock className="w-3 h-3" /> : <Unlock className="w-3 h-3" />}
+                        {anyUnlocked ? 'Lock all' : 'Unlock all'}
+                      </button>
+                    </div>
+                    <p className="leading-snug text-gray-500 mb-1.5">
+                      The colored dashed areas mark where each finishing will be applied. They are locked by default
+                      so you don&apos;t move or delete them by mistake; unlock a layer with its lock icon to reposition it.
+                      Select an area to see its dimensions (mm).
+                    </p>
+                    <div className="flex flex-wrap gap-x-3 gap-y-1 text-gray-600">
+                      {finishingTypes.map(t => (
+                        <span key={t} className="inline-flex items-center gap-1">
+                          <span className={`w-2 h-2 rounded-full ${FINISHING_LAYER_META[t].dotClass}`} />
+                          {FINISHING_LAYER_META[t].label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )
+              })()}
               {layers.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-32 text-gray-400 text-sm gap-2">
                   <Layers className="w-6 h-6" />
@@ -5177,6 +5590,14 @@ export default function EditorClient({ product, options }: Props) {
                     >
                       <span className="text-gray-300 text-[10px] w-4 shrink-0">{idx + 1}</span>
                       <span className="truncate flex-1 font-medium text-gray-700">{layer.name}</span>
+                      {layer.finishingType && FINISHING_LAYER_META[layer.finishingType] && (
+                        <span
+                          title="Finishing guide — this area will receive the finishing on the printed piece"
+                          className={`shrink-0 text-[9px] font-semibold px-1 rounded ${FINISHING_LAYER_META[layer.finishingType].badgeClass}`}
+                        >
+                          Finishing·{FINISHING_LAYER_META[layer.finishingType].label}
+                        </span>
+                      )}
                       {layer.imageQuality && (
                         <span
                           title={`${layer.imageQuality.dpi} DPI`}
@@ -5195,7 +5616,12 @@ export default function EditorClient({ product, options }: Props) {
                       <button onClick={e => { e.stopPropagation(); toggleVisibility(layer.id) }} className="text-gray-400 hover:text-gray-600">
                         {layer.visible ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
                       </button>
-                      <button onClick={e => { e.stopPropagation(); toggleLock(layer.id) }} className="text-gray-400 hover:text-gray-600">
+                      {/* OMO-3522: 잠금 상태는 amber 로 강조 — 후가공 가이드가 보호 중임을 시각화 */}
+                      <button
+                        onClick={e => { e.stopPropagation(); toggleLock(layer.id) }}
+                        title={layer.locked ? '잠금 해제 (이동/리사이즈/삭제 허용)' : '잠금 (이동/리사이즈/삭제 방지)'}
+                        className={layer.locked ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-gray-600'}
+                      >
                         {layer.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
                       </button>
                       <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'up') }} className="text-gray-400 hover:text-gray-600">
@@ -5204,9 +5630,12 @@ export default function EditorClient({ product, options }: Props) {
                       <button onClick={e => { e.stopPropagation(); moveLayerOrder(layer.id, 'down') }} className="text-gray-400 hover:text-gray-600">
                         <ChevronDown className="w-3.5 h-3.5" />
                       </button>
+                      {/* OMO-3522: 잠긴 레이어는 삭제 버튼 비활성화 — 실수 삭제 방지 */}
                       <button
-                        onClick={e => { e.stopPropagation(); selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
-                        className="text-red-400 hover:text-red-600"
+                        onClick={e => { e.stopPropagation(); if (layer.locked) return; selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
+                        disabled={layer.locked}
+                        title={layer.locked ? '잠긴 레이어는 삭제할 수 없습니다 (먼저 잠금 해제)' : '레이어 삭제'}
+                        className={layer.locked ? 'text-gray-200 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -5634,6 +6063,26 @@ export default function EditorClient({ product, options }: Props) {
                   </>)}
                 </>
               )}
+
+              {/* OMO-3577: 별색 후가공 영역(스팟) 토글 — 이 오브젝트를 별색판(p2)에 M100 으로
+                  출력한다. ON 이면 박/형압/도무송/에폭시/별색 영역으로 발주 PDF p2 에 합본된다. */}
+              <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50/60 p-2.5 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-medium text-fuchsia-800">별색 후가공 영역</label>
+                  <button
+                    onClick={() => updateSelected({ finish: !selectedProps.finish })}
+                    className={`px-2.5 py-0.5 rounded text-[10px] font-semibold transition-colors ${selectedProps.finish ? 'bg-fuchsia-600 text-white' : 'bg-gray-100 text-gray-500'}`}
+                  >
+                    {selectedProps.finish ? 'ON' : 'OFF'}
+                  </button>
+                </div>
+                <p className="text-[10px] leading-relaxed text-fuchsia-700/80">
+                  박·형압·도무송·에폭시·별색이 들어갈 영역으로 지정합니다. 발주 시 별색판(2페이지 합본 PDF)으로 산출됩니다.
+                </p>
+                {spotFinishingDefs.length > 0 && (
+                  <p className="text-[10px] text-fuchsia-700/70">선택된 후가공: {spotFinishingDefs.map(d => d.label_ko).join(', ')}</p>
+                )}
+              </div>
 
               <button
                 onClick={deleteSelectedLayer}
