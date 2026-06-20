@@ -4,7 +4,7 @@ import { useState, useMemo, useRef, useEffect, useCallback } from 'react'
 import Link from 'next/link'
 import { ShoppingCart, Truck, BadgeCheck, Pencil, Zap, Upload, FileText, CheckCircle, AlertCircle, Loader2, X } from 'lucide-react'
 import { assignVariant, trackImpression, trackClick } from '@/lib/experiments/client'
-import { calculateItemPriceUsd, calculatePriceFromSwadpia } from '@/lib/pricing'
+import { calculateItemPriceUsd, calculatePriceFromSwadpia, type SwadpiaPricingTable } from '@/lib/pricing'
 import {
   finishingSurchargeKrw,
   AREA_PRICED_FINISHINGS,
@@ -29,14 +29,16 @@ import {
 } from '@/config/finishing-gate'
 import { CATEGORY_MAP } from '@/lib/swadpia'
 import type { PrintProduct, PrintProductOption } from '@/types/database'
-import type { SwadpiaPaper, SwadpiaPrintEntry, SwadpiaSize } from '@/lib/swadpia'
+import type { SwadpiaSize } from '@/lib/swadpia'
 import PaperPopup from '@/components/PaperPopup'
 import { LEAD_TIME_TIERS, formatProductionWindow, rushSurcharge, type LeadTimeTier } from '@/config/lead-time'
 
+// OMO-3593 보안: 클라이언트는 성원 도매 KRW(printEntries)를 절대 받지 않는다.
+//   가격은 서버가 마진·환율 적용 후 고객가 USD 테이블(pricing)로만 전달한다.
+//   sizes 는 물리 치수(박 사이즈 가드용)일 뿐 도매가가 아니므로 유지.
 interface SwadpiaClientData {
-  papers: SwadpiaPaper[]
-  printEntries: SwadpiaPrintEntry[]
   sizes: SwadpiaSize[]
+  pricing: SwadpiaPricingTable
 }
 
 interface Props {
@@ -71,33 +73,6 @@ const QUANTITY_TYPES = new Set(['quantity', 'paper_qty'])
 
 /** Option types for 후가공(finishing) — rendered as a separate multi-select section (OMO-2664). */
 const FINISHING_TYPES = new Set(['finishing', 'finish'])
-
-/**
- * Look up cost from the Swadpia print price matrix.
- * If no exact quantity match, use the nearest higher quantity.
- * Skips entries with print_unit2 <= 0 (Swadpia registers them as "전화문의"/phone-only and they would crash pricing).
- * Returns the resolved entry so the caller knows whether Swadpia rounded the quantity up.
- */
-function lookupSwadpiaCost(
-  printEntries: SwadpiaPrintEntry[],
-  paperCode: string,
-  quantity: number,
-): { costKrw: number; effectiveQty: number } | null {
-  const entries = printEntries
-    .filter(e => e.paper_code === paperCode && e.print_unit2 > 0)
-    .sort((a, b) => a.quantity - b.quantity)
-
-  if (entries.length === 0) return null
-
-  const exact = entries.find(e => e.quantity === quantity)
-  if (exact) return { costKrw: exact.print_unit2, effectiveQty: exact.quantity }
-
-  const upper = entries.find(e => e.quantity >= quantity)
-  if (upper) return { costKrw: upper.print_unit2, effectiveQty: upper.quantity }
-
-  const last = entries[entries.length - 1]
-  return { costKrw: last.print_unit2, effectiveQty: last.quantity }
-}
 
 export default function ProductConfigurator({ product, options, exchangeRate, shippingUsd, swadpiaData }: Props) {
   // Group options by type. 후가공(finishing)은 별도 멀티셀렉트 섹션으로 분리 — 기본 단가에
@@ -296,8 +271,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
-  // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing
-  const useSwadpia = !!swadpiaData && swadpiaData.printEntries.length > 0
+  // Use real-time Swadpia pricing if available, otherwise fall back to DB-based pricing.
+  // OMO-3593: 서버가 산출한 고객가 USD 테이블(pricing)만 사용 — 도매 KRW 는 클라이언트에 없음.
+  const useSwadpia = !!swadpiaData && swadpiaData.pricing.useSwadpia
 
   // Selected quantity — DB 마다 type 명이 다름 (paper_qty / quantity). 둘 다 지원.
   const selectedQty = useMemo(() => {
@@ -310,24 +286,17 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
   // Prefer the user-selected paper_code (from DB options) if it has entries in the Swadpia matrix.
   const swadpiaPaperCode = useMemo(() => {
     if (!swadpiaData) return null
-    const validCodes = new Set(swadpiaData.printEntries.filter(e => e.print_unit2 > 0).map(e => e.paper_code))
+    const validCodes = new Set(swadpiaData.pricing.validPaperCodes)
     const selectedCode = selections['paper_code']
     if (selectedCode && validCodes.has(selectedCode)) return selectedCode
     // Fall back to first code with valid pricing
-    const allCodes = [...validCodes]
-    return allCodes[0] ?? null
+    return swadpiaData.pricing.validPaperCodes[0] ?? null
   }, [swadpiaData, selections])
 
   const itemPriceUsd = useMemo(() => {
-    if (useSwadpia && swadpiaPaperCode) {
-      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, selectedQty)
-      if (swadpia !== null && swadpia.costKrw > 0) {
-        return calculatePriceFromSwadpia({
-          swadpiaCostKrw: swadpia.costKrw,
-          marginMultiplier: product.margin_multiplier,
-          exchangeRate,
-        })
-      }
+    if (useSwadpia && swadpiaPaperCode && swadpiaData) {
+      const cell = swadpiaData.pricing.table[swadpiaPaperCode]?.[String(selectedQty)]
+      if (cell) return cell.totalUsd
     }
 
     // Fallback: DB-based calculation
@@ -360,9 +329,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
     for (const opt of qtyOptions) {
       const requested = parseInt(opt.value, 10)
       if (!Number.isFinite(requested) || requested <= 0) continue
-      const swadpia = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, requested)
-      if (swadpia && swadpia.effectiveQty > requested) {
-        map.set(opt.value, swadpia.effectiveQty)
+      const cell = swadpiaData?.pricing.table[swadpiaPaperCode]?.[String(requested)]
+      if (cell && cell.effectiveQty > requested) {
+        map.set(opt.value, cell.effectiveQty)
       }
     }
     return map
@@ -383,14 +352,9 @@ export default function ProductConfigurator({ product, options, exchangeRate, sh
       if (!Number.isFinite(qty) || qty <= 0) continue
       let price: number
       if (useSwadpia && swadpiaPaperCode && swadpiaData) {
-        const sw = lookupSwadpiaCost(swadpiaData.printEntries, swadpiaPaperCode, qty)
-        if (sw !== null && sw.costKrw > 0) {
-          price = calculatePriceFromSwadpia({
-            swadpiaCostKrw: sw.costKrw,
-            marginMultiplier: product.margin_multiplier,
-            exchangeRate,
-          })
-          map.set(opt.value, price / (quantityPromoMap.get(opt.value) ?? qty))
+        const cell = swadpiaData.pricing.table[swadpiaPaperCode]?.[String(qty)]
+        if (cell) {
+          map.set(opt.value, cell.totalUsd / (quantityPromoMap.get(opt.value) ?? qty))
           continue
         }
       }
