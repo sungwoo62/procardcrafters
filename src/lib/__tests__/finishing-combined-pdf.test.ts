@@ -59,6 +59,18 @@ describe('parseFinishingValues / listSpotPlateFinishings / requiresSpotPlate', (
   it('별색판 불요 후가공만이면 요구 없음', () => {
     expect(requiresSpotPlate({ finishing: 'drilled_hole,numbering,coating' })).toBe(false)
   })
+  // OMO-3578 회귀 가드: 자동발주 options_snapshot 은 finishing 키가 제거되고 성원
+  // 필드코드(bak_·ap_·domusong_·epoxy_)만 남는다 → finishing value 만 보면 가드가
+  // dead code 가 된다(별색판 없이 발주=손해). 확장 필드 prefix 로도 반드시 검출돼야 한다.
+  it('확장 폼 필드 prefix(finishing 키 없는 실주문)에서 별색판 요구 검출', () => {
+    expect(listSpotPlateFinishings({ bak_type_1: 'BKT01', bak_side_1: 'BKD10' })).toEqual(['foil_stamp'])
+    expect(requiresSpotPlate({ bak_type_1: 'BKT01' })).toBe(true)
+    expect(requiresSpotPlate({ ap_type_1: 'X' })).toBe(true)
+    expect(requiresSpotPlate({ domusong_type: 'X' })).toBe(true)
+    expect(requiresSpotPlate({ epoxy_type: 'X' })).toBe(true)
+    // 후가공과 무관한 필드는 오검출 금지.
+    expect(requiresSpotPlate({ tagong_num: '1', paper_size: 'A' })).toBe(false)
+  })
 })
 
 describe('expectedFinishingPageCount (OMO-3581)', () => {

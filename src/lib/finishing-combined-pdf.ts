@@ -42,6 +42,24 @@ export const FINISHING_REQUIRES_SPOT_PLATE: ReadonlySet<string> = new Set([
 ])
 
 /** selectedOptions.finishing(콤마구분 value) 에서 후가공 value 목록을 파싱. */
+/**
+ * 확장된 성원 발주 폼 필드 prefix → 별색판을 요구하는 후가공 value.
+ *
+ * 왜 필요한가(OMO-3578): 자동발주 파이프라인은 `expandFinishingToSwadpiaFields()` 로
+ * `finishing`(콤마 value) 키를 **제거**하고 성원 필드코드(bak_·ap_·domusong_·epoxy_)만
+ * 남긴 options_snapshot 을 적재한다. 따라서 `selectedOptions.finishing` 만 보면 확장된
+ * 실주문에서 가드가 한 번도 발동하지 못하는 dead code 가 된다(별색판 없이 발주 → 손해).
+ * 이 prefix 매핑으로 확장된 옵션에서도 별색판 요구를 결정론적으로 검출한다.
+ * (spot_color 는 별도 폼 필드가 없어 prefix 가 없다 → finishing value 로만 검출.)
+ */
+export const SPOT_PLATE_FIELD_PREFIXES: ReadonlyArray<readonly [string, string]> = [
+  ['bak_', 'foil_stamp'],
+  ['ap_', 'deboss_emboss'],
+  ['domusong_', 'die_cut'],
+  ['epoxy_', 'epoxy'],
+]
+
+/** selectedOptions.finishing(콤마구분 value) 에서 후가공 value 목록을 파싱. */
 export function parseFinishingValues(
   selectedOptions: Record<string, string> | undefined | null,
 ): string[] {
@@ -53,16 +71,33 @@ export function parseFinishingValues(
     .filter(Boolean)
 }
 
-/** 선택된 후가공 중 별색판(p2)을 요구하는 value 목록(중복 제거, 입력 순서 유지). */
+/**
+ * 선택된 후가공 중 별색판을 요구하는 value 목록(중복 제거, 입력 순서 유지).
+ * 두 경로를 모두 검출한다(OMO-3578):
+ *   1) `finishing` value 목록(콤마구분) — 미확장 selectedOptions.
+ *   2) 확장된 폼 필드 prefix(bak_·ap_·domusong_·epoxy_) — factory options_snapshot.
+ * (2) 가 없으면 expandFinishingToSwadpiaFields 산출물에서 가드가 dead code 가 된다.
+ */
 export function listSpotPlateFinishings(
   selectedOptions: Record<string, string> | undefined | null,
 ): string[] {
   const seen = new Set<string>()
   const out: string[] = []
-  for (const v of parseFinishingValues(selectedOptions)) {
-    if (FINISHING_REQUIRES_SPOT_PLATE.has(v) && !seen.has(v)) {
+  const add = (v: string) => {
+    if (!seen.has(v)) {
       seen.add(v)
       out.push(v)
+    }
+  }
+  // 1) finishing value 목록
+  for (const v of parseFinishingValues(selectedOptions)) {
+    if (FINISHING_REQUIRES_SPOT_PLATE.has(v)) add(v)
+  }
+  // 2) 확장된 폼 필드 prefix (finishing 키가 제거된 options_snapshot 대응)
+  if (selectedOptions) {
+    const keys = Object.keys(selectedOptions)
+    for (const [prefix, finishingValue] of SPOT_PLATE_FIELD_PREFIXES) {
+      if (keys.some((k) => k.startsWith(prefix))) add(finishingValue)
     }
   }
   return out
