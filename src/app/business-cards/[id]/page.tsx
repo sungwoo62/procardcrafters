@@ -4,10 +4,13 @@ import type { Metadata } from 'next'
 import { ArrowLeft, BadgeCheck, CheckCircle, Clock, Globe, ShieldCheck, Layers } from 'lucide-react'
 import { PRINTCITY_PRODUCTS, getPrintcityProduct, startingSupplyKrw, withVat } from '@/lib/printcity-product'
 import PrintcityProductConfigurator from './PrintcityProductConfigurator'
+import { isPrintcityHidden } from '@/lib/printcity-hidden'
 
 export const dynamic = 'force-static'
 
 export function generateStaticParams() {
+  // OMO-3482: 숨김 시 printcity 제품 상세를 프리렌더하지 않는다(데이터는 보존).
+  if (isPrintcityHidden()) return []
   return PRINTCITY_PRODUCTS.map((p) => ({ id: p.id }))
 }
 
@@ -35,6 +38,7 @@ const TRUST = [
 ]
 
 export default async function PrintcityProductPage({ params }: Props) {
+  if (isPrintcityHidden()) notFound() // OMO-3482: printcity UI 숨김(데이터 보존)
   const { id } = await params
   const product = getPrintcityProduct(id)
   if (!product) notFound()
