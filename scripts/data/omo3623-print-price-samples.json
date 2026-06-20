@@ -1,0 +1,475 @@
+{
+  "issue": "OMO-3623",
+  "source": "swadpia goods_view headless cascade (성원 자기 코드 실행)",
+  "method": "playwright chromium → #total_price (hidden) parity-gated vs #supply_amt + 화면표시 공급가",
+  "read_only": true,
+  "note_bak": "박(箔)은 total_price 미포함 → 별색 surcharge 분리(finishing-surcharge), 본 하니스 범위 외",
+  "server_only": true,
+  "slugs_covered": [
+    "leaflets",
+    "posters",
+    "brochures",
+    "menus",
+    "saddle-stitch-booklet",
+    "perfect-bound-booklet",
+    "catalogs",
+    "wall-calendars",
+    "desk-calendars",
+    "mini-calendars"
+  ],
+  "samples": [
+    {
+      "category_code": "CPR3000",
+      "estimate_class": "CLF2000",
+      "slugs": [
+        "leaflets"
+      ],
+      "sample_index": 0,
+      "label": "base: ART150 A4 양면4/4 1000매 PTM10",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 119800,
+      "unit_price": 119800,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0400",
+        "paper_qty": "1000",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR3000",
+      "estimate_class": "CLF2000",
+      "slugs": [
+        "leaflets"
+      ],
+      "sample_index": 1,
+      "label": "qty tier: 2000매",
+      "applied": [
+        {
+          "sel": "paper_qty",
+          "value": "2000",
+          "ok": true
+        }
+      ],
+      "order_count": 1,
+      "supply_amt": 136400,
+      "unit_price": 136400,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0400",
+        "paper_qty": "2000",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR3000",
+      "estimate_class": "CLF2000",
+      "slugs": [
+        "leaflets"
+      ],
+      "sample_index": 2,
+      "label": "부수 2 (order_count)",
+      "applied": [
+        {
+          "sel": "order_count",
+          "value": "2",
+          "ok": true
+        }
+      ],
+      "order_count": 2,
+      "supply_amt": 239600,
+      "unit_price": 239600,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0400",
+        "paper_qty": "1000",
+        "order_count": "2",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR2000",
+      "estimate_class": null,
+      "slugs": [
+        "posters"
+      ],
+      "sample_index": 0,
+      "label": "base: ART150 A2 단면 250매 PTM10",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 87200,
+      "unit_price": 87200,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0200",
+        "paper_qty": "250",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "0"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR2000",
+      "estimate_class": null,
+      "slugs": [
+        "posters"
+      ],
+      "sample_index": 1,
+      "label": "qty tier: 500매",
+      "applied": [
+        {
+          "sel": "paper_qty",
+          "value": "500",
+          "ok": true
+        }
+      ],
+      "order_count": 1,
+      "supply_amt": 103900,
+      "unit_price": 103900,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0200",
+        "paper_qty": "500",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "0"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CLF2000",
+      "estimate_class": null,
+      "slugs": [
+        "brochures",
+        "menus"
+      ],
+      "sample_index": 0,
+      "label": "base: ART150 A4 양면4/4 1000매 PTM10",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 119800,
+      "unit_price": 119800,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0400",
+        "paper_qty": "1000",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CLF2000",
+      "estimate_class": null,
+      "slugs": [
+        "brochures",
+        "menus"
+      ],
+      "sample_index": 1,
+      "label": "qty tier: 2000매",
+      "applied": [
+        {
+          "sel": "paper_qty",
+          "value": "2000",
+          "ok": true
+        }
+      ],
+      "order_count": 1,
+      "supply_amt": 136400,
+      "unit_price": 136400,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART150W00",
+        "paper_size": "A0400",
+        "paper_qty": "2000",
+        "order_count": "1",
+        "print_method": "PTM10",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR4000",
+      "estimate_class": null,
+      "slugs": [
+        "saddle-stitch-booklet",
+        "perfect-bound-booklet",
+        "catalogs"
+      ],
+      "sample_index": 0,
+      "label": "base: 200부 표지ARE190 내지ARE105 32p PTM20",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 823000,
+      "unit_price": 823000,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_size": "CPR11",
+        "paper_qty": "200",
+        "order_count": "1",
+        "bundle_qty": "200",
+        "in_page_qty": "32",
+        "cover_paper_code": "ARE190W00"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CPR4000",
+      "estimate_class": null,
+      "slugs": [
+        "saddle-stitch-booklet",
+        "perfect-bound-booklet",
+        "catalogs"
+      ],
+      "sample_index": 1,
+      "label": "부수 tier: 500부",
+      "applied": [
+        {
+          "sel": "bundle_qty",
+          "value": "500",
+          "ok": true
+        }
+      ],
+      "order_count": 1,
+      "supply_amt": 936000,
+      "unit_price": 936000,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_size": "CPR11",
+        "paper_qty": "500",
+        "order_count": "1",
+        "bundle_qty": "500",
+        "in_page_qty": "32",
+        "cover_paper_code": "ARE190W00"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CCD1000",
+      "estimate_class": null,
+      "slugs": [
+        "wall-calendars"
+      ],
+      "sample_index": 0,
+      "label": "base: ART180 벽걸이 100부 PTC20",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 375000,
+      "unit_price": 375000,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART180W00",
+        "paper_size": "CCD01",
+        "paper_qty": "100",
+        "paper_qty_select": "100",
+        "order_count": "1",
+        "print_method": "PTC20",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CCD1000",
+      "estimate_class": null,
+      "slugs": [
+        "wall-calendars"
+      ],
+      "sample_index": 1,
+      "label": "부수 2",
+      "applied": [
+        {
+          "sel": "order_count",
+          "value": "2",
+          "ok": true
+        }
+      ],
+      "order_count": 2,
+      "supply_amt": 750000,
+      "unit_price": 375000,
+      "price_model": "unit×count",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART180W00",
+        "paper_size": "CCD01",
+        "paper_qty": "100",
+        "paper_qty_select": "100",
+        "order_count": "2",
+        "print_method": "PTC20",
+        "fside_color_amount": "4",
+        "bside_color_amount": "4"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CCD2000",
+      "estimate_class": null,
+      "slugs": [
+        "desk-calendars",
+        "mini-calendars"
+      ],
+      "sample_index": 0,
+      "label": "base: ART180 탁상 디지털 DPF12",
+      "applied": [],
+      "order_count": 1,
+      "supply_amt": 7500,
+      "unit_price": 7500,
+      "price_model": "line-total",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART180W00",
+        "paper_size": "CCD63",
+        "paper_qty": "1",
+        "paper_qty_select": "1",
+        "order_count": "1",
+        "print_method": "DPF12",
+        "fside_color_amount": "4",
+        "bside_color_amount": "0"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    },
+    {
+      "category_code": "CCD2000",
+      "estimate_class": null,
+      "slugs": [
+        "desk-calendars",
+        "mini-calendars"
+      ],
+      "sample_index": 1,
+      "label": "부수 5",
+      "applied": [
+        {
+          "sel": "order_count",
+          "value": "5",
+          "ok": true
+        }
+      ],
+      "order_count": 5,
+      "supply_amt": 37500,
+      "unit_price": 7500,
+      "price_model": "unit×count",
+      "parity": {
+        "supply_in_shown": true,
+        "positive": true,
+        "unit_count_consistent": true
+      },
+      "selection": {
+        "paper_type": "ART",
+        "paper_code": "ART180W00",
+        "paper_size": "CCD63",
+        "paper_qty": "1",
+        "paper_qty_select": "1",
+        "order_count": "5",
+        "print_method": "DPF12",
+        "fside_color_amount": "4",
+        "bside_color_amount": "0"
+      },
+      "gate": "pass",
+      "gate_reason": null
+    }
+  ]
+}
