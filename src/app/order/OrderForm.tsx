@@ -878,6 +878,13 @@ export default function OrderForm({ product, selectedOptions, itemPriceUsd, ship
         <p className="text-xs text-center text-gray-400 mt-3">
           Secure USD payment via PayPal · Your payment details are protected
         </p>
+        <p className="text-xs text-center text-gray-400 mt-2">
+          By placing your order you agree to our{' '}
+          <a href="/terms" className="underline hover:text-gray-600">Terms of Service</a>,{' '}
+          <a href="/refund" className="underline hover:text-gray-600">Refund &amp; Cancellation Policy</a>, and{' '}
+          <a href="/shipping" className="underline hover:text-gray-600">International Shipping, Customs &amp; Duties</a>.
+          Import duties and taxes are the recipient&apos;s responsibility.
+        </p>
       </section>
     </div>
   )
