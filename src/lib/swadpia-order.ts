@@ -180,6 +180,8 @@ export interface SwadpiaOrderInput {
   quantity: number
   fileUrl: string
   orderTitle?: string
+  /** OMO-3520: 성원 작업메모(work_memo). 미지정 시 orderTitle 사용. UTF-8 강제 전송(한글 깨짐 방지). */
+  workMemo?: string
   /**
    * OMO-3578: 결제 금지 dry-run 모드. true 면 로그인→옵션선택→후가공활성화→파일업로드
    * 까지만 수행하고, 주문서 생성(uploadSuccessOrderSubmit) / 주문확인 / 결제(paySubmit)는
@@ -332,12 +334,21 @@ export async function placeSwadpiaOrder(
     })
     await page.waitForTimeout(2000)
 
-    // 주문명 설정
+    // 주문명 + 작업메모 설정
+    // OMO-3520: 성원 goods_view 는 charset meta 가 없어 브라우저가 windows-1252 로 기본 판정한다
+    // (라이브 확인 characterSet=windows-1252). 그 상태로 폼을 submit 하면 한글(주문명·작업메모)이
+    // windows-1252 로 인코딩되며 깨진다(보드 제보). order_form 에 accept-charset="UTF-8" 을 강제해
+    // 한글이 UTF-8 로 전송되게 한다(성원 신규 페이지 order_unpaid 가 UTF-8 → 백엔드는 UTF-8 처리).
     const orderTitle = input.orderTitle ?? fileName
-    await page.evaluate((title: string) => {
+    const workMemo = input.workMemo ?? orderTitle
+    await page.evaluate((params: { title: string; memo: string }) => {
+      const form = document.getElementById('order_form') as HTMLFormElement | null
+      if (form) form.setAttribute('accept-charset', 'UTF-8')
       const el = document.getElementById('order_title') as HTMLInputElement
-      if (el) el.value = title
-    }, orderTitle)
+      if (el) el.value = params.title
+      const memoEl = document.querySelector('[name="work_memo"]') as HTMLTextAreaElement | null
+      if (memoEl) memoEl.value = params.memo
+    }, { title: orderTitle, memo: workMemo })
 
     // 4. plupload iframe 파일 업로드
     const chgFileName = await uploadViaPlupload(page, filePath)
@@ -395,7 +406,10 @@ export async function placeSwadpiaOrder(
     }
 
     // 5. hidden 필드 설정 + 폼 제출
-    await page.evaluate((params: { chgFileName: string; fileName: string; fileExt: string; fileSize: number; orderTitle: string }) => {
+    await page.evaluate((params: { chgFileName: string; fileName: string; fileExt: string; fileSize: number; orderTitle: string; workMemo: string }) => {
+      // OMO-3520: submit 직전 재확인 — accept-charset=UTF-8 강제(한글 깨짐 방지).
+      const orderForm = document.getElementById('order_form') as HTMLFormElement | null
+      if (orderForm) orderForm.setAttribute('accept-charset', 'UTF-8')
       const setField = (name: string, value: string) => {
         let el = document.getElementById(name) as HTMLInputElement
         if (!el) el = document.querySelector(`[name="${name}"]`) as HTMLInputElement
@@ -431,7 +445,8 @@ export async function placeSwadpiaOrder(
       setField('upload_mode', '1')
       setField('order_path', 'ODP10')
       setField('order_title', params.orderTitle)
-    }, { chgFileName, fileName, fileExt, fileSize, orderTitle })
+      setField('work_memo', params.workMemo)
+    }, { chgFileName, fileName, fileExt, fileSize, orderTitle, workMemo })
 
     // 6. uploadSuccessOrderSubmit() → /order/order_info/direct_order (주문서)
     await Promise.all([
