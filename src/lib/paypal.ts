@@ -4,8 +4,10 @@
 const BASE_URL = process.env.PAYPAL_API_URL?.trim() || 'https://api-m.sandbox.paypal.com'
 
 export async function getAccessToken(): Promise<string> {
-  const clientId = process.env.PAYPAL_CLIENT_ID ?? process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID
-  const secret = process.env.PAYPAL_SECRET
+  // OMO-3628: 빈 문자열("") env 는 `??` 를 통과해 빈 clientId/secret 으로 인증을 시도하다
+  // 깨진다. 공백/빈값은 미설정으로 보고 NEXT_PUBLIC_ 폴백 → 둘 다 없으면 아래에서 명시적 에러.
+  const clientId = process.env.PAYPAL_CLIENT_ID?.trim() || process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID?.trim()
+  const secret = process.env.PAYPAL_SECRET?.trim()
   if (!clientId || !secret) {
     throw new Error('PayPal credentials are not configured (PAYPAL_CLIENT_ID / PAYPAL_SECRET)')
   }

@@ -22,11 +22,18 @@ let cachedToken: OAuthToken | null = null
 const TOKEN_REFRESH_MARGIN_MS = 60_000
 
 function getBaseUrl(): string {
-  return process.env.FEDEX_API_BASE ?? 'https://apis.fedex.com'
+  // OMO-3628: FEDEX_API_BASE 가 빈 문자열("")이면 `??` 가 빈 값을 통과시켜 상대경로 fetch
+  // ("/oauth/token")로 폭발한다. 공백/빈값은 미설정으로 보고 운영 기본값으로 폴백한다.
+  return process.env.FEDEX_API_BASE?.trim() || 'https://apis.fedex.com'
 }
 
 export function isFedexApiConfigured(): boolean {
-  return Boolean(process.env.FEDEX_CLIENT_ID && process.env.FEDEX_CLIENT_SECRET && process.env.FEDEX_ACCOUNT_NUMBER)
+  // OMO-3628: 빈 문자열/공백 자격증명은 미설정으로 간주(트림 후 비면 false).
+  return Boolean(
+    process.env.FEDEX_CLIENT_ID?.trim() &&
+      process.env.FEDEX_CLIENT_SECRET?.trim() &&
+      process.env.FEDEX_ACCOUNT_NUMBER?.trim(),
+  )
 }
 
 async function getAccessToken(): Promise<string> {
