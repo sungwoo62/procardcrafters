@@ -90,14 +90,22 @@ async function loadLive() {
   const priceHistory = await safe(async () => {
     const { data } = await sb
       .from('print_price_history')
-      .select('product_slug, new_price_krw, price_changed, fetch_success, fetched_at')
+      .select('product_slug, new_price_krw, price_changed, fetch_success, fetched_at, source_data, error_message')
       .order('fetched_at', { ascending: false })
       .limit(200)
     const lastAt = data?.[0]?.fetched_at || null
     const changed = (data || []).filter((r) => r.price_changed).length
-    const failed = (data || []).filter((r) => !r.fetch_success).length
-    return { total: (data || []).length, lastAt, changed, failed }
-  }, { total: 0, lastAt: null as string | null, changed: 0, failed: 0 })
+    // 견적전용(비매트릭스) 제품은 성원에 가격 매트릭스가 없어 설계상 fetch_success=false 로 기록된다.
+    // 스티커/봉투(CST/CEV) 등 custom 치수 제품 → 실패가 아니라 정상. 로그인만료·HTTP 오류 같은 '진짜 실패'와 구분한다.
+    const isQuoteOnly = (r: { source_data?: unknown; error_message?: string | null }) => {
+      const mode = (r.source_data as { mode?: string } | null)?.mode
+      return mode === 'quote-only' || (r.error_message ?? '').includes('비매트릭스')
+    }
+    const fetchFails = (data || []).filter((r) => !r.fetch_success)
+    const quoteOnly = fetchFails.filter(isQuoteOnly).length
+    const failed = fetchFails.filter((r) => !isQuoteOnly(r)).length
+    return { total: (data || []).length, lastAt, changed, failed, quoteOnly }
+  }, { total: 0, lastAt: null as string | null, changed: 0, failed: 0, quoteOnly: 0 })
 
   // 6) 공장주문(결제 대조)
   const factory = await safe(async () => {
@@ -170,6 +178,7 @@ export default async function CrawlFlowReport() {
       ? ((mapping.counts['error'] || 0) > 0 ? 'warn' : 'ok')
       : 'idle') as Health,
     drift: (drift.unreported > 0 ? 'warn' : (mapping.total > 0 ? 'ok' : 'idle')) as Health,
+    // 견적전용(quoteOnly)은 정상이므로 health 에 반영하지 않는다. 진짜 실패(failed)만 warn.
     priceSync: (priceHistory.total > 0
       ? (priceHistory.failed > 0 ? 'warn' : (priceAge != null && priceAge <= 2 ? 'ok' : 'warn'))
       : 'idle') as Health,
@@ -228,8 +237,8 @@ export default async function CrawlFlowReport() {
       big: `${priceHistory.changed}`,
       sub: '가격변동 기록(최근 200)',
       lines: [
-        `실패 ${priceHistory.failed} · 마지막 ${fmt(priceHistory.lastAt)}`,
-        '크론 매일 17:00 UTC',
+        `실패 ${priceHistory.failed} · 견적전용 ${priceHistory.quoteOnly} · 마지막 ${fmt(priceHistory.lastAt)}`,
+        '크론 매일 17:00 UTC · 견적전용=비매트릭스 정상',
       ],
     },
     {
