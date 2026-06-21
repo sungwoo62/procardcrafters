@@ -11,6 +11,9 @@
 // ⚠️ 이미지는 현재 in-browser 렌더(그라데이션 배경 + CSS 카드 목업)로 "컨셉 프루프".
 //    실사 제품촬영/AI 배경 합성은 키작업(이미지 파이프라인) 이후 자식 이슈에서 교체한다.
 
+// OMO-3690 · 생성 이미지 매니페스트(IG-id → Supabase public URL). 생성 스크립트가 채움.
+import GENERATED_IMAGES from './studio-generated.json'
+
 export type CreativeRatio = '4:5' | '1:1' | '9:16'
 export type CreativeFormat = 'single' | 'carousel' | 'cardnews'
 
@@ -81,7 +84,7 @@ export interface MetaAdSet {
 // ---------------------------------------------------------------------------
 // 인스타그램 포스팅 30종 (피드/카드뉴스/유즈케이스/브랜드)
 // ---------------------------------------------------------------------------
-export const INSTAGRAM_POSTS: InstagramPost[] = [
+const RAW_INSTAGRAM_POSTS: InstagramPost[] = [
   // --- A. 프리미엄 카드 히어로 (8) ---
   {
     id: 'IG-01',
@@ -640,6 +643,40 @@ export const INSTAGRAM_POSTS: InstagramPost[] = [
     visualDirection: '시즌 리프레시 톤, 헌 카드→새 카드 전환. 금박 포인트, 캘린더/새출발 모티프.',
   },
 ]
+
+// ---------------------------------------------------------------------------
+// OMO-3690 · 생성 이미지 머지. scripts/omo3690-gen.mjs 가 /api/studio/gen 으로 생성한
+// Supabase Storage public URL 을 studio-generated.json 에 적재 → 해당 IG 항목 imageUrl 채움.
+// 비어있는 항목은 기존 CSS 컨셉 목업 폴백(무손상). 생성 성공분만 실이미지로 교체된다.
+// ---------------------------------------------------------------------------
+export const INSTAGRAM_POSTS: InstagramPost[] = RAW_INSTAGRAM_POSTS.map((p) => {
+  const url = (GENERATED_IMAGES as Record<string, string>)[p.id]
+  return url ? { ...p, imageUrl: url } : p
+})
+
+// 생성된 실이미지 보유 IG id 수(스튜디오 헤더 통계용).
+export const GENERATED_IMAGE_COUNT = Object.keys(GENERATED_IMAGES).length
+
+// Supabase Storage 공개 버킷명(이미지 프로덕션 산출물). 라우트/스크립트와 동일해야 함.
+export const STUDIO_IMAGE_BUCKET = 'studio-ads'
+
+// OMO-3690 · 이미지 생성 프롬프트 빌더. visualDirection(SSOT) + 제품/비율/컴플라이언스 가드를
+// 묶어 photorealistic 제품샷 프롬프트로 변환. 텍스트/로고/스탯 합성 금지(OMO-2760/2975).
+export function buildImagePrompt(post: InstagramPost): string {
+  const ratioHint =
+    post.ratio === '1:1'
+      ? 'square 1:1 composition'
+      : post.ratio === '9:16'
+        ? 'tall vertical 9:16 composition'
+        : 'vertical 4:5 portrait composition'
+  return [
+    `Ultra-realistic commercial product photography of a ${post.productLabel.toLowerCase()} for a premium American print shop.`,
+    `Scene direction: ${post.visualDirection}`,
+    `Beautiful styled background, soft directional studio lighting, shallow depth of field, true-to-life paper texture and print finish, crisp macro detail, magazine-quality, modern and elegant.`,
+    `IMPORTANT: the product surface is blank or shows only abstract non-readable decorative marks. Absolutely no real text, no readable words, no letters, no numbers, no logos, no brand names, no statistics, no phone numbers, no QR codes.`,
+    `${ratioHint}. No watermark, no border, no UI, photoreal only.`,
+  ].join(' ')
+}
 
 // ---------------------------------------------------------------------------
 // 메타(페이스북/인스타) 광고 30세트 — META_ADS 표준(OMO-3444) 적용
