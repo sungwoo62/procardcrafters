@@ -29,18 +29,30 @@ const RATIO_CLASS: Record<CreativeRatio, string> = {
 export function CreativeFrame({ post, compact = false }: { post: InstagramPost; compact?: boolean }) {
   const t = THEME[post.theme]
   const isSticker = post.category === 'stickers'
+  const hasImage = !!post.imageUrl // OMO-3690: 실사/AI 프로덕션 이미지 적재 시 컨셉 목업 대체
 
   return (
     <div className={`relative w-full overflow-hidden rounded-2xl ${RATIO_CLASS[post.ratio]} ${t.bg}`}>
+      {/* 실사/AI 프로덕션 이미지 레이어(있을 때만). 상하 스크림으로 헤드라인/CTA 가독성 확보. */}
+      {hasImage && (
+        <>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Supabase signed URL 동적, next/image 도메인 화이트리스트 회피 */}
+          <img src={post.imageUrl} alt={post.headline} className="absolute inset-0 h-full w-full object-cover" />
+          <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/55 to-transparent" />
+          <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/55 to-transparent" />
+        </>
+      )}
+
       {/* 상단 헤드라인 */}
       <div className="absolute inset-x-0 top-0 p-5">
-        <p className={`whitespace-pre-line text-xl font-extrabold leading-tight tracking-tight ${t.text} ${compact ? 'text-lg' : 'sm:text-2xl'}`}>
+        <p className={`whitespace-pre-line text-xl font-extrabold leading-tight tracking-tight ${hasImage ? 'text-white drop-shadow' : t.text} ${compact ? 'text-lg' : 'sm:text-2xl'}`}>
           {post.headline}
         </p>
-        <p className={`mt-2 text-xs font-medium ${t.sub} sm:text-sm`}>{post.subhead}</p>
+        <p className={`mt-2 text-xs font-medium ${hasImage ? 'text-white/85 drop-shadow' : t.sub} sm:text-sm`}>{post.subhead}</p>
       </div>
 
-      {/* 중앙 제품 목업 (명함 = 기울인 카드, 스티커 = 원형 배지) */}
+      {/* 중앙 제품 목업 (명함 = 기울인 카드, 스티커 = 원형 배지). 실사 이미지 적재 시 생략. */}
+      {!hasImage && (
       <div className="absolute inset-0 flex items-center justify-center">
         {isSticker ? (
           <div className={`flex h-28 w-28 rotate-6 items-center justify-center rounded-full ${t.card} sm:h-36 sm:w-36`}>
@@ -59,11 +71,12 @@ export function CreativeFrame({ post, compact = false }: { post: InstagramPost; 
           </div>
         )}
       </div>
+      )}
 
       {/* 하단 CTA + 브랜드 (locked footer) */}
       <div className="absolute inset-x-0 bottom-0 flex items-center justify-between p-5">
-        <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${t.card} ${t.accent}`}>{post.cta} →</span>
-        <span className={`text-[10px] font-bold uppercase tracking-widest ${t.sub}`}>Procardcrafters</span>
+        <span className={`rounded-full px-3 py-1.5 text-[11px] font-semibold ${hasImage ? 'bg-white text-slate-900' : `${t.card} ${t.accent}`}`}>{post.cta} →</span>
+        <span className={`text-[10px] font-bold uppercase tracking-widest ${hasImage ? 'text-white/85 drop-shadow' : t.sub}`}>Procardcrafters</span>
       </div>
 
       {/* 캐러셀/카드뉴스 배지 */}

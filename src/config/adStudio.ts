@@ -49,6 +49,7 @@ export interface InstagramPost {
   cta: string
   hashtags: string[] // # 제외
   visualDirection: string // 디자이너/이미지 파이프라인용 비주얼 가이드(한국어 허용)
+  imageUrl?: string // OMO-3690: 실사/AI 프로덕션 이미지 URL(Supabase mkt-uploads procard/). 비면 CSS 컨셉 목업 폴백.
   slides?: CardNewsSlide[] // carousel/cardnews 전용
 }
 
