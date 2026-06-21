@@ -2,7 +2,8 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, X, Hash, Target, Layers } from 'lucide-react'
+import Link from 'next/link'
+import { ChevronLeft, ChevronRight, X, Hash, Target, Layers, ExternalLink } from 'lucide-react'
 import {
   INSTAGRAM_POSTS,
   META_AD_SETS,
@@ -95,6 +96,14 @@ export default function StudioGallery() {
                       <span key={h}>#{h}</span>
                     ))}
                   </p>
+                  {/* OMO-3684: 각 인스타 카드뉴스 → 해당 제품 페이지 딥링크(레퍼런스 연결) */}
+                  <Link
+                    href={`/products/${post.productSlug}`}
+                    className="mt-2 inline-flex items-center gap-1 text-[11px] font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+                  >
+                    {post.productLabel} 제품 보기
+                    <ExternalLink className="h-3 w-3" />
+                  </Link>
                 </div>
               </div>
             ))}
@@ -182,6 +191,14 @@ export default function StudioGallery() {
                   <ChevronRight className="h-5 w-5" />
                 </button>
               </div>
+              {/* OMO-3684: 카드뉴스 → 제품 페이지 딥링크 */}
+              <Link
+                href={`/products/${active.productSlug}`}
+                className="mt-4 flex w-full items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-blue-700"
+              >
+                {active.productLabel} 제품 보기
+                <ExternalLink className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>

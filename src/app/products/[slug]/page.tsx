@@ -22,6 +22,7 @@ import type { PrintProduct, PrintProductOption, CompetitorPriceSummary } from '@
 import ProductReviews from '@/components/ProductReviews'
 import FinishingSection from '@/components/FinishingSection'
 import NicheProfessionLinks from '@/components/niche/NicheProfessionLinks'
+import { getProductReferenceUrls } from '@/config/productReferences'
 import JsonLd from '@/components/JsonLd'
 import type { ReviewStats, Review, ReviewPagination } from '@/components/ProductReviews'
 
@@ -273,7 +274,11 @@ export default async function ProductDetailPage({ params }: Props) {
             <div className="mb-6">
               <ProductGallery
                 heroUrl={product.hero_image_url ?? null}
-                galleryUrls={(product as PrintProduct & { gallery_urls?: string[] | null }).gallery_urls ?? null}
+                galleryUrls={[
+                  ...((product as PrintProduct & { gallery_urls?: string[] | null }).gallery_urls ?? []),
+                  // OMO-3684: 제품별 AI 레퍼런스 이미지(고객 참고용)를 슬라이드에 합류
+                  ...getProductReferenceUrls(slug),
+                ]}
                 alt={product.name_en}
                 fallback={<ProductImage category={product.category} />}
                 gradientClass={PRODUCT_GRADIENT[product.category] ?? 'from-blue-50 to-indigo-100'}

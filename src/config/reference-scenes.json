@@ -1,0 +1,41 @@
+{
+  "perProduct": 4,
+  "groups": {
+    "cards": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "a single business card resting at a 45-degree tilt on a dark premium surface, one dramatic side light grazing the surface to reveal finish and edge thickness, macro detail" },
+      { "key": "inuse", "label": "실사용(손)", "scene": "a person elegantly handing over the business card, soft natural window light, warm modern office bokeh in the background, lifestyle moment" },
+      { "key": "flatlay", "label": "스타일링 플랫레이", "scene": "top-down flat lay of a stack and fanned spread of the cards styled with a fountain pen, a coffee cup and a small plant on a textured neutral desk, editorial composition" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "extreme macro close-up of the card edge and surface finish, showing paper fiber, foil specular highlight or impression depth, shallow depth of field" }
+    ],
+    "stickers": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "a cluster of die-cut stickers peeling slightly off a backing sheet on a clean colorful pastel surface, bright cheerful studio light" },
+      { "key": "inuse", "label": "실사용(적용)", "scene": "the sticker applied on a matte laptop lid and on a stainless water bottle, real lifestyle setting, bright daylight" },
+      { "key": "flatlay", "label": "스타일링 플랫레이", "scene": "top-down flat lay of an assortment of stickers in varied organic shapes scattered playfully on a bright solid-color background, vibrant and saturated" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "extreme macro of the sticker edge and finish — vinyl gloss, holographic shimmer or kraft texture — peeling corner detail, shallow depth of field" }
+    ],
+    "marketing": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "the printed marketing piece (flyer/brochure/postcard) propped upright and slightly fanned on a minimal modern surface, soft directional studio light" },
+      { "key": "inuse", "label": "실사용(손/매장)", "scene": "hands holding and browsing the open brochure or flyer in a bright cafe or retail setting, warm lifestyle bokeh" },
+      { "key": "flatlay", "label": "스타일링 플랫레이", "scene": "top-down flat lay of the marketing print styled with a coffee cup, glasses and a notebook on a warm wooden desk, editorial lifestyle composition" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "macro close-up of the paper edge, fold crease and coated print surface showing color saturation and stock thickness, shallow depth of field" }
+    ],
+    "office": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "the office stationery item (envelope/notebook/form) arranged cleanly on a minimal desk, soft daylight, professional and tidy" },
+      { "key": "inuse", "label": "실사용(데스크)", "scene": "the stationery in natural use on a working desk — an envelope being sealed or a notebook open with a pen resting on it, warm window light" },
+      { "key": "flatlay", "label": "스타일링 플랫레이", "scene": "top-down flat lay of the stationery styled with a pen, paper clips and a small plant on a clean neutral desk, organized editorial composition" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "macro close-up of the paper texture, fold or binding detail and clean edges, shallow depth of field, true-to-life stock" }
+    ],
+    "signs": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "the banner or display standing upright in a clean bright environment, slight angle, professional studio-lit product shot" },
+      { "key": "inuse", "label": "실사용(현장)", "scene": "the roll-up banner or poster displayed at a real storefront, trade-show booth or event entrance, people softly blurred in the background, bright daylight" },
+      { "key": "flatlay", "label": "레이아웃 컷", "scene": "a poster or banner laid flat and partially rolled on a wide minimal surface showing scale and vivid large-format color, soft even light" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "macro close-up of the large-format print surface and material edge (vinyl/synthetic paper/foam), showing print sharpness and material texture" }
+    ],
+    "packaging": [
+      { "key": "hero", "label": "스튜디오 히어로", "scene": "the box or shopping bag standing assembled on a clean studio surface, soft directional light revealing structure and material, premium product shot" },
+      { "key": "inuse", "label": "실사용(언박싱)", "scene": "the gift box being opened or the shopping bag carried by a person, warm lifestyle retail setting, soft daylight bokeh" },
+      { "key": "flatlay", "label": "스타일링 플랫레이", "scene": "top-down flat lay of the packaging styled with tissue paper, ribbon and a small product peeking out, warm editorial composition" },
+      { "key": "detail", "label": "마감 디테일 매크로", "scene": "macro close-up of the packaging material, fold/handle construction and surface finish (kraft texture, matte lamination or foil), shallow depth of field" }
+    ]
+  }
+}

@@ -115,11 +115,18 @@ export async function POST(req: NextRequest) {
   const body = (await req.json().catch(() => ({}))) as { id?: string; prompt?: string }
   const id = body.id
   if (!id) return NextResponse.json({ error: 'id required' }, { status: 400 })
+  // 안전한 path segment 만 허용(IG-01, ref-business-cards-1 등).
+  if (!/^[a-zA-Z0-9_-]+$/.test(id)) {
+    return NextResponse.json({ error: `invalid id ${id}` }, { status: 400 })
+  }
 
+  // IG 항목이면 buildImagePrompt 폴백, 아니면(레퍼런스 등) body.prompt 필수.
   const post = INSTAGRAM_POSTS.find((p: InstagramPost) => p.id === id)
-  if (!post) return NextResponse.json({ error: `unknown id ${id}` }, { status: 404 })
+  if (!post && !body.prompt) {
+    return NextResponse.json({ error: `unknown id ${id} (prompt required for non-IG id)` }, { status: 400 })
+  }
 
-  const prompt = body.prompt || buildImagePrompt(post)
+  const prompt = body.prompt || buildImagePrompt(post!)
 
   let gen: GenResult
   try {
