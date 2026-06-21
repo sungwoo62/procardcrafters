@@ -49,11 +49,22 @@ export const metadata: Metadata = {
     title: 'Procardcrafters — Premium Print On Demand',
     description: 'Business cards, stickers, flyers, postcards, and posters — produced at certified global print facilities and delivered worldwide.',
     url: SITE_URL,
+    // OMO-2914 (R4) — 비제품 페이지(home/faq/contact/about/portfolio) 기본 OG 카드.
+    // 개별 페이지가 자체 og:image 를 지정하면 그 값이 우선한다(이건 fallback).
+    images: [
+      {
+        url: '/og-default.png',
+        width: 1200,
+        height: 630,
+        alt: 'Procardcrafters — Premium Print On Demand',
+      },
+    ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Procardcrafters — Premium Print On Demand',
     description: 'Business cards, stickers, flyers, postcards, and posters — produced at certified global print facilities and delivered worldwide.',
+    images: ['/og-default.png'],
   },
   robots: { index: true, follow: true },
 }

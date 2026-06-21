@@ -29,6 +29,32 @@ function pushDataLayerEvent(event: string, params?: Record<string, unknown>) {
   window.dataLayer.push({ event, ...params })
 }
 
+// OMO-2914 (R2) — 라이브 퍼널 상단(view_item / begin_checkout)을 1st-party DB 에도 적재한다.
+// GA4 Data API 가 막혀(OMO-2894) 있어도 위클리 신호 루틴(OMO-2891)이 DB 에서
+// products → checkout → order → paid 이탈을 측정할 수 있게 하는 fire-and-forget 싱크.
+function sendFunnelEvent(
+  event_type: 'view_item' | 'begin_checkout',
+  params: Record<string, unknown>,
+): void {
+  if (typeof window === 'undefined') return
+  try {
+    void fetch('/api/analytics/funnel-event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      keepalive: true,
+      body: JSON.stringify({
+        event_type,
+        session_id: getSessionId(),
+        path: window.location.pathname,
+        referrer: document.referrer || undefined,
+        ...params,
+      }),
+    }).catch(() => {})
+  } catch {
+    // fire-and-forget — 실패해도 UX 영향 없음
+  }
+}
+
 export function gtagEvent(eventName: string, params?: Record<string, unknown>) {
   if (typeof window !== 'undefined' && typeof window.gtag === 'function') {
     window.gtag('event', eventName, params)
@@ -71,6 +97,12 @@ export function trackViewItem(product: {
   }
   pushDataLayerEvent('view_item', params)
   gtagEvent('view_item', params)
+  sendFunnelEvent('view_item', {
+    product_id: product.id,
+    product_name: product.name,
+    category: product.category,
+    value: product.price,
+  })
   metaPixelEvent('ViewContent', {
     content_ids: [product.id],
     content_name: product.name,
@@ -123,6 +155,11 @@ export function trackBeginCheckout(params: {
   }
   pushDataLayerEvent('begin_checkout', eventParams)
   gtagEvent('begin_checkout', eventParams)
+  sendFunnelEvent('begin_checkout', {
+    product_id: params.productId,
+    product_name: params.productName,
+    value: params.value,
+  })
   metaPixelEvent('InitiateCheckout', {
     currency: 'USD',
     value: params.value,
