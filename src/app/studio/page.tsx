@@ -2,7 +2,7 @@
 // 뉴트리바이오비스 광고 스튜디오 참고. 내부용(noindex). 키작업(Meta API/이미지 파이프라인) 이후 실집행 연결.
 import type { Metadata } from 'next'
 import StudioGallery from '@/components/studio/StudioGallery'
-import { INSTAGRAM_POSTS, META_AD_SETS } from '@/config/adStudio'
+import { INSTAGRAM_POSTS, META_AD_SETS, GENERATED_IMAGE_COUNT } from '@/config/adStudio'
 
 export const metadata: Metadata = {
   title: 'Ad Studio — Procardcrafters',
@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 
 const STATS = [
   { value: `${INSTAGRAM_POSTS.length}`, label: '인스타 콘텐츠' },
-  { value: `${INSTAGRAM_POSTS.filter((p) => p.format !== 'single').length}`, label: '카드뉴스/캐러셀' },
+  { value: `${GENERATED_IMAGE_COUNT}`, label: 'AI 생성 명함 제품샷' },
   { value: `${META_AD_SETS.length}`, label: '메타 광고세트' },
   { value: 'CTR+ROI', label: '평가 지표(META_ADS)' },
 ]
@@ -29,7 +29,8 @@ export default function StudioPage() {
           <p className="mt-4 max-w-2xl text-sm text-blue-100/80">
             뉴트리바이오비스 광고 스튜디오 패턴을 프로카드(미국 명함 POD)에 적용. 명함류 프리미엄 라인업과
             잘나갈 제품을 중심으로 인스타 포스팅 30종 + 메타 광고 30세트를 컨셉·카피·레이아웃까지 완성.
-            배경/제품 비주얼은 현재 in-browser 컨셉 프루프이며, 실사 촬영·AI 배경 합성은 키작업 이후 교체합니다.
+            명함류 {GENERATED_IMAGE_COUNT}종은 AI 생성 실사 제품샷(배경 합성 포함)으로 적용 완료, 나머지는 컨셉 프레임.
+            대외 게시는 사람 승인 게이트(OMO-1908).
           </p>
           <div className="mt-8 grid max-w-2xl grid-cols-2 gap-4 sm:grid-cols-4">
             {STATS.map((s) => (
