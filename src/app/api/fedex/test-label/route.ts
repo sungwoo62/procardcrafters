@@ -41,7 +41,9 @@ export async function POST(req: NextRequest) {
       packageWidthCm: 15,
       packageHeightCm: 5,
       customerReference: ref,
-      labelImageType: 'ZPLII', // 항상 ZPL 강제
+      labelImageType: 'ZPLII',          // 항상 ZPL 강제
+      sandbox: true,                    // 인증/테스트 환경 (실 청구·발송 없음)
+      includeAutoEtdInvoice: false,     // 인증은 라벨만 — ETD invoice 불필요
       commodities: [{
         description: 'Printed business cards (sample)',
         countryOfManufacture: 'KR',
