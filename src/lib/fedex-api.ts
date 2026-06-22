@@ -59,14 +59,14 @@ export function isFedexApiConfigured(): boolean {
   return primaryProfile() !== null
 }
 
-async function getAccessToken(clientId: string, clientSecret: string): Promise<string> {
+async function getAccessToken(clientId: string, clientSecret: string, baseUrl?: string): Promise<string> {
   const now = Date.now()
   const cached = tokenCache.get(clientId)
   if (cached && cached.expires_at - now > TOKEN_REFRESH_MARGIN_MS) {
     return cached.access_token
   }
 
-  const res = await fetch(`${getBaseUrl()}/oauth/token`, {
+  const res = await fetch(`${baseUrl ?? getBaseUrl()}/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
@@ -361,6 +361,8 @@ export interface FedexShipInput {
   includeAutoEtdInvoice?: boolean
   /** 라벨 포맷 강제 (미지정 시 FEDEX_LABEL_IMAGE_TYPE env). 테스트 라벨 페이지에서 ZPLII 강제용. */
   labelImageType?: 'PDF' | 'ZPLII'
+  /** 샌드박스(인증/테스트) 환경 사용 — FEDEX_SANDBOX_* 자격증명+base. 실 청구·실 발송 없음. */
+  sandbox?: boolean
 }
 
 export interface FedexShipResult {
@@ -381,14 +383,21 @@ export interface FedexShipResult {
  * OMO-2371 — buildAutoInvoiceEtd() 스프레드 사용.
  */
 export async function createFedexShipment(input: FedexShipInput): Promise<FedexShipResult> {
-  if (!isFedexApiConfigured()) {
-    throw new Error('FedEx API not configured')
+  // OMO-3736 — 인증/테스트 라벨은 샌드박스 환경(FEDEX_SANDBOX_*). 운영 Ship 자격증명 미승인 시 403 회피.
+  const useSandbox = input.sandbox ?? false
+  const clientId     = useSandbox ? process.env.FEDEX_SANDBOX_CLIENT_ID     : process.env.FEDEX_CLIENT_ID
+  const clientSecret = useSandbox ? process.env.FEDEX_SANDBOX_CLIENT_SECRET : process.env.FEDEX_CLIENT_SECRET
+  const account      = useSandbox ? process.env.FEDEX_SANDBOX_ACCOUNT_NUMBER : process.env.FEDEX_ACCOUNT_NUMBER
+  const baseUrl      = useSandbox
+    ? (process.env.FEDEX_SANDBOX_API_BASE ?? 'https://apis-sandbox.fedex.com')
+    : getBaseUrl()
+  if (!clientId || !clientSecret || !account) {
+    throw new Error(useSandbox ? 'FedEx 샌드박스 자격증명 미설정 (FEDEX_SANDBOX_*)' : 'FedEx API not configured')
   }
 
   const { buildAutoInvoiceEtd } = await import('@/lib/fedex-etd')
 
-  const token = await getAccessToken(process.env.FEDEX_CLIENT_ID!, process.env.FEDEX_CLIENT_SECRET!)
-  const account = process.env.FEDEX_ACCOUNT_NUMBER!
+  const token = await getAccessToken(clientId, clientSecret, baseUrl)
   const isInternational = input.recipient.countryCode.toUpperCase() !== 'KR'
   const includeEtd = isInternational && (input.includeAutoEtdInvoice ?? true)
 
@@ -483,7 +492,7 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
     },
   }
 
-  const res = await fetch(`${getBaseUrl()}/ship/v1/shipments`, {
+  const res = await fetch(`${baseUrl}/ship/v1/shipments`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
