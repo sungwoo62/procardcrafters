@@ -296,7 +296,10 @@ export interface FedexShipResult {
   masterTrackingNumber: string
   serviceType: string
   serviceName?: string
-  labelPdf: Buffer | null                    // PAPER_4X6 라벨
+  /** 라벨 원본 바이트. PDF(레이저/잉크젯) 또는 ZPL(써멀 프린터) — labelFormat 으로 구분. 절대 이미지로 재렌더하지 않음 (FedEx 인증 요구사항). */
+  labelPdf: Buffer | null
+  /** 'pdf' = PAPER_4X6 PDF, 'zpl' = ZPLII raw buffer (써멀 프린터에 그대로 전송) */
+  labelFormat: 'pdf' | 'zpl'
   invoicePdf: Buffer | null                  // ELECTRONIC_TRADE_DOCUMENTS — Commercial Invoice
   raw: unknown
 }
@@ -317,6 +320,13 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
   const account = process.env.FEDEX_ACCOUNT_NUMBER!
   const isInternational = input.recipient.countryCode.toUpperCase() !== 'KR'
   const includeEtd = isInternational && (input.includeAutoEtdInvoice ?? true)
+
+  // OMO-3736 — 라벨 포맷 env 게이트. 기본 PDF(레이저/잉크젯). 써멀 프린터(Zebra) 인증 시 FEDEX_LABEL_IMAGE_TYPE=ZPLII.
+  // ZPLII 선택 시 FedEx 가 반환한 ZPL 버퍼를 그대로 저장·전송한다 (이미지로 재렌더 금지 — FedEx 인증 거부 사유).
+  const rawImageType = (process.env.FEDEX_LABEL_IMAGE_TYPE ?? 'PDF').toUpperCase()
+  const useZpl = rawImageType === 'ZPLII' || rawImageType === 'ZPL'
+  // 써멀 라벨 기본 stock 은 STOCK_4X6 (PDF 는 PAPER_4X6). env 로 override 가능.
+  const labelStockType = process.env.FEDEX_LABEL_STOCK_TYPE ?? (useZpl ? 'STOCK_4X6' : 'PAPER_4X6')
 
   const body: Record<string, unknown> = {
     labelResponseOptions: 'LABEL',
@@ -361,8 +371,8 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
       },
       labelSpecification: {
         labelFormatType: 'COMMON2D',
-        imageType: 'PDF',
-        labelStockType: 'PAPER_4X6',
+        imageType: useZpl ? 'ZPLII' : 'PDF',
+        labelStockType,
       },
       ...(isInternational ? {
         customsClearanceDetail: {
@@ -440,11 +450,13 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
   const labelDoc = ts.pieceResponses?.[0]?.packageDocuments?.find((p) => p.contentType === 'LABEL')
   const invoiceDoc = ts.shipmentDocuments?.find((s) => s.contentType === 'COMMERCIAL_INVOICE')
 
+  // base64 디코드 = 라벨 원본 바이트. ZPLII 면 그 자체가 thermal 프린터용 raw ZPL 스크립트 (^XA…^XZ). 재렌더 없음.
   return {
     masterTrackingNumber: ts.masterTrackingNumber,
     serviceType: ts.serviceType ?? input.serviceType,
     serviceName: ts.serviceName,
     labelPdf: labelDoc?.encodedLabel ? Buffer.from(labelDoc.encodedLabel, 'base64') : null,
+    labelFormat: useZpl ? 'zpl' : 'pdf',
     invoicePdf: invoiceDoc?.encodedLabel ? Buffer.from(invoiceDoc.encodedLabel, 'base64') : null,
     raw: data,
   }
