@@ -28,7 +28,8 @@ import { fileURLToPath } from 'node:url'
 import { dirname, join } from 'node:path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const QUEUE_PATH = join(__dirname, 'content-queue.json')
+// 단일 진실원천: 생성기(omo3764-gen-content.mjs)가 쓰고 웹 리포트가 읽는 동일 파일.
+const QUEUE_PATH = join(__dirname, '..', '..', 'src', 'data', 'omo3764-instagram-plan.json')
 const GRAPH = 'https://graph.facebook.com/v21.0'
 
 const IG_USER_ID = process.env.IG_USER_ID
