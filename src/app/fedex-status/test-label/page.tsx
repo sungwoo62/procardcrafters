@@ -21,28 +21,37 @@ function TestLabelInner() {
   const [printerHost, setPrinterHost] = useState('')
   const [printMsg, setPrintMsg] = useState('')
   const [copyMsg, setCopyMsg] = useState('')
+  const [printerName, setPrinterName] = useState('Xprinter XP-DT108B LABEL')
 
-  // Windows PowerShell: API로 ZPL 생성 후 프린터 9100으로 raw 전송 (node/브리지 불필요).
+  // 폴백(브리지 없이 1회성): API로 ZPL 생성 후 USB 프린터로 RAW 전송 (winspool, node 불필요).
   const buildPs = () => {
-    const ip = printerHost || '192.168.0.50'
-    return `$Key = "${key}"
-$PrinterIP = "${ip}"   # <- 프린터 IP (Get-PrinterPort 로 확인)
-$Port = 9100
+    const pr = printerName || 'Xprinter XP-DT108B LABEL'
+    return `$src = @'
+using System; using System.Runtime.InteropServices;
+public class RawPrinter {
+  [StructLayout(LayoutKind.Sequential, CharSet=CharSet.Unicode)]
+  public struct DI { [MarshalAs(UnmanagedType.LPWStr)] public string n; [MarshalAs(UnmanagedType.LPWStr)] public string o; [MarshalAs(UnmanagedType.LPWStr)] public string t; }
+  [DllImport("winspool.Drv", EntryPoint="OpenPrinterW", CharSet=CharSet.Unicode)] public static extern bool OpenPrinter(string s, out IntPtr h, IntPtr p);
+  [DllImport("winspool.Drv", EntryPoint="ClosePrinter")] public static extern bool ClosePrinter(IntPtr h);
+  [DllImport("winspool.Drv", EntryPoint="StartDocPrinterW", CharSet=CharSet.Unicode)] public static extern bool StartDocPrinter(IntPtr h, int l, ref DI di);
+  [DllImport("winspool.Drv", EntryPoint="EndDocPrinter")] public static extern bool EndDocPrinter(IntPtr h);
+  [DllImport("winspool.Drv", EntryPoint="StartPagePrinter")] public static extern bool StartPagePrinter(IntPtr h);
+  [DllImport("winspool.Drv", EntryPoint="EndPagePrinter")] public static extern bool EndPagePrinter(IntPtr h);
+  [DllImport("winspool.Drv", EntryPoint="WritePrinter")] public static extern bool WritePrinter(IntPtr h, IntPtr b, int n, out int w);
+  public static bool Send(string pr, byte[] bytes){ IntPtr h; if(!OpenPrinter(pr,out h,IntPtr.Zero)) return false; DI d=new DI(); d.n="FedEx ZPL"; d.t="RAW"; bool ok=false;
+    if(StartDocPrinter(h,1,ref d)){ if(StartPagePrinter(h)){ IntPtr p=Marshal.AllocCoTaskMem(bytes.Length); Marshal.Copy(bytes,0,p,bytes.Length); int w; ok=WritePrinter(h,p,bytes.Length,out w); Marshal.FreeCoTaskMem(p); EndPagePrinter(h);} EndDocPrinter(h);} ClosePrinter(h); return ok; }
+}
+'@
+Add-Type -TypeDefinition $src -Language CSharp
 
+$Key = "${key}"
+$Printer = "${pr}"
 $resp = Invoke-RestMethod -Method Post -Uri "https://procardcrafters.com/api/fedex/test-label?key=$Key"
 if (-not $resp.ok) { Write-Host "생성 실패: $($resp.error)" -ForegroundColor Red; return }
-$zpl  = $resp.zpl
-$path = "$HOME\\Downloads\\fedex-test-label-$($resp.trackingNumber).zpl"
-[System.IO.File]::WriteAllText($path, $zpl)
-Write-Host "ZPL 생성: tracking $($resp.trackingNumber), $($resp.bytes) bytes"
-
-try {
-  $client = New-Object System.Net.Sockets.TcpClient($PrinterIP, $Port)
-  $bytes  = [System.Text.Encoding]::ASCII.GetBytes($zpl)
-  $client.GetStream().Write($bytes, 0, $bytes.Length)
-  $client.Close()
-  Write-Host ("출력 완료 -> {0}:{1}" -f $PrinterIP, $Port) -ForegroundColor Green
-} catch { Write-Host "출력 실패: $_" -ForegroundColor Red }`
+[System.IO.File]::WriteAllText("$HOME\\Downloads\\fedex-test-label-$($resp.trackingNumber).zpl", $resp.zpl)
+$bytes = [System.Text.Encoding]::ASCII.GetBytes($resp.zpl)
+if ([RawPrinter]::Send($Printer, $bytes)) { Write-Host "출력 완료 -> $Printer" -ForegroundColor Green }
+else { Write-Host "출력 실패: 프린터 이름 확인 또는 관리자 권한 실행" -ForegroundColor Red }`
   }
 
   const copyPs = async () => {
@@ -132,49 +141,34 @@ try {
         )}
       </section>
 
-      {/* 2-A) Windows PowerShell — 프린터가 윈도우 PC에 연결된 경우 (권장) */}
+      {/* 2) 자동 출력 설정 — 1회만, 이후 버튼만 누르면 출력 */}
       <section className="rounded-2xl border border-indigo-200 bg-indigo-50/40 p-5 space-y-3">
         <h2 className="text-sm font-semibold text-gray-900 flex items-center gap-2">
-          <Terminal className="h-4 w-4" /> 2-A. Windows PC에서 출력 (프린터가 윈도우에 연결 · node 불필요)
+          <Terminal className="h-4 w-4" /> 2. 자동 출력 설정 (1회만 — 이후 버튼만 누르면 출력)
         </h2>
         <p className="text-xs text-gray-600">
-          프린터가 원격 윈도우 PC에 연결돼 있으면 이 방법이 가장 쉽습니다. 아래 명령을 복사해 PowerShell에
-          붙여넣으면 ZPL 생성 + 프린터 출력이 한 번에 됩니다. (이 페이지 버튼을 누를 필요 없음)
+          USB 라벨프린터가 연결된 윈도우 PC에서 아래 <b>브리지를 한 번만 실행</b>해두면, 그 다음부터는
+          매번 스크립트 없이 <b>[ZPL 바로 출력]</b> 버튼만으로 출력됩니다. (node 설치 불필요)
         </p>
-        <label className="block max-w-xs">
-          <span className="text-xs text-gray-600">프린터 IP</span>
-          <input value={printerHost} onChange={(e) => setPrinterHost(e.target.value)}
-            className="w-full rounded-lg border-gray-200 text-sm font-mono" placeholder="192.168.0.50" />
-          <span className="text-[11px] text-gray-500">모르면 PowerShell에: <code className="bg-white px-1 rounded">Get-PrinterPort | ? PrinterHostAddress | ft Name,PrinterHostAddress</code></span>
-        </label>
-        <button onClick={copyPs}
-          className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white">
-          <Copy className="h-4 w-4" /> PowerShell 명령 복사
-        </button>
-        {copyMsg && <p className="text-xs text-emerald-700">{copyMsg}</p>}
-        <details className="text-xs text-gray-500">
-          <summary className="cursor-pointer">명령 직접 보기/복사</summary>
-          <textarea readOnly value={buildPs()} className="mt-2 w-full h-56 rounded-lg border-gray-200 font-mono text-[11px]" />
-        </details>
-        <p className="text-[11px] text-amber-700">프린터가 USB라 IP가 없으면 알려주세요 — USB용(프린터 공유) 방법을 드립니다.</p>
+        <ol className="text-xs text-gray-700 space-y-2 list-decimal pl-4">
+          <li>
+            <a href="/fedex-status/zpl-print-bridge.ps1" download
+              className="text-indigo-700 underline inline-flex items-center gap-1">
+              <Download className="h-3 w-3" /> 브리지 다운로드 (zpl-print-bridge.ps1)
+            </a>
+          </li>
+          <li>PowerShell에서 1회 실행 (창은 열어둠):
+            <code className="block mt-1 bg-white px-2 py-1 rounded font-mono text-[11px] break-all">powershell -ExecutionPolicy Bypass -File "$HOME\Downloads\zpl-print-bridge.ps1"</code>
+            <span className="text-[11px] text-gray-500">프린터가 다르면 파일 맨 위 <code className="bg-white px-1 rounded">$Printer</code> 이름만 변경. "접근 거부"면 관리자 권한으로 실행.</span>
+          </li>
+          <li>"실행 중"이라고 뜨면 준비 완료. 컴퓨터 켤 때마다 자동 실행하려면 파일 맨 아래 '자동시작' 참고.</li>
+        </ol>
       </section>
 
-      {/* 2-B) 브라우저/브리지 (Mac·Linux 또는 로컬 브리지 사용 시) */}
+      {/* 3) 출력 */}
       {zpl && (
         <section className="rounded-2xl border border-gray-200 bg-white p-5 space-y-4">
-          <h2 className="text-sm font-semibold text-gray-900">2-B. 브리지로 바로 출력 (Mac/Linux · 로컬 브리지)</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <label className="block">
-              <span className="text-xs text-gray-600">프린트 브리지 주소 (매장 PC)</span>
-              <input value={bridge} onChange={(e) => setBridge(e.target.value)}
-                className="w-full rounded-lg border-gray-200 text-sm font-mono" placeholder="http://localhost:9110" />
-            </label>
-            <label className="block">
-              <span className="text-xs text-gray-600">프린터 IP (선택, 브리지 기본값 사용 시 공란)</span>
-              <input value={printerHost} onChange={(e) => setPrinterHost(e.target.value)}
-                className="w-full rounded-lg border-gray-200 text-sm font-mono" placeholder="192.168.0.50" />
-            </label>
-          </div>
+          <h2 className="text-sm font-semibold text-gray-900">3. 출력</h2>
           <div className="flex flex-wrap gap-3">
             <button onClick={printDirect}
               className="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white">
@@ -193,10 +187,27 @@ try {
         </section>
       )}
 
+      {/* 폴백: 브리지 없이 1회성 출력 */}
+      <details className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600">
+        <summary className="cursor-pointer font-medium text-gray-700">브리지 없이 한 번만 출력 (고급 · 매번 붙여넣어야 함)</summary>
+        <div className="mt-3 space-y-2">
+          <label className="block max-w-md">
+            <span className="text-gray-600">프린터 이름</span>
+            <input value={printerName} onChange={(e) => setPrinterName(e.target.value)}
+              className="w-full rounded-lg border-gray-200 text-xs font-mono" />
+          </label>
+          <button onClick={copyPs}
+            className="inline-flex items-center gap-1.5 rounded-lg bg-gray-700 px-3 py-1.5 text-xs font-medium text-white">
+            <Copy className="h-3.5 w-3.5" /> USB 출력 명령 복사
+          </button>
+          {copyMsg && <p className="text-emerald-700">{copyMsg}</p>}
+          <textarea readOnly value={buildPs()} className="w-full h-48 rounded-lg border-gray-200 font-mono text-[11px]" />
+        </div>
+      </details>
+
       <section className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-xs text-gray-600 space-y-1">
         <p className="font-semibold text-gray-700">출력 후</p>
         <p>나온 라벨을 스캔/사진 → FedEx case 27122658 메일에 회신·첨부 (마감 7/10).</p>
-        <p className="text-gray-400 pt-1">Mac/Linux에서 로컬 브리지를 쓰려면: <code className="font-mono bg-white px-1 rounded">PRINTER_HOST=&lt;IP&gt; node scripts/zpl-print-bridge.mjs</code></p>
       </section>
     </main>
   )
