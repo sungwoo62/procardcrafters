@@ -1,0 +1,257 @@
+import { createHmac } from 'crypto'
+import { createClient } from '@supabase/supabase-js'
+
+const META_API_BASE = 'https://graph.facebook.com/v22.0'
+
+const APP_ID = process.env.PCCF_META_APP_ID!
+const APP_SECRET = process.env.PCCF_META_APP_SECRET!
+const AD_ACCOUNT_ID = process.env.PCCF_META_AD_ACCOUNT_ID!
+const LONG_LIVED_TOKEN = process.env.PCCF_META_LONG_LIVED_TOKEN!
+
+// OMO-3737: procardcrafters.com Meta 자산 — 페이지/인스타/비즈니스/픽셀
+// 광고 소재(creative)의 신원(identity)을 구성하려면 페이지 ID가 필수이고,
+// 인스타 배치 노출용으로 인스타 actor ID를 함께 지정한다.
+const PAGE_ID = process.env.PCCF_META_PAGE_ID!
+const INSTAGRAM_ACTOR_ID = process.env.PCCF_META_INSTAGRAM_ACTOR_ID!
+const BUSINESS_ID = process.env.PCCF_META_BUSINESS_ID!
+const PIXEL_ID = process.env.PCCF_META_PIXEL_ID!
+
+// OMO-3737: procard는 해외(US) 타겟·영어 운영 (국내/해외 분리, procard=overseas)
+const TARGET_COUNTRIES = (process.env.PCCF_META_TARGET_COUNTRIES || 'US')
+  .split(',').map((c) => c.trim()).filter(Boolean)
+const AD_LOCALE = process.env.PCCF_META_AD_LOCALE || 'en_US'
+
+// 서비스 롤 클라이언트 — 백그라운드 작업용 (쿠키 없음)
+function getServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+}
+
+export class MetaApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code: number,
+    public readonly subcode?: number
+  ) {
+    super(message)
+    this.name = 'MetaApiError'
+  }
+
+  /** 정책 거절 (가드레일 B) */
+  isPolicyRejection(): boolean {
+    return this.subcode === 1487749 || this.code === 368
+  }
+
+  /** 재시도 불가 에러 (4xx) */
+  isNonRetryable(): boolean {
+    return this.code >= 100 && this.code < 200
+  }
+}
+
+export function buildAppsecretProof(token: string = LONG_LIVED_TOKEN): string {
+  if (!APP_SECRET) throw new Error('PCCF_META_APP_SECRET 미설정')
+  return createHmac('sha256', APP_SECRET).update(token).digest('hex')
+}
+
+export function getAccessToken(): string {
+  if (!LONG_LIVED_TOKEN) throw new Error('PCCF_META_LONG_LIVED_TOKEN 미설정')
+  return LONG_LIVED_TOKEN
+}
+
+export function getAdAccountId(): string {
+  if (!AD_ACCOUNT_ID) throw new Error('PCCF_META_AD_ACCOUNT_ID 미설정')
+  return AD_ACCOUNT_ID
+}
+
+export function getAppId(): string {
+  if (!APP_ID) throw new Error('PCCF_META_APP_ID 미설정')
+  return APP_ID
+}
+
+// ─── procardcrafters Meta 자산 게터 (OMO-3737) ──────────────────────────────
+
+/** 페이스북 페이지 ID — 광고 소재 신원(object_story_spec.page_id)에 필수 */
+export function getPageId(): string {
+  if (!PAGE_ID) throw new Error('PCCF_META_PAGE_ID 미설정')
+  return PAGE_ID
+}
+
+/** 인스타그램 actor ID — 인스타 배치 노출 신원(instagram_actor_id). 미설정 시 null */
+export function getInstagramActorId(): string | null {
+  return INSTAGRAM_ACTOR_ID || null
+}
+
+/** 비즈니스 매니저 ID — 신규 광고계정/시스템유저 생성 시 사용 */
+export function getBusinessId(): string {
+  if (!BUSINESS_ID) throw new Error('PCCF_META_BUSINESS_ID 미설정')
+  return BUSINESS_ID
+}
+
+/** 픽셀 ID — 도메인 매칭/전환 추적. 미설정 시 null */
+export function getPixelId(): string | null {
+  return PIXEL_ID || null
+}
+
+/**
+ * 광고 소재의 신원(identity) 구성 — object_story_spec에 그대로 펼쳐 넣는다.
+ * 페이지는 필수, 인스타 actor는 있으면 인스타 배치에 동일 신원으로 노출된다.
+ */
+export function getAdIdentity(): { page_id: string; instagram_actor_id?: string } {
+  const identity: { page_id: string; instagram_actor_id?: string } = {
+    page_id: getPageId(),
+  }
+  const ig = getInstagramActorId()
+  if (ig) identity.instagram_actor_id = ig
+  return identity
+}
+
+// ─── 타겟/언어 (OMO-3737: procard=해외 US·영어) ──────────────────────────────
+
+/** 광고 지오타겟 국가 코드 (기본 US) */
+export function getTargetCountries(): string[] {
+  return TARGET_COUNTRIES.length ? TARGET_COUNTRIES : ['US']
+}
+
+/** 광고 카피/소재 언어 로케일 (기본 en_US) */
+export function getAdLocale(): string {
+  return AD_LOCALE
+}
+
+/**
+ * 캠페인 기본 타겟팅 — 미지정 시 해외(US) 타겟을 적용한다.
+ * 국내/해외 분리: procard는 해외, 나머지 서비스는 국내(KR) 타겟.
+ */
+export function getAdTargetingDefaults(): { geo_locations: { countries: string[] } } {
+  return { geo_locations: { countries: getTargetCountries() } }
+}
+
+interface MetaFetchOptions {
+  method?: 'GET' | 'POST' | 'DELETE'
+  params?: Record<string, string | number | boolean>
+  body?: Record<string, unknown>
+  /** true면 실제 API 호출 없이 로그만 기록 */
+  dryRun?: boolean
+}
+
+interface MetaApiResponse {
+  error?: {
+    message: string
+    code: number
+    error_subcode?: number
+    type?: string
+  }
+}
+
+async function logApiCall(
+  endpoint: string,
+  method: string,
+  result: { statusCode?: number; errorCode?: number; errorSubcode?: number; errorMessage?: string; durationMs?: number; dryRun?: boolean }
+): Promise<void> {
+  try {
+    const db = getServiceClient()
+    await db.from('print_ads_api_log').insert({
+      endpoint,
+      method,
+      status_code: result.statusCode,
+      error_code: result.errorCode,
+      error_subcode: result.errorSubcode,
+      error_message: result.errorMessage,
+      duration_ms: result.durationMs,
+      dry_run: result.dryRun ?? false,
+    })
+  } catch {
+    // 로그 실패는 메인 흐름에 영향 주지 않음
+  }
+}
+
+export async function metaFetch<T = unknown>(
+  endpoint: string,
+  options: MetaFetchOptions = {}
+): Promise<T> {
+  const { method = 'GET', params = {}, body, dryRun = false } = options
+  const token = getAccessToken()
+
+  const url = new URL(`${META_API_BASE}${endpoint}`)
+  url.searchParams.set('access_token', token)
+  // appsecret_proof는 APP_SECRET이 설정된 경우에만 전송한다 (OMO-3737).
+  // allpack-ai 시스템유저 앱은 proof를 요구하지 않으며, 앱 시크릿이 없을 때
+  // 다른 앱 시크릿으로 잘못된 proof를 보내면 Meta가 거절하므로 생략한다.
+  if (APP_SECRET) {
+    url.searchParams.set('appsecret_proof', buildAppsecretProof(token))
+  }
+
+  for (const [k, v] of Object.entries(params)) {
+    url.searchParams.set(k, String(v))
+  }
+
+  if (dryRun) {
+    await logApiCall(endpoint, method, { statusCode: 0, dryRun: true })
+    return { dryRun: true, endpoint, method } as T
+  }
+
+  const startMs = Date.now()
+  let lastError: MetaApiError | null = null
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const res = await fetch(url.toString(), {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      ...(body ? { body: JSON.stringify(body) } : {}),
+    })
+
+    const data = (await res.json()) as T & MetaApiResponse
+    const durationMs = Date.now() - startMs
+
+    if (data.error) {
+      const err = data.error
+      const apiError = new MetaApiError(err.message, err.code, err.error_subcode)
+
+      await logApiCall(endpoint, method, {
+        statusCode: res.status,
+        errorCode: err.code,
+        errorSubcode: err.error_subcode,
+        errorMessage: err.message,
+        durationMs,
+      })
+
+      // 4xx는 재시도 금지
+      if (res.status >= 400 && res.status < 500) throw apiError
+
+      lastError = apiError
+      await new Promise((r) => setTimeout(r, 1000 * (attempt + 1)))
+      continue
+    }
+
+    await logApiCall(endpoint, method, { statusCode: res.status, durationMs })
+    return data
+  }
+
+  throw lastError ?? new MetaApiError('Meta API 요청 실패 (3회 재시도 초과)', 0)
+}
+
+/** 계정 수준 spend_cap 검증 — $600 (60000 cents) 유지 확인 */
+export async function verifySpendCap(dryRun = false): Promise<{ spendCapCents: number; ok: boolean }> {
+  if (dryRun) return { spendCapCents: 60000, ok: true }
+
+  const accountId = getAdAccountId()
+  const data = await metaFetch<{ spend_cap: string }>(`/${accountId}`, {
+    params: { fields: 'spend_cap' },
+  })
+
+  // Meta API는 spend_cap을 cents 단위 문자열로 반환
+  const spendCapCents = parseInt(data.spend_cap ?? '0', 10)
+  const EXPECTED_CAP_CENTS = 60000 // $600
+
+  if (spendCapCents !== EXPECTED_CAP_CENTS) {
+    // 변경 감지 시 즉시 복원
+    await metaFetch(`/${accountId}`, {
+      method: 'POST',
+      body: { spend_cap: EXPECTED_CAP_CENTS },
+    })
+    return { spendCapCents: EXPECTED_CAP_CENTS, ok: false }
+  }
+
+  return { spendCapCents, ok: true }
+}
