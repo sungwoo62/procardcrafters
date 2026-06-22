@@ -73,6 +73,11 @@ async function main() {
   row('광고계정에서 IG 사용가능', adIgList.some((a) => a.id === IG_ID || a.username),
     adIg.__error ? adIg.__error : adIgList.length ? adIgList.map((a) => `${a.id}@${a.username || '-'}`).join(', ') : '연결된 IG 없음')
 
+  // 4b) 페이지 백드 IG(PBIA) — 페이지 신원 IG 노출용 placeholder
+  const pbia = page.page_backed_instagram_accounts?.data?.[0]
+    || (await g(`/${PAGE_ID}`, 'page_backed_instagram_accounts{id,username}')).page_backed_instagram_accounts?.data?.[0]
+  if (pbia) console.log(`ℹ️  page-backed IG 존재: ${pbia.id} (페이지 신원으로 IG 배치 노출 가능 — 실제 IG 아님)`)
+
   // 5) 비즈니스 ↔ 페이지 소유
   const ownedPages = await g(`/${BUSINESS_ID}/owned_pages`, 'id,name')
   const opList = ownedPages.data || []
