@@ -8,6 +8,14 @@ const APP_SECRET = process.env.PCCF_META_APP_SECRET!
 const AD_ACCOUNT_ID = process.env.PCCF_META_AD_ACCOUNT_ID!
 const LONG_LIVED_TOKEN = process.env.PCCF_META_LONG_LIVED_TOKEN!
 
+// OMO-3737: procardcrafters.com Meta 자산 — 페이지/인스타/비즈니스/픽셀
+// 광고 소재(creative)의 신원(identity)을 구성하려면 페이지 ID가 필수이고,
+// 인스타 배치 노출용으로 인스타 actor ID를 함께 지정한다.
+const PAGE_ID = process.env.PCCF_META_PAGE_ID!
+const INSTAGRAM_ACTOR_ID = process.env.PCCF_META_INSTAGRAM_ACTOR_ID!
+const BUSINESS_ID = process.env.PCCF_META_BUSINESS_ID!
+const PIXEL_ID = process.env.PCCF_META_PIXEL_ID!
+
 // 서비스 롤 클라이언트 — 백그라운드 작업용 (쿠키 없음)
 function getServiceClient() {
   return createClient(
@@ -55,6 +63,43 @@ export function getAdAccountId(): string {
 export function getAppId(): string {
   if (!APP_ID) throw new Error('PCCF_META_APP_ID 미설정')
   return APP_ID
+}
+
+// ─── procardcrafters Meta 자산 게터 (OMO-3737) ──────────────────────────────
+
+/** 페이스북 페이지 ID — 광고 소재 신원(object_story_spec.page_id)에 필수 */
+export function getPageId(): string {
+  if (!PAGE_ID) throw new Error('PCCF_META_PAGE_ID 미설정')
+  return PAGE_ID
+}
+
+/** 인스타그램 actor ID — 인스타 배치 노출 신원(instagram_actor_id). 미설정 시 null */
+export function getInstagramActorId(): string | null {
+  return INSTAGRAM_ACTOR_ID || null
+}
+
+/** 비즈니스 매니저 ID — 신규 광고계정/시스템유저 생성 시 사용 */
+export function getBusinessId(): string {
+  if (!BUSINESS_ID) throw new Error('PCCF_META_BUSINESS_ID 미설정')
+  return BUSINESS_ID
+}
+
+/** 픽셀 ID — 도메인 매칭/전환 추적. 미설정 시 null */
+export function getPixelId(): string | null {
+  return PIXEL_ID || null
+}
+
+/**
+ * 광고 소재의 신원(identity) 구성 — object_story_spec에 그대로 펼쳐 넣는다.
+ * 페이지는 필수, 인스타 actor는 있으면 인스타 배치에 동일 신원으로 노출된다.
+ */
+export function getAdIdentity(): { page_id: string; instagram_actor_id?: string } {
+  const identity: { page_id: string; instagram_actor_id?: string } = {
+    page_id: getPageId(),
+  }
+  const ig = getInstagramActorId()
+  if (ig) identity.instagram_actor_id = ig
+  return identity
 }
 
 interface MetaFetchOptions {

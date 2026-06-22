@@ -2,7 +2,7 @@
  * 자동화 함수 4종 (KR fanout 대비 — OMO-2373 사장님 약속)
  * initAdService / createAdAccount / setupSystemUser / addPixelDomain
  */
-import { metaFetch, getAdAccountId, getAppId, getAccessToken } from './auth'
+import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity } from './auth'
 import { lockCampaignForLearning, enforceMaxDailyBudget, DAILY_BUDGET_CENTS } from './guardrails'
 
 export interface AdServiceStatus {
@@ -68,20 +68,23 @@ export async function createAdAccount(params: {
   name: string
   currency: string
   timezoneId: number
-  businessId: string
+  /** 미지정 시 PCCF_META_BUSINESS_ID 사용 (OMO-3737) */
+  businessId?: string
   dryRun?: boolean
 }): Promise<CreateAdAccountResult> {
   if (params.dryRun) {
     return { id: `act_dry_run_${Date.now()}`, name: params.name }
   }
 
-  const data = await metaFetch<{ id: string }>(`/${params.businessId}/adaccount`, {
+  const businessId = params.businessId ?? getBusinessId()
+
+  const data = await metaFetch<{ id: string }>(`/${businessId}/adaccount`, {
     method: 'POST',
     body: {
       name: params.name,
       currency: params.currency,
       timezone_id: params.timezoneId,
-      end_advertiser: params.businessId,
+      end_advertiser: businessId,
     },
   })
 
@@ -196,4 +199,57 @@ export async function createCampaignWithGuardrails(params: {
   const { lockedUntil } = await lockCampaignForLearning(campaignId, params.name, dryRun)
 
   return { campaignId, adsetId, dailyBudgetCents, lockedUntil }
+}
+
+// ─── 광고 소재 + 광고 생성 (페이지/인스타 신원 적용 · OMO-3737) ───────────────
+
+export interface CreateAdResult {
+  creativeId: string
+  adId: string
+}
+
+/**
+ * 광고 소재(creative) + 광고(ad) 생성 — 페이지/인스타 신원을 자동 적용한다.
+ * object_story_spec.page_id 는 필수, instagram_actor_id 는 설정돼 있으면 인스타 배치에 동일 신원 노출.
+ * 생성된 광고는 PAUSED 로 두어 사장님 1클릭 활성(Q3=B)을 따른다.
+ */
+export async function createAdWithIdentity(params: {
+  adsetId: string
+  name: string
+  /** link_data: 랜딩 링크/메시지/이미지 등 소재 본문 */
+  linkData: Record<string, unknown>
+  dryRun?: boolean
+}): Promise<CreateAdResult> {
+  const accountId = getAdAccountId()
+  const dryRun = params.dryRun ?? false
+  const identity = getAdIdentity()
+
+  const creativeData = await metaFetch<{ id: string }>(`/${accountId}/adcreatives`, {
+    method: 'POST',
+    body: {
+      name: `${params.name} — Creative`,
+      object_story_spec: {
+        ...identity,
+        link_data: params.linkData,
+      },
+    },
+    dryRun,
+  })
+
+  const creativeId = dryRun ? `dry_creative_${Date.now()}` : creativeData.id
+
+  const adData = await metaFetch<{ id: string }>(`/${accountId}/ads`, {
+    method: 'POST',
+    body: {
+      name: params.name,
+      adset_id: params.adsetId,
+      creative: { creative_id: creativeId },
+      status: 'PAUSED', // Q3=B: 자동 제출 후 사장님 1클릭 활성
+    },
+    dryRun,
+  })
+
+  const adId = dryRun ? `dry_ad_${Date.now()}` : adData.id
+
+  return { creativeId, adId }
 }

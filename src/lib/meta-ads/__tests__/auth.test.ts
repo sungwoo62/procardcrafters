@@ -21,6 +21,10 @@ beforeEach(() => {
   process.env.PCCF_META_APP_SECRET = 'test_app_secret'
   process.env.PCCF_META_AD_ACCOUNT_ID = 'act_test_123'
   process.env.PCCF_META_LONG_LIVED_TOKEN = 'test_token_abc'
+  process.env.PCCF_META_PAGE_ID = '111122223333'
+  process.env.PCCF_META_INSTAGRAM_ACTOR_ID = '444455556666'
+  process.env.PCCF_META_BUSINESS_ID = '777788889999'
+  process.env.PCCF_META_PIXEL_ID = '101112131415'
   process.env.NEXT_PUBLIC_SUPABASE_URL = 'https://test.supabase.co'
   process.env.SUPABASE_SERVICE_ROLE_KEY = 'test_service_key'
 })
@@ -64,6 +68,55 @@ describe('getAdAccountId', () => {
   it('계정 ID 반환', async () => {
     const { getAdAccountId } = await import('../auth')
     expect(getAdAccountId()).toBe('act_test_123')
+  })
+})
+
+describe('procardcrafters Meta 자산 게터 (OMO-3737)', () => {
+  it('getPageId: 페이지 ID 반환', async () => {
+    const { getPageId } = await import('../auth')
+    expect(getPageId()).toBe('111122223333')
+  })
+
+  it('getPageId: 미설정 시 에러', async () => {
+    process.env.PCCF_META_PAGE_ID = ''
+    const { getPageId } = await import('../auth')
+    expect(() => getPageId()).toThrow('PCCF_META_PAGE_ID 미설정')
+  })
+
+  it('getInstagramActorId: actor ID 반환', async () => {
+    const { getInstagramActorId } = await import('../auth')
+    expect(getInstagramActorId()).toBe('444455556666')
+  })
+
+  it('getInstagramActorId: 미설정 시 null', async () => {
+    process.env.PCCF_META_INSTAGRAM_ACTOR_ID = ''
+    const { getInstagramActorId } = await import('../auth')
+    expect(getInstagramActorId()).toBeNull()
+  })
+
+  it('getBusinessId: 비즈니스 ID 반환', async () => {
+    const { getBusinessId } = await import('../auth')
+    expect(getBusinessId()).toBe('777788889999')
+  })
+
+  it('getPixelId: 미설정 시 null', async () => {
+    process.env.PCCF_META_PIXEL_ID = ''
+    const { getPixelId } = await import('../auth')
+    expect(getPixelId()).toBeNull()
+  })
+
+  it('getAdIdentity: 페이지+인스타 신원 구성', async () => {
+    const { getAdIdentity } = await import('../auth')
+    expect(getAdIdentity()).toEqual({
+      page_id: '111122223333',
+      instagram_actor_id: '444455556666',
+    })
+  })
+
+  it('getAdIdentity: 인스타 미설정 시 페이지만', async () => {
+    process.env.PCCF_META_INSTAGRAM_ACTOR_ID = ''
+    const { getAdIdentity } = await import('../auth')
+    expect(getAdIdentity()).toEqual({ page_id: '111122223333' })
   })
 })
 
