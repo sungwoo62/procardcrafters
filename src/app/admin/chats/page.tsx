@@ -2,6 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { MessageCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import VisitorProfilePanel from '@/components/admin/VisitorProfilePanel'
+import type { VisitorProfileResponse } from '@/lib/chat/visitorProfile'
 
 interface ChatSession {
   session_id: string
@@ -30,6 +32,7 @@ export default function AdminChatsPage() {
   const [error, setError] = useState('')
   const [expandedSession, setExpandedSession] = useState<string | null>(null)
   const [sessionMessages, setSessionMessages] = useState<Record<string, ChatMessage[]>>({})
+  const [sessionVisitors, setSessionVisitors] = useState<Record<string, VisitorProfileResponse | null>>({})
   const [loadingSession, setLoadingSession] = useState<string | null>(null)
 
   const fetchSessions = useCallback(async () => {
@@ -64,6 +67,7 @@ export default function AdminChatsPage() {
     })
     const data = await res.json()
     setSessionMessages((prev) => ({ ...prev, [sessionId]: data.messages ?? [] }))
+    setSessionVisitors((prev) => ({ ...prev, [sessionId]: data.visitor ?? null }))
     setLoadingSession(null)
   }
 
@@ -88,6 +92,7 @@ export default function AdminChatsPage() {
             {sessions.map((session) => {
               const isExpanded = expandedSession === session.session_id
               const msgs = sessionMessages[session.session_id] ?? []
+              const visitor = sessionVisitors[session.session_id] ?? null
               const isLoadingMsgs = loadingSession === session.session_id
 
               return (
@@ -120,35 +125,51 @@ export default function AdminChatsPage() {
                   </button>
 
                   {isExpanded && (
-                    <div className="border-t border-gray-100 px-5 py-4 space-y-3 bg-gray-50">
-                      {isLoadingMsgs ? (
-                        <p className="text-xs text-gray-400">Loading...</p>
-                      ) : msgs.length === 0 ? (
-                        <p className="text-xs text-gray-400">No messages</p>
-                      ) : (
-                        msgs.map((msg) => (
-                          <div
-                            key={msg.id}
-                            className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                          >
+                    <div className="border-t border-gray-100 bg-gray-50 px-5 py-4 md:grid md:grid-cols-[1fr_18rem] md:gap-4">
+                      {/* 대화 내역 */}
+                      <div className="space-y-3">
+                        {isLoadingMsgs ? (
+                          <p className="text-xs text-gray-400">Loading...</p>
+                        ) : msgs.length === 0 ? (
+                          <p className="text-xs text-gray-400">No messages</p>
+                        ) : (
+                          msgs.map((msg) => (
                             <div
-                              className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
-                                msg.role === 'user'
-                                  ? 'bg-gray-900 text-white rounded-br-sm'
-                                  : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
-                              }`}
+                              key={msg.id}
+                              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
-                              {msg.content}
-                              {msg.estimate_price_usd && (
-                                <div className="mt-1.5 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
-                                  Quote: {msg.estimate_product} {msg.estimate_quantity} pcs ({msg.estimate_size},{' '}
-                                  {msg.estimate_finish}) — ${msg.estimate_price_usd.toFixed(2)}
-                                </div>
-                              )}
+                              <div
+                                className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm whitespace-pre-wrap leading-relaxed ${
+                                  msg.role === 'user'
+                                    ? 'bg-gray-900 text-white rounded-br-sm'
+                                    : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
+                                }`}
+                              >
+                                {msg.content}
+                                {msg.estimate_price_usd && (
+                                  <div className="mt-1.5 rounded-lg bg-gray-100 px-2 py-1 text-xs text-gray-600">
+                                    Quote: {msg.estimate_product} {msg.estimate_quantity} pcs ({msg.estimate_size},{' '}
+                                    {msg.estimate_finish}) — ${msg.estimate_price_usd.toFixed(2)}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        ))
-                      )}
+                          ))
+                        )}
+                      </div>
+
+                      {/* 방문자 프로필 패널 (OMO-3744) */}
+                      <div className="mt-4 md:mt-0">
+                        <p className="mb-2 text-xs font-semibold text-gray-700">방문자 프로필</p>
+                        {isLoadingMsgs ? (
+                          <p className="text-xs text-gray-400">Loading...</p>
+                        ) : (
+                          <VisitorProfilePanel
+                            profile={visitor?.profile ?? null}
+                            pageViews={visitor?.pageViews ?? []}
+                          />
+                        )}
+                      </div>
                     </div>
                   )}
                 </div>

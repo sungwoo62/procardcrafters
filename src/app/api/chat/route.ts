@@ -1,6 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse, after } from 'next/server'
 import { createServerClient } from '@/lib/supabase'
 import { recordCsThread } from '@/lib/cs-threads'
+import { captureVisitor } from '@/lib/chat/visitor'
+import type { VisitorMetaPayload } from '@/types/chat'
 import {
   activeChatProvider,
   generateChatReply,
@@ -42,9 +44,11 @@ interface Message {
 }
 
 export async function POST(req: NextRequest) {
-  const { messages, sessionId } = (await req.json()) as {
+  const { messages, sessionId, visitorId, visitor } = (await req.json()) as {
     messages: Message[]
     sessionId: string
+    visitorId?: string
+    visitor?: VisitorMetaPayload
   }
 
   if (!messages || !Array.isArray(messages) || messages.length === 0) {
@@ -92,10 +96,18 @@ export async function POST(req: NextRequest) {
 
   const userMessage = messages[messages.length - 1]
 
-  // Save chat log to Supabase (async, does not affect response on failure)
-  void (async () => {
+  // OMO-3744: 새 세션 여부 = 사용자 메시지가 이번이 처음(1건)일 때.
+  // 세션당 1회만 페이지뷰/세션카운트 적재(page_view 스팸 방지).
+  const isNewSession = messages.filter((m) => m.role === 'user').length === 1
+  // after() 안에서 쓰기 위해 헤더(IP/geo)를 스냅샷.
+  const requestHeaders = req.headers
+
+  // Save chat log to Supabase.
+  // ⚠️ OMO-3332: Vercel serverless 는 응답 후 unawaited 백그라운드 write 를 freeze/드롭한다.
+  // Next16 after() 로 응답 플러시 후에도 DB write 가 완료되도록 보장한다(과거 void IIFE → 드롭 버그).
+  after(async () => {
+    const supabase = createServerClient()
     try {
-      const supabase = createServerClient()
       await supabase.from('print_chat_logs').insert([
         {
           session_id: sessionId,
@@ -132,7 +144,16 @@ export async function POST(req: NextRequest) {
       openedAt: now,
       firstResponseAt: assistantText ? now : null,
     })
-  })()
+
+    // OMO-3744: 방문자 프로필 upsert + 페이지뷰 적재(공유 cs_visitor_profiles/cs_page_views, site='procard').
+    // 실패해도 상담 흐름 비차단. page_view 의 session_id 로 admin 상세에서 세션↔방문자 연결.
+    if (visitorId) {
+      await captureVisitor(supabase, visitorId, visitor, requestHeaders, {
+        sessionId,
+        isNewSession,
+      })
+    }
+  })
 
   // Pass [ESTIMATE_READY: ...] tag to client but strip from display text
   const displayText = assistantText

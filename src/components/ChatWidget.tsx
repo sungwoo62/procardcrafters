@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { MessageCircle, X, Send, Loader2, ExternalLink } from 'lucide-react'
 import Link from 'next/link'
 import { trackGenerateLead } from '@/lib/analytics'
+import { collectVisitorMeta, getVisitorId } from '@/lib/chat/collectVisitor'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -98,6 +99,9 @@ export default function ChatWidget() {
       body: JSON.stringify({
         messages: newMessages,
         sessionId: sessionId.current,
+        // OMO-3744: 방문자 프로필/페이지뷰 자동수집(디바이스/유입/UTM/위치).
+        visitorId: getVisitorId(),
+        visitor: collectVisitorMeta(),
       }),
     })
 
