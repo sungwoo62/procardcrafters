@@ -6,6 +6,8 @@
 #
 # 2D 바코드에 흰 틈이 남으면 아래 $Slow 를 $true 로 바꿔 다시 실행하세요(인쇄속도만 낮춤, 내용 동일).
 
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12   # PS 5.1 HTTPS
+
 $Key     = "certdde223da43eced40"          # 인증 테스트 키(샌드박스 전용)
 $Printer = "Xprinter XP-DT108B LABEL"        # 다른 프린터면 이 이름만 변경 (Get-Printer 로 확인)
 $Slow    = $false
