@@ -359,6 +359,8 @@ export interface FedexShipInput {
   }[]
   /** ELECTRONIC_TRADE_DOCUMENTS 자동 invoice 첨부 여부 (기본 true, 국제만) */
   includeAutoEtdInvoice?: boolean
+  /** 라벨 포맷 강제 (미지정 시 FEDEX_LABEL_IMAGE_TYPE env). 테스트 라벨 페이지에서 ZPLII 강제용. */
+  labelImageType?: 'PDF' | 'ZPLII'
 }
 
 export interface FedexShipResult {
@@ -392,7 +394,7 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
 
   // OMO-3736 — 라벨 포맷 env 게이트. 기본 PDF(레이저/잉크젯). 써멀 프린터(Zebra) 인증 시 FEDEX_LABEL_IMAGE_TYPE=ZPLII.
   // ZPLII 선택 시 FedEx 가 반환한 ZPL 버퍼를 그대로 저장·전송한다 (이미지로 재렌더 금지 — FedEx 인증 거부 사유).
-  const rawImageType = (process.env.FEDEX_LABEL_IMAGE_TYPE ?? 'PDF').toUpperCase()
+  const rawImageType = (input.labelImageType ?? process.env.FEDEX_LABEL_IMAGE_TYPE ?? 'PDF').toUpperCase()
   const useZpl = rawImageType === 'ZPLII' || rawImageType === 'ZPL'
   // 써멀 라벨 기본 stock 은 STOCK_4X6 (PDF 는 PAPER_4X6). env 로 override 가능.
   const labelStockType = process.env.FEDEX_LABEL_STOCK_TYPE ?? (useZpl ? 'STOCK_4X6' : 'PAPER_4X6')
