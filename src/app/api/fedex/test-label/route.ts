@@ -64,20 +64,35 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    let zpl = result.labelPdf.toString('utf8')
-    // OMO-3736 — '느리게 인쇄' 옵션: 인쇄 속도(^PR)만 최저로 낮춰 저가 써멀의 2D 바코드 공백을 줄인다.
+    // FedEx 가 base64로 준 ZPL 을 디코드한 raw 바이트(byte-perfect). ^FH 의 _1D/_1E/_04/_7F 등 그대로.
+    let labelBuf: Buffer = result.labelPdf
+
+    // OMO-3736 — '느리게 인쇄' 옵션: 인쇄 속도(^PR)만 최저로. latin1은 0-255 무손실(바이트 보존)이라 ^FH 이스케이프 안 깨짐.
     // 라벨/바코드 데이터는 일절 건드리지 않음(인쇄 메커니즘 파라미터만). FedEx 다크니스는 이미 ^MD30(최대).
     const slow = req.nextUrl.searchParams.get('slow') === '1'
-    if (slow) zpl = zpl.replace(/\^PR\d+(,\d+)*/g, '^PR2,2,2')
+    if (slow) labelBuf = Buffer.from(labelBuf.toString('latin1').replace(/\^PR\d+(,\d+)*/g, '^PR2,2,2'), 'latin1')
+
+    // format=raw → 문자열 재조합/UTF-8 변환 없이 응답 본문에 raw 바이트 그대로. `lp -o raw` / RAW 전송용.
+    if (req.nextUrl.searchParams.get('format') === 'raw') {
+      return new NextResponse(new Uint8Array(labelBuf), {
+        status: 200,
+        headers: {
+          'Content-Type': 'application/octet-stream',
+          'Content-Disposition': 'attachment; filename="fedex_label.zpl"',
+          'X-Tracking-Number': result.masterTrackingNumber,
+          'Cache-Control': 'no-store',
+        },
+      })
+    }
 
     return NextResponse.json({
       ok: true,
-      zpl,
+      zpl: labelBuf.toString('latin1'), // 0-255 무손실. (이 ZPL은 순수 ASCII라 사실상 동일하나 latin1이 더 안전)
       slow,
       trackingNumber: result.masterTrackingNumber,
       serviceType: result.serviceType,
       reference: ref,
-      bytes: zpl.length,
+      bytes: labelBuf.length,
     })
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 502 })
