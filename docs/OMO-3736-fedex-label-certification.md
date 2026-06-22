@@ -60,6 +60,40 @@ FEDEX_LABEL_IMAGE_TYPE=ZPLII
 ```
 주입 후 재배포 → 라벨 생성하면 `.zpl` 파일이 떨어지고, 그 파일을 써멀 프린터에 그대로 보내면 됨.
 
-## 5. 보드 결정 필요 (인증 재제출이 여기서 갈림)
-- **배송 현장 프린터가 써멀(ZPL)인가, 레이저/잉크젯인가?** → 이 답으로 A/B 확정.
-- 결정 후: 해당 포맷으로 라벨 1장 생성 → FedEx case 27122658 메일에 회신·첨부 (7/10 전).
+## 5. 보드 결정 (확정됨 2026-06-22)
+- 보드 회신: **매장에 써멀 Xprinter 보유, 9100 RAW 출력** → **옵션 A(ZPL) 확정**.
+- 보드 추가 요청: "웹으로 구현해서 바로 뽑게(ZPL로)".
+
+## 6. 웹 → Xprinter 직접 출력 구현 (OMO-3736, 2026-06-22)
+
+### 왜 "브라우저에서 바로 9100" 이 안 되나
+- 브라우저는 raw TCP(9100) 소켓을 못 연다(보안). 또 admin 앱이 Vercel(클라우드)에 떠 있으면
+  서버도 매장 LAN 의 Xprinter(예: `192.168.0.50:9100`)에 도달 못 한다(NAT 뒤).
+- 그래서 표준 패턴 = **매장 PC 에서 작은 로컬 브리지를 띄우고, 웹 버튼이 거기로 ZPL 을 보낸다.**
+
+### 흐름
+```
+웹 admin "ZPL 바로 출력" 버튼
+  → ZPL 원본을 서명URL에서 fetch (이미지 변환 없음)
+  → POST http://localhost:9110/print  (로컬 브리지)
+  → 브리지가 TCP 로 printer:9100 에 raw ZPL 전송
+  → Xprinter 출력
+```
+(localhost 로의 http 요청은 Chrome/Firefox 가 mixed-content 로 막지 않음 — localhost 는 신뢰 출처)
+
+### 구성요소 (모두 이번에 추가, 로컬 검증 완료)
+- `scripts/zpl-print-bridge.mjs` — 매장 PC 로컬 브리지. 의존성 0(node 내장 net/http).
+  실행: `PRINTER_HOST=192.168.0.50 node scripts/zpl-print-bridge.mjs`
+- `scripts/fedex-zpl-print.mjs` — CLI 단발 출력(인증 테스트/폴백):
+  `node scripts/fedex-zpl-print.mjs --host 192.168.0.50 label.zpl`
+- `src/components/OrderShipments.tsx` — 라벨이 `.zpl` 이면 **"ZPL 바로 출력"** 버튼 표시(브리지 주소 1회 입력 후 localStorage 저장).
+- `scripts/sample-4x6-label.zpl` — 하드웨어/브리지 점검용 샘플(바코드 포함).
+
+### FedEx 인증 재제출 절차 (마감 7/10)
+1. (먼저 하드웨어 점검) 매장 PC 에서 브리지 실행 →
+   `node scripts/fedex-zpl-print.mjs --host <프린터IP> scripts/sample-4x6-label.zpl`
+   → 샘플이 또렷하게 나오면 경로 정상.
+2. Vercel Production env 에 `FEDEX_LABEL_IMAGE_TYPE=ZPLII` 주입 + 재배포(또는 샌드박스 먼저).
+3. admin 에서 테스트 주문에 FedEx 라벨 생성 → `label.zpl` 저장됨.
+4. "ZPL 바로 출력"(또는 CLI)로 Xprinter 출력 → **스캔**.
+5. 스캔본을 FedEx case 27122658 메일에 **회신·첨부** (외부 발송은 사장님 계정 게이트, OMO-1908).

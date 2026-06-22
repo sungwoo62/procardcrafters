@@ -271,8 +271,11 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
             target="_blank"
             className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
           >
-            <Tag className="h-3.5 w-3.5" /> 라벨 PDF
+            <Tag className="h-3.5 w-3.5" /> {shipment.label_storage_path.endsWith('.zpl') ? '라벨 ZPL' : '라벨 PDF'}
           </a>
+        )}
+        {shipment.label_storage_path?.endsWith('.zpl') && (
+          <PrintZplButton labelPath={shipment.label_storage_path} />
         )}
         {shipment.invoice_storage_path && (
           <a
@@ -336,6 +339,58 @@ function CreateLabelButton({ orderId, shipmentId, onDone }: { orderId: string; s
         <Tag className="h-3.5 w-3.5" /> {busy ? '생성 중...' : 'FedEx 라벨 생성'}
       </button>
       {err && <span className="text-xs text-red-600 ml-1">{err}</span>}
+    </>
+  )
+}
+
+// OMO-3736 — ZPL 라벨을 매장 Xprinter(9100 RAW)로 바로 출력.
+// 브라우저는 raw TCP 를 못 열고 Vercel 서버는 매장 LAN 프린터에 도달 못 하므로,
+// 매장 PC에서 로컬 브리지(scripts/zpl-print-bridge.mjs, 기본 localhost:9110)를 띄우고
+// 이 버튼이 ZPL 원본을 브리지로 POST → 브리지가 printer:9100 으로 RAW 전송한다 (이미지 변환 없음).
+function PrintZplButton({ labelPath }: { labelPath: string }) {
+  const [busy, setBusy] = useState(false)
+  const [msg, setMsg] = useState('')
+
+  const onClick = async () => {
+    setBusy(true); setMsg('')
+    try {
+      // 브리지 주소(매장 PC). 한 번 설정하면 localStorage 에 저장.
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('zplBridgeUrl') : null
+      const bridge = (saved || window.prompt('ZPL 프린트 브리지 주소', 'http://localhost:9110') || '').trim()
+      if (!bridge) { setBusy(false); return }
+      window.localStorage.setItem('zplBridgeUrl', bridge)
+
+      // ZPL 원본을 서명 URL 에서 그대로 가져온다 (이미지 변환 없음).
+      const labelRes = await fetch(`/api/admin/shipping/documents?path=${encodeURIComponent(labelPath)}`)
+      if (!labelRes.ok) throw new Error(`ZPL 로드 실패 (${labelRes.status})`)
+      const zpl = await labelRes.text()
+
+      const printRes = await fetch(`${bridge.replace(/\/$/, '')}/print`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: zpl,
+      })
+      const data = await printRes.json().catch(() => ({}))
+      if (!printRes.ok || data.ok === false) throw new Error(data.error || `출력 실패 (${printRes.status})`)
+      setMsg(`출력됨 (${data.bytes ?? zpl.length}B → ${data.printer ?? '프린터'})`)
+    } catch (e) {
+      setMsg(`오류: ${(e as Error).message}. 브리지 실행/프린터IP 확인`)
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <>
+      <button
+        onClick={onClick}
+        disabled={busy}
+        title="ZPL 원본을 매장 Xprinter(9100)로 바로 전송"
+        className="flex items-center gap-1.5 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
+      >
+        <Printer className="h-3.5 w-3.5" /> {busy ? '출력 중...' : 'ZPL 바로 출력'}
+      </button>
+      {msg && <span className="text-xs text-gray-600 ml-1">{msg}</span>}
     </>
   )
 }
