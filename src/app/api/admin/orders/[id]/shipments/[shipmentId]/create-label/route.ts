@@ -106,12 +106,16 @@ export async function POST(_req: NextRequest, { params }: { params: Promise<{ id
 
   const bucket = supabase.storage.from('print-assets')
   const baseDir = `shipping/${orderId}/${shipmentId}`
-  const labelPath = shipResult.labelPdf   ? `${baseDir}/label.pdf`   : null
+  // OMO-3736 — ZPL(써멀)이면 raw .zpl 로 저장. 절대 이미지로 변환하지 않는다 (FedEx 인증 요구사항).
+  const isZpl = shipResult.labelFormat === 'zpl'
+  const labelExt = isZpl ? 'zpl' : 'pdf'
+  const labelContentType = isZpl ? 'application/octet-stream' : 'application/pdf'
+  const labelPath = shipResult.labelPdf   ? `${baseDir}/label.${labelExt}`   : null
   const invoicePath = shipResult.invoicePdf ? `${baseDir}/invoice.pdf` : null
 
   const uploads = await Promise.all([
     shipResult.labelPdf && labelPath
-      ? bucket.upload(labelPath, shipResult.labelPdf, { contentType: 'application/pdf', upsert: true })
+      ? bucket.upload(labelPath, shipResult.labelPdf, { contentType: labelContentType, upsert: true })
       : Promise.resolve({ data: null, error: null }),
     shipResult.invoicePdf && invoicePath
       ? bucket.upload(invoicePath, shipResult.invoicePdf, { contentType: 'application/pdf', upsert: true })
