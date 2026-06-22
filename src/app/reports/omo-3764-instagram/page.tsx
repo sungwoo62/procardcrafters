@@ -40,19 +40,21 @@ const PRODUCT_GRADIENT: Record<string, string> = {
 function PostCard({ post }: { post: Post }) {
   return (
     <article className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col">
-      {/* 이미지 자리 — 실제 크리에이티브는 보드 승인 후 확정. 지금은 이미지 디렉션 표시. */}
-      <div className={`relative aspect-square bg-gradient-to-br ${PRODUCT_GRADIENT[post.product] ?? PRODUCT_GRADIENT.mixed} p-4 flex flex-col justify-between`}>
-        <div className="flex items-center justify-between">
-          <span className="text-[11px] font-bold uppercase tracking-wider bg-white/70 text-gray-800 px-2 py-0.5 rounded-full">
+      {/* 실제 브랜드 크리에이티브(1080×1080 SVG). 위에 Day/필러 배지 오버레이. */}
+      <div className="relative aspect-square">
+        {post.imageUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.imageUrl} alt={post.altText} className="w-full h-full object-cover" loading="lazy" />
+        ) : (
+          <div className={`w-full h-full bg-gradient-to-br ${PRODUCT_GRADIENT[post.product] ?? PRODUCT_GRADIENT.mixed}`} />
+        )}
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between">
+          <span className="text-[11px] font-bold uppercase tracking-wider bg-black/45 text-white px-2 py-0.5 rounded-full backdrop-blur-sm">
             Day {post.day} · {post.slot} {post.timeET} ET
           </span>
           <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${PILLAR_STYLE[post.pillar] ?? 'bg-gray-100 text-gray-700'}`}>
             {post.pillarLabel}
           </span>
-        </div>
-        <div className="bg-white/75 backdrop-blur-sm rounded-lg p-2">
-          <p className="text-[11px] font-medium text-gray-500 mb-0.5">🎨 이미지 디렉션</p>
-          <p className="text-xs text-gray-700 leading-snug">{post.imageDirection}</p>
         </div>
       </div>
 
@@ -60,6 +62,10 @@ function PostCard({ post }: { post: Post }) {
       <div className="p-4 flex flex-col gap-3 flex-1">
         <p className="text-sm text-gray-900 whitespace-pre-line leading-relaxed">{post.caption}</p>
         <p className="text-xs text-blue-600 leading-snug">{post.hashtags.join(' ')}</p>
+        <div className="pt-1">
+          <p className="text-[11px] text-gray-400 mb-0.5">🎨 이미지 디렉션 (촬영/디자인 참고)</p>
+          <p className="text-xs text-gray-500 leading-snug">{post.imageDirection}</p>
+        </div>
         <div className="mt-auto pt-2 border-t border-gray-100">
           <p className="text-[11px] text-gray-400 mb-0.5">첫 댓글</p>
           <p className="text-xs text-gray-600">{post.firstComment}</p>
@@ -92,7 +98,8 @@ export default function Omo3764InstagramReport() {
           </div>
           <h1 className="text-3xl font-bold text-gray-900">프로카드 인스타 30일 콘텐츠 플랜</h1>
           <p className="mt-2 text-gray-600">
-            게시물을 어떻게 올릴지 먼저 보고드립니다. 하루 2건 × 30일 = <strong>60개</strong> 초안을 모두 아래에 펼쳤습니다.
+            하루 2건 × 30일 = <strong>60개</strong> 게시물을 캡션·해시태그·<strong>이미지까지 모두 적용</strong>해 펼쳤습니다.
+            각 이미지는 브랜드 일관 1080×1080 크리에이티브입니다(실제 발행 시 사진 교체·래스터화 가능).
             발행은 보드 승인 후에만 진행됩니다(이 페이지는 발행 동작 없는 read-only 프리뷰).
           </p>
         </header>
@@ -152,8 +159,8 @@ export default function Omo3764InstagramReport() {
 
         <footer className="mt-10 pt-6 border-t border-gray-200 text-sm text-gray-500">
           <p>
-            이 리포트는 <strong>발행 전 검토용</strong>입니다. 보드가 승인하면 ① 각 게시물 이미지 확정 ② Meta Graph 자격 수령 후
-            09:00/18:00 ET 스케줄로 자동 발행합니다. 단일 진실원천:{' '}
+            이 리포트는 <strong>발행 전 검토용</strong>입니다. 캡션·해시태그·이미지가 모두 적용되어 있습니다. 보드가 승인하면
+            Meta Graph 자격 수령 후 09:00/18:00 ET 스케줄로 자동 발행합니다(이미지는 발행 단계에서 PNG/JPG로 래스터화). 단일 진실원천:{' '}
             <code className="text-xs bg-gray-100 px-1 py-0.5 rounded">src/data/omo3764-instagram-plan.json</code>
           </p>
         </footer>
