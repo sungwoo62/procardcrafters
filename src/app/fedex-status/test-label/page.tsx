@@ -22,6 +22,7 @@ function TestLabelInner() {
   const [printMsg, setPrintMsg] = useState('')
   const [copyMsg, setCopyMsg] = useState('')
   const [printerName, setPrinterName] = useState('Xprinter XP-DT108B LABEL')
+  const [slow, setSlow] = useState(false)
 
   // 폴백(브리지 없이 1회성): API로 ZPL 생성 후 USB 프린터로 RAW 전송 (winspool, node 불필요).
   const buildPs = () => {
@@ -67,7 +68,7 @@ else { Write-Host "출력 실패: 프린터 이름 확인 또는 관리자 권�
   const generate = async () => {
     setBusy(true); setMsg(''); setZpl(''); setTracking('')
     try {
-      const res = await fetch(`/api/fedex/test-label?key=${encodeURIComponent(key)}`, { method: 'POST' })
+      const res = await fetch(`/api/fedex/test-label?key=${encodeURIComponent(key)}${slow ? '&slow=1' : ''}`, { method: 'POST' })
       const data = await res.json()
       if (!res.ok || !data.ok) throw new Error(data.error || `생성 실패 (${res.status})`)
       setZpl(data.zpl)
@@ -134,6 +135,10 @@ else { Write-Host "출력 실패: 프린터 이름 확인 또는 관리자 권�
           {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
           {busy ? 'FedEx 호출 중...' : '테스트 라벨 생성 (ZPL)'}
         </button>
+        <label className="flex items-center gap-2 text-xs text-gray-700">
+          <input type="checkbox" checked={slow} onChange={(e) => setSlow(e.target.checked)} className="rounded" />
+          느리게 인쇄 (2D 바코드 공백 개선 시도 — 인쇄속도만 최저로, 바코드·내용 동일)
+        </label>
         {msg && (
           <p className={`text-xs ${msg.startsWith('오류') ? 'text-red-600' : 'text-emerald-700'} flex items-center gap-1`}>
             {!msg.startsWith('오류') && <CheckCircle2 className="h-3.5 w-3.5" />} {msg}
