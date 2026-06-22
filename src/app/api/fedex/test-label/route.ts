@@ -64,13 +64,20 @@ export async function POST(req: NextRequest) {
       )
     }
 
+    let zpl = result.labelPdf.toString('utf8')
+    // OMO-3736 — '느리게 인쇄' 옵션: 인쇄 속도(^PR)만 최저로 낮춰 저가 써멀의 2D 바코드 공백을 줄인다.
+    // 라벨/바코드 데이터는 일절 건드리지 않음(인쇄 메커니즘 파라미터만). FedEx 다크니스는 이미 ^MD30(최대).
+    const slow = req.nextUrl.searchParams.get('slow') === '1'
+    if (slow) zpl = zpl.replace(/\^PR\d+(,\d+)*/g, '^PR2,2,2')
+
     return NextResponse.json({
       ok: true,
-      zpl: result.labelPdf.toString('utf8'),
+      zpl,
+      slow,
       trackingNumber: result.masterTrackingNumber,
       serviceType: result.serviceType,
       reference: ref,
-      bytes: result.labelPdf.length,
+      bytes: zpl.length,
     })
   } catch (err) {
     return NextResponse.json({ error: (err as Error).message }, { status: 502 })
