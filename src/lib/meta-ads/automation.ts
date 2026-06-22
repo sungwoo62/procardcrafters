@@ -2,7 +2,7 @@
  * 자동화 함수 4종 (KR fanout 대비 — OMO-2373 사장님 약속)
  * initAdService / createAdAccount / setupSystemUser / addPixelDomain
  */
-import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity } from './auth'
+import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity, getAdTargetingDefaults } from './auth'
 import { lockCampaignForLearning, enforceMaxDailyBudget, DAILY_BUDGET_CENTS } from './guardrails'
 
 export interface AdServiceStatus {
@@ -154,12 +154,15 @@ export interface CreateCampaignResult {
 export async function createCampaignWithGuardrails(params: {
   name: string
   objective: string
-  targeting: Record<string, unknown>
+  /** 미지정 시 해외(US) 기본 타겟 적용 (OMO-3737) */
+  targeting?: Record<string, unknown>
   creativeName: string
   dryRun?: boolean
 }): Promise<CreateCampaignResult> {
   const accountId = getAdAccountId()
   const dryRun = params.dryRun ?? false
+  // OMO-3737: procard는 해외(US) 타겟이 기본 — 호출자가 타겟 미지정 시 자동 적용
+  const targeting = params.targeting ?? getAdTargetingDefaults()
 
   // 가드레일 A: 일일 예산 $20 강제
   const dailyBudgetCents = enforceMaxDailyBudget(DAILY_BUDGET_CENTS)
@@ -187,7 +190,7 @@ export async function createCampaignWithGuardrails(params: {
       // 주의: daily_budget 단위를 반드시 dry-run으로 재검증
       // CEO 검증 결과: spend_cap 입력=dollars 가능성 있음 → cents로 통일
       daily_budget: dailyBudgetCents,
-      targeting: params.targeting,
+      targeting,
       status: 'PAUSED',
     },
     dryRun,

@@ -118,6 +118,30 @@ describe('procardcrafters Meta 자산 게터 (OMO-3737)', () => {
     const { getAdIdentity } = await import('../auth')
     expect(getAdIdentity()).toEqual({ page_id: '111122223333' })
   })
+
+  it('getTargetCountries: env 미설정 시 US 기본', async () => {
+    delete process.env.PCCF_META_TARGET_COUNTRIES
+    const { getTargetCountries } = await import('../auth')
+    expect(getTargetCountries()).toEqual(['US'])
+  })
+
+  it('getTargetCountries: 콤마구분 파싱', async () => {
+    process.env.PCCF_META_TARGET_COUNTRIES = 'US, CA'
+    const { getTargetCountries } = await import('../auth')
+    expect(getTargetCountries()).toEqual(['US', 'CA'])
+  })
+
+  it('getAdLocale: 기본 en_US', async () => {
+    delete process.env.PCCF_META_AD_LOCALE
+    const { getAdLocale } = await import('../auth')
+    expect(getAdLocale()).toBe('en_US')
+  })
+
+  it('getAdTargetingDefaults: 해외(US) geo_locations', async () => {
+    process.env.PCCF_META_TARGET_COUNTRIES = 'US'
+    const { getAdTargetingDefaults } = await import('../auth')
+    expect(getAdTargetingDefaults()).toEqual({ geo_locations: { countries: ['US'] } })
+  })
 })
 
 describe('MetaApiError', () => {

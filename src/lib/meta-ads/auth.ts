@@ -16,6 +16,11 @@ const INSTAGRAM_ACTOR_ID = process.env.PCCF_META_INSTAGRAM_ACTOR_ID!
 const BUSINESS_ID = process.env.PCCF_META_BUSINESS_ID!
 const PIXEL_ID = process.env.PCCF_META_PIXEL_ID!
 
+// OMO-3737: procard는 해외(US) 타겟·영어 운영 (국내/해외 분리, procard=overseas)
+const TARGET_COUNTRIES = (process.env.PCCF_META_TARGET_COUNTRIES || 'US')
+  .split(',').map((c) => c.trim()).filter(Boolean)
+const AD_LOCALE = process.env.PCCF_META_AD_LOCALE || 'en_US'
+
 // 서비스 롤 클라이언트 — 백그라운드 작업용 (쿠키 없음)
 function getServiceClient() {
   return createClient(
@@ -100,6 +105,26 @@ export function getAdIdentity(): { page_id: string; instagram_actor_id?: string 
   const ig = getInstagramActorId()
   if (ig) identity.instagram_actor_id = ig
   return identity
+}
+
+// ─── 타겟/언어 (OMO-3737: procard=해외 US·영어) ──────────────────────────────
+
+/** 광고 지오타겟 국가 코드 (기본 US) */
+export function getTargetCountries(): string[] {
+  return TARGET_COUNTRIES.length ? TARGET_COUNTRIES : ['US']
+}
+
+/** 광고 카피/소재 언어 로케일 (기본 en_US) */
+export function getAdLocale(): string {
+  return AD_LOCALE
+}
+
+/**
+ * 캠페인 기본 타겟팅 — 미지정 시 해외(US) 타겟을 적용한다.
+ * 국내/해외 분리: procard는 해외, 나머지 서비스는 국내(KR) 타겟.
+ */
+export function getAdTargetingDefaults(): { geo_locations: { countries: string[] } } {
+  return { geo_locations: { countries: getTargetCountries() } }
 }
 
 interface MetaFetchOptions {
