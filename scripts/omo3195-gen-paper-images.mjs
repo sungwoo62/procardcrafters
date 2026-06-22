@@ -49,32 +49,39 @@ const onlyArg = process.argv.find((a) => a.startsWith('--only='))?.split('=')[1]
   ?? (process.argv.includes('--only') ? process.argv[process.argv.indexOf('--only') + 1] : null)
 const ONLY = onlyArg ? new Set(onlyArg.split(',').map((s) => s.trim())) : null
 
-// 공통 사진 스타일 — 데스크에 놓인 종이 스와치를 위에서 비스듬히 촬영한 매크로.
+// OMO-3751(보드 재요청): "용지별 질감 디테일·텍스쳐를 상세하게, 실사진처럼."
+// 핵심 변경 — ① 익스트림 매크로 + 측면 raking light(빗각 조명)로 표면 결/요철을 그림자로 드러냄
+//   ② 스와치가 프레임을 가득 채워 표면 질감 자체가 주제(데스크 소품 사진 아님)
+//   ③ 패밀리별 desc 를 실제 레퍼런스(성원/Takeo/Fedrigoni/Cordenons/Arjowiggins/Yupo)
+//      에서 확인한 색조·결·광택·섬유 패턴으로 구체화(OMO-3751 레퍼런스 리서치).
 const STYLE =
-  'Professional product macro photograph of a single rectangular paper/card stock swatch ' +
-  'lying flat on a clean neutral light-gray studio surface, shot slightly from above at a ' +
-  '30-degree angle with soft diffused daylight that reveals the surface texture and a gentle ' +
-  'edge shadow showing thickness. Square 1:1 framing, the swatch fills ~80% of the frame, ' +
-  'shallow depth of field, no text, no logos, no hands, no props. Photorealistic, high detail.'
+  'Ultra-detailed photorealistic extreme macro photograph of a single sheet of paper/card stock, ' +
+  'the sheet filling the entire frame so its surface texture is the subject. Lit by soft grazing ' +
+  'raking light from one side so the micro-relief, grain, fibers and finish are revealed through ' +
+  'fine highlights and shadows, with one clean cut edge visible at the bottom showing the sheet ' +
+  'thickness. Tack-sharp focus across the surface, true-to-life color, natural studio lighting, ' +
+  'no glare blowout. Square 1:1 framing, no text, no logos, no print, no hands, no props. ' +
+  'Looks like a real high-resolution product swatch photo, not an illustration or render.'
 
 // 패밀리: slug 는 paper-display.ts 의 img 슬러그와 반드시 일치.
+// desc = 매크로 사진에서 보여야 할 색조·결·광택·섬유/엠보스 패턴(레퍼런스 확인 기반).
 const FAMILIES = [
-  { slug: 'matte-coated', desc: 'pure bright-white smooth matte coated paper with a clean non-glare finish' },
-  { slug: 'glossy-coated', desc: 'bright-white glossy coated paper with a reflective high-sheen surface' },
-  { slug: 'rendezvous', desc: 'premium natural-white uncoated designer paper with an ultra-smooth fine surface' },
-  { slug: 'vent-nouveau', desc: 'soft warm-white uncoated fine-art paper with a delicate subtle tooth' },
-  { slug: 'stardream', desc: 'pearlescent metallic shimmer card stock that catches light with a soft silver-pearl glow' },
-  { slug: 'majestic', desc: 'luxury pearl-metallic card stock with a subtle satin sheen' },
-  { slug: 'felt-art', desc: 'heavy felt-textured uncoated art card stock with a visible tactile felt grain' },
-  { slug: 'ultra-smooth', desc: 'ultra-smooth ultra-bright-white premium card stock with a perfectly even modern surface' },
-  { slug: 'metallic-specialty', desc: 'specialty metallic paper with a fine modern shimmer finish' },
-  { slug: 'linen', desc: 'linen-embossed card stock with a woven cloth-like crosshatch texture' },
-  { slug: 'pearlescent', desc: 'pearlescent coated card stock with a soft iridescent shimmer' },
-  { slug: 'kraft', desc: 'natural brown kraft paper with a rustic uncoated recycled fiber texture' },
-  { slug: 'synthetic-film', desc: 'slightly translucent waterproof white synthetic yupo film sheet with a smooth plastic-like surface' },
-  { slug: 'woodfree', desc: 'uncoated white woodfree office paper with a natural matte writable surface' },
-  { slug: 'cotton', desc: 'thick natural cotton card stock with a soft fibrous tactile texture, slightly off-white' },
-  { slug: 'pvc-banner', desc: 'heavy white PVC vinyl banner material with a faint woven scrim texture' },
+  { slug: 'matte-coated', desc: 'bright neutral-white fully-coated matte stock with a flat micro-fine tooth, no visible fibers, a low diffuse non-glare sheen that softly scatters light with no specular hotspots, and a clean square-cut edge' },
+  { slug: 'glossy-coated', desc: 'cool bright-white mirror-smooth clay-coated stock with high specular gloss and sharp light reflections, zero visible fiber or grain, a slick wet-look sheen and a crisp glossy cut edge' },
+  { slug: 'rendezvous', desc: 'bright cool-white premium uncoated designer stock (Hansol Rendezvous) with a very faint smooth tooth and a matte glare-free surface, subtle soft microtexture rather than a pattern, no clay sheen, and a dense thick board edge with a slightly fuzzy cut' },
+  { slug: 'vent-nouveau', desc: 'soft warm off-white cream uncoated fine paper (Takeo Vent Nouveau) with a delicate fine non-uniform grain, an airy bulky body, a low matte sheen and a thick lofty edge' },
+  { slug: 'stardream', desc: 'pearlescent mica-infused metallic stock (Cordenons Stardream) in a soft silver-champagne tone, smooth with a luminous mother-of-pearl shimmer that travels and shifts with the angle, fine even grain and iridescent specular sparkle' },
+  { slug: 'majestic', desc: 'luxury pearl-metallic card (Favini Majestic) with a rich saturated pulp color overlaid by a lustrous mica pearl sheen, a smooth satin-to-shimmer glow with a faint gold/silver cast, denser and more vivid than a pale shimmer' },
+  { slug: 'felt-art', desc: 'warm soft-white ivory uncoated felt-marked art stock (Fedrigoni Tintoretto) with a pronounced hammered felt texture — irregular dimpled tooth and macro-porous random grain, fully matte and non-reflective with visible cottony fiber and a thick soft fibrous edge' },
+  { slug: 'ultra-smooth', desc: 'very bright cool-white ultra-smooth uncoated wove premium stock with almost no visible tooth or fiber, a near-flat matte-to-low-satin sheen, perfectly even tone and a crisp sharp white cut edge' },
+  { slug: 'metallic-specialty', desc: 'specialty metallic wove stock (Arjowiggins Curious Metallics) in a warm-to-cool white with a slightly rough natural tooth carrying an all-over fine iridescent metallic shimmer that glints over the wove grain on both sides' },
+  { slug: 'linen', desc: 'soft white linen-embossed card with a regular fine evenly-spaced crosshatch weave mimicking woven cloth, matte and non-reflective with subtle shadow in the grooves and a thick stiff card edge' },
+  { slug: 'pearlescent', desc: 'smooth pearlescent coated card with an even satin pearl sheen and a soft iridescent shimmer that brightens at glancing angles, no visible texture or fiber, a uniform lustrous glow and a clean coated edge' },
+  { slug: 'kraft', desc: 'warm muted tan-brown uncoated kraft stock with a slightly rough natural surface showing flecks of darker wood-pulp fibers, fully matte with no sheen, a mottled fibrous grain and a thick fuzzy raw edge' },
+  { slug: 'synthetic-film', desc: 'opaque bright neutral-white plastic-like polypropylene synthetic sheet (Yupo), perfectly ultra-smooth and non-porous with no fiber, grain or tooth, a soft even matte luster and a clean fused plastic edge with no fuzz' },
+  { slug: 'woodfree', desc: 'plain warm-white slightly off-white uncoated woodfree office stock with a fine even tooth and faint fiber texture, a flat matte no-sheen surface, uniform mild grain and a thin clean cut edge' },
+  { slug: 'cotton', desc: 'soft warm bright-white cotton card with a luxurious cottony fine tooth and visible short random fibers, a thick plush fully-matte non-reflective surface and a deep substantial fibrous edge with a slightly feathery cut' },
+  { slug: 'pvc-banner', desc: 'bright matte-white flexible PVC vinyl banner material with a faint regular scrim weave of reinforcing threads showing through, a low even semi-matte sheen, a smooth wipeable plastic surface and a thick rubbery cut edge' },
 ]
 
 function fail(msg) {
