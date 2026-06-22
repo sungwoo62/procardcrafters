@@ -9,13 +9,12 @@
  *   --caption <text>       캡션.
  *   --live                 (게이트) organic 연결 확인 후에만 실제 게시. 미연결 시 거부.
  *
- * 자격증명: .env.local 의 PCCF_META_LONG_LIVED_TOKEN / PCCF_META_IG_USER_ID / PCCF_META_APP_SECRET.
+ * 자격증명(OMO-3737 확보·검증): .env.local 의
+ *   PCCF_META_IG_PUBLISH_TOKEN(allpack-ai 시스템유저 토큰) / PCCF_META_INSTAGRAM_ACTOR_ID.
  *   토큰 미설정 시 --check 는 not_configured, --dry-run 은 payload만 출력.
  *
- * ⚠️ 라이브 게시 하드 전제(OMO-3737): 실 @procard IG(17841464131369489)가 비즈니스
- *   계정으로 BM에 연결되어야 한다. PBIA(광고용)는 organic 게시 불가.
+ * ⚠️ appsecret_proof 미전송(allpack-ai 발행 앱은 불요 — OMO-3737 검증).
  */
-import { createHmac } from 'crypto'
 import { readFileSync } from 'fs'
 
 function loadEnv(path) {
@@ -32,18 +31,17 @@ const API_VERSION = process.env.META_API_VERSION || 'v22.0'
 const GRAPH = `https://graph.facebook.com/${API_VERSION}`
 const DEFAULT_IG_USER_ID = '17841464131369489'
 
-const TOKEN = process.env.PCCF_META_LONG_LIVED_TOKEN || ''
-const IG_USER_ID = process.env.PCCF_META_IG_USER_ID || DEFAULT_IG_USER_ID
-const APP_SECRET = process.env.PCCF_META_APP_SECRET || ''
+const TOKEN =
+  process.env.PCCF_META_IG_PUBLISH_TOKEN || process.env.PCCF_META_LONG_LIVED_TOKEN || ''
+const IG_USER_ID =
+  process.env.PCCF_META_INSTAGRAM_ACTOR_ID ||
+  process.env.PCCF_META_IG_USER_ID ||
+  DEFAULT_IG_USER_ID
 
 const args = process.argv.slice(2)
 const has = (f) => args.includes(f)
 const multi = (f) => args.reduce((acc, a, i) => (args[i - 1] === f ? [...acc, a] : acc), [])
 const one = (f) => { const i = args.indexOf(f); return i >= 0 ? args[i + 1] : undefined }
-
-function proof() {
-  return APP_SECRET ? createHmac('sha256', APP_SECRET).update(TOKEN).digest('hex') : null
-}
 
 function buildContainerPayload(imageUrls, caption) {
   if (imageUrls.length === 1) {
@@ -57,7 +55,6 @@ function buildContainerPayload(imageUrls, caption) {
 
 async function graphGet(path, fields) {
   const qs = new URLSearchParams({ access_token: TOKEN, fields })
-  const p = proof(); if (p) qs.set('appsecret_proof', p)
   const res = await fetch(`${GRAPH}/${path}?${qs}`)
   const data = await res.json().catch(() => ({}))
   if (!res.ok) throw new Error(data?.error?.message || `IG API 오류(${res.status})`)
@@ -68,21 +65,21 @@ async function check() {
   console.log('=== OMO-3742 organic 게시 readiness 점검 ===')
   console.log(`IG user id: ${IG_USER_ID}`)
   if (!TOKEN) {
-    console.log('결과: not_configured — PCCF_META_LONG_LIVED_TOKEN 미설정')
+    console.log('결과: not_configured — PCCF_META_IG_PUBLISH_TOKEN 미설정')
     console.log('→ 라이브 게시 불가. 토큰/연결 완료 전까지 dry-run만 가능.')
     return false
   }
   try {
-    const me = await graphGet(IG_USER_ID, 'id,username,account_type')
-    const ok = me.account_type === 'BUSINESS' || me.account_type === 'MEDIA_CREATOR'
-    console.log(`username: @${me.username ?? '?'}  account_type: ${me.account_type ?? '?'}`)
-    console.log(ok
-      ? '결과: ready ✅ — organic 게시 가능'
-      : '결과: not_ready ❌ — BM에 IG 비즈니스 계정 연결 필요(PBIA는 organic 불가, OMO-3737)')
-    return ok
+    const limit = await graphGet(`${IG_USER_ID}/content_publishing_limit`, 'quota_usage,config')
+    const row = Array.isArray(limit.data) ? limit.data[0] : limit
+    const usage = row?.quota_usage ?? 0
+    const total = row?.config?.quota_total ?? '?'
+    console.log(`content_publishing_limit: 사용 ${usage}/${total} (일일)`)
+    console.log('결과: ready ✅ — Content Publishing API 사용 가능')
+    return true
   } catch (e) {
     console.log(`결과: not_ready ❌ — ${e.message}`)
-    console.log('→ IG가 BM 자산으로 연결되지 않았을 수 있음(OMO-3737 후속).')
+    console.log('→ IG가 Content Publishing 대상으로 연결되지 않았거나 토큰 권한 부족(OMO-3737).')
     return false
   }
 }

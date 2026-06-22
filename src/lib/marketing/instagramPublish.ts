@@ -1,5 +1,3 @@
-import { createHmac } from 'crypto'
-
 /**
  * procardcrafters — Instagram **Content Publishing**(organic 게시) 트랜스포트 (OMO-3742).
  *
@@ -14,16 +12,15 @@ import { createHmac } from 'crypto'
  *   4) 게시: POST /{ig-user-id}/media_publish (creation_id) → media id
  *   5) permalink 조회: GET /{media-id}?fields=permalink
  *
- * ⚠️ 하드 전제(OMO-3742 / OMO-3737 감사): organic 게시는 **실 @procard IG가
- *   비즈니스 계정으로 BM에 연결**되어 있어야 한다. page-backed IG(PBIA)는 광고용일 뿐
- *   organic 게시 불가. 연결 전에는 자격증명/연결 미완으로 간주되어 'simulated'(드라이런)
- *   결과만 반환한다 — 실제 IG 호출 0건.
+ * 자격증명(서버 전용 env — OMO-3737에서 확보·검증):
+ *   PCCF_META_IG_PUBLISH_TOKEN     allpack-ai 시스템유저 토큰(비만료, app 1337409018349199,
+ *                                  instagram_content_publish). procard 자체 토큰 아님(보드 지정).
+ *   PCCF_META_INSTAGRAM_ACTOR_ID   organic 게시 대상 = 실 @procard IG 비즈니스 user id
+ *                                  (=17841464131369489). content_publishing_limit 검증 완료(100/일).
+ *   (구 키 PCCF_META_LONG_LIVED_TOKEN / PCCF_META_IG_USER_ID 는 폴백으로만 인정)
  *
- * 자격증명(서버 전용 env):
- *   PCCF_META_LONG_LIVED_TOKEN   시스템유저 장기 토큰(instagram_content_publish 스코프 필요)
- *   PCCF_META_IG_USER_ID         organic 게시 대상 = 실 @procard IG 비즈니스 계정 user id
- *                                (광고용 PBIA actor id PCCF_META_INSTAGRAM_ACTOR_ID 와 다름)
- *   PCCF_META_APP_SECRET         appsecret_proof 서명용(있으면 첨부)
+ * ⚠️ appsecret_proof 미전송: 이 발행 앱(allpack-ai)은 appsecret_proof 불요이며(OMO-3737
+ *   라이브 검증), 다른 앱 시크릿으로 계산한 proof를 보내면 오히려 인증이 깨진다. 보내지 않는다.
  *
  * 게이트(OMO-1908/2760): 이 모듈은 트랜스포트일 뿐이다. "무엇을/언제" 게시할지는
  *   igPostQueue(사람 승인 게이트)가 통제한다. 직접 호출 금지.
@@ -32,20 +29,25 @@ import { createHmac } from 'crypto'
 const API_VERSION = process.env.META_API_VERSION || 'v22.0'
 const GRAPH = `https://graph.facebook.com/${API_VERSION}`
 
-/** organic 게시 대상 @procard IG 비즈니스 계정 user id 기본값(OMO-3742 명시). */
+/** organic 게시 대상 @procard IG 비즈니스 계정 user id 기본값(OMO-3742/3737 명시). */
 const DEFAULT_IG_USER_ID = '17841464131369489'
 
 interface IgCreds {
   accessToken: string
   igUserId: string
-  appSecret: string
 }
 
 function igCreds(): IgCreds {
   return {
-    accessToken: process.env.PCCF_META_LONG_LIVED_TOKEN || '',
-    igUserId: process.env.PCCF_META_IG_USER_ID || DEFAULT_IG_USER_ID,
-    appSecret: process.env.PCCF_META_APP_SECRET || '',
+    // OMO-3737 확정 키 우선, 구 키는 폴백.
+    accessToken:
+      process.env.PCCF_META_IG_PUBLISH_TOKEN ||
+      process.env.PCCF_META_LONG_LIVED_TOKEN ||
+      '',
+    igUserId:
+      process.env.PCCF_META_INSTAGRAM_ACTOR_ID ||
+      process.env.PCCF_META_IG_USER_ID ||
+      DEFAULT_IG_USER_ID,
   }
 }
 
@@ -53,11 +55,6 @@ function igCreds(): IgCreds {
 export function isInstagramPublishConfigured(): boolean {
   const { accessToken, igUserId } = igCreds()
   return Boolean(accessToken && igUserId)
-}
-
-function appsecretProof(token: string, secret: string): string | null {
-  if (!secret) return null
-  return createHmac('sha256', secret).update(token).digest('hex')
 }
 
 export interface IgPublishInput {
@@ -85,8 +82,7 @@ async function graphPost(
 ): Promise<Record<string, unknown>> {
   const form = new URLSearchParams()
   form.set('access_token', creds.accessToken)
-  const proof = appsecretProof(creds.accessToken, creds.appSecret)
-  if (proof) form.set('appsecret_proof', proof)
+  // appsecret_proof 미전송(allpack-ai 발행 앱은 불요 — OMO-3737 검증).
   for (const [k, v] of Object.entries(params)) {
     if (v === undefined || v === null) continue
     form.set(k, typeof v === 'string' ? v : JSON.stringify(v))
@@ -110,8 +106,6 @@ async function graphGet(
   fields: string
 ): Promise<Record<string, unknown>> {
   const qs = new URLSearchParams({ access_token: creds.accessToken, fields })
-  const proof = appsecretProof(creds.accessToken, creds.appSecret)
-  if (proof) qs.set('appsecret_proof', proof)
   const res = await fetch(`${GRAPH}/${path}?${qs.toString()}`, { method: 'GET' })
   const json = (await res.json().catch(() => ({}))) as Record<string, unknown>
   if (!res.ok) {
@@ -272,49 +266,52 @@ export async function publishToInstagram(
 /**
  * organic 게시 가능 여부 점검(OMO-3742 하드 전제).
  *
- * IG user id 가 콘텐츠 게시 가능한 비즈니스/크리에이터 계정인지 Graph API로 확인한다.
- * page-backed IG(PBIA)는 username/account_type 조회가 불가하거나 organic 게시 권한이
- * 없어 여기서 걸러진다. 토큰 미설정 시 'not_configured'.
+ * IG user id 의 `content_publishing_limit`(일일 게시 한도)를 조회한다. 이 엔드포인트가
+ * 정상 응답하면 해당 IG가 Content Publishing API 대상으로 연결돼 있음을 의미한다
+ * (OMO-3737 라이브 검증: quota 100/일). PBIA/미연결 계정은 오류로 걸러진다.
+ * 토큰 미설정 시 'not_configured'.
  */
 export async function checkOrganicPublishReadiness(): Promise<{
   ready: boolean
   reason: string
   igUserId: string | null
-  username: string | null
-  accountType: string | null
+  quotaTotal: number | null
+  quotaUsage: number | null
 }> {
   const creds = igCreds()
   if (!creds.accessToken) {
     return {
       ready: false,
-      reason: 'not_configured: PCCF_META_LONG_LIVED_TOKEN 미설정',
+      reason: 'not_configured: PCCF_META_IG_PUBLISH_TOKEN 미설정',
       igUserId: creds.igUserId || null,
-      username: null,
-      accountType: null,
+      quotaTotal: null,
+      quotaUsage: null,
     }
   }
   try {
-    const me = await graphGet(creds.igUserId, creds, 'id,username,account_type')
-    const accountType = (me.account_type as string) || null
-    const username = (me.username as string) || null
-    // BUSINESS / MEDIA_CREATOR 만 content publishing 가능.
-    const ok = accountType === 'BUSINESS' || accountType === 'MEDIA_CREATOR'
+    const limit = await graphGet(
+      `${creds.igUserId}/content_publishing_limit`,
+      creds,
+      'quota_usage,config'
+    )
+    const row = Array.isArray(limit.data) ? limit.data[0] : limit
+    const quotaUsage = Number((row as Record<string, unknown>)?.quota_usage ?? 0)
+    const config = (row as { config?: { quota_total?: number } })?.config
+    const quotaTotal = Number(config?.quota_total ?? 0) || null
     return {
-      ready: ok,
-      reason: ok
-        ? `ready: @${username} (${accountType})`
-        : `not_ready: account_type=${accountType ?? 'unknown'} — BM에 IG 비즈니스 계정 연결 필요(PBIA는 organic 불가)`,
+      ready: true,
+      reason: `ready: content_publishing_limit 응답 OK (사용 ${quotaUsage}/${quotaTotal ?? '?'} 일일)`,
       igUserId: creds.igUserId,
-      username,
-      accountType,
+      quotaTotal,
+      quotaUsage,
     }
   } catch (e) {
     return {
       ready: false,
-      reason: `not_ready: ${e instanceof Error ? e.message : '조회 실패'} — IG가 BM 자산으로 연결되지 않았을 수 있음`,
+      reason: `not_ready: ${e instanceof Error ? e.message : '조회 실패'} — IG가 Content Publishing 대상으로 연결되지 않았거나 토큰 권한 부족`,
       igUserId: creds.igUserId,
-      username: null,
-      accountType: null,
+      quotaTotal: null,
+      quotaUsage: null,
     }
   }
 }
