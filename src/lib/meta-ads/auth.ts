@@ -147,11 +147,15 @@ export async function metaFetch<T = unknown>(
 ): Promise<T> {
   const { method = 'GET', params = {}, body, dryRun = false } = options
   const token = getAccessToken()
-  const proof = buildAppsecretProof(token)
 
   const url = new URL(`${META_API_BASE}${endpoint}`)
   url.searchParams.set('access_token', token)
-  url.searchParams.set('appsecret_proof', proof)
+  // appsecret_proof는 APP_SECRET이 설정된 경우에만 전송한다 (OMO-3737).
+  // allpack-ai 시스템유저 앱은 proof를 요구하지 않으며, 앱 시크릿이 없을 때
+  // 다른 앱 시크릿으로 잘못된 proof를 보내면 Meta가 거절하므로 생략한다.
+  if (APP_SECRET) {
+    url.searchParams.set('appsecret_proof', buildAppsecretProof(token))
+  }
 
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, String(v))
