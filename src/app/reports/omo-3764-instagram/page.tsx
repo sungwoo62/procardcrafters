@@ -104,13 +104,13 @@ export default function Omo3764InstagramReport() {
           </p>
         </header>
 
-        {/* 실사 이미지 업그레이드 안내 */}
+        {/* 실사 이미지 적용 안내 */}
         <section className="mb-8 rounded-xl border border-pink-200 bg-pink-50 p-5">
-          <p className="text-sm font-semibold text-pink-700 mb-1">📸 실사 포토(트렌디·힙) 업그레이드 진행 중</p>
+          <p className="text-sm font-semibold text-pink-700 mb-1">📸 실사 제품사진(트렌디·힙) 생성·적용 완료</p>
           <p className="text-sm text-gray-700 leading-relaxed">
-            현재 카드의 비주얼은 <strong>임시 브랜드 그래픽</strong>입니다. 보드 요청대로 <strong>막 예쁘게 촬영한 실사 느낌 + 감각적 배경 + 트렌디·힙</strong> 제품사진으로
-            60장 전부 교체할 준비가 끝났습니다 — 각 카드의 <strong>「실사 촬영 디렉션」</strong>이 실제 생성 프롬프트입니다.
-            이미지 생성에는 외부 이미지생성 API 키가 필요합니다(Claude는 이미지 생성 불가). <strong>키 제공 즉시 60장이 자동 생성</strong>되어 이 페이지에 반영됩니다.
+            보드 요청대로 <strong>막 예쁘게 촬영한 실사 느낌 + 감각적 배경 + 트렌디·힙</strong> 제품사진을 <strong>Mac-Studio ChatGPT(GPT)로 직접 생성해 60장 전부 적용</strong>했습니다.
+            전부 1080×1080 포토리얼, 텍스트·로고·워터마크 없음. 각 카드의 <strong>「실사 촬영 디렉션」</strong>이 실제 생성 프롬프트입니다.
+            실제 IG 발행 시 그대로 사용하거나 실제 촬영본으로 교체할 수 있습니다.
           </p>
         </section>
 
