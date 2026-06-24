@@ -795,11 +795,11 @@ export default function EditorClient({ product, options }: Props) {
         window.location.href = `/order?product=${product.slug}&fileId=${data.fileId}&finish=${finish}${optStr ? '&' + optStr : ''}`
       } else {
         setMobileUploading(false)
-        setMobileUploadError(data.error || '업로드에 실패했습니다. 다시 시도해 주세요.')
+        setMobileUploadError(data.error || 'Upload failed. Please try again.')
       }
     } catch {
       setMobileUploading(false)
-      setMobileUploadError('오류가 발생했습니다. 다시 시도해 주세요.')
+      setMobileUploadError('Something went wrong. Please try again.')
     }
   }
 
@@ -3641,9 +3641,9 @@ export default function EditorClient({ product, options }: Props) {
       canvas.requestRenderAll()
       syncLayers(canvas)
       saveHistory(canvas)
-      showUploadToast('배경을 제거했습니다.')
+      showUploadToast('Background removed.')
     } catch {
-      showUploadToast('배경 제거에 실패했습니다. 다시 시도해 주세요.')
+      showUploadToast('Failed to remove the background. Please try again.')
     } finally {
       setBgRemoving(false)
     }
@@ -4776,16 +4776,16 @@ export default function EditorClient({ product, options }: Props) {
           <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-50">
             <Monitor className="h-8 w-8 text-indigo-600" />
           </div>
-          <h2 className="mt-5 text-xl font-bold text-gray-900">에디터는 데스크톱에서 가장 잘 작동합니다</h2>
+          <h2 className="mt-5 text-xl font-bold text-gray-900">The editor works best on a desktop</h2>
           <p className="mt-2 max-w-sm text-sm leading-relaxed text-gray-500">
-            정밀한 디자인 도구가 많아 모바일 화면에는 최적화되어 있지 않습니다.
-            컴퓨터에서 접속하시면 디자인 에디터를 온전히 사용하실 수 있어요.
+            It has precise design tools that aren't optimized for mobile screens.
+            Open it on a computer to use the full design editor.
           </p>
 
           <div className="mt-8 w-full max-w-sm rounded-2xl border border-gray-200 bg-gray-50 p-5 text-left">
-            <p className="text-sm font-semibold text-gray-800">이미 인쇄용 파일이 있으신가요?</p>
+            <p className="text-sm font-semibold text-gray-800">Already have a print-ready file?</p>
             <p className="mt-1 text-xs leading-relaxed text-gray-500">
-              완성된 디자인 파일(PDF·AI·PNG·JPG 등)을 바로 업로드하고 주문을 시작하세요.
+              Upload your finished design file (PDF, AI, PNG, JPG, etc.) and start your order right away.
             </p>
             <button
               onClick={() => mobileFileInputRef.current?.click()}
@@ -4793,9 +4793,9 @@ export default function EditorClient({ product, options }: Props) {
               className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {mobileUploading ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> 업로드 중...</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> Uploading...</>
               ) : (
-                <><Upload className="h-4 w-4" /> 파일 업로드 후 주문하기</>
+                <><Upload className="h-4 w-4" /> Upload file & order</>
               )}
             </button>
             {mobileUploadError && (
@@ -4807,7 +4807,7 @@ export default function EditorClient({ product, options }: Props) {
             href={`/products/${product.slug}`}
             className="mt-6 inline-flex items-center gap-1.5 text-sm font-medium text-gray-500 hover:text-gray-700"
           >
-            <ArrowLeft className="h-4 w-4" /> 제품 페이지로 돌아가기
+            <ArrowLeft className="h-4 w-4" /> Back to product page
           </Link>
         </div>
       )}
@@ -5112,17 +5112,17 @@ export default function EditorClient({ product, options }: Props) {
           {selectedProps && (
             <div className="absolute top-3 left-1/2 -translate-x-1/2 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1.5 py-1">
               <span className="text-[10px] text-gray-400 px-1.5 font-medium">Align</span>
-              <button onClick={() => alignToArtboard('left')} title="좌측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignLeft className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('centerH')} title="가로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignCenter className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('right')} title="우측 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignRight className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('left')} title="Align left" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignLeft className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerH')} title="Center horizontally" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('right')} title="Align right" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignRight className="w-4 h-4" /></button>
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
-              <button onClick={() => alignToArtboard('top')} title="상단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyStart className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('centerV')} title="세로 중앙" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
-              <button onClick={() => alignToArtboard('bottom')} title="하단 정렬" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('top')} title="Align top" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyStart className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('centerV')} title="Center vertically" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyCenter className="w-4 h-4" /></button>
+              <button onClick={() => alignToArtboard('bottom')} title="Align bottom" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><AlignVerticalJustifyEnd className="w-4 h-4" /></button>
               <span className="w-px h-4 bg-gray-200 mx-0.5" />
-              <button onClick={groupSelected} title="그룹 (Ctrl+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Group className="w-4 h-4" /></button>
-              <button onClick={ungroupSelected} title="그룹해제 (Ctrl+Shift+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Ungroup className="w-4 h-4" /></button>
-              <button onClick={duplicateActive} title="복제 (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
+              <button onClick={groupSelected} title="Group (Ctrl+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Group className="w-4 h-4" /></button>
+              <button onClick={ungroupSelected} title="Ungroup (Ctrl+Shift+G)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Ungroup className="w-4 h-4" /></button>
+              <button onClick={duplicateActive} title="Duplicate (Ctrl+D)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Copy className="w-4 h-4" /></button>
             </div>
           )}
 
@@ -5149,17 +5149,17 @@ export default function EditorClient({ product, options }: Props) {
 
           {/* 줌 컨트롤 (하단 좌측) */}
           <div className="absolute bottom-3 left-3 z-10 flex items-center gap-0.5 bg-white rounded-lg shadow-md border border-gray-200 px-1 py-1">
-            <button onClick={zoomOut} title="축소 (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
-            <button onClick={resetView} title="100% / 맞춤 (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
-            <button onClick={zoomIn} title="확대 (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
+            <button onClick={zoomOut} title="Zoom out (Ctrl+-)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomOut className="w-4 h-4" /></button>
+            <button onClick={resetView} title="100% / Fit (Ctrl+0)" className="min-w-[3rem] h-7 px-1 text-xs font-medium text-gray-600 hover:bg-gray-100 rounded">{Math.round(zoom * 100)}%</button>
+            <button onClick={zoomIn} title="Zoom in (Ctrl++)" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><ZoomIn className="w-4 h-4" /></button>
             <span className="w-px h-4 bg-gray-200 mx-0.5" />
-            <button onClick={resetView} title="화면 맞춤" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
-            <button onClick={toggleGrid} title="그리드 (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
+            <button onClick={resetView} title="Fit to screen" className="w-7 h-7 flex items-center justify-center rounded text-gray-500 hover:bg-gray-100 hover:text-gray-800"><Maximize2 className="w-4 h-4" /></button>
+            <button onClick={toggleGrid} title="Grid (5mm)" className={`w-7 h-7 flex items-center justify-center rounded hover:bg-gray-100 ${showGrid ? 'text-indigo-600 bg-indigo-50' : 'text-gray-500 hover:text-gray-800'}`}><Grid3x3 className="w-4 h-4" /></button>
           </div>
 
           {/* 팬 힌트 */}
           <div className="absolute bottom-3 right-3 z-10 text-[10px] text-gray-400 bg-white/70 rounded px-2 py-1 pointer-events-none">
-            Space+드래그로 이동 · 휠로 확대/축소
+            Space+drag to pan · Scroll to zoom
           </div>
         </div>
 
@@ -5967,7 +5967,7 @@ export default function EditorClient({ product, options }: Props) {
                         {bgRemoving ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3" />}
                         {bgRemoving ? 'Removing…' : 'Remove Background (AI)'}
                       </button>
-                      <p className="text-[10px] text-gray-400 mt-1">첫 실행 시 AI 모델 다운로드(수 초~수십 초)</p>
+                      <p className="text-[10px] text-gray-400 mt-1">First run downloads the AI model (a few to tens of seconds)</p>
                     </div>
                   )}
 
