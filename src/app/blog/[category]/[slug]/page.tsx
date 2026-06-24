@@ -3,6 +3,7 @@ import { notFound, permanentRedirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getPostBySlug, getCategoryBySlug, getRelatedPosts, getCategories } from '@/lib/blog'
+import { BLOG_PUBLIC } from '@/lib/blog-gate'
 import BlogMarkdown from '@/components/BlogMarkdown'
 import JsonLd from '@/components/JsonLd'
 
@@ -57,6 +58,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BlogArticlePage({ params }: Props) {
+  // OMO-3813: 한글 블로그 콘텐츠는 영문화·승인 전까지 비공개(404).
+  if (!BLOG_PUBLIC) notFound()
   const { category, slug } = await params
   const post = await getPostBySlug(slug)
   if (!post) notFound()
