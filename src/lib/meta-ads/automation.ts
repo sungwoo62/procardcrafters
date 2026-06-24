@@ -2,15 +2,23 @@
  * 자동화 함수 4종 (KR fanout 대비 — OMO-2373 사장님 약속)
  * initAdService / createAdAccount / setupSystemUser / addPixelDomain
  */
-import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity } from './auth'
-import { lockCampaignForLearning, enforceMaxDailyBudget, DAILY_BUDGET_CENTS } from './guardrails'
+import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity, getPixelId } from './auth'
+import { lockCampaignForLearning, enforceMaxDailyBudget, DAILY_BUDGET_MINOR } from './guardrails'
+import {
+  buildCampaignPayload,
+  buildAdsetPayload,
+  buildCreativePayload,
+  buildAdPayload,
+  withProcardPrefix,
+} from './policy'
 
 export interface AdServiceStatus {
   appId: string
   adAccountId: string
   systemUserId: string
   tokenType: string
-  spendCapCents: number
+  /** 계정 spend_cap(계정 통화 최소단위). 공용 계정이라 읽기 전용 — 변경하지 않는다. */
+  spendCapMinor: number
   timezoneId: number
 }
 
@@ -26,7 +34,7 @@ export async function initAdService(dryRun = false): Promise<AdServiceStatus> {
       adAccountId,
       systemUserId: 'dry-run',
       tokenType: 'SYSTEM_USER',
-      spendCapCents: 60000,
+      spendCapMinor: 0,
       timezoneId: 7,
     }
   }
@@ -38,19 +46,23 @@ export async function initAdService(dryRun = false): Promise<AdServiceStatus> {
     }),
   ])
 
-  // 토큰 타입 확인
-  const debugData = await metaFetch<{
-    data: { type: string; app_id: string; expires_at: number }
-  }>('/debug_token', {
-    params: { input_token: token, access_token: `${appId}|${process.env.PCCF_META_APP_SECRET}` },
-  })
+  // 토큰 타입 확인 (APP_SECRET 미설정이면 app-token이 없어 debug_token 생략)
+  let tokenType = 'UNKNOWN'
+  if (process.env.PCCF_META_APP_SECRET) {
+    const debugData = await metaFetch<{
+      data: { type: string; app_id: string; expires_at: number }
+    }>('/debug_token', {
+      params: { input_token: token, access_token: `${appId}|${process.env.PCCF_META_APP_SECRET}` },
+    })
+    tokenType = debugData.data.type
+  }
 
   return {
     appId,
     adAccountId,
     systemUserId: meData.id,
-    tokenType: debugData.data.type,
-    spendCapCents: parseInt(accountData.spend_cap ?? '0', 10),
+    tokenType,
+    spendCapMinor: parseInt(accountData.spend_cap ?? '0', 10),
     timezoneId: accountData.timezone_id,
   }
 }
@@ -147,7 +159,9 @@ export async function addPixelDomain(params: {
 export interface CreateCampaignResult {
   campaignId: string
   adsetId: string
-  dailyBudgetCents: number
+  campaignName: string
+  /** KRW 최소단위(원). KRW는 offset 0이라 원 단위 그대로. */
+  dailyBudgetMinor: number
   lockedUntil: Date
 }
 
@@ -156,22 +170,24 @@ export async function createCampaignWithGuardrails(params: {
   objective: string
   targeting: Record<string, unknown>
   creativeName: string
+  /** 미지정 시 PCCF_META_PIXEL_ID 사용. 전환 최적화 시 promoted_object로 분리 적용 */
+  pixelId?: string | null
+  optimizationGoal?: string
   dryRun?: boolean
 }): Promise<CreateCampaignResult> {
   const accountId = getAdAccountId()
   const dryRun = params.dryRun ?? false
 
-  // 가드레일 A: 일일 예산 $20 강제
-  const dailyBudgetCents = enforceMaxDailyBudget(DAILY_BUDGET_CENTS)
+  // 가드레일 A: 일일 예산 KRW 캡 강제 (₩30,000)
+  const dailyBudgetMinor = enforceMaxDailyBudget(DAILY_BUDGET_MINOR)
+  // 픽셀 분리: 명시 없으면 procard 전용 픽셀(env) 사용. 뉴트라 픽셀은 빌더에서 차단.
+  const pixelId = params.pixelId ?? getPixelId()
+  // 네이밍 분리: PROCARD 프리픽스 강제
+  const campaignName = withProcardPrefix(params.name)
 
   const campaignData = await metaFetch<{ id: string }>(`/${accountId}/campaigns`, {
     method: 'POST',
-    body: {
-      name: params.name,
-      objective: params.objective,
-      status: 'PAUSED', // Q3=B: 자동 제출 후 사장님 1클릭 활성
-      special_ad_categories: [],
-    },
+    body: buildCampaignPayload(params.name, params.objective),
     dryRun,
   })
 
@@ -179,26 +195,23 @@ export async function createCampaignWithGuardrails(params: {
 
   const adsetData = await metaFetch<{ id: string }>(`/${accountId}/adsets`, {
     method: 'POST',
-    body: {
-      name: `${params.name} — AdSet`,
-      campaign_id: campaignId,
-      billing_event: 'IMPRESSIONS',
-      optimization_goal: 'OFFSITE_CONVERSIONS',
-      // 주의: daily_budget 단위를 반드시 dry-run으로 재검증
-      // CEO 검증 결과: spend_cap 입력=dollars 가능성 있음 → cents로 통일
-      daily_budget: dailyBudgetCents,
+    body: buildAdsetPayload({
+      name: params.name,
+      campaignId,
       targeting: params.targeting,
-      status: 'PAUSED',
-    },
+      dailyBudgetMinor,
+      optimizationGoal: params.optimizationGoal,
+      pixelId,
+    }),
     dryRun,
   })
 
   const adsetId = dryRun ? `dry_adset_${Date.now()}` : adsetData.id
 
   // 가드레일 C: 7일 학습락 설정
-  const { lockedUntil } = await lockCampaignForLearning(campaignId, params.name, dryRun)
+  const { lockedUntil } = await lockCampaignForLearning(campaignId, campaignName, dryRun)
 
-  return { campaignId, adsetId, dailyBudgetCents, lockedUntil }
+  return { campaignId, adsetId, campaignName, dailyBudgetMinor, lockedUntil }
 }
 
 // ─── 광고 소재 + 광고 생성 (페이지/인스타 신원 적용 · OMO-3737) ───────────────
@@ -222,17 +235,13 @@ export async function createAdWithIdentity(params: {
 }): Promise<CreateAdResult> {
   const accountId = getAdAccountId()
   const dryRun = params.dryRun ?? false
+  // 신원 분리: page_id=procard 페이지 + instagram_actor_id=@procardcrafters.
+  // 빌더가 page_id 필수 + IG actor가 procard와 일치하는지 검증(뉴트라 신원 차단).
   const identity = getAdIdentity()
 
   const creativeData = await metaFetch<{ id: string }>(`/${accountId}/adcreatives`, {
     method: 'POST',
-    body: {
-      name: `${params.name} — Creative`,
-      object_story_spec: {
-        ...identity,
-        link_data: params.linkData,
-      },
-    },
+    body: buildCreativePayload(params.name, identity, params.linkData),
     dryRun,
   })
 
@@ -240,12 +249,7 @@ export async function createAdWithIdentity(params: {
 
   const adData = await metaFetch<{ id: string }>(`/${accountId}/ads`, {
     method: 'POST',
-    body: {
-      name: params.name,
-      adset_id: params.adsetId,
-      creative: { creative_id: creativeId },
-      status: 'PAUSED', // Q3=B: 자동 제출 후 사장님 1클릭 활성
-    },
+    body: buildAdPayload(params.name, params.adsetId, creativeId),
     dryRun,
   })
 
