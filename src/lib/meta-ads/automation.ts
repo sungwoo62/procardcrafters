@@ -4,6 +4,7 @@
  */
 import { metaFetch, getAdAccountId, getAppId, getAccessToken, getBusinessId, getAdIdentity } from './auth'
 import { lockCampaignForLearning, enforceMaxDailyBudget, DAILY_BUDGET_CENTS } from './guardrails'
+import { getAdTargetingDefaults } from './targeting'
 
 export interface AdServiceStatus {
   appId: string
@@ -154,12 +155,17 @@ export interface CreateCampaignResult {
 export async function createCampaignWithGuardrails(params: {
   name: string
   objective: string
-  targeting: Record<string, unknown>
+  /**
+   * 광고세트 위치/타겟팅 스펙. 미지정 시 광역 기본값(US, getAdTargetingDefaults).
+   * 로컬 반경 타겟은 buildLocalRadiusTargeting()/resolveCampaignTargeting() 결과를 주입한다(OMO-3769).
+   */
+  targeting?: Record<string, unknown>
   creativeName: string
   dryRun?: boolean
 }): Promise<CreateCampaignResult> {
   const accountId = getAdAccountId()
   const dryRun = params.dryRun ?? false
+  const targeting = params.targeting ?? getAdTargetingDefaults()
 
   // 가드레일 A: 일일 예산 $20 강제
   const dailyBudgetCents = enforceMaxDailyBudget(DAILY_BUDGET_CENTS)
@@ -187,7 +193,7 @@ export async function createCampaignWithGuardrails(params: {
       // 주의: daily_budget 단위를 반드시 dry-run으로 재검증
       // CEO 검증 결과: spend_cap 입력=dollars 가능성 있음 → cents로 통일
       daily_budget: dailyBudgetCents,
-      targeting: params.targeting,
+      targeting,
       status: 'PAUSED',
     },
     dryRun,
