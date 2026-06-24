@@ -15,7 +15,7 @@ interface Props {
 
 type Step = 'form' | 'uploading' | 'submitting' | 'success' | 'error'
 
-const STAR_LABELS = ['', '별로예요', '아쉬워요', '보통이에요', '좋아요', '최고예요']
+const STAR_LABELS = ['', 'Poor', 'Fair', 'Okay', 'Good', 'Excellent']
 
 export default function ReviewWriteModal({ orderId, productId, productName, defaultName, onClose, onSuccess }: Props) {
   const [rating, setRating] = useState(0)
@@ -53,8 +53,8 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
     e.preventDefault()
     setError('')
 
-    if (!rating) { setError('별점을 선택해주세요.'); return }
-    if (bodyLen < 10 || bodyLen > 5000) { setError('리뷰 본문은 10~5000자 사이여야 합니다.'); return }
+    if (!rating) { setError('Please select a rating.'); return }
+    if (bodyLen < 10 || bodyLen > 5000) { setError('Your review must be between 10 and 5,000 characters.'); return }
 
     let photoUrls: string[] = []
 
@@ -65,7 +65,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
 
       if (!user) {
         setStep('error')
-        setError('로그인이 필요합니다.')
+        setError('You must be signed in.')
         return
       }
 
@@ -83,7 +83,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
 
       if (results.some(r => r.status === 'rejected')) {
         setStep('error')
-        setError('사진 업로드 중 오류가 발생했습니다. 다시 시도해주세요.')
+        setError('Something went wrong while uploading your photos. Please try again.')
         return
       }
 
@@ -109,18 +109,18 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
       if (!res.ok) {
         setStep('error')
         if (res.status === 409) {
-          setError('이미 해당 상품에 리뷰를 작성하셨습니다.')
+          setError('You have already reviewed this product.')
         } else if (res.status === 401) {
-          setError('로그인 후 이용해주세요.')
+          setError('Please sign in to continue.')
         } else {
-          setError(data.error ?? '리뷰 제출에 실패했습니다.')
+          setError(data.error ?? 'Failed to submit your review.')
         }
         return
       }
       setStep('success')
     } catch {
       setStep('error')
-      setError('네트워크 오류가 발생했습니다. 다시 시도해주세요.')
+      setError('A network error occurred. Please try again.')
     }
   }
 
@@ -133,7 +133,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
           <div>
-            <h2 className="text-base font-bold text-gray-900">리뷰 작성</h2>
+            <h2 className="text-base font-bold text-gray-900">Write a Review</h2>
             <p className="text-xs text-gray-400 mt-0.5 truncate max-w-[320px]">{productName}</p>
           </div>
           <button
@@ -150,16 +150,16 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
             <div className="w-14 h-14 bg-green-100 rounded-full flex items-center justify-center mb-4">
               <CheckCircle className="w-7 h-7 text-green-600" />
             </div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">리뷰가 접수되었습니다!</h3>
+            <h3 className="text-lg font-bold text-gray-900 mb-2">Your review has been submitted!</h3>
             <p className="text-sm text-gray-500 leading-relaxed">
-              1-2 영업일 내 검토 후 게시됩니다.<br />
-              게시 완료 시 <span className="font-semibold text-blue-600">$2 할인 쿠폰</span>이 자동 발급됩니다.
+              It will be published after review within 1-2 business days.<br />
+              Once published, a <span className="font-semibold text-blue-600">$2 discount coupon</span> will be issued automatically.
             </p>
             <button
               onClick={() => { onSuccess(); onClose() }}
               className="mt-6 px-6 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition-colors"
             >
-              확인
+              Done
             </button>
           </div>
         ) : (
@@ -168,7 +168,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
               {/* Star Rating */}
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-2">
-                  별점 <span className="text-red-500">*</span>
+                  Rating <span className="text-red-500">*</span>
                 </p>
                 <div className="flex items-center gap-1">
                   {[1, 2, 3, 4, 5].map(n => (
@@ -179,7 +179,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
                       onMouseLeave={() => setHoverRating(0)}
                       onClick={() => setRating(n)}
                       className="transition-transform hover:scale-110 active:scale-95"
-                      aria-label={`${n}점`}
+                      aria-label={`${n} star${n > 1 ? 's' : ''}`}
                     >
                       <Star
                         className="w-8 h-8"
@@ -200,14 +200,14 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
               {/* Title */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1.5">
-                  제목 <span className="text-gray-400 text-xs font-normal">(선택)</span>
+                  Title <span className="text-gray-400 text-xs font-normal">(optional)</span>
                 </label>
                 <input
                   type="text"
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   maxLength={100}
-                  placeholder="리뷰 제목을 입력하세요"
+                  placeholder="Enter a review title"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
                 />
               </div>
@@ -215,25 +215,25 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
               {/* Body */}
               <div>
                 <label className="text-sm font-semibold text-gray-700 block mb-1.5">
-                  리뷰 내용 <span className="text-red-500">*</span>
+                  Review <span className="text-red-500">*</span>
                 </label>
                 <textarea
                   value={body}
                   onChange={e => setBody(e.target.value)}
                   rows={5}
                   maxLength={5000}
-                  placeholder="제품 품질, 인쇄 결과, 배송에 대한 솔직한 리뷰를 작성해주세요. (최소 10자)"
+                  placeholder="Share your honest thoughts on product quality, print results, and shipping. (min. 10 characters)"
                   className="w-full border border-gray-200 rounded-lg px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all resize-none"
                 />
                 <p className={`text-xs mt-1 text-right ${bodyLen > 0 && bodyLen < 10 ? 'text-red-500' : 'text-gray-400'}`}>
-                  {bodyLen.toLocaleString()} / 5,000자
+                  {bodyLen.toLocaleString()} / 5,000
                 </p>
               </div>
 
               {/* Photo Upload */}
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-1.5">
-                  사진 첨부 <span className="text-gray-400 text-xs font-normal">(최대 5장, 선택)</span>
+                  Add Photos <span className="text-gray-400 text-xs font-normal">(up to 5, optional)</span>
                 </p>
                 <div className="flex flex-wrap gap-2">
                   {photoPreviews.map((src, i) => (
@@ -244,7 +244,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
                         type="button"
                         onClick={() => removePhoto(i)}
                         className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity"
-                        aria-label="사진 삭제"
+                        aria-label="Remove photo"
                       >
                         <Trash2 className="w-4 h-4 text-white" />
                       </button>
@@ -257,7 +257,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
                       className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-blue-400 hover:text-blue-500 hover:bg-blue-50 transition-colors"
                     >
                       <Upload className="w-4 h-4" />
-                      <span className="text-[10px] mt-0.5">추가</span>
+                      <span className="text-[10px] mt-0.5">Add</span>
                     </button>
                   )}
                 </div>
@@ -273,7 +273,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
 
               {/* Name Display */}
               <div>
-                <p className="text-sm font-semibold text-gray-700 mb-2">이름 표시</p>
+                <p className="text-sm font-semibold text-gray-700 mb-2">Display Name</p>
                 <div className="flex gap-4">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input
@@ -291,7 +291,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
                       onChange={() => setUseAnonymous(true)}
                       className="accent-blue-600"
                     />
-                    <span className="text-sm text-gray-700">익명</span>
+                    <span className="text-sm text-gray-700">Anonymous</span>
                   </label>
                 </div>
               </div>
@@ -307,8 +307,8 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
               {/* Coupon notice */}
               <div className="bg-blue-50 rounded-xl py-3 px-4 text-center">
                 <p className="text-xs text-gray-500">
-                  리뷰 게시 후 <span className="font-semibold text-blue-600">$2 할인 쿠폰</span>이 자동 발급됩니다
-                  <span className="text-gray-400"> (1-2 영업일 소요)</span>
+                  Once your review is published, a <span className="font-semibold text-blue-600">$2 discount coupon</span> is issued automatically
+                  <span className="text-gray-400"> (takes 1-2 business days)</span>
                 </p>
               </div>
             </div>
@@ -320,7 +320,7 @@ export default function ReviewWriteModal({ orderId, productId, productName, defa
                 disabled={step === 'uploading' || step === 'submitting'}
                 className="w-full py-3 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 active:bg-blue-800 disabled:opacity-50 transition-colors"
               >
-                {step === 'uploading' ? '사진 업로드 중…' : step === 'submitting' ? '제출 중…' : '리뷰 제출하기'}
+                {step === 'uploading' ? 'Uploading photos…' : step === 'submitting' ? 'Submitting…' : 'Submit Review'}
               </button>
             </div>
           </form>

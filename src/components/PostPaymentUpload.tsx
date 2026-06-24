@@ -73,7 +73,7 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
     const body = await res.json().catch(() => ({}))
 
     if (!res.ok) {
-      setError(body.error ?? '업로드에 실패했습니다. 다시 시도해 주세요.')
+      setError(body.error ?? 'Upload failed. Please try again.')
       setPhase('idle')
       return
     }
@@ -100,7 +100,7 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
       setPhase('done')
     } else {
       const body = await res.json().catch(() => ({}))
-      setError(body.error ?? '동의 기록에 실패했습니다. 다시 시도해 주세요.')
+      setError(body.error ?? 'Failed to record your consent. Please try again.')
       setPhase('review')
     }
   }
@@ -108,7 +108,7 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
   if (loadingExisting) {
     return (
       <section className="rounded-2xl border border-gray-200 p-5 text-sm text-gray-400 flex items-center gap-2">
-        <Loader2 className="h-4 w-4 animate-spin" /> 업로드 상태 확인 중…
+        <Loader2 className="h-4 w-4 animate-spin" /> Checking upload status…
       </section>
     )
   }
@@ -118,9 +118,9 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
       <section className="rounded-2xl border border-green-200 bg-green-50 p-5 flex items-start gap-3">
         <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-green-600" />
         <div>
-          <p className="font-semibold text-green-800">인쇄 파일 접수 완료</p>
+          <p className="font-semibold text-green-800">Print files received</p>
           <p className="mt-1 text-sm text-green-700">
-            파일과 책임 고지 동의가 기록되었습니다. 담당자 검토 후 인쇄가 진행됩니다.
+            Your files and disclaimer consent have been recorded. We'll review them, then start printing.
           </p>
         </div>
       </section>
@@ -131,10 +131,10 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
     <section className="rounded-2xl border border-gray-200 p-5 space-y-4">
       <div>
         <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-          <UploadCloud className="h-5 w-5 text-blue-600" /> 인쇄 파일 업로드
+          <UploadCloud className="h-5 w-5 text-blue-600" /> Upload your print files
         </h2>
         <p className="mt-1 text-sm text-gray-500">
-          결제가 완료되었습니다. 인쇄에 사용할 파일을 업로드하면 규격을 자동 점검(프리플라이트)합니다.
+          Payment complete. Upload the files you want printed and we'll automatically check them against print specs (preflight).
         </p>
       </div>
 
@@ -155,12 +155,12 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
             className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60 transition-colors"
           >
             {phase === 'uploading' ? (
-              <><Loader2 className="h-4 w-4 animate-spin" />업로드·점검 중…</>
+              <><Loader2 className="h-4 w-4 animate-spin" />Uploading and checking…</>
             ) : (
-              <><UploadCloud className="h-4 w-4" />파일 선택</>
+              <><UploadCloud className="h-4 w-4" />Choose file</>
             )}
           </button>
-          <p className="mt-2 text-xs text-gray-400">PDF, AI, PSD, PNG, JPG, TIFF · 최대 200MB · 권장 300DPI / CMYK</p>
+          <p className="mt-2 text-xs text-gray-400">PDF, AI, PSD, PNG, JPG, TIFF · Up to 200MB · 300 DPI / CMYK recommended</p>
         </div>
       )}
 
@@ -168,7 +168,7 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
       {(phase === 'review' || phase === 'consenting') && preflight && (
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            업로드 파일: <span className="font-mono break-all">{fileName}</span>
+            Uploaded file: <span className="font-mono break-all">{fileName}</span>
           </p>
 
           {/* 전체 상태 배너 */}
@@ -186,8 +186,8 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
             )}
             <p className={`text-sm font-medium ${preflight.status === 'pass' ? 'text-green-800' : 'text-amber-800'}`}>
               {preflight.status === 'pass'
-                ? '규격 점검 통과 — 인쇄 규격에 부합합니다.'
-                : '규격 점검 경고 — 아래 항목을 확인해 주세요. 그대로 진행할 수도 있습니다.'}
+                ? 'Preflight passed — your file meets our print specs.'
+                : 'Preflight warning — please review the items below. You can still proceed as is.'}
             </p>
           </div>
 
@@ -214,10 +214,10 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
             <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 space-y-3">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4 text-gray-600" />
-                <h3 className="text-sm font-semibold text-gray-900">시안 확인 및 책임 고지</h3>
+                <h3 className="text-sm font-semibold text-gray-900">Proof review and disclaimer</h3>
                 {!consent.approved && (
                   <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium text-amber-700">
-                    법무 검토 중(잠정 문구)
+                    Under legal review (draft wording)
                   </span>
                 )}
               </div>
@@ -237,9 +237,9 @@ export default function PostPaymentUpload({ orderNumber }: Props) {
                 className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-50 transition-colors"
               >
                 {phase === 'consenting' ? (
-                  <><Loader2 className="h-4 w-4 animate-spin" />기록 중…</>
+                  <><Loader2 className="h-4 w-4 animate-spin" />Saving…</>
                 ) : (
-                  '동의하고 인쇄 진행'
+                  'Agree and start printing'
                 )}
               </button>
             </div>

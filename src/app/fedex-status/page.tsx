@@ -3,9 +3,11 @@ import path from 'node:path'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Clock, ExternalLink, Truck, FileText, Package, Download, ShieldCheck } from 'lucide-react'
 
+// 내부 진단 대시보드(고객 네비 미연결). 검색 노출 차단. (OMO-3810)
 export const metadata = {
   title: 'FedEx 통합 상태 — OMO-2365',
   description: '한국출 FedEx 배송 시스템 진행 현황 + 샌드박스 라이브 검증 결과',
+  robots: { index: false, follow: false },
 }
 
 type Captured = {

@@ -37,10 +37,10 @@ export interface ReviewPagination {
 type SortKey = 'newest' | 'helpful' | 'highest' | 'lowest'
 
 const SORT_LABELS: Record<SortKey, string> = {
-  newest: '최신순',
-  helpful: '도움됨순',
-  highest: '별점 높은순',
-  lowest: '별점 낮은순',
+  newest: 'Newest',
+  helpful: 'Most helpful',
+  highest: 'Highest rated',
+  lowest: 'Lowest rated',
 }
 
 const DISCLOSURE_COLORS: Record<string, string> = {
@@ -95,7 +95,7 @@ function PhotoLightbox({ photos, index, onClose, onPrev, onNext }: PhotoLightbox
       <button
         onClick={onClose}
         className="absolute top-4 right-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-        aria-label="닫기"
+        aria-label="Close"
       >
         <X className="w-6 h-6" />
       </button>
@@ -105,14 +105,14 @@ function PhotoLightbox({ photos, index, onClose, onPrev, onNext }: PhotoLightbox
           <button
             onClick={(e) => { e.stopPropagation(); onPrev() }}
             className="absolute left-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-            aria-label="이전"
+            aria-label="Previous"
           >
             <ChevronLeft className="w-8 h-8" />
           </button>
           <button
             onClick={(e) => { e.stopPropagation(); onNext() }}
             className="absolute right-4 z-10 p-2 text-white/70 hover:text-white transition-colors rounded-full hover:bg-white/10"
-            aria-label="다음"
+            aria-label="Next"
           >
             <ChevronRight className="w-8 h-8" />
           </button>
@@ -125,7 +125,7 @@ function PhotoLightbox({ photos, index, onClose, onPrev, onNext }: PhotoLightbox
       >
         <Image
           src={photos[index]}
-          alt={`리뷰 사진 ${index + 1}`}
+          alt={`Review photo ${index + 1}`}
           fill
           className="object-contain"
           sizes="(max-width: 768px) 100vw, 672px"
@@ -335,11 +335,11 @@ export default function ProductReviews({ slug, initialStats, initialReviews, ini
                         key={url}
                         onClick={() => openLightbox(photos, i)}
                         className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 shrink-0 hover:opacity-90 transition-opacity ring-1 ring-gray-200"
-                        aria-label={`사진 ${i + 1} 크게 보기`}
+                        aria-label={`View photo ${i + 1} larger`}
                       >
                         <Image
                           src={url}
-                          alt={`리뷰 사진 ${i + 1}`}
+                          alt={`Review photo ${i + 1}`}
                           fill
                           className="object-cover"
                           sizes="64px"
@@ -380,7 +380,7 @@ export default function ProductReviews({ slug, initialStats, initialReviews, ini
               disabled={pagination.page <= 1 || isPending}
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 disabled:opacity-40 hover:border-blue-300 transition-colors"
             >
-              ← 이전
+              ← Previous
             </button>
 
             {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
@@ -419,7 +419,7 @@ export default function ProductReviews({ slug, initialStats, initialReviews, ini
               disabled={pagination.page >= pagination.totalPages || isPending}
               className="px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-600 disabled:opacity-40 hover:border-blue-300 transition-colors"
             >
-              다음 →
+              Next →
             </button>
           </div>
         )}

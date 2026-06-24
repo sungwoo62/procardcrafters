@@ -36,7 +36,7 @@ export default function PrintTemplatePreview({
       viewBox={`0 0 ${fullW} ${fullH}`}
       className={className}
       role="img"
-      aria-label={`인쇄 템플릿 미리보기 ${spec.width_mm}×${spec.height_mm}mm`}
+      aria-label={`Print template preview ${spec.width_mm}×${spec.height_mm}mm`}
       preserveAspectRatio="xMidYMid meet"
     >
       {/* 용지(블리드 포함 영역) */}

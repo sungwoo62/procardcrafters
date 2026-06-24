@@ -32,12 +32,12 @@ interface Service {
 }
 
 const STATUS_LABELS: Record<Shipment['status'], string> = {
-  pending:       '대기',
-  label_created: '라벨 발급',
-  in_transit:    '배송 중',
-  delivered:     '배송 완료',
-  returned:      '반송',
-  cancelled:     '취소',
+  pending:       'Pending',
+  label_created: 'Label created',
+  in_transit:    'In transit',
+  delivered:     'Delivered',
+  returned:      'Returned',
+  cancelled:     'Cancelled',
 }
 
 const STATUS_COLORS: Record<Shipment['status'], string> = {
@@ -87,11 +87,11 @@ export function OrderShipments({ orderId }: { orderId: string }) {
     })
     const data = await res.json()
     setCreating(false)
-    if (!res.ok) { setMsg(`오류: ${data.error}`); return }
+    if (!res.ok) { setMsg(`Error: ${data.error}`); return }
     setMsg(
       data.quote?.isFallback
-        ? `송장 생성됨 (요율 fallback $${data.quote.baseCostUsd} + ${data.quote.markupPct}% = $${data.quote.costUsd})`
-        : `송장 생성됨 (Zone ${data.quote.zoneCode}, $${data.quote.baseCostUsd} + ${data.quote.markupPct}% = $${data.quote.costUsd})`,
+        ? `Shipment created (rate fallback $${data.quote.baseCostUsd} + ${data.quote.markupPct}% = $${data.quote.costUsd})`
+        : `Shipment created (Zone ${data.quote.zoneCode}, $${data.quote.baseCostUsd} + ${data.quote.markupPct}% = $${data.quote.costUsd})`,
     )
     load()
   }
@@ -101,23 +101,23 @@ export function OrderShipments({ orderId }: { orderId: string }) {
       <div className="flex items-center justify-between">
         <h2 className="text-base font-semibold text-gray-900 flex items-center gap-2">
           <Truck className="h-5 w-5" />
-          배송 / 송장 관리
+          Shipping / Labels
         </h2>
         <Link
           href={`/admin/orders/${orderId}/packing-slip`}
           target="_blank"
           className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50"
         >
-          <Printer className="h-3.5 w-3.5" /> 패킹슬립 인쇄
+          <Printer className="h-3.5 w-3.5" /> Print packing slip
         </Link>
       </div>
 
       {/* 새 송장 생성 */}
       <div className="rounded-lg border border-dashed border-gray-300 p-4 space-y-3">
-        <p className="text-xs font-semibold text-gray-700 uppercase">새 송장 생성</p>
+        <p className="text-xs font-semibold text-gray-700 uppercase">Create new shipment</p>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           <label className="block">
-            <span className="text-xs text-gray-600">무게 (kg)</span>
+            <span className="text-xs text-gray-600">Weight (kg)</span>
             <input
               type="number" step="0.001" min="0"
               value={weightKg}
@@ -126,7 +126,7 @@ export function OrderShipments({ orderId }: { orderId: string }) {
             />
           </label>
           <label className="block">
-            <span className="text-xs text-gray-600">서비스</span>
+            <span className="text-xs text-gray-600">Service</span>
             <select
               value={serviceCode}
               onChange={(e) => setServiceCode(e.target.value)}
@@ -138,7 +138,7 @@ export function OrderShipments({ orderId }: { orderId: string }) {
             </select>
           </label>
           <label className="block">
-            <span className="text-xs text-gray-600">캐리어</span>
+            <span className="text-xs text-gray-600">Carrier</span>
             <input
               value={carrier}
               onChange={(e) => setCarrier(e.target.value)}
@@ -152,7 +152,7 @@ export function OrderShipments({ orderId }: { orderId: string }) {
               className="w-full flex items-center justify-center gap-1.5 rounded-lg bg-gray-900 px-3 py-2 text-sm font-medium text-white disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
-              {creating ? '생성 중...' : '생성'}
+              {creating ? 'Creating...' : 'Create'}
             </button>
           </div>
         </div>
@@ -163,7 +163,7 @@ export function OrderShipments({ orderId }: { orderId: string }) {
       {loading ? (
         <p className="text-sm text-gray-500">Loading...</p>
       ) : shipments.length === 0 ? (
-        <p className="text-sm text-gray-400">아직 송장이 없습니다.</p>
+        <p className="text-sm text-gray-400">No shipments yet.</p>
       ) : (
         <div className="space-y-3">
           {shipments.map((sh) => (
@@ -197,7 +197,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
     })
     const data = await res.json()
     setSaving(false)
-    setMsg(res.ok ? '저장됨' : `오류: ${data.error}`)
+    setMsg(res.ok ? 'Saved' : `Error: ${data.error}`)
     if (res.ok) onChange()
   }
 
@@ -214,25 +214,25 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
           )}
           {shipment.charged_usd != null && (
             <span className="text-xs text-gray-700">
-              ${Number(shipment.charged_usd).toFixed(2)} <span className="text-gray-400">(원가 ${Number(shipment.cost_usd ?? 0).toFixed(2)})</span>
+              ${Number(shipment.charged_usd).toFixed(2)} <span className="text-gray-400">(cost ${Number(shipment.cost_usd ?? 0).toFixed(2)})</span>
             </span>
           )}
         </div>
-        <span className="text-xs text-gray-400">{new Date(shipment.created_at).toLocaleString('ko-KR')}</span>
+        <span className="text-xs text-gray-400">{new Date(shipment.created_at).toLocaleString('en-US')}</span>
       </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-4 mb-3">
         <label className="block sm:col-span-2">
-          <span className="text-xs text-gray-600">송장번호 (Tracking #)</span>
+          <span className="text-xs text-gray-600">Tracking #</span>
           <input
             value={tracking}
             onChange={(e) => setTracking(e.target.value)}
             className="w-full rounded-lg border-gray-200 text-sm font-mono"
-            placeholder="FedEx 송장번호 입력"
+            placeholder="Enter FedEx tracking #"
           />
         </label>
         <label className="block">
-          <span className="text-xs text-gray-600">무게 (kg)</span>
+          <span className="text-xs text-gray-600">Weight (kg)</span>
           <input
             type="number" step="0.001"
             value={weight}
@@ -241,7 +241,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
           />
         </label>
         <label className="block">
-          <span className="text-xs text-gray-600">메모</span>
+          <span className="text-xs text-gray-600">Notes</span>
           <input
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
@@ -256,7 +256,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
           disabled={saving}
           className="flex items-center gap-1.5 rounded-lg border border-gray-200 px-3 py-1.5 text-xs font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
         >
-          <Save className="h-3.5 w-3.5" /> 저장
+          <Save className="h-3.5 w-3.5" /> Save
         </button>
         {shipment.status === 'pending' && shipment.carrier === 'fedex' && (
           <CreateLabelButton
@@ -271,7 +271,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
             target="_blank"
             className="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 hover:bg-blue-100"
           >
-            <Tag className="h-3.5 w-3.5" /> 라벨 PDF
+            <Tag className="h-3.5 w-3.5" /> Label PDF
           </a>
         )}
         {shipment.invoice_storage_path && (
@@ -279,7 +279,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
             href={`/api/admin/shipping/documents?path=${encodeURIComponent(shipment.invoice_storage_path)}`}
             target="_blank"
             className="flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100"
-            title="FedEx 자동 생성 Commercial Invoice (ETD 통관 신속 처리)"
+            title="FedEx auto-generated Commercial Invoice (ETD expedited customs clearance)"
           >
             <FileText className="h-3.5 w-3.5" /> Invoice PDF
           </a>
@@ -288,10 +288,10 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
           <button
             onClick={() => patch({ status: 'in_transit' })}
             disabled={saving || !tracking}
-            title={!tracking ? '송장번호를 먼저 입력하세요' : ''}
+            title={!tracking ? 'Enter a tracking number first' : ''}
             className="flex items-center gap-1.5 rounded-lg bg-purple-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
           >
-            <Send className="h-3.5 w-3.5" /> 발송 처리
+            <Send className="h-3.5 w-3.5" /> Mark as shipped
           </button>
         )}
         {shipment.status === 'in_transit' && (
@@ -300,7 +300,7 @@ function ShipmentRow({ orderId, shipment, onChange }: { orderId: string; shipmen
             disabled={saving}
             className="flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
           >
-            <CheckCircle2 className="h-3.5 w-3.5" /> 도착 처리
+            <CheckCircle2 className="h-3.5 w-3.5" /> Mark as delivered
           </button>
         )}
         {msg && <span className="text-xs text-gray-600 ml-1">{msg}</span>}
@@ -314,13 +314,13 @@ function CreateLabelButton({ orderId, shipmentId, onDone }: { orderId: string; s
   const [err, setErr] = useState('')
 
   const onClick = async () => {
-    if (!confirm('FedEx Ship API 를 호출해서 실제 라벨 + Commercial Invoice 를 생성합니다. 계속할까요?')) return
+    if (!confirm('This will call the FedEx Ship API to generate a real label + Commercial Invoice. Continue?')) return
     setBusy(true); setErr('')
     const res = await fetch(`/api/admin/orders/${orderId}/shipments/${shipmentId}/create-label`, { method: 'POST' })
     const data = await res.json()
     setBusy(false)
     if (!res.ok) {
-      setErr(data.error ?? '라벨 생성 실패')
+      setErr(data.error ?? 'Label creation failed')
       return
     }
     onDone()
@@ -333,7 +333,7 @@ function CreateLabelButton({ orderId, shipmentId, onDone }: { orderId: string; s
         disabled={busy}
         className="flex items-center gap-1.5 rounded-lg bg-orange-600 px-3 py-1.5 text-xs font-medium text-white disabled:opacity-50"
       >
-        <Tag className="h-3.5 w-3.5" /> {busy ? '생성 중...' : 'FedEx 라벨 생성'}
+        <Tag className="h-3.5 w-3.5" /> {busy ? 'Creating...' : 'Create FedEx label'}
       </button>
       {err && <span className="text-xs text-red-600 ml-1">{err}</span>}
     </>
