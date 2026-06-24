@@ -1,7 +1,9 @@
 import type { Metadata } from 'next'
+import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { getCategories, getPublishedPosts } from '@/lib/blog'
+import { BLOG_PUBLIC } from '@/lib/blog-gate'
 import JsonLd from '@/components/JsonLd'
 
 export const dynamic = 'force-dynamic'
@@ -53,6 +55,8 @@ function PostCard({ post, href }: { post: { title: string; excerpt: string | nul
 }
 
 export default async function BlogIndexPage() {
+  // OMO-3813: 한글 블로그 콘텐츠는 영문화·승인 전까지 비공개(404). DB 데이터는 보존.
+  if (!BLOG_PUBLIC) notFound()
   const [categories, posts] = await Promise.all([getCategories(), getPublishedPosts(30)])
   const catBySlugMap = new Map(categories.map((c) => [c.id, c.slug]))
 
