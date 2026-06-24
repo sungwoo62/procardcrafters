@@ -144,7 +144,7 @@ function main() {
   for (const post of posts) {
     const outFp = path.join(OUTDIR, `${post.id}.png`);
     if (fs.existsSync(outFp)) { skipped++; log(`skip ${post.id} (exists)`); continue; }
-    const msg = `Please generate ONE image and output only the image. Photorealistic, square 1:1 (1024x1024) professional product photography. Absolutely no text, no logo, no watermark anywhere in the image. Prompt: ${post.photoPrompt}`;
+    const msg = `Please generate ONE image and output only the image. Photorealistic, square 1:1 (1024x1024) professional product photography. This is a real printed-product mockup: the product MUST display crisp, realistic, correctly-spelled PRINTED TEXT/branding exactly as described in the prompt (e.g. names, taglines, and the website procardcrafters.com). Keep text legible and well-composed. No floating watermark overlays — only text that is physically printed on the product. Prompt: ${post.photoPrompt}`;
     try {
       const baseline = cachePngs();
       if (!focusInput()) { log(`WARN ${post.id}: refocus failed, recover window`); ensureWindow(); if (!focusInput()) throw new Error('input not focusable'); }
