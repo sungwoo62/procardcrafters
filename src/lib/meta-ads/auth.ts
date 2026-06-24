@@ -45,8 +45,13 @@ export class MetaApiError extends Error {
   }
 }
 
-export function buildAppsecretProof(token: string = LONG_LIVED_TOKEN): string {
-  if (!APP_SECRET) throw new Error('PCCF_META_APP_SECRET 미설정')
+/**
+ * appsecret_proof 계산. APP_SECRET 미설정이면 null(proof 생략).
+ * OMO-3752: 공용 allpack-ai 앱은 APP_SECRET 미설정 운영 → proof는 선택값으로 둔다.
+ * (Graph API는 앱에서 "app secret 요구" 옵션을 켜지 않은 한 proof 없이도 호출 가능)
+ */
+export function buildAppsecretProof(token: string = LONG_LIVED_TOKEN): string | null {
+  if (!APP_SECRET) return null
   return createHmac('sha256', APP_SECRET).update(token).digest('hex')
 }
 
@@ -151,7 +156,7 @@ export async function metaFetch<T = unknown>(
 
   const url = new URL(`${META_API_BASE}${endpoint}`)
   url.searchParams.set('access_token', token)
-  url.searchParams.set('appsecret_proof', proof)
+  if (proof) url.searchParams.set('appsecret_proof', proof)
 
   for (const [k, v] of Object.entries(params)) {
     url.searchParams.set(k, String(v))
@@ -202,27 +207,25 @@ export async function metaFetch<T = unknown>(
   throw lastError ?? new MetaApiError('Meta API 요청 실패 (3회 재시도 초과)', 0)
 }
 
-/** 계정 수준 spend_cap 검증 — $600 (60000 cents) 유지 확인 */
-export async function verifySpendCap(dryRun = false): Promise<{ spendCapCents: number; ok: boolean }> {
-  if (dryRun) return { spendCapCents: 60000, ok: true }
+/**
+ * 계정 수준 spend_cap "읽기 전용" 조회 (OMO-3752).
+ *
+ * ⚠️ 광고계정이 뉴트라와 공용이므로 계정 spend_cap을 절대 변경(POST)하지 않는다.
+ * (예전 PCCF 전용계정에서는 $600으로 자동 복원했으나, 공용계정에서 복원하면
+ *  뉴트라의 설정을 덮어써 혼용 사고가 난다.) procard 예산 가드는 계정 캡이 아니라
+ *  PROCARD 네이밍으로 선별한 캠페인의 per-campaign daily_budget으로만 적용한다.
+ *
+ * @returns spendCapMinor: 계정 통화 최소단위의 현재 캡(0=무제한). ok는 항상 true(읽기 전용).
+ */
+export async function verifySpendCap(dryRun = false): Promise<{ spendCapMinor: number; ok: boolean }> {
+  if (dryRun) return { spendCapMinor: 0, ok: true }
 
   const accountId = getAdAccountId()
   const data = await metaFetch<{ spend_cap: string }>(`/${accountId}`, {
     params: { fields: 'spend_cap' },
   })
 
-  // Meta API는 spend_cap을 cents 단위 문자열로 반환
-  const spendCapCents = parseInt(data.spend_cap ?? '0', 10)
-  const EXPECTED_CAP_CENTS = 60000 // $600
-
-  if (spendCapCents !== EXPECTED_CAP_CENTS) {
-    // 변경 감지 시 즉시 복원
-    await metaFetch(`/${accountId}`, {
-      method: 'POST',
-      body: { spend_cap: EXPECTED_CAP_CENTS },
-    })
-    return { spendCapCents: EXPECTED_CAP_CENTS, ok: false }
-  }
-
-  return { spendCapCents, ok: true }
+  // Meta는 spend_cap을 계정 통화 최소단위 문자열로 반환(KRW면 원 단위). 변경 없이 보고만.
+  const spendCapMinor = parseInt(data.spend_cap ?? '0', 10)
+  return { spendCapMinor, ok: true }
 }

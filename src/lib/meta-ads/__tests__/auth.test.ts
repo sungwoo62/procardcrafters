@@ -44,10 +44,10 @@ describe('buildAppsecretProof', () => {
     expect(proof).toBe(expected)
   })
 
-  it('APP_SECRET 미설정 시 에러', async () => {
+  it('APP_SECRET 미설정 시 null 반환(proof 생략) — OMO-3752', async () => {
     process.env.PCCF_META_APP_SECRET = ''
     const { buildAppsecretProof } = await import('../auth')
-    expect(() => buildAppsecretProof('token')).toThrow('PCCF_META_APP_SECRET 미설정')
+    expect(buildAppsecretProof('token')).toBeNull()
   })
 })
 
@@ -165,6 +165,23 @@ describe('metaFetch', () => {
     expect(calledUrl).toContain('access_token=test_token_abc')
   })
 
+  it('APP_SECRET 미설정 시 appsecret_proof 생략 — OMO-3752', async () => {
+    process.env.PCCF_META_APP_SECRET = ''
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: 'test_result' }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { metaFetch } = await import('../auth')
+    await metaFetch('/test_endpoint')
+
+    const calledUrl = fetchMock.mock.calls[0][0] as string
+    expect(calledUrl).not.toContain('appsecret_proof=')
+    expect(calledUrl).toContain('access_token=')
+  })
+
   it('4xx 응답: 재시도 없이 즉시 에러', async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
@@ -181,11 +198,29 @@ describe('metaFetch', () => {
   })
 })
 
-describe('verifySpendCap', () => {
-  it('dry-run: 검증 스킵, ok=true 반환', async () => {
+describe('verifySpendCap (읽기 전용 — 공용 계정 OMO-3752)', () => {
+  it('dry-run: 검증 스킵, ok=true, spendCapMinor=0', async () => {
     const { verifySpendCap } = await import('../auth')
     const result = await verifySpendCap(true)
     expect(result.ok).toBe(true)
-    expect(result.spendCapCents).toBe(60000)
+    expect(result.spendCapMinor).toBe(0)
+  })
+
+  it('계정 spend_cap을 절대 POST(복원)하지 않는다', async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ spend_cap: '12345' }),
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    const { verifySpendCap } = await import('../auth')
+    const result = await verifySpendCap(false)
+
+    expect(result.spendCapMinor).toBe(12345)
+    expect(result.ok).toBe(true)
+    // GET 1회만 — 복원 POST 없음
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect((fetchMock.mock.calls[0][1] as { method?: string })?.method ?? 'GET').toBe('GET')
   })
 })

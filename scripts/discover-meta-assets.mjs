@@ -26,16 +26,17 @@ const BASE = 'https://graph.facebook.com/v22.0'
 const TOKEN = process.env.PCCF_META_LONG_LIVED_TOKEN
 const SECRET = process.env.PCCF_META_APP_SECRET
 const AD_ACCOUNT = process.env.PCCF_META_AD_ACCOUNT_ID
-if (!TOKEN || !SECRET) {
-  console.error('PCCF_META_LONG_LIVED_TOKEN / PCCF_META_APP_SECRET 미설정 — .env.local 확인')
+if (!TOKEN) {
+  console.error('PCCF_META_LONG_LIVED_TOKEN 미설정 — .env.local 확인')
   process.exit(1)
 }
-const proof = createHmac('sha256', SECRET).update(TOKEN).digest('hex')
+// OMO-3752: APP_SECRET 미설정 운영(allpack-ai) → proof 생략. 있으면 첨부.
+const proof = SECRET ? createHmac('sha256', SECRET).update(TOKEN).digest('hex') : null
 
 async function g(endpoint, fields) {
   const url = new URL(`${BASE}${endpoint}`)
   url.searchParams.set('access_token', TOKEN)
-  url.searchParams.set('appsecret_proof', proof)
+  if (proof) url.searchParams.set('appsecret_proof', proof)
   if (fields) url.searchParams.set('fields', fields)
   const res = await fetch(url.toString())
   const data = await res.json()

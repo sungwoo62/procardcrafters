@@ -14,20 +14,21 @@ afterEach(() => {
   vi.resetModules()
 })
 
-describe('enforceMaxDailyBudget', () => {
-  it('요청 예산 > $20 → $20(2000 cents) 반환', async () => {
-    const { enforceMaxDailyBudget, DAILY_BUDGET_CENTS } = await import('../guardrails')
-    expect(enforceMaxDailyBudget(5000)).toBe(DAILY_BUDGET_CENTS)
+describe('enforceMaxDailyBudget (KRW · OMO-3752)', () => {
+  it('요청 예산 > 캡 → 캡(₩30,000) 반환', async () => {
+    const { enforceMaxDailyBudget, DAILY_BUDGET_MINOR } = await import('../guardrails')
+    expect(DAILY_BUDGET_MINOR).toBe(30000) // KRW offset 0 → 원 단위 그대로
+    expect(enforceMaxDailyBudget(99999)).toBe(DAILY_BUDGET_MINOR)
   })
 
-  it('요청 예산 ≤ $20 → 그대로 반환', async () => {
+  it('요청 예산 ≤ 캡 → 그대로 반환', async () => {
     const { enforceMaxDailyBudget } = await import('../guardrails')
-    expect(enforceMaxDailyBudget(1000)).toBe(1000)
+    expect(enforceMaxDailyBudget(10000)).toBe(10000)
   })
 
-  it('정확히 $20(2000 cents) → 그대로 반환', async () => {
-    const { enforceMaxDailyBudget, DAILY_BUDGET_CENTS } = await import('../guardrails')
-    expect(enforceMaxDailyBudget(DAILY_BUDGET_CENTS)).toBe(DAILY_BUDGET_CENTS)
+  it('정확히 캡 → 그대로 반환', async () => {
+    const { enforceMaxDailyBudget, DAILY_BUDGET_MINOR } = await import('../guardrails')
+    expect(enforceMaxDailyBudget(DAILY_BUDGET_MINOR)).toBe(DAILY_BUDGET_MINOR)
   })
 })
 
@@ -35,7 +36,7 @@ describe('runDailyCapCheck (dry-run)', () => {
   it('dry-run: spend 0, paused 없음', async () => {
     const { runDailyCapCheck } = await import('../guardrails')
     const result = await runDailyCapCheck(true)
-    expect(result.spendCents).toBe(0)
+    expect(result.spendMinor).toBe(0)
     expect(result.paused).toHaveLength(0)
     expect(result.warning).toBe(false)
   })
@@ -120,8 +121,8 @@ describe('가드레일 D: ROAS (dry-run)', () => {
     const { fetchCampaignInsights } = await import('../guardrails')
     const snapshot = await fetchCampaignInsights('camp_test', true)
     expect(snapshot.roas).toBe(4.0)
-    expect(snapshot.spendCents).toBe(1000)
-    expect(snapshot.revenueCents).toBe(4000)
+    expect(snapshot.spendMinor).toBe(10000)
+    expect(snapshot.revenueMinor).toBe(40000)
   })
 
   it('runRoasWatcher dry-run: 에러 없이 실행', async () => {
@@ -131,9 +132,10 @@ describe('가드레일 D: ROAS (dry-run)', () => {
   })
 })
 
-describe('checkAndRestoreSpendCap (dry-run)', () => {
-  it('dry-run: 검증 스킵, 에러 없이 완료', async () => {
-    const { checkAndRestoreSpendCap } = await import('../guardrails')
-    await expect(checkAndRestoreSpendCap(true)).resolves.not.toThrow()
+describe('reportAccountSpendCap (읽기 전용 · OMO-3752)', () => {
+  it('dry-run: 에러 없이 spendCapMinor 반환', async () => {
+    const { reportAccountSpendCap } = await import('../guardrails')
+    const result = await reportAccountSpendCap(true)
+    expect(result.spendCapMinor).toBe(0)
   })
 })

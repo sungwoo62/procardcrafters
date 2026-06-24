@@ -1,3 +1,5 @@
+import { formatMinor } from './policy'
+
 const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN
 const OWNER_CHAT_ID = process.env.TELEGRAM_OWNER_CHAT_ID
 
@@ -32,30 +34,30 @@ export async function notifyPolicyRejection(params: {
 }
 
 export async function notifyDailyCapApproaching(params: {
-  spendCents: number
-  capCents: number
+  spendMinor: number
+  capMinor: number
 }): Promise<void> {
-  const pct = Math.round((params.spendCents / params.capCents) * 100)
+  const pct = Math.round((params.spendMinor / params.capMinor) * 100)
   await sendTelegram(
     [
-      `⚠️ *PCCF Meta Ads — 일일 캡 ${pct}% 도달*`,
+      `⚠️ *PROCARD Meta Ads — 일일 캡 ${pct}% 도달*`,
       ``,
-      `지출: $${(params.spendCents / 100).toFixed(2)} / $${(params.capCents / 100).toFixed(2)}`,
+      `지출: ${formatMinor(params.spendMinor)} / ${formatMinor(params.capMinor)}`,
       ``,
-      `_캠페인이 곧 일시정지됩니다._`,
+      `_procard 캠페인이 곧 일시정지됩니다._`,
     ].join('\n')
   )
 }
 
 export async function notifyDailyCapReached(params: {
-  spendCents: number
+  spendMinor: number
 }): Promise<void> {
   await sendTelegram(
     [
-      `🛑 *PCCF Meta Ads — 일일 $20 캡 도달*`,
+      `🛑 *PROCARD Meta Ads — 일일 캡 도달*`,
       ``,
-      `총 지출: $${(params.spendCents / 100).toFixed(2)}`,
-      `모든 활성 캠페인 일시정지 완료.`,
+      `총 지출: ${formatMinor(params.spendMinor)}`,
+      `procard 활성 캠페인 일시정지 완료(뉴트라 캠페인 불간섭).`,
     ].join('\n')
   )
 }
@@ -85,20 +87,6 @@ export async function notifyTokenExpiringSoon(daysLeft: number): Promise<void> {
       ``,
       `시스템 사용자 토큰을 갱신해주세요.`,
       `Meta Business Manager → 시스템 사용자 → 토큰 생성`,
-    ].join('\n')
-  )
-}
-
-export async function notifySpendCapChanged(params: {
-  previous: number
-  restored: number
-}): Promise<void> {
-  await sendTelegram(
-    [
-      `🔧 *PCCF Meta Ads — Spend Cap 변경 감지 → 자동 복원*`,
-      ``,
-      `변경 전: $${(params.previous / 100).toFixed(0)}`,
-      `복원 후: $${(params.restored / 100).toFixed(0)}`,
     ].join('\n')
   )
 }
