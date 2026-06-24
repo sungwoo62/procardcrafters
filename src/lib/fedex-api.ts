@@ -18,37 +18,61 @@ interface OAuthToken {
   expires_at: number   // epoch ms
 }
 
-let cachedToken: OAuthToken | null = null
+// OMO-3458: 계약 계정이 복수가 될 수 있어(신 211340858 + 구 210839884) 토큰을 client_id 별로 캐시.
+const tokenCache = new Map<string, OAuthToken>()
 const TOKEN_REFRESH_MARGIN_MS = 60_000
 
 function getBaseUrl(): string {
-  // OMO-3628: FEDEX_API_BASE 가 빈 문자열("")이면 `??` 가 빈 값을 통과시켜 상대경로 fetch
-  // ("/oauth/token")로 폭발한다. 공백/빈값은 미설정으로 보고 운영 기본값으로 폴백한다.
-  return process.env.FEDEX_API_BASE?.trim() || 'https://apis.fedex.com'
+  return process.env.FEDEX_API_BASE ?? 'https://apis.fedex.com'
+}
+
+// OMO-3458: 계약 계정 프로파일. FedEx OAuth 자격증명은 특정 계정번호에 귀속되므로
+// (키↔계정 1:1) 신/구 계약을 모두 쓰려면 프로파일을 각각 구성한다.
+export interface FedexCredentialProfile {
+  clientId: string
+  clientSecret: string
+  account: string
+  label: string          // 'primary'(신계약) | 'legacy'(구계약)
+}
+
+function primaryProfile(): FedexCredentialProfile | null {
+  const clientId = process.env.FEDEX_CLIENT_ID
+  const clientSecret = process.env.FEDEX_CLIENT_SECRET
+  const account = process.env.FEDEX_ACCOUNT_NUMBER
+  return clientId && clientSecret && account ? { clientId, clientSecret, account, label: 'primary' } : null
+}
+
+// 구 계약(기존 고객코드+API 키). 설정돼 있을 때만 신/구 비교에 합류한다.
+function legacyProfile(): FedexCredentialProfile | null {
+  const clientId = process.env.FEDEX_LEGACY_CLIENT_ID
+  const clientSecret = process.env.FEDEX_LEGACY_CLIENT_SECRET
+  const account = process.env.FEDEX_LEGACY_ACCOUNT_NUMBER
+  return clientId && clientSecret && account ? { clientId, clientSecret, account, label: 'legacy' } : null
+}
+
+/** 구성된 모든 계약 프로파일(신계약 우선, 구계약은 설정 시 추가). */
+export function getFedexProfiles(): FedexCredentialProfile[] {
+  return [primaryProfile(), legacyProfile()].filter((p): p is FedexCredentialProfile => p !== null)
 }
 
 export function isFedexApiConfigured(): boolean {
-  // OMO-3628: 빈 문자열/공백 자격증명은 미설정으로 간주(트림 후 비면 false).
-  return Boolean(
-    process.env.FEDEX_CLIENT_ID?.trim() &&
-      process.env.FEDEX_CLIENT_SECRET?.trim() &&
-      process.env.FEDEX_ACCOUNT_NUMBER?.trim(),
-  )
+  return primaryProfile() !== null
 }
 
-async function getAccessToken(): Promise<string> {
+async function getAccessToken(clientId: string, clientSecret: string, baseUrl?: string): Promise<string> {
   const now = Date.now()
-  if (cachedToken && cachedToken.expires_at - now > TOKEN_REFRESH_MARGIN_MS) {
-    return cachedToken.access_token
+  const cached = tokenCache.get(clientId)
+  if (cached && cached.expires_at - now > TOKEN_REFRESH_MARGIN_MS) {
+    return cached.access_token
   }
 
-  const res = await fetch(`${getBaseUrl()}/oauth/token`, {
+  const res = await fetch(`${baseUrl ?? getBaseUrl()}/oauth/token`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: new URLSearchParams({
       grant_type: 'client_credentials',
-      client_id: process.env.FEDEX_CLIENT_ID!,
-      client_secret: process.env.FEDEX_CLIENT_SECRET!,
+      client_id: clientId,
+      client_secret: clientSecret,
     }),
   })
 
@@ -58,11 +82,12 @@ async function getAccessToken(): Promise<string> {
   }
 
   const data = (await res.json()) as { access_token: string; expires_in: number }
-  cachedToken = {
+  const token: OAuthToken = {
     access_token: data.access_token,
     expires_at: now + (data.expires_in - 60) * 1000,
   }
-  return cachedToken.access_token
+  tokenCache.set(clientId, token)
+  return token.access_token
 }
 
 export interface FedexRateInput {
@@ -100,13 +125,14 @@ export interface FedexRateResult {
  * 한국(KR) 발 → 임의 국가행 실시간 요율 견적.
  * shipper 는 계약 계정 주소 사용.
  */
-export async function fetchFedexRates(input: FedexRateInput): Promise<FedexRateResult> {
-  if (!isFedexApiConfigured()) {
+export async function fetchFedexRates(input: FedexRateInput, profile?: FedexCredentialProfile): Promise<FedexRateResult> {
+  const prof = profile ?? primaryProfile()
+  if (!prof) {
     throw new Error('FedEx API not configured (FEDEX_CLIENT_ID / FEDEX_CLIENT_SECRET / FEDEX_ACCOUNT_NUMBER required)')
   }
 
-  const token = await getAccessToken()
-  const account = process.env.FEDEX_ACCOUNT_NUMBER!
+  const token = await getAccessToken(prof.clientId, prof.clientSecret)
+  const account = prof.account
 
   const recipientCountry = input.recipientCountryCode.toUpperCase()
   const shipperCountry = 'KR'
@@ -256,6 +282,49 @@ function parseRateResponse(data: FedexRateRawResponse): FedexRateResult {
   }
 }
 
+/**
+ * OMO-3458: 서비스별로 여러 계약(신/구) 결과 중 **가장 싼 요율**만 골라 합친다.
+ * 런던처럼 구계약이 더 싼 구간 + 미국처럼 신계약이 더 싼 구간을 국가·서비스 단위로 cherry-pick.
+ * (모든 KR-출발 계약 계정은 KRW 응답이라 totalNetCharge 직접 비교 가능.)
+ */
+export function mergeCheapestByService(results: FedexRateResult[]): FedexRateResult {
+  const best = new Map<string, FedexRateOption>()
+  const alerts: { code: string; message: string }[] = []
+  for (const r of results) {
+    for (const opt of r.options) {
+      const cur = best.get(opt.serviceType)
+      if (!cur || opt.totalNetCharge < cur.totalNetCharge) best.set(opt.serviceType, opt)
+    }
+    alerts.push(...r.alerts)
+  }
+  const options = [...best.values()].sort((a, b) => a.totalNetCharge - b.totalNetCharge)
+  return { options, alerts, cheapest: options[0] ?? null }
+}
+
+/**
+ * OMO-3458: 구성된 모든 계약 프로파일(신+구)을 병렬 조회해 서비스별 최저가로 합친 결과.
+ * 구계약(legacy) 프로파일이 설정돼 있지 않으면 신계약 단독 결과와 동일(기존 동작 보존).
+ * 한 프로파일이 실패해도(미연결/오류) 나머지로 견적을 낸다.
+ */
+export async function fetchFedexRatesCheapest(input: FedexRateInput): Promise<FedexRateResult> {
+  const profiles = getFedexProfiles()
+  if (profiles.length === 0) {
+    throw new Error('FedEx API not configured (FEDEX_CLIENT_ID / FEDEX_CLIENT_SECRET / FEDEX_ACCOUNT_NUMBER required)')
+  }
+  const settled = await Promise.all(
+    profiles.map(async (p) => {
+      try {
+        return await fetchFedexRates(input, p)
+      } catch {
+        return null // 한 계약이 실패해도 다른 계약으로 견적 (silent)
+      }
+    }),
+  )
+  const ok = settled.filter((r): r is FedexRateResult => r !== null)
+  if (ok.length === 0) throw new Error('FedEx Rate API failed for all profiles')
+  return mergeCheapestByService(ok)
+}
+
 // ====================================================================
 // Ship API — 실제 라벨/송장 PDF 생성 (OMO-2371: ETD 자동 첨부)
 // ====================================================================
@@ -290,13 +359,20 @@ export interface FedexShipInput {
   }[]
   /** ELECTRONIC_TRADE_DOCUMENTS 자동 invoice 첨부 여부 (기본 true, 국제만) */
   includeAutoEtdInvoice?: boolean
+  /** 라벨 포맷 강제 (미지정 시 FEDEX_LABEL_IMAGE_TYPE env). 테스트 라벨 페이지에서 ZPLII 강제용. */
+  labelImageType?: 'PDF' | 'ZPLII'
+  /** 샌드박스(인증/테스트) 환경 사용 — FEDEX_SANDBOX_* 자격증명+base. 실 청구·실 발송 없음. */
+  sandbox?: boolean
 }
 
 export interface FedexShipResult {
   masterTrackingNumber: string
   serviceType: string
   serviceName?: string
-  labelPdf: Buffer | null                    // PAPER_4X6 라벨
+  /** 라벨 원본 바이트. PDF(레이저/잉크젯) 또는 ZPL(써멀 프린터) — labelFormat 으로 구분. 절대 이미지로 재렌더하지 않음 (FedEx 인증 요구사항). */
+  labelPdf: Buffer | null
+  /** 'pdf' = PAPER_4X6 PDF, 'zpl' = ZPLII raw buffer (써멀 프린터에 그대로 전송) */
+  labelFormat: 'pdf' | 'zpl'
   invoicePdf: Buffer | null                  // ELECTRONIC_TRADE_DOCUMENTS — Commercial Invoice
   raw: unknown
 }
@@ -307,16 +383,30 @@ export interface FedexShipResult {
  * OMO-2371 — buildAutoInvoiceEtd() 스프레드 사용.
  */
 export async function createFedexShipment(input: FedexShipInput): Promise<FedexShipResult> {
-  if (!isFedexApiConfigured()) {
-    throw new Error('FedEx API not configured')
+  // OMO-3736 — 인증/테스트 라벨은 샌드박스 환경(FEDEX_SANDBOX_*). 운영 Ship 자격증명 미승인 시 403 회피.
+  const useSandbox = input.sandbox ?? false
+  const clientId     = useSandbox ? process.env.FEDEX_SANDBOX_CLIENT_ID     : process.env.FEDEX_CLIENT_ID
+  const clientSecret = useSandbox ? process.env.FEDEX_SANDBOX_CLIENT_SECRET : process.env.FEDEX_CLIENT_SECRET
+  const account      = useSandbox ? process.env.FEDEX_SANDBOX_ACCOUNT_NUMBER : process.env.FEDEX_ACCOUNT_NUMBER
+  const baseUrl      = useSandbox
+    ? (process.env.FEDEX_SANDBOX_API_BASE ?? 'https://apis-sandbox.fedex.com')
+    : getBaseUrl()
+  if (!clientId || !clientSecret || !account) {
+    throw new Error(useSandbox ? 'FedEx 샌드박스 자격증명 미설정 (FEDEX_SANDBOX_*)' : 'FedEx API not configured')
   }
 
   const { buildAutoInvoiceEtd } = await import('@/lib/fedex-etd')
 
-  const token = await getAccessToken()
-  const account = process.env.FEDEX_ACCOUNT_NUMBER!
+  const token = await getAccessToken(clientId, clientSecret, baseUrl)
   const isInternational = input.recipient.countryCode.toUpperCase() !== 'KR'
   const includeEtd = isInternational && (input.includeAutoEtdInvoice ?? true)
+
+  // OMO-3736 — 라벨 포맷 env 게이트. 기본 PDF(레이저/잉크젯). 써멀 프린터(Zebra) 인증 시 FEDEX_LABEL_IMAGE_TYPE=ZPLII.
+  // ZPLII 선택 시 FedEx 가 반환한 ZPL 버퍼를 그대로 저장·전송한다 (이미지로 재렌더 금지 — FedEx 인증 거부 사유).
+  const rawImageType = (input.labelImageType ?? process.env.FEDEX_LABEL_IMAGE_TYPE ?? 'PDF').toUpperCase()
+  const useZpl = rawImageType === 'ZPLII' || rawImageType === 'ZPL'
+  // 써멀 라벨 기본 stock 은 STOCK_4X6 (PDF 는 PAPER_4X6). env 로 override 가능.
+  const labelStockType = process.env.FEDEX_LABEL_STOCK_TYPE ?? (useZpl ? 'STOCK_4X6' : 'PAPER_4X6')
 
   const body: Record<string, unknown> = {
     labelResponseOptions: 'LABEL',
@@ -361,8 +451,8 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
       },
       labelSpecification: {
         labelFormatType: 'COMMON2D',
-        imageType: 'PDF',
-        labelStockType: 'PAPER_4X6',
+        imageType: useZpl ? 'ZPLII' : 'PDF',
+        labelStockType,
       },
       ...(isInternational ? {
         customsClearanceDetail: {
@@ -402,7 +492,7 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
     },
   }
 
-  const res = await fetch(`${getBaseUrl()}/ship/v1/shipments`, {
+  const res = await fetch(`${baseUrl}/ship/v1/shipments`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -440,11 +530,13 @@ export async function createFedexShipment(input: FedexShipInput): Promise<FedexS
   const labelDoc = ts.pieceResponses?.[0]?.packageDocuments?.find((p) => p.contentType === 'LABEL')
   const invoiceDoc = ts.shipmentDocuments?.find((s) => s.contentType === 'COMMERCIAL_INVOICE')
 
+  // base64 디코드 = 라벨 원본 바이트. ZPLII 면 그 자체가 thermal 프린터용 raw ZPL 스크립트 (^XA…^XZ). 재렌더 없음.
   return {
     masterTrackingNumber: ts.masterTrackingNumber,
     serviceType: ts.serviceType ?? input.serviceType,
     serviceName: ts.serviceName,
     labelPdf: labelDoc?.encodedLabel ? Buffer.from(labelDoc.encodedLabel, 'base64') : null,
+    labelFormat: useZpl ? 'zpl' : 'pdf',
     invoicePdf: invoiceDoc?.encodedLabel ? Buffer.from(invoiceDoc.encodedLabel, 'base64') : null,
     raw: data,
   }
