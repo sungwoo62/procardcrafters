@@ -1025,7 +1025,7 @@ export default function EditorClient({ product, options }: Props) {
     const hMm = Math.round(((obj.getScaledHeight?.() ?? obj.height ?? 0) / scale) * 10) / 10
     // 오시/미싱 등 선형 가이드는 W×H 대신 길이만 표기(높이가 strokeWidth 수준이라 무의미)
     const isLine = obj.type === 'line'
-    const text = isLine ? `선 길이 ${wMm} mm` : `${wMm} × ${hMm} mm`
+    const text = isLine ? `Length ${wMm} mm` : `${wMm} × ${hMm} mm`
     setDimOverlay({
       left: rect.left + screenX,
       top: rect.top + screenY,
@@ -4317,18 +4317,18 @@ export default function EditorClient({ product, options }: Props) {
       return buildPdfBlob()
     }
     const labels = listSpotPlateFinishings({ finishing: finishingStr })
-      .map((v) => FINISHING_BY_VALUE[v]?.label_ko ?? v)
+      .map((v) => FINISHING_BY_VALUE[v]?.label_en ?? v)
       .join(', ')
     const overlayUrl = getPositionOverlayDataUrl()
     const printUrl = getPrintPlateDataUrl()
     const spotUrl = getFinishPlateDataUrl()
     if (!spotUrl || !overlayUrl) {
       throw new Error(
-        `별색 후가공(${labels})이 선택됐지만 별색 영역으로 지정된 오브젝트가 없습니다. ` +
-          `박/형압/도무송/에폭시/별색을 적용할 오브젝트를 선택한 뒤 속성 패널의 "별색 후가공 영역"을 켜주세요.`,
+        `Spot finishing (${labels}) is selected, but no objects are marked as a spot area. ` +
+          `Select the object(s) for foil / emboss / die-cut / epoxy / spot color, then turn on "Spot finishing area" in the properties panel.`,
       )
     }
-    if (!printUrl) throw new Error('인쇄파일 생성에 실패했습니다.')
+    if (!printUrl) throw new Error('Failed to generate the print file.')
     const [overlayBytes, printBytes, spotBytes] = await Promise.all([
       fetch(overlayUrl).then((r) => r.arrayBuffer()),
       fetch(printUrl).then((r) => r.arrayBuffer()),
@@ -4353,7 +4353,7 @@ export default function EditorClient({ product, options }: Props) {
       link.href = URL.createObjectURL(blob)
       link.click()
     } catch (e) {
-      setOrderError(e instanceof Error ? e.message : 'PDF 생성에 실패했습니다.')
+      setOrderError(e instanceof Error ? e.message : 'Failed to generate the PDF.')
     }
   }
 
@@ -5097,15 +5097,15 @@ export default function EditorClient({ product, options }: Props) {
               가이드 이미지를 에디터 옆에 표시(finishing-catalog image_url). 별색 후가공이 없으면 숨김. */}
           {spotFinishingDefs.length > 0 && (
             <div className="absolute top-3 right-3 z-10 w-44 rounded-lg border border-fuchsia-200 bg-white/95 shadow-md p-2 space-y-2 max-h-[70vh] overflow-y-auto">
-              <p className="text-[10px] font-semibold text-fuchsia-800">후가공 작업가이드</p>
+              <p className="text-[10px] font-semibold text-fuchsia-800">Finishing guide</p>
               {spotFinishingDefs.map(d => (
                 <div key={d.value} className="space-y-1">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={d.image_url} alt={d.label_ko} className="w-full rounded border border-gray-100 object-cover" loading="lazy" />
-                  <p className="text-[10px] text-gray-600">{d.label_ko} · {d.label_en}</p>
+                  <img src={d.image_url} alt={d.label_en} className="w-full rounded border border-gray-100 object-cover" loading="lazy" />
+                  <p className="text-[10px] text-gray-600">{d.label_en}</p>
                 </div>
               ))}
-              <p className="text-[9px] leading-relaxed text-gray-400">영역을 선택 후 속성 패널의 “별색 후가공 영역”을 켜면 별색판(p2)으로 발주됩니다.</p>
+              <p className="text-[9px] leading-relaxed text-gray-400">Select an area, then turn on “Spot finishing area” in the properties panel to add it to the spot plate (p2) for production.</p>
             </div>
           )}
           {/* 정렬 툴바 (대지 기준) — 선택 시 표시 */}
@@ -5619,7 +5619,7 @@ export default function EditorClient({ product, options }: Props) {
                       {/* OMO-3522: 잠금 상태는 amber 로 강조 — 후가공 가이드가 보호 중임을 시각화 */}
                       <button
                         onClick={e => { e.stopPropagation(); toggleLock(layer.id) }}
-                        title={layer.locked ? '잠금 해제 (이동/리사이즈/삭제 허용)' : '잠금 (이동/리사이즈/삭제 방지)'}
+                        title={layer.locked ? 'Unlock (allow move / resize / delete)' : 'Lock (prevent move / resize / delete)'}
                         className={layer.locked ? 'text-amber-500 hover:text-amber-600' : 'text-gray-400 hover:text-gray-600'}
                       >
                         {layer.locked ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5" />}
@@ -5634,7 +5634,7 @@ export default function EditorClient({ product, options }: Props) {
                       <button
                         onClick={e => { e.stopPropagation(); if (layer.locked) return; selectLayerById(layer.id); setTimeout(deleteSelectedLayer, 0) }}
                         disabled={layer.locked}
-                        title={layer.locked ? '잠긴 레이어는 삭제할 수 없습니다 (먼저 잠금 해제)' : '레이어 삭제'}
+                        title={layer.locked ? 'Locked layers cannot be deleted (unlock first)' : 'Delete layer'}
                         className={layer.locked ? 'text-gray-200 cursor-not-allowed' : 'text-red-400 hover:text-red-600'}
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -6068,7 +6068,7 @@ export default function EditorClient({ product, options }: Props) {
                   출력한다. ON 이면 박/형압/도무송/에폭시/별색 영역으로 발주 PDF p2 에 합본된다. */}
               <div className="rounded-lg border border-fuchsia-200 bg-fuchsia-50/60 p-2.5 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-medium text-fuchsia-800">별색 후가공 영역</label>
+                  <label className="text-xs font-medium text-fuchsia-800">Spot finishing area</label>
                   <button
                     onClick={() => updateSelected({ finish: !selectedProps.finish })}
                     className={`px-2.5 py-0.5 rounded text-[10px] font-semibold transition-colors ${selectedProps.finish ? 'bg-fuchsia-600 text-white' : 'bg-gray-100 text-gray-500'}`}
@@ -6077,10 +6077,10 @@ export default function EditorClient({ product, options }: Props) {
                   </button>
                 </div>
                 <p className="text-[10px] leading-relaxed text-fuchsia-700/80">
-                  박·형압·도무송·에폭시·별색이 들어갈 영역으로 지정합니다. 발주 시 별색판(2페이지 합본 PDF)으로 산출됩니다.
+                  Marks this area for foil / emboss / die-cut / epoxy / spot color. On order, it is output as a spot plate (2-page combined PDF).
                 </p>
                 {spotFinishingDefs.length > 0 && (
-                  <p className="text-[10px] text-fuchsia-700/70">선택된 후가공: {spotFinishingDefs.map(d => d.label_ko).join(', ')}</p>
+                  <p className="text-[10px] text-fuchsia-700/70">Selected finishes: {spotFinishingDefs.map(d => d.label_en).join(', ')}</p>
                 )}
               </div>
 
