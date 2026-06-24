@@ -16,6 +16,7 @@ import { formatProductionWindow } from '@/config/lead-time'
 import { getTemplatesForProduct } from '@/config/templates'
 import TemplatePreview from '@/components/TemplatePreview'
 import ProductConfigurator from '@/components/ProductConfigurator'
+import { toClientProduct, toClientOptions } from '@/lib/client-product'
 import ProductImage from '@/components/ProductImage'
 import ProductGallery from '@/components/ProductGallery'
 import ViewItemTracker from '@/components/ViewItemTracker'
@@ -415,8 +416,8 @@ export default async function ProductDetailPage({ params }: Props) {
             <h2 className="text-xl font-bold text-gray-900 mb-6">Configure Your Order</h2>
             {options.length > 0 ? (
               <ProductConfigurator
-                product={product}
-                options={options}
+                product={toClientProduct(product)}
+                options={toClientOptions(options)}
                 exchangeRate={exchangeRate}
                 shippingUsd={shippingUsd}
                 swadpiaData={configuratorSwadpiaData}
