@@ -7,9 +7,11 @@ import path from 'node:path'
 import Link from 'next/link'
 import { CheckCircle2, XCircle, Download, FileText, Tag, ExternalLink, Package } from 'lucide-react'
 
+// 내부 진단 대시보드(고객 네비 미연결). 검색 노출 차단. (OMO-3810)
 export const metadata = {
   title: 'FedEx ETD 검증 — OMO-2371',
   description: '통관 신속 처리 — FedEx 자동 Commercial Invoice 첨부 E2E 결과',
+  robots: { index: false, follow: false },
 }
 
 function safeRead<T>(rel: string): T | null {

@@ -23,7 +23,7 @@ export default function CompetitorPriceBadge({ prices }: Props) {
       {/* 배지 칩 — 경쟁사 브랜드명 미노출 */}
       <button
         onClick={() => setOpen(true)}
-        aria-label={`주요 브랜드 대비 최대 ${maxSavings}% 저렴 — 자세히 보기`}
+        aria-label={`Save up to ${maxSavings}% vs. major brands — see details`}
         className="inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-700 text-xs font-semibold px-2.5 py-1 rounded-full transition-colors cursor-pointer"
       >
         <TrendingDown className="w-3 h-3" />
@@ -44,7 +44,7 @@ export default function CompetitorPriceBadge({ prices }: Props) {
             <button
               onClick={() => setOpen(false)}
               className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
-              aria-label="닫기"
+              aria-label="Close"
             >
               <X className="w-5 h-5" />
             </button>

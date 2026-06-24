@@ -110,7 +110,7 @@ export default function CouponPopup() {
       const data: { error?: string; couponCode?: string } = await res.json()
 
       if (!res.ok) {
-        setError(data.error ?? '오류가 발생했습니다.')
+        setError(data.error ?? 'Something went wrong.')
         setState('visible')
         return
       }
@@ -121,7 +121,7 @@ export default function CouponPopup() {
       // 이메일 구독 = 리드 전환
       trackGenerateLead({ leadType: 'email_signup' })
     } catch {
-      setError('네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')
+      setError('A network error occurred. Please try again in a moment.')
       setState('visible')
     }
   }

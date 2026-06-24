@@ -15,7 +15,7 @@ export default function FinishingSection({ productCategory, orderable = false }:
     <section className="bg-gray-50 border-t border-gray-100 py-12 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">후가공 옵션</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-blue-600">Finishing Options</span>
           <h2 className="text-2xl font-bold text-gray-900 mt-1.5">Finishing Options</h2>
           <p className="text-gray-500 text-sm mt-1">
             {orderable
@@ -39,8 +39,7 @@ export default function FinishingSection({ productCategory, orderable = false }:
                 />
               </div>
               <div className="p-3">
-                <div className="font-semibold text-gray-900 text-sm">{f.label_en}</div>
-                <div className="text-xs font-medium text-blue-600 mt-0.5 mb-1.5">{f.label_ko}</div>
+                <div className="font-semibold text-gray-900 text-sm mb-1.5">{f.label_en}</div>
                 <p className="text-xs text-gray-500 leading-relaxed line-clamp-3">{f.description_en}</p>
               </div>
             </div>

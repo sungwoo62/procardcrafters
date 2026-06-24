@@ -62,7 +62,7 @@ export default async function BlogCategoryPage({ params }: Props) {
 
       <div className="mx-auto max-w-6xl px-4 py-12">
         {posts.length === 0 ? (
-          <p className="py-20 text-center text-gray-500">이 카테고리에는 아직 글이 없습니다.</p>
+          <p className="py-20 text-center text-gray-500">No posts in this category yet.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((p) => (
