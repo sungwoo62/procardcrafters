@@ -23,6 +23,8 @@ async function resolveCategorySlug(categoryId: string | null): Promise<string> {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // OMO-3813: 게이트 닫힘 시 한글 excerpt/seo 메타가 노출되지 않도록 영문 NotFound 메타 반환.
+  if (!BLOG_PUBLIC) return { title: 'Not Found', robots: { index: false, follow: false } }
   const { slug } = await params
   const post = await getPostBySlug(slug)
   if (!post) return { title: 'Article Not Found' }

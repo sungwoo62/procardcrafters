@@ -15,6 +15,8 @@ interface Props {
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // OMO-3813: 게이트 닫힘 시 한글 카테고리명이 <title>/메타에 노출되지 않도록 영문 NotFound 메타 반환.
+  if (!BLOG_PUBLIC) return { title: 'Not Found', robots: { index: false, follow: false } }
   const { category } = await params
   const cat = await getCategoryBySlug(category)
   if (!cat) return { title: 'Category Not Found' }
