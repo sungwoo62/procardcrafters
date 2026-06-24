@@ -56,8 +56,8 @@ function PostCard({ post }: { post: Post }) {
         <p className="text-sm text-gray-900 whitespace-pre-line leading-relaxed">{post.caption}</p>
         <p className="text-xs text-blue-600 leading-snug">{post.hashtags.join(' ')}</p>
         <div className="pt-1 rounded-lg bg-pink-50 border border-pink-100 p-2">
-          <p className="text-[11px] font-semibold text-pink-600 mb-0.5">📸 실사 촬영 디렉션 (포토 생성 프롬프트)</p>
-          <p className="text-xs text-gray-600 leading-snug">{post.photoPrompt ?? post.imageDirection}</p>
+          <p className="text-[11px] font-semibold text-pink-600 mb-0.5">📸 이미지 설명 (실제 사진 기준)</p>
+          <p className="text-xs text-gray-600 leading-snug">{post.imageDirection ?? post.photoPrompt}</p>
         </div>
         <div className="mt-auto pt-2 border-t border-gray-100">
           <p className="text-[11px] text-gray-400 mb-0.5">첫 댓글</p>
@@ -102,7 +102,7 @@ export default function Omo3764InstagramReportView() {
           <p className="text-sm font-semibold text-pink-700 mb-1">📸 실사 제품사진(트렌디·힙) 생성·적용 완료</p>
           <p className="text-sm text-gray-700 leading-relaxed">
             보드 요청대로 <strong>막 예쁘게 촬영한 실사 느낌 + 감각적 배경 + 트렌디·힙</strong> 제품사진을 <strong>Mac-Studio ChatGPT(GPT)로 직접 생성해 60장 전부 적용</strong>했습니다.
-            전부 1080×1080 포토리얼, 텍스트·로고·워터마크 없음. 각 카드의 <strong>「실사 촬영 디렉션」</strong>이 실제 생성 프롬프트입니다.
+            전부 1080×1080 포토리얼, 텍스트·로고·워터마크 없음. <strong>캡션·해시태그는 각 실제 이미지에 맞춰 다시 작성</strong>해, 사진과 문구가 따로 놀지 않도록 정렬했습니다(각 카드의 <strong>「이미지 설명」</strong>이 실제 사진 기준).
             실제 IG 발행 시 그대로 사용하거나 실제 촬영본으로 교체할 수 있습니다.
           </p>
         </section>
