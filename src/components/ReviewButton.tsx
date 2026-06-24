@@ -21,7 +21,7 @@ export default function ReviewButton({ orderId, productId, productName, defaultN
     return (
       <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700">
         <Star className="w-3 h-3 fill-green-500 stroke-green-500" />
-        리뷰 접수됨
+        Review submitted
       </span>
     )
   }
@@ -34,7 +34,7 @@ export default function ReviewButton({ orderId, productId, productName, defaultN
         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition-colors"
       >
         <Star className="w-3 h-3" />
-        리뷰 작성
+        Write a review
       </button>
       {open && (
         <ReviewWriteModal

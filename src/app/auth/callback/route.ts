@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (error) {
       const url = new URL(`${origin}/auth/login`)
-      url.searchParams.set('error', '인증 링크가 만료되었거나 유효하지 않습니다. 다시 시도해주세요.')
+      url.searchParams.set('error', 'This sign-in link has expired or is invalid. Please try again.')
       return NextResponse.redirect(url)
     }
   }

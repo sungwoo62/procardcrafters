@@ -88,7 +88,7 @@ export default async function BlogIndexPage() {
         )}
 
         {posts.length === 0 ? (
-          <p className="py-20 text-center text-gray-500">아직 발행된 글이 없습니다.</p>
+          <p className="py-20 text-center text-gray-500">No posts published yet.</p>
         ) : (
           <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {posts.map((p) => {

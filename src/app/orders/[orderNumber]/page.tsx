@@ -129,7 +129,7 @@ export default async function OrderTrackingPage({ params }: Props) {
   // 마스킹된 이름 미리보기 생성
   const previewName = (() => {
     const name = order.shipping_name || order.customer_name
-    if (!name) return '고객**'
+    if (!name) return 'Customer**'
     const isKorean = /[가-힯]/.test(name[0])
     return isKorean ? name[0] + '**' : name.slice(0, 2) + '**'
   })()
@@ -152,24 +152,24 @@ export default async function OrderTrackingPage({ params }: Props) {
         <div className="bg-blue-50 border border-blue-200 rounded-2xl p-5 space-y-3">
           <div className="flex items-center gap-2">
             <Bell className="w-5 h-5 text-blue-500" />
-            <h2 className="text-sm font-semibold text-blue-900">방금 주문이 사이트에 노출됩니다 (5분 이내)</h2>
+            <h2 className="text-sm font-semibold text-blue-900">Your order will appear on the site shortly (within 5 minutes)</h2>
           </div>
           <p className="text-xs text-blue-700 leading-relaxed">
-            다른 방문자들에게 아래와 같이 실시간 알림으로 표시돼요:
+            Other visitors will see it as a live notification, like this:
           </p>
           {/* 미리보기 토스트 */}
           <div className="bg-white border border-blue-100 rounded-xl p-3 flex items-start gap-2 shadow-sm max-w-xs">
             <span className="text-base">📦</span>
             <p className="text-xs text-gray-700 leading-snug">
-              <span className="font-medium">{previewName}</span> 님이 방금{' '}
-              <span className="font-medium">{previewProduct}</span> 주문
+              <span className="font-medium">{previewName}</span> just ordered{' '}
+              <span className="font-medium">{previewProduct}</span>
             </p>
           </div>
           <Link
             href="/?highlight=my-order"
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700"
           >
-            홈에서 내 알림 보기 →
+            See my notification on the home page →
           </Link>
         </div>
       )}

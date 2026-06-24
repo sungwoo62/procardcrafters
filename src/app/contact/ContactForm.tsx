@@ -27,13 +27,13 @@ export default function ContactForm() {
       })
       const data = await res.json()
       if (!res.ok) {
-        setError(data.error ?? '문의 접수에 실패했습니다. 다시 시도해 주세요.')
+        setError(data.error ?? 'We couldn\'t submit your message. Please try again.')
         setStatus('idle')
         return
       }
       setStatus('success')
     } catch {
-      setError('네트워크 오류가 발생했습니다. 다시 시도해 주세요.')
+      setError('A network error occurred. Please try again.')
       setStatus('idle')
     }
   }
@@ -42,9 +42,9 @@ export default function ContactForm() {
     return (
       <div className="border border-green-200 bg-green-50 rounded-xl p-8 text-center">
         <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto mb-4" />
-        <h2 className="font-semibold text-gray-900 mb-2">문의가 접수되었습니다</h2>
+        <h2 className="font-semibold text-gray-900 mb-2">Your message has been sent</h2>
         <p className="text-sm text-gray-600">
-          영업일 기준 24시간 이내에 입력하신 이메일로 답변드리겠습니다.
+          We'll reply to the email you provided within 24 business hours.
         </p>
       </div>
     )
@@ -58,7 +58,7 @@ export default function ContactForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
-            이름
+            Name
           </label>
           <input
             id="name"
@@ -66,12 +66,12 @@ export default function ContactForm() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className={inputClass}
-            placeholder="홍길동"
+            placeholder="John Smith"
           />
         </div>
         <div>
           <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-            이메일 <span className="text-red-500">*</span>
+            Email <span className="text-red-500">*</span>
           </label>
           <input
             id="email"
@@ -88,7 +88,7 @@ export default function ContactForm() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label htmlFor="orderNumber" className="block text-sm font-medium text-gray-700 mb-1">
-            주문번호 <span className="text-gray-400">(선택)</span>
+            Order number <span className="text-gray-400">(optional)</span>
           </label>
           <input
             id="orderNumber"
@@ -101,7 +101,7 @@ export default function ContactForm() {
         </div>
         <div>
           <label htmlFor="subject" className="block text-sm font-medium text-gray-700 mb-1">
-            제목 <span className="text-gray-400">(선택)</span>
+            Subject <span className="text-gray-400">(optional)</span>
           </label>
           <input
             id="subject"
@@ -109,14 +109,14 @@ export default function ContactForm() {
             value={subject}
             onChange={(e) => setSubject(e.target.value)}
             className={inputClass}
-            placeholder="문의 제목"
+            placeholder="Subject line"
           />
         </div>
       </div>
 
       <div>
         <label htmlFor="message" className="block text-sm font-medium text-gray-700 mb-1">
-          문의 내용 <span className="text-red-500">*</span>
+          Message <span className="text-red-500">*</span>
         </label>
         <textarea
           id="message"
@@ -125,7 +125,7 @@ export default function ContactForm() {
           value={message}
           onChange={(e) => setMessage(e.target.value)}
           className={inputClass}
-          placeholder="문의하실 내용을 자세히 적어주세요."
+          placeholder="Tell us how we can help."
         />
       </div>
 
@@ -137,7 +137,7 @@ export default function ContactForm() {
         className="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
         <Send className="w-4 h-4" />
-        {status === 'submitting' ? '전송 중…' : '문의 보내기'}
+        {status === 'submitting' ? 'Sending…' : 'Send message'}
       </button>
     </form>
   )
