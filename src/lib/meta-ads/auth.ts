@@ -127,6 +127,109 @@ export function getAdTargetingDefaults(): { geo_locations: { countries: string[]
   return { geo_locations: { countries: getTargetCountries() } }
 }
 
+// ─── 반경(로컬) 타겟팅 — 공유 엔진 캠페인 단위 옵션 (OMO-3769) ──────────────────
+//
+// procard에는 미적용(US 광역 유지). 로컬 니즈가 있는 서비스/클라이언트가
+// 캠페인 단위로 켜는 opt-in 옵션이다. 호출자가 좌표·반경·도달옵션을 지정해
+// createCampaignWithGuardrails({ targeting }) 로 넘긴다.
+
+/**
+ * 반경 도달옵션 — "이 지역 거주"(home)가 기본.
+ * home=거주, recent=최근 위치, travel_in=방문 중, home_recent=거주+최근.
+ */
+export type RadiusReachType = 'home' | 'recent' | 'travel_in' | 'home_recent'
+
+export interface RadiusTargetingOptions {
+  /** 핀 위도 (-90~90) */
+  latitude: number
+  /** 핀 경도 (-180~180) */
+  longitude: number
+  /** 반경 — 단위는 distanceUnit (기본 km) */
+  radius: number
+  /** 거리 단위 (Meta: kilometer 1~80, mile 1~50) */
+  distanceUnit?: 'kilometer' | 'mile'
+  /** 주소 문자열(선택) — 핀 라벨/검증용 */
+  addressString?: string
+  /** 도달옵션 (기본 home="이 지역 거주") */
+  reach?: RadiusReachType
+  /** 국가 제약(선택) — custom_locations와 함께 둘 수 있음 */
+  countries?: string[]
+}
+
+// Meta 반경 제약: km 1~80, mile 1~50
+const RADIUS_BOUNDS: Record<'kilometer' | 'mile', { min: number; max: number }> = {
+  kilometer: { min: 1, max: 80 },
+  mile: { min: 1, max: 50 },
+}
+
+const REACH_LOCATION_TYPES: Record<RadiusReachType, string[]> = {
+  home: ['home'],
+  recent: ['recent'],
+  travel_in: ['travel_in'],
+  home_recent: ['home', 'recent'],
+}
+
+export interface RadiusTargetingResult {
+  geo_locations: {
+    custom_locations: Array<{
+      latitude: number
+      longitude: number
+      radius: number
+      distance_unit: 'kilometer' | 'mile'
+      address_string?: string
+    }>
+    location_types: string[]
+    countries?: string[]
+  }
+}
+
+/**
+ * 핀(좌표) + 반경 + 도달옵션을 Meta 광고세트 targeting 형태로 빌드한다.
+ * 좁은 반경은 모수 부족 → 학습 미진입/빈도 폭증 주의 → 단계적으로 좁힐 것(OMO-3769).
+ */
+export function buildRadiusTargeting(opts: RadiusTargetingOptions): RadiusTargetingResult {
+  const unit = opts.distanceUnit ?? 'kilometer'
+  const bounds = RADIUS_BOUNDS[unit]
+  if (!Number.isFinite(opts.latitude) || opts.latitude < -90 || opts.latitude > 90)
+    throw new Error('buildRadiusTargeting: latitude 범위(-90~90) 오류')
+  if (!Number.isFinite(opts.longitude) || opts.longitude < -180 || opts.longitude > 180)
+    throw new Error('buildRadiusTargeting: longitude 범위(-180~180) 오류')
+  if (!Number.isFinite(opts.radius) || opts.radius < bounds.min || opts.radius > bounds.max)
+    throw new Error(`buildRadiusTargeting: radius ${unit} 범위(${bounds.min}~${bounds.max}) 오류`)
+
+  const customLocation: RadiusTargetingResult['geo_locations']['custom_locations'][number] = {
+    latitude: opts.latitude,
+    longitude: opts.longitude,
+    radius: opts.radius,
+    distance_unit: unit,
+  }
+  if (opts.addressString) customLocation.address_string = opts.addressString
+
+  const geo: RadiusTargetingResult['geo_locations'] = {
+    custom_locations: [customLocation],
+    location_types: REACH_LOCATION_TYPES[opts.reach ?? 'home'],
+  }
+  if (opts.countries?.length) geo.countries = opts.countries
+  return { geo_locations: geo }
+}
+
+// Special Ad Categories(주거/고용/신용)는 반경·우편번호 타겟 제한 → 광역만 허용(OMO-3769)
+const RADIUS_RESTRICTED_CATEGORIES = ['HOUSING', 'EMPLOYMENT', 'CREDIT', 'ISSUES_ELECTIONS_POLITICS']
+
+/**
+ * 반경 타겟 허용 여부 검증 — 제한 카테고리면 throw.
+ * 호출 시점: custom_locations(반경) 타겟을 special_ad_categories와 함께 쓰려 할 때.
+ */
+export function assertRadiusAllowed(specialAdCategories: string[] = []): void {
+  const blocked = specialAdCategories.filter((c) =>
+    RADIUS_RESTRICTED_CATEGORIES.includes(c.toUpperCase())
+  )
+  if (blocked.length)
+    throw new Error(
+      `반경 타겟 불가: Special Ad Categories(${blocked.join(',')})는 광역 타겟만 허용 (OMO-3769)`
+    )
+}
+
 interface MetaFetchOptions {
   method?: 'GET' | 'POST' | 'DELETE'
   params?: Record<string, string | number | boolean>

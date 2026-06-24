@@ -144,6 +144,58 @@ describe('procardcrafters Meta 자산 게터 (OMO-3737)', () => {
   })
 })
 
+describe('buildRadiusTargeting (OMO-3769)', () => {
+  it('기본: home(이 지역 거주) + km 반경 custom_locations', async () => {
+    const { buildRadiusTargeting } = await import('../auth')
+    expect(
+      buildRadiusTargeting({ latitude: 37.5, longitude: 127.0, radius: 5, addressString: '서울 강남' })
+    ).toEqual({
+      geo_locations: {
+        custom_locations: [
+          { latitude: 37.5, longitude: 127.0, radius: 5, distance_unit: 'kilometer', address_string: '서울 강남' },
+        ],
+        location_types: ['home'],
+      },
+    })
+  })
+
+  it('reach=home_recent → location_types 거주+최근', async () => {
+    const { buildRadiusTargeting } = await import('../auth')
+    const r = buildRadiusTargeting({ latitude: 37.5, longitude: 127.0, radius: 10, reach: 'home_recent' })
+    expect(r.geo_locations.location_types).toEqual(['home', 'recent'])
+  })
+
+  it('countries 제약 + mile 단위 통과', async () => {
+    const { buildRadiusTargeting } = await import('../auth')
+    const r = buildRadiusTargeting({ latitude: 40.7, longitude: -74.0, radius: 10, distanceUnit: 'mile', countries: ['US'] })
+    expect(r.geo_locations.countries).toEqual(['US'])
+    expect(r.geo_locations.custom_locations[0].distance_unit).toBe('mile')
+  })
+
+  it('반경 범위 초과(km>80) → throw', async () => {
+    const { buildRadiusTargeting } = await import('../auth')
+    expect(() => buildRadiusTargeting({ latitude: 37.5, longitude: 127.0, radius: 100 })).toThrow(/radius/)
+  })
+
+  it('좌표 범위 오류 → throw', async () => {
+    const { buildRadiusTargeting } = await import('../auth')
+    expect(() => buildRadiusTargeting({ latitude: 999, longitude: 127.0, radius: 5 })).toThrow(/latitude/)
+  })
+})
+
+describe('assertRadiusAllowed (OMO-3769)', () => {
+  it('일반 카테고리 없음 → 통과', async () => {
+    const { assertRadiusAllowed } = await import('../auth')
+    expect(() => assertRadiusAllowed([])).not.toThrow()
+  })
+
+  it('HOUSING 등 제한 카테고리 → throw', async () => {
+    const { assertRadiusAllowed } = await import('../auth')
+    expect(() => assertRadiusAllowed(['HOUSING'])).toThrow(/반경 타겟 불가/)
+    expect(() => assertRadiusAllowed(['employment'])).toThrow(/반경 타겟 불가/)
+  })
+})
+
 describe('MetaApiError', () => {
   it('정책 거절 감지 (subcode=1487749)', async () => {
     const { MetaApiError } = await import('../auth')
