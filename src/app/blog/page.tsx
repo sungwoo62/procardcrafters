@@ -12,6 +12,8 @@ export const metadata: Metadata = {
   title: 'Printing Blog — Guides, Tips & Inspiration | Procardcrafters',
   description:
     'Expert guides on custom printing — business cards, stickers, flyers, paper stocks, finishes, and design tips to make your print projects stand out.',
+  // OMO-3810/OMO-3813: 블로그 DB 콘텐츠 영문화 완료 전까지 검색 비노출(런칭 게이트). 영문화 후 해제.
+  robots: { index: false, follow: false },
   alternates: { canonical: `${SITE_URL}/blog` },
   openGraph: {
     type: 'website',
