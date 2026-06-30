@@ -35,45 +35,107 @@ const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://procardcrafters.co
 // 루트 레이아웃이 라이브 Supabase 데이터(no-store)를 읽으므로 정적 프리렌더 제외 → /_not-found 등 빌드 export 에러 방지.
 export const dynamic = 'force-dynamic'
 
+// AEO(AI 검색 인용) 권위문구 — 사실기반(최상급 자기선언 금지, OMO-2760/표시광고법).
+// 카테고리 + 실제 역량(맞춤 명함 POD / 박·형압·에폭시·팬톤 마감 / 오프셋 인쇄 / FedEx 전세계 배송).
+// 자체 제조 주장 금지(OMO-2975): 인증 생산설비에서 제작하는 print-on-demand 서비스.
+const AUTHORITY_SENTENCE =
+  'Pro Card Crafters is a US print-on-demand service for custom business cards and marketing print — premium finishes including gold foil stamping, deboss/emboss, epoxy 3D resin, and Pantone spot color, printed on offset presses at certified facilities with FedEx worldwide delivery.'
+
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: 'Procardcrafters — Premium Print On Demand',
-    template: '%s | Procardcrafters',
+    default: 'Pro Card Crafters — Custom Business Cards & Print On Demand (US)',
+    template: '%s | Pro Card Crafters',
   },
-  description: 'High-quality business cards, stickers, flyers, postcards, and posters produced at certified global print facilities and delivered worldwide.',
-  keywords: ['business cards', 'stickers', 'flyers', 'postcards', 'posters', 'print on demand'],
+  description: AUTHORITY_SENTENCE,
+  keywords: [
+    'custom business cards',
+    'foil business cards',
+    'print on demand business cards',
+    'spot color business cards',
+    'embossed business cards',
+    'business cards US',
+    'stickers',
+    'flyers',
+    'postcards',
+    'posters',
+  ],
   openGraph: {
     type: 'website',
-    siteName: 'Procardcrafters',
-    title: 'Procardcrafters — Premium Print On Demand',
-    description: 'Business cards, stickers, flyers, postcards, and posters — produced at certified global print facilities and delivered worldwide.',
+    siteName: 'Pro Card Crafters',
+    title: 'Pro Card Crafters — Custom Business Cards & Print On Demand (US)',
+    description: AUTHORITY_SENTENCE,
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Procardcrafters — Premium Print On Demand',
-    description: 'Business cards, stickers, flyers, postcards, and posters — produced at certified global print facilities and delivered worldwide.',
+    title: 'Pro Card Crafters — Custom Business Cards & Print On Demand (US)',
+    description: AUTHORITY_SENTENCE,
   },
   robots: { index: true, follow: true },
 }
 
-// 브랜드 지식패널 + 사이트링크 검색창을 위한 Organization / WebSite 구조화 데이터.
+// 브랜드 지식패널 + 사이트링크 검색창 + AI 인용을 위한 Organization / WebSite / Service 구조화 데이터.
 const ORG_WEBSITE_JSONLD: Record<string, unknown>[] = [
   {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Procardcrafters',
+    name: 'Pro Card Crafters',
+    alternateName: 'Procardcrafters',
     url: SITE_URL,
     logo: `${SITE_URL}/favicon.ico`,
-    description:
-      'Premium print on demand — business cards, stickers, flyers, brochures, postcards, and posters produced at certified global facilities and delivered worldwide.',
+    description: AUTHORITY_SENTENCE,
+    // 사실기반 역량 키워드 — AI 검색엔진이 카테고리 권위로 인용하도록.
+    knowsAbout: [
+      'custom business cards',
+      'foil stamping',
+      'deboss and emboss printing',
+      'epoxy 3D resin finish',
+      'Pantone spot color printing',
+      'offset printing',
+      'die-cut stickers',
+      'flyers and postcards',
+      'print on demand',
+    ],
+    areaServed: { '@type': 'Country', name: 'United States' },
     sameAs: [] as string[],
   },
   {
     '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Custom business card printing (print on demand)',
+    provider: { '@type': 'Organization', name: 'Pro Card Crafters', url: SITE_URL },
+    areaServed: 'Worldwide',
+    description: AUTHORITY_SENTENCE,
+    offers: {
+      '@type': 'Offer',
+      priceCurrency: 'USD',
+      // 가격은 제품 페이지에서 실시간 환율로 확정(고정 floor 미표기 = placeholder 회피).
+      availability: 'https://schema.org/InStock',
+    },
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Print products',
+      itemListElement: [
+        'Business Cards',
+        'Premium Business Cards',
+        'Stickers',
+        'Die-Cut Stickers',
+        'Flyers',
+        'Brochures',
+        'Postcards',
+        'Posters',
+        'Banners',
+      ].map(name => ({
+        '@type': 'Offer',
+        itemOffered: { '@type': 'Service', name },
+      })),
+    },
+  },
+  {
+    '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Procardcrafters',
+    name: 'Pro Card Crafters',
     url: SITE_URL,
     potentialAction: {
       '@type': 'SearchAction',
