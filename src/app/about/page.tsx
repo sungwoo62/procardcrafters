@@ -34,8 +34,23 @@ const VALUES = [
 const STATS = [
   { value: 'Offset', label: 'Print quality' },
   { value: 'FedEx', label: 'Worldwide shipping' },
-  { value: '3–5', label: 'Day production' },
+  { value: '7–10 days', label: 'Production lead time' },
   { value: 'Secure', label: 'PayPal checkout' },
+]
+
+// AEO 인용가능 팩트블록(OMO-4026): 옵션·소재·가격·리드타임을 표로.
+// 전 항목 검증된 사실만(finishing-catalog / lead-time.ts / page 데이터 기준). placeholder 금지.
+const FACT_ROWS: { label: string; value: string }[] = [
+  { label: 'Product categories', value: 'Business cards, premium business cards, stickers, die-cut stickers, flyers, brochures, postcards, posters, banners' },
+  { label: 'Premium finishes', value: 'Gold foil stamping, deboss/emboss, epoxy 3D resin, matte/gloss coating, Pantone spot color, rounded corners, die cut' },
+  { label: 'Premium paper stocks', value: 'Linen, pearl, and specialty stocks (standard coated/uncoated on Business Cards)' },
+  { label: 'Print method', value: 'Offset presses (Heidelberg / HP Indigo), CMYK + spot color' },
+  { label: 'Accepted file formats', value: 'PDF (recommended), AI, PSD' },
+  { label: 'Production lead time', value: 'Standard ~7–10 business days; Express skips 3 buffer days (+25%)' },
+  { label: 'Shipping', value: 'FedEx Express worldwide, door-to-door (typically 5–8 days after production)' },
+  { label: 'Pricing', value: 'USD, real-time exchange rate, volume pricing on every product, no hidden fees' },
+  { label: 'Payment', value: 'Secure checkout via PayPal and card' },
+  { label: 'Service area', value: 'United States and worldwide' },
 ]
 
 export default function AboutPage() {
@@ -86,6 +101,27 @@ export default function AboutPage() {
             Whether you're a solo designer ordering 50 business cards or a brand needing thousands
             of promotional pieces, we treat every order with the same attention to detail.
           </p>
+        </div>
+      </section>
+
+      {/* At a Glance — AI 인용가능 팩트블록(OMO-4026) */}
+      <section className="bg-gray-50 py-16 px-4">
+        <div className="max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">Pro Card Crafters at a Glance</h2>
+          <div className="overflow-hidden rounded-xl border border-gray-200 bg-white">
+            <table className="w-full text-left text-sm">
+              <tbody>
+                {FACT_ROWS.map((row, i) => (
+                  <tr key={row.label} className={i % 2 ? 'bg-gray-50/60' : 'bg-white'}>
+                    <th scope="row" className="align-top px-5 py-3 font-semibold text-gray-900 whitespace-nowrap w-1/3">
+                      {row.label}
+                    </th>
+                    <td className="px-5 py-3 text-gray-600 leading-relaxed">{row.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </section>
 
