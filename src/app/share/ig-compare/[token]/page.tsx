@@ -11,6 +11,9 @@ function shareToken(): string {
   return process.env.OMO3764_SHARE_TOKEN?.trim() || DEFAULT_SHARE_TOKEN
 }
 
+// 토큰 게이트는 런타임에 평가돼야 하고, 미매칭 404가 엣지에 정적 캐시되면 안 되므로 동적 렌더 강제.
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'OMO-3764 — 인스타 캡션 비교본 (V1 ↔ V2)',
   description: '60개 게시물 캡션 원본(V1)과 이미지 기준 보강(V2) 비교. 로그인 없이 토큰 링크로 열람.',

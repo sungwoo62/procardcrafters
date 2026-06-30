@@ -15,6 +15,9 @@ function shareToken(): string {
   return process.env.OMO3764_SHARE_TOKEN?.trim() || DEFAULT_SHARE_TOKEN
 }
 
+// 토큰 게이트는 런타임에 평가돼야 하고, 미매칭 404가 엣지에 정적 캐시되면 안 되므로 동적 렌더 강제.
+export const dynamic = 'force-dynamic'
+
 export const metadata: Metadata = {
   title: 'OMO-3764 — 프로카드 인스타 30일 콘텐츠 플랜 (공유)',
   description: '인스타 하루 2건 × 30일 = 60개 게시물 초안 프리뷰. 로그인 없이 토큰 링크로 열람.',
