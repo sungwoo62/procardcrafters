@@ -218,8 +218,11 @@ export default async function HomePage() {
               </span>
             </h1>
 
+            {/* AEO 권위문구 앞배치(OMO-4026): 사실기반 카테고리+역량. 최상급 자기선언/자체제조 주장 금지. */}
             <p className="text-lg sm:text-xl text-blue-100/70 mb-10 max-w-2xl mx-auto leading-relaxed">
-              Global production · Real-time pricing · No hidden fees · FedEx worldwide delivery
+              Pro Card Crafters is a US print-on-demand service for custom business cards and marketing print —
+              premium finishes like gold foil, deboss/emboss, epoxy 3D resin, and Pantone spot color, printed on
+              offset presses and shipped worldwide via FedEx.
             </p>
 
             <div className="flex flex-col sm:flex-row gap-3 justify-center mb-12">
