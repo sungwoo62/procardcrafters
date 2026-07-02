@@ -5491,7 +5491,7 @@ export default function EditorClient({ product, options }: Props) {
                         <div key={design.id} className="flex items-center gap-1.5 rounded-lg border border-gray-200 p-1.5">
                           {design.thumbnail && (
                             // eslint-disable-next-line @next/next/no-img-element
-                            <img src={design.thumbnail} alt="" className="w-10 h-6 object-cover rounded shrink-0 border border-gray-100" />
+                            <img src={design.thumbnail} alt={design.name || 'Saved design'} className="w-10 h-6 object-cover rounded shrink-0 border border-gray-100" />
                           )}
                           <button
                             onClick={() => loadSavedDesign(design)}
